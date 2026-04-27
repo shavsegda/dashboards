@@ -140,6 +140,7 @@
   }
   .type-meshaet { background: #fee; color: #c0392b; }
   .type-pomogaet { background: #efe; color: #27ae60; }
+  .type-perepisano { background: #ede9fe; color: #6d28d9; }
   .new-belief { color: #555; font-size: 13px; }
   .new-belief.empty { color: #ccc; font-style: italic; }
 
@@ -204,12 +205,12 @@
 <div id="content">
 
 <h1>Убеждения · дашборд</h1>
-<p class="sub">Обновлено: 2026-04-27 · Тематический фокус: <strong>деньги</strong></p>
+<p class="sub">Обновлено: 2026-04-27 · Темы: <strong>деньги</strong> · <strong>отдых/игра</strong></p>
 
 <div class="kpi-grid">
   <div class="kpi blue">
     <div class="kpi-label">Всего</div>
-    <div class="kpi-value">50</div>
+    <div class="kpi-value">51</div>
     <div class="kpi-sub">установок в работе</div>
   </div>
   <div class="kpi red">
@@ -224,29 +225,30 @@
   </div>
   <div class="kpi yellow">
     <div class="kpi-label">Перепрошито</div>
-    <div class="kpi-value">0</div>
-    <div class="kpi-sub">тест ✅ пройден</div>
+    <div class="kpi-value">1</div>
+    <div class="kpi-sub">9 шагов · ждёт теста</div>
   </div>
 </div>
 
 <div class="progress-bar">
-  <div class="progress-bar-title">Прогресс программы (50 убеждений)</div>
+  <div class="progress-bar-title">Прогресс программы (51 убеждение)</div>
   <div class="bar">
-    <div class="bar-segment bar-empty" style="width: 80%;">⬜ 40 ждут</div>
-    <div class="bar-segment bar-yellow" style="width: 20%;">🟡 10 в работе</div>
+    <div class="bar-segment bar-empty" style="width: 78%;">⬜ 40 ждут</div>
+    <div class="bar-segment bar-yellow" style="width: 19.5%;">🟡 10 в работе</div>
+    <div class="bar-segment" style="width: 2.5%; background: #6d28d9; color: #fff;">Н 1</div>
   </div>
 </div>
 
 <div class="priority-card">
   <div>
-    <div class="label">Следующее на проработку</div>
-    <div class="text">Стыдно думать о деньгах</div>
-    <div class="id">М09 · ★★★★★ · /belief-rewire next</div>
+    <div class="label">Активно сейчас (тест 27.04 вечер)</div>
+    <div class="text">Игра с близкими — работа, которую могу сделать только я</div>
+    <div class="id">Н01 · ★★★★★ · перепрошито 27.04.2026</div>
   </div>
   <div>
-    <div class="label">Сильнее всего держит</div>
-    <div class="text">27 установок с силой 5★</div>
-    <div class="id">~6 месяцев в темпе 1 / неделя</div>
+    <div class="label">Следующее в очереди</div>
+    <div class="text">Стыдно думать о деньгах</div>
+    <div class="id">М09 · ★★★★★ · /belief-rewire next</div>
   </div>
 </div>
 
@@ -255,6 +257,7 @@
   <button class="filter-btn active" data-filter="type" data-value="all">Все</button>
   <button class="filter-btn" data-filter="type" data-value="meshaet">Мешают</button>
   <button class="filter-btn" data-filter="type" data-value="pomogaet">Помогают</button>
+  <button class="filter-btn" data-filter="type" data-value="perepisano">Перепрошитые</button>
 
   <span class="filter-label" style="margin-left: 16px;">Сила:</span>
   <button class="filter-btn active" data-filter="power" data-value="all">Все</button>
@@ -346,6 +349,8 @@ const data = [
   {id:"П08", type:"pomogaet", text:"—", power:3, status:"🟡", newBelief:"Зарабатываю больше, направляя внимание на энергию/развитие/важное/людей"},
   {id:"П09", type:"pomogaet", text:"—", power:2, status:"🟡", newBelief:"При любом доходе могу управлять деньгами: база + радость + остаток"},
   {id:"П10", type:"pomogaet", text:"—", power:1, status:"🟡", newBelief:"Спокойно оплачиваю счета вовремя"},
+  // Перепрошитые целиком (все 9 шагов /belief-rewire)
+  {id:"Н01", type:"perepisano", text:"Играть/дурачиться — стыдно. Свободное время должно быть с пользой, иначе раздолбай", power:5, status:"🟡", newBelief:"Игра с близкими — работа, которую могу сделать только я. Игра и дурачество — нормальный взрослый отдых"},
 ];
 
 const filters = { type: "all", power: "all", status: "all", search: "" };
@@ -377,7 +382,7 @@ function render() {
   tbody.innerHTML = rows.map(r => `
     <tr>
       <td class="id-cell">${r.id}</td>
-      <td><span class="type-tag type-${r.type}">${r.type === "meshaet" ? "Мешает" : "Помогает"}</span></td>
+      <td><span class="type-tag type-${r.type}">${r.type === "meshaet" ? "Мешает" : r.type === "perepisano" ? "Перепрошито" : "Помогает"}</span></td>
       <td>${r.text === "—" ? '<span class="new-belief empty">—</span>' : r.text}</td>
       <td><span class="stars">${stars(r.power)}</span></td>
       <td class="status-cell">${r.status}</td>
@@ -417,23 +422,20 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
 render();
 </script>
 
+
 </div><!-- /content -->
 
 <script>
-  // Парольный гейт. Защита от случайных глаз, не от хакера.
   const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
-
   async function sha256(s) {
     const buf = new TextEncoder().encode(s);
     const hash = await crypto.subtle.digest("SHA-256", buf);
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
-
   async function unlock() {
     const val = document.getElementById("pwd").value;
     const h = await sha256(val);
     if (h === PWD_HASH) {
-      sessionStorage.setItem("unlocked", "1");
       document.getElementById("gate").style.display = "none";
       document.getElementById("content").classList.add("unlocked");
       document.body.classList.remove("locked");
@@ -444,19 +446,10 @@ render();
       document.getElementById("pwd").value = "";
     }
   }
-
   document.getElementById("unlock-btn").addEventListener("click", unlock);
   document.getElementById("pwd").addEventListener("keydown", e => {
     if (e.key === "Enter") unlock();
   });
-
-  // Не запоминаем по сессии — каждое открытие требует пароль.
-  // Если хочешь запоминать — раскомментируй:
-  // if (sessionStorage.getItem("unlocked") === "1") {
-  //   document.getElementById("gate").style.display = "none";
-  //   document.getElementById("content").classList.add("unlocked");
-  //   document.body.classList.remove("locked");
-  // }
 </script>
 
 </body>
