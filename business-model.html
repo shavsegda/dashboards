@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Бизнес-модель: Сопровождение собственников среднего бизнеса</title>
+<style>
+  /* Базовые настройки страницы */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a1a;
+    line-height: 1.5;
+    padding: 32px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Шапка */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .header h1 { font-size: 28px; font-weight: 600; }
+  .header .meta { color: #6b7280; font-size: 14px; }
+
+  /* Заголовки секций */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  /* Среда — 4 силы */
+  .environment {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+  .environment-cell h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .environment-cell p { font-size: 13px; color: #374151; }
+
+  /* Канва — 9 блоков */
+  .canvas {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+    min-height: 480px;
+  }
+  .block {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .block.green  { border-color: #4ade80; background: #f0fdf4; }
+  .block.yellow { border-color: #fbbf24; background: #fffbeb; }
+  .block.red    { border-color: #f87171; background: #fef2f2; }
+  .block h2 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+  .block .content {
+    font-size: 13px;
+    color: #1a1a1a;
+    white-space: pre-wrap;
+  }
+
+  /* Расположение блоков как в оригинальной канве Остервальдера */
+  .partners      { grid-column: 1; grid-row: 1 / 3; }
+  .activities    { grid-column: 2; grid-row: 1; }
+  .resources     { grid-column: 2; grid-row: 2; }
+  .value         { grid-column: 3; grid-row: 1 / 3; }
+  .relationships { grid-column: 4; grid-row: 1; }
+  .channels      { grid-column: 4; grid-row: 2; }
+  .segments      { grid-column: 5; grid-row: 1 / 3; }
+
+  /* Нижняя строка — издержки и доходы */
+  .economics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .economics .block { min-height: 100px; }
+
+  /* Карта эмпатии — отдельная секция */
+  .empathy {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .empathy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .empathy-cell h4 {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .empathy-cell p { font-size: 13px; }
+
+  /* Риски */
+  .risks {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .risk-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .risk-item:last-child { border-bottom: 0; }
+  .risk-item .marker { font-size: 16px; flex-shrink: 0; }
+  .risk-item .block-name {
+    color: #6b7280;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    width: 140px;
+  }
+
+  /* Рычаги */
+  .levers {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .lever-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .lever-item:last-child { border-bottom: 0; }
+  .lever-item .lever-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-right: 8px;
+  }
+
+  /* Шаги */
+  .steps {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .steps .section-title { color: #9ca3af; }
+  .step {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #374151;
+    font-size: 15px;
+  }
+  .step:last-of-type { border-bottom: 0; }
+  .step .num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fbbf24;
+    min-width: 32px;
+  }
+  .checkpoint {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid #374151;
+    font-size: 14px;
+    color: #d1d5db;
+  }
+  .checkpoint strong { color: #fff; }
+
+  /* Печать */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .canvas { page-break-inside: avoid; }
+  }
+
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+</style>
+</head>
+<body class="locked">
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы посмотреть дашборд</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+<div id="content">
+
+<div class="container">
+
+  <!-- Шапка -->
+  <div class="header">
+    <h1>Сопровождение собственников среднего бизнеса</h1>
+    <div class="meta">v1 «как есть» · 27 апреля 2026</div>
+  </div>
+
+  <!-- Среда: 4 силы -->
+  <div class="section-title">Среда модели</div>
+  <div class="environment">
+    <div class="environment-cell">
+      <h3>Рынок</h3>
+      <p>Десятки тысяч собственников 50–300 чел., 1+ млрд ₽. Готовых на «личного тренера 200к/мес» — заметно меньше. Главная боль клиента: «не понимаю, что делать; рамки нечёткие; деньги лежат, но я их не вижу».</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Отрасль</h3>
+      <p>Конкуренты: бизнес-клубы (Эквиум, Сила Ума), коучи, психологи, советники. Главная угроза: категория «коуч» теряет доверие. Партнёров 0.</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Тренды</h3>
+      <p>ИИ-инструменты в работе с клиентом (Notion, Claude). В РФ доминирует «я сам». «Не нормально с тренером» в бизнесе, хотя в спорте — нормально.</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Макроэкономика</h3>
+      <p>Нестабильность экономики, осторожность в новых тратах. 200к/мес — заметная сумма. Дистанционная работа доступна.</p>
+    </div>
+  </div>
+
+  <!-- Канва -->
+  <div class="section-title">Канва бизнес-модели</div>
+  <div class="canvas">
+    <div class="block partners red">
+      <h2>Ключевые партнёры</h2>
+      <div class="content"><b>0 партнёров</b> — полный пробел.
+
+Потенциал: бизнес-клубы (требует проверки ценности для обеих сторон), M&A-консультанты, психотерапевты.
+
+Кирилл (ИТ) — готов без зарплаты, не задействован.</div>
+    </div>
+    <div class="block activities yellow">
+      <h2>Ключевые виды деятельности</h2>
+      <div class="content">Еженедельно: 1×1,5 ч встреча × 2 клиента + созвоны + Notion-досье + ИИ-помощник.
+
+Цикл: диагностика → страт-сессия 3 дня → поддержка → квартальная сессия.
+
+Бот «Вслух»: обновление промпта, ревью с Дашей.
+
+<b>0 ч/нед на продажи и публикации.</b></div>
+    </div>
+    <div class="block resources yellow">
+      <h2>Ключевые ресурсы</h2>
+      <div class="content"><b>Алексей</b> — главный актив, единственная точка отказа.
+
+Свободная ёмкость: ~5 клиентов уровня Ярослава.
+
+Стек: Notion, LLM-досье, бот, скиллы Claude Code, Hogan-профили, подкасты.
+
+Даша 70к/мес. Кирилл (ИТ) — резерв.</div>
+    </div>
+    <div class="block value yellow">
+      <h2>Ценностные предложения</h2>
+      <div class="content"><b>Ясность и рамки</b> — что делать / что не делать.
+
+<b>Зеркало + внешняя валидация.</b>
+
+<b>Глубокое погружение во все системы:</b> бизнес + семья + он сам.
+
+<b>Уникальный бэкграунд:</b> тренер из спорта + инженер кибернетики.
+
+<b>Технологическое усиление:</b> Алексей + LLM + досье.
+
+⚠️ Нет короткой упаковки для холодного клиента. Кейс Ярослава без цифр.</div>
+    </div>
+    <div class="block relationships yellow">
+      <h2>Отношения с клиентами</h2>
+      <div class="content">Особая персональная: за каждым клиентом — лично Алексей, годами.
+
+Длительность: 2+ года (Ярослав).
+
+Технологически усилены через LLM + досье — конкуренты так не работают.
+
+⚠️ Алексей берёт ответственности больше, чем клиент. Риск выгорания и зависимости клиента от личности.</div>
+    </div>
+    <div class="block channels red">
+      <h2>Каналы сбыта</h2>
+      <div class="content"><b>Трубы пока нет.</b> Только-только начала появляться через бота.
+
+Сейчас: TG-канал (600), бот «Вслух», подкасты (1 кейс), сарафан (Сергей от Ярослава).
+
+Цикл доставки: диагностика → страт-сессия → поддержка → новая сессия.
+
+⚠️ 0 ч/нед на продажи. Бот разблокировал автора — пишет в канал.</div>
+    </div>
+    <div class="block segments red">
+      <h2>Потребительские сегменты</h2>
+      <div class="content"><b>1 реальный сегмент:</b> опытный собственник среднего бизнеса (50–300 чел., 1+ млрд), 35–55 лет, часто с 2+ проектами. ЛПР = сам.
+
+74% выручки — компания Ярослава.
+
+5 портретов AJTBD — теоретические, не подтверждены клиентами.
+
+⚠️ Сегмент не описан критериями отбора.</div>
+    </div>
+  </div>
+
+  <!-- Издержки и доходы -->
+  <div class="economics">
+    <div class="block yellow">
+      <h2>Структура издержек</h2>
+      <div class="content">Даша 70к/мес (ожидает 100к). Аренда офиса 30к/мес. Сервисы (Claude, Notion, Railway) — несколько тыс./мес.
+
+Главный «расход» — личное время Алексея.
+
+⚠️ Издержки + семейный бюджет выше выручки → разрыв 170–180к/мес. Подушка = 0.
+
+Решение: +1–2 клиента уровня Ярослава = модель в плюсе.</div>
+    </div>
+    <div class="block red">
+      <h2>Потоки доходов</h2>
+      <div class="content">540к/мес: подписка Ярослав 200 + Сергей 200 + разовые 140.
+
+Прайс: диагностика 50к → страт-сессия 350к → подписка 200к/мес → квартальная 300к.
+
+LTV в год = 3,7 М ₽.
+
+⚠️ 74% от одной компании. Окно при потере = 60 дней.
+
+Заморожены: агентство, курс, выступления.</div>
+    </div>
+  </div>
+
+  <!-- Карта эмпатии -->
+  <div class="empathy">
+    <div class="section-title">Карта эмпатии: Ярослав — единственный реальный клиент-портрет</div>
+    <div class="empathy-grid">
+      <div class="empathy-cell"><h4>Видит</h4><p>Свою компанию без формализованных процессов. «Без меня там ничего не происходит». Распиаренных коучей с непонятной компетенцией. Дополнительные деньги, которые лежат.</p></div>
+      <div class="empathy-cell"><h4>Слышит</h4><p>От команды: «опять Алексей всё включил на максималках». От партнёров: невысказанный скепсис к расходам на тренера. От себя: «надо включиться и наладить».</p></div>
+      <div class="empathy-cell"><h4>Думает и чувствует</h4><p>Тревожит устойчивость и эффективность бизнеса. Хочет ясности и рамок. Хочет «кнопку» для управления собой. Big Job: деньги в моменте + ресурс на будущее + капитализация бизнеса.</p></div>
+      <div class="empathy-cell"><h4>Говорит и делает</h4><p>Публично — обтекаемо: с тренером работать «не принято». Скрытно — платит из своих, не из общих расходов. Не делится с партнёрами из-за отсутствия внутреннего пиара.</p></div>
+      <div class="empathy-cell"><h4>Тревоги</h4><p>Что без него бизнес стагнирует. Что «я сам не дотащу» — но не может прямо признать. Что команда воспринимает скептически. Что эффективность падает.</p></div>
+      <div class="empathy-cell"><h4>Стремления</h4><p>Ясность и рамки. Чувство эффективности через инструмент. Меньше вопросов «как делать». Внешняя валидация — «это нормально, это по-научному».</p></div>
+    </div>
+  </div>
+
+  <!-- Риски -->
+  <div class="risks">
+    <div class="section-title">Риски и слабые места (по убыванию остроты)</div>
+    
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">Доходы / Сегменты</div>
+      <div>Концентрация выручки на одной компании (74%). Потеря Ярослава = коллапс за 60 дней.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">Каналы</div>
+      <div>Трубы фактически нет. Бот только-только запущен.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">Сегменты</div>
+      <div>Сегмент не описан критериями отбора — непонятно, кому конкретно продавать.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">Партнёры</div>
+      <div>0 партнёров. Нет потока клиентов извне.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Ценность</div>
+      <div>Нет короткой упаковки для холодного клиента. Кейс Ярослава без бизнес-цифр.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Ресурсы</div>
+      <div>Алексей — единственная точка отказа. Финансовая подушка = 0.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Отношения</div>
+      <div>Зависимость клиента от Алексея как личности. Риск выгорания.</div>
+    </div>
+    
+  </div>
+
+  <!-- Рычаги -->
+  <div class="levers">
+    <div class="section-title">Рычаги (5 паттернов + модель четырёх действий)</div>
+    
+    <div class="lever-item">
+      <span class="lever-name">🎯 БОТ = СООБЩЕСТВО + ВИТРИНА + ICP-ФИЛЬТР</span>
+      Главный рычаг. Меняет 4/4 измерений. Снимает риски концентрации, отсутствия трубы, отсутствия партнёров, зависимости от личности Алексея.
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">🎯 ТРЕНЕР С 5 РЕЖИМАМИ</span>
+      Позиционирование: психолог / коуч / ментор / наставник / трекер. Соединяет бэкграунд + бота + продукт. Решает проблему упаковки ценности.
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">Аффилирование (открытая)</span>
+      Реферальная программа. Сергей органически пришёл от Ярослава — формализовать.
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">Контракты на показателях (открытая)</span>
+      Часть гонорара по результату. Закрывает «размытые формулировки» цифрами.
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">Долевая собственность / таймшер (открытая)</span>
+      Не подписка, а годовой пакет «100 часов времени Алексея».
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">Краудфандинг сообщества (открытая)</span>
+      10 предоплат вперёд = проверка спроса без риска.
+    </div>
+    <div class="lever-item">
+      <span class="lever-name">4 действия (Ким и Моборн)</span>
+      <b>Исключить:</b> слово «коуч», открытые вопросы как универсал, платную диагностику в первый контакт. <b>Сократить:</b> опору на личное знакомство. <b>Увеличить:</b> глубину работы со всеми системами, видимость техно-стека, регулярность канала. <b>Создать:</b> сообщество, тренерское позиционирование, открытые скиллы.
+    </div>
+    
+  </div>
+
+  <!-- 3 шага -->
+  <div class="steps">
+    <div class="section-title">Три ближайших шага</div>
+    <div class="step">
+      <div class="num">1</div>
+      <div><b>УПАКОВКА.</b> Сформулировать ценность для лендинга — короткой фразой для холодного клиента. Дать название большому продукту / компании. Сделать лендинги для всех частей: диагностика, страт-сессия, квартальная сессия, подписка. Опора — позиционирование «тренер с 5 режимами».</div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div><b>ПРИКЛЕИТЬ ТЕКУЩИХ К БОТУ.</b> Дать боту узнавать текущих клиентов (Ярослав, Сергей). Сделать так, чтобы он помогал им двигаться между сессиями: подхватывал контекст из досье, держал фокус, отвечал в логике текущей работы. Это удержание + основа для сообщества.</div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div><b>СООБЩЕСТВО — ПРОТОТИП.</b> Собрать сообщество через vibe-coding: дёшево, быстро. Приклеить к боту «Вслух» как фичу. Боевой тест в живом режиме — что работает, что нет. Если не идёт — узнаём дёшево.</div>
+    </div>
+    <div class="checkpoint">
+      <strong>Точка проверки:</strong> 30 дней. ✅/❌ Лендинги (1 общий + 4 продуктовых). ✅/❌ Бот узнаёт текущих клиентов. ✅/❌ Прототип сообщества собран и есть первые живые участники.
+    </div>
+  </div>
+
+</div>
+</div><!-- /content -->
+
+<script>
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+</script>
+</body>
+</html>
