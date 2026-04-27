@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Убеждения · дашборд</title>
+<style>
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.4;
+  }
+  h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 600; }
+  .sub { color: #777; font-size: 13px; margin-bottom: 24px; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .kpi-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+  .kpi-sub { font-size: 11px; color: #999; margin-top: 4px; }
+  .kpi.red { border-left: 3px solid #e74c3c; }
+  .kpi.green { border-left: 3px solid #27ae60; }
+  .kpi.yellow { border-left: 3px solid #f39c12; }
+  .kpi.blue { border-left: 3px solid #3498db; }
+
+  .progress-bar {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+  }
+  .progress-bar-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .bar { display: flex; height: 28px; border-radius: 4px; overflow: hidden; background: #eee; }
+  .bar-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 600; }
+  .bar-empty { background: #d0d0d0; color: #555; }
+  .bar-yellow { background: #f39c12; }
+  .bar-green { background: #27ae60; }
+  .bar-red { background: #e74c3c; }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .filter-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: #999; }
+  .filter-btn.active {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+  .filter-label { font-size: 12px; color: #888; margin-right: 4px; }
+  .search-input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    font-size: 13px;
+    width: 200px;
+    font-family: inherit;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  th {
+    background: #f5f5f5;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { background: #ececec; }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  .id-cell { font-family: 'SF Mono', monospace; color: #999; font-size: 12px; width: 50px; }
+  .stars { color: #f39c12; letter-spacing: -1px; white-space: nowrap; font-size: 13px; }
+  .status-cell { width: 80px; text-align: center; font-size: 16px; }
+  .type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .type-meshaet { background: #fee; color: #c0392b; }
+  .type-pomogaet { background: #efe; color: #27ae60; }
+  .new-belief { color: #555; font-size: 13px; }
+  .new-belief.empty { color: #ccc; font-style: italic; }
+
+  .footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+  }
+  .footer code {
+    background: #efefef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .row-collapsed td { color: #aaa; }
+
+  /* Тёмная карточка с топ-приоритетом */
+  .priority-card {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .priority-card .label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .priority-card .text {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .priority-card .id {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    font-family: 'SF Mono', monospace;
+  }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы посмотреть дашборд</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<h1>Убеждения · дашборд</h1>
+<p class="sub">Обновлено: 2026-04-27 · Тематический фокус: <strong>деньги</strong></p>
+
+<div class="kpi-grid">
+  <div class="kpi blue">
+    <div class="kpi-label">Всего</div>
+    <div class="kpi-value">50</div>
+    <div class="kpi-sub">установок в работе</div>
+  </div>
+  <div class="kpi red">
+    <div class="kpi-label">Мешают</div>
+    <div class="kpi-value">40</div>
+    <div class="kpi-sub">5★: 27 · 4★: 8 · 3★: 5</div>
+  </div>
+  <div class="kpi green">
+    <div class="kpi-label">Помогают</div>
+    <div class="kpi-value">10</div>
+    <div class="kpi-sub">сформулированы</div>
+  </div>
+  <div class="kpi yellow">
+    <div class="kpi-label">Перепрошито</div>
+    <div class="kpi-value">0</div>
+    <div class="kpi-sub">тест ✅ пройден</div>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-bar-title">Прогресс программы (50 убеждений)</div>
+  <div class="bar">
+    <div class="bar-segment bar-empty" style="width: 80%;">⬜ 40 ждут</div>
+    <div class="bar-segment bar-yellow" style="width: 20%;">🟡 10 в работе</div>
+  </div>
+</div>
+
+<div class="priority-card">
+  <div>
+    <div class="label">Следующее на проработку</div>
+    <div class="text">Стыдно думать о деньгах</div>
+    <div class="id">М09 · ★★★★★ · /belief-rewire next</div>
+  </div>
+  <div>
+    <div class="label">Сильнее всего держит</div>
+    <div class="text">27 установок с силой 5★</div>
+    <div class="id">~6 месяцев в темпе 1 / неделя</div>
+  </div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">Тип:</span>
+  <button class="filter-btn active" data-filter="type" data-value="all">Все</button>
+  <button class="filter-btn" data-filter="type" data-value="meshaet">Мешают</button>
+  <button class="filter-btn" data-filter="type" data-value="pomogaet">Помогают</button>
+
+  <span class="filter-label" style="margin-left: 16px;">Сила:</span>
+  <button class="filter-btn active" data-filter="power" data-value="all">Все</button>
+  <button class="filter-btn" data-filter="power" data-value="5">5★</button>
+  <button class="filter-btn" data-filter="power" data-value="4">4★</button>
+  <button class="filter-btn" data-filter="power" data-value="3">3★</button>
+  <button class="filter-btn" data-filter="power" data-value="2">2★</button>
+  <button class="filter-btn" data-filter="power" data-value="1">1★</button>
+
+  <span class="filter-label" style="margin-left: 16px;">Статус:</span>
+  <button class="filter-btn active" data-filter="status" data-value="all">Все</button>
+  <button class="filter-btn" data-filter="status" data-value="⬜">⬜</button>
+  <button class="filter-btn" data-filter="status" data-value="🟡">🟡</button>
+  <button class="filter-btn" data-filter="status" data-value="✅">✅</button>
+  <button class="filter-btn" data-filter="status" data-value="🔴">🔴</button>
+
+  <input type="text" class="search-input" id="search" placeholder="Поиск по тексту…" style="margin-left: auto;">
+</div>
+
+<table id="beliefs-table">
+  <thead>
+    <tr>
+      <th data-sort="id">ID</th>
+      <th data-sort="type">Тип</th>
+      <th data-sort="text">Установка</th>
+      <th data-sort="power">Сила</th>
+      <th data-sort="status">Статус</th>
+      <th data-sort="newBelief">Новое убеждение</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div class="footer">
+  Дашборд статичный. Меняется через скилл: <code>/belief-rewire</code> · <code>/belief-rewire next</code> · <code>/belief-rewire check</code> · <code>/belief-rewire dashboard</code> для пересборки.
+</div>
+
+<script>
+const data = [
+  // Мешающие
+  {id:"М01", type:"meshaet", text:"Хочу всё и сразу", power:4, status:"⬜", newBelief:""},
+  {id:"М02", type:"meshaet", text:"Сто рублей не деньги", power:5, status:"⬜", newBelief:""},
+  {id:"М03", type:"meshaet", text:"Брать в долг трудно", power:5, status:"⬜", newBelief:""},
+  {id:"М04", type:"meshaet", text:"За все нужно платить", power:5, status:"⬜", newBelief:""},
+  {id:"М05", type:"meshaet", text:"Времени всегда не хватает", power:4, status:"⬜", newBelief:""},
+  {id:"М06", type:"meshaet", text:"Во мне сидит кто-то, кто тратит все мои деньги", power:3, status:"⬜", newBelief:""},
+  {id:"М07", type:"meshaet", text:"Деньги — понятие не духовное", power:5, status:"⬜", newBelief:""},
+  {id:"М08", type:"meshaet", text:"Иметь деньги — не иметь статуса", power:5, status:"⬜", newBelief:""},
+  {id:"М09", type:"meshaet", text:"Стыдно думать о деньгах", power:5, status:"⬜", newBelief:""},
+  {id:"М10", type:"meshaet", text:"Гнаться за деньгами бездуховно", power:5, status:"⬜", newBelief:""},
+  {id:"М11", type:"meshaet", text:"Чтобы жить достойно, нужно брать кредиты и влезать в долги", power:4, status:"⬜", newBelief:""},
+  {id:"М12", type:"meshaet", text:"С деньгами трудно иметь дело", power:5, status:"⬜", newBelief:""},
+  {id:"М13", type:"meshaet", text:"Деньги портят человека", power:4, status:"⬜", newBelief:""},
+  {id:"М14", type:"meshaet", text:"Деньги являются первопричиной всех несчастий", power:5, status:"⬜", newBelief:""},
+  {id:"М15", type:"meshaet", text:"Деньги — это грязь", power:5, status:"⬜", newBelief:""},
+  {id:"М16", type:"meshaet", text:"Чтобы накопить, нужно обходиться малым", power:5, status:"⬜", newBelief:""},
+  {id:"М17", type:"meshaet", text:"У богатых людей нет настоящих друзей", power:5, status:"⬜", newBelief:""},
+  {id:"М18", type:"meshaet", text:"Я бедный, но гордый", power:3, status:"⬜", newBelief:""},
+  {id:"М19", type:"meshaet", text:"Главное, чтобы на жизнь хватило, остальное не важно", power:5, status:"⬜", newBelief:""},
+  {id:"М20", type:"meshaet", text:"Богатые становятся богаче, бедные — беднее", power:5, status:"⬜", newBelief:""},
+  {id:"М21", type:"meshaet", text:"Чтобы быть богатым, нужно быть жестоким", power:5, status:"⬜", newBelief:""},
+  {id:"М22", type:"meshaet", text:"Чтобы быть богатым, нужно быть жадным", power:5, status:"⬜", newBelief:""},
+  {id:"М23", type:"meshaet", text:"Люди завидуют чужому богатству", power:5, status:"⬜", newBelief:""},
+  {id:"М24", type:"meshaet", text:"Халявы не бывает", power:5, status:"⬜", newBelief:""},
+  {id:"М25", type:"meshaet", text:"Деньги под ногами не лежат", power:5, status:"⬜", newBelief:""},
+  {id:"М26", type:"meshaet", text:"То, что легко приходит, легко уходит", power:5, status:"⬜", newBelief:""},
+  {id:"М27", type:"meshaet", text:"Лучше быть бедным, но счастливым", power:5, status:"⬜", newBelief:""},
+  {id:"М28", type:"meshaet", text:"Даром ничего не бывает", power:5, status:"⬜", newBelief:""},
+  {id:"М29", type:"meshaet", text:"Деньги — это опасность", power:5, status:"⬜", newBelief:""},
+  {id:"М30", type:"meshaet", text:"Всем людям нужно помогать", power:5, status:"⬜", newBelief:""},
+  {id:"М31", type:"meshaet", text:"Честным трудом деньги не заработать", power:5, status:"⬜", newBelief:""},
+  {id:"М32", type:"meshaet", text:"Считай, не считай — все равно денег не будет", power:5, status:"⬜", newBelief:""},
+  {id:"М33", type:"meshaet", text:"Деньги в жизни не главное", power:5, status:"⬜", newBelief:""},
+  {id:"М34", type:"meshaet", text:"Мне никогда не обрести богатства", power:4, status:"⬜", newBelief:""},
+  {id:"М35", type:"meshaet", text:"Лучше дёшево и сердито", power:3, status:"⬜", newBelief:""},
+  {id:"М36", type:"meshaet", text:"Нужно жить по средствам", power:4, status:"⬜", newBelief:""},
+  {id:"М37", type:"meshaet", text:"Деньги развращают", power:5, status:"⬜", newBelief:""},
+  {id:"М38", type:"meshaet", text:"Я не хочу напрягаться ради денег", power:5, status:"⬜", newBelief:""},
+  {id:"М39", type:"meshaet", text:"Не жили богато, нечего и начинать", power:3, status:"⬜", newBelief:""},
+  {id:"М40", type:"meshaet", text:"Большие деньги — большие проблемы", power:5, status:"⬜", newBelief:""},
+  // Помогающие
+  {id:"П01", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Я строю деньги как тренировочный процесс — через метрики, план и регулярность"},
+  {id:"П02", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Честная работа и ценность приводят к большим деньгам. Богатство — налог на добавленную ценность"},
+  {id:"П03", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Привлечение клиентов — система гипотез и экспериментов"},
+  {id:"П04", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Клиент платит за возможность результата, не за гарантию"},
+  {id:"П05", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Моя ценность как человека безусловна. Деньги — следствие ценности работы"},
+  {id:"П06", type:"pomogaet", text:"—", power:4, status:"🟡", newBelief:"Клиент платит за выявление опережающих метрик и управление действиями"},
+  {id:"П07", type:"pomogaet", text:"—", power:3, status:"🟡", newBelief:"Делая больше лёгкого и интересного, создаю больше ценности"},
+  {id:"П08", type:"pomogaet", text:"—", power:3, status:"🟡", newBelief:"Зарабатываю больше, направляя внимание на энергию/развитие/важное/людей"},
+  {id:"П09", type:"pomogaet", text:"—", power:2, status:"🟡", newBelief:"При любом доходе могу управлять деньгами: база + радость + остаток"},
+  {id:"П10", type:"pomogaet", text:"—", power:1, status:"🟡", newBelief:"Спокойно оплачиваю счета вовремя"},
+];
+
+const filters = { type: "all", power: "all", status: "all", search: "" };
+let sortKey = "power";
+let sortDir = -1;
+
+function stars(n) { return "★".repeat(n) + "☆".repeat(5 - n); }
+
+function render() {
+  let rows = data.filter(r => {
+    if (filters.type !== "all" && r.type !== filters.type) return false;
+    if (filters.power !== "all" && r.power !== Number(filters.power)) return false;
+    if (filters.status !== "all" && r.status !== filters.status) return false;
+    if (filters.search) {
+      const s = filters.search.toLowerCase();
+      if (!r.text.toLowerCase().includes(s) && !r.newBelief.toLowerCase().includes(s) && !r.id.toLowerCase().includes(s)) return false;
+    }
+    return true;
+  });
+
+  rows.sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if (av < bv) return -1 * sortDir;
+    if (av > bv) return 1 * sortDir;
+    return 0;
+  });
+
+  const tbody = document.querySelector("#beliefs-table tbody");
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="id-cell">${r.id}</td>
+      <td><span class="type-tag type-${r.type}">${r.type === "meshaet" ? "Мешает" : "Помогает"}</span></td>
+      <td>${r.text === "—" ? '<span class="new-belief empty">—</span>' : r.text}</td>
+      <td><span class="stars">${stars(r.power)}</span></td>
+      <td class="status-cell">${r.status}</td>
+      <td class="new-belief ${r.newBelief ? '' : 'empty'}">${r.newBelief || '—'}</td>
+    </tr>
+  `).join("");
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:24px;">Ничего не найдено</td></tr>';
+  }
+}
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const filterName = btn.dataset.filter;
+    document.querySelectorAll(`.filter-btn[data-filter="${filterName}"]`).forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    filters[filterName] = btn.dataset.value;
+    render();
+  });
+});
+
+document.getElementById("search").addEventListener("input", e => {
+  filters.search = e.target.value;
+  render();
+});
+
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) sortDir *= -1;
+    else { sortKey = key; sortDir = 1; }
+    render();
+  });
+});
+
+render();
+</script>
+
+</div><!-- /content -->
+
+<script>
+  // Парольный гейт. Защита от случайных глаз, не от хакера.
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+
+  // Не запоминаем по сессии — каждое открытие требует пароль.
+  // Если хочешь запоминать — раскомментируй:
+  // if (sessionStorage.getItem("unlocked") === "1") {
+  //   document.getElementById("gate").style.display = "none";
+  //   document.getElementById("content").classList.add("unlocked");
+  //   document.body.classList.remove("locked");
+  // }
+</script>
+
+</body>
+</html>
