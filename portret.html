@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Портрет — Тренерская</title>
+<meta name="description" content="Глубинный психологический профиль собственника. 30 минут вопросов — одна страница про тебя. 15 000 ₽. Один раз. На 3–5 лет вперёд.">
+<meta property="og:title" content="Портрет — Тренерская">
+<meta property="og:description" content="30 минут вопросов — одна страница про тебя. 15 000 ₽. Один раз.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.content {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ============ HEADER ============ */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+
+header.site .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+header.site .brand {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+}
+
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+header.site .nav:hover { color: var(--accent); }
+
+/* ============ HERO ============ */
+.hero {
+  padding: 96px 0 64px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  max-width: 580px;
+}
+
+.hero .price {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero .price span { white-space: nowrap; }
+.hero .price .num { color: var(--text); font-weight: 500; }
+
+.cta-block {
+  margin: 32px 0 48px;
+}
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.cta:hover { background: var(--accent-hover); }
+
+.cta:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.hero .quote {
+  border-left: 2px solid var(--accent);
+  padding: 8px 0 8px 20px;
+  max-width: 540px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.hero .quote-author {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-bottom: 48px;
+}
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+  .hero .price { font-size: 14px; gap: 14px; }
+  .hero .quote { font-size: 16px; }
+}
+
+/* ============ SECTIONS ============ */
+section {
+  padding: 80px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+@media (max-width: 640px) {
+  section { padding: 56px 0; }
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+@media (max-width: 640px) {
+  h2 { font-size: 26px; margin-bottom: 24px; }
+}
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* ============ AXES ============ */
+.axes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.axis {
+  border-top: 2px solid var(--accent);
+  padding-top: 24px;
+}
+
+.axis .axis-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.axis h3 {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.axis p {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 720px) {
+  .axes { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ============ LISTS ============ */
+ul.bullets {
+  list-style: none;
+  padding: 0;
+}
+
+ul.bullets li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+}
+
+ul.bullets li:first-child { border-top: 1px solid var(--line-soft); }
+
+ul.bullets li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ============ EXAMPLE QUOTE ============ */
+.example {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-top: 24px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.6;
+  position: relative;
+}
+
+.example::before {
+  content: 'Пример наблюдения';
+  position: absolute;
+  top: -10px;
+  left: 24px;
+  background: var(--bg);
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: normal;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .example { padding: 28px 20px; font-size: 16px; }
+}
+
+/* ============ TESTIMONIALS ============ */
+.testimonials {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.testimonial {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 28px;
+}
+
+.testimonial blockquote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+.testimonial cite {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-style: normal;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 720px) {
+  .testimonials { grid-template-columns: 1fr; }
+}
+
+/* ============ ABOUT ============ */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+
+.about ul {
+  list-style: none;
+  margin: 16px 0;
+}
+
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.about ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.about .funnel {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.about .funnel b { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .about { padding: 28px 20px; }
+}
+
+/* ============ FAQ ============ */
+.faq dt {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.faq dt:first-child { margin-top: 0; }
+
+.faq dd {
+  font-family: var(--font-serif);
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* ============ COMPETITORS ============ */
+.competitors {
+  font-family: var(--font-serif);
+}
+
+.competitors .row {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  align-items: baseline;
+}
+
+.competitors .row:first-child { border-top: 1px solid var(--line-soft); }
+
+.competitors .name {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.competitors .price-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .competitors .row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ============ FINAL CTA ============ */
+.final {
+  text-align: center;
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.final h2 {
+  margin: 0 auto 32px;
+  text-align: center;
+}
+
+.final .meta {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 32px;
+}
+
+@media (max-width: 640px) {
+  .final { padding: 56px 0; }
+}
+
+/* ============ FOOTER ============ */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+footer.site ul {
+  list-style: none;
+  margin-bottom: 24px;
+}
+
+footer.site li {
+  padding: 4px 0;
+}
+
+footer.site .copyright {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ============ ANIMATIONS ============ */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero {
+    animation: fadeIn 0.5s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ============ ACCESSIBILITY ============ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Получи свой Портрет.</h1>
+    <p class="lede">30 минут вопросов — одна страница про тебя.<br>Поймёшь, как ты обычно действуешь, где ломаешься и что тебя двигает.</p>
+
+    <div class="price">
+      <span><span class="num">15 000 ₽</span></span>
+      <span>один раз</span>
+      <span>на <span class="num">3–5</span> лет вперёд</span>
+    </div>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=portret" class="cta">Получить Портрет — 15 000 ₽</a>
+    </div>
+
+    <blockquote class="quote">«У меня появился инструмент. Это не рефлексия — это зонтик: дождь пошёл — открыл.»</blockquote>
+    <p class="quote-author">— собственник, 2 года работы</p>
+
+    <div class="methods">
+      <span>Big Five</span>
+      <span>Schwartz Values</span>
+      <span>Hogan Derail Research</span>
+      <span>WCAG 2.1 AA</span>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ОСИ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Что показывает</p>
+    <h2>Полчаса вопросов вместо года самоанализа.</h2>
+    <p>В спорте тренер сначала составляет карту спортсмена: что у него от природы, на чём строить программу. Это делается раз. Дальше — регулярные замеры на этой карте.</p>
+    <p>С тобой работает так же. Если не понимаешь, на что опираешься и где сыпешься — управляешь по интуиции. Когда она подведёт — узнаешь поздно.</p>
+
+    <div class="axes">
+      <div class="axis">
+        <p class="axis-num">01</p>
+        <h3>Почерк</h3>
+        <p>Как ты обычно работаешь.</p>
+      </div>
+      <div class="axis">
+        <p class="axis-num">02</p>
+        <h3>Срывы</h3>
+        <p>Где ломаешься под давлением.</p>
+      </div>
+      <div class="axis">
+        <p class="axis-num">03</p>
+        <h3>Топливо</h3>
+        <p>Что тебя двигает на самом деле.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ИЗМЕНИТСЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Что изменится</p>
+    <h2>После Портрета</h2>
+    <ul class="bullets">
+      <li>Прочитаешь первую строку — и скажешь: «это про меня».</li>
+      <li>Узнаешь свои точки срыва — и поймёшь, почему в декабре написал то письмо.</li>
+      <li>Бот «Вслух» начнёт ловить твои паттерны раньше, чем ты сам заметишь.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ЧТО ВНУТРИ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Что внутри Портрета</p>
+    <h2>Одна страница. 5–7 наблюдений. Простыми словами.</h2>
+    <div class="example">
+      Ты быстро теряешь интерес, как только проект становится рутиной. Это не лень — это твой почерк. Ты заточен под старт. Когда дело перешло к удержанию — делегируй. Иначе будешь срываться на команде.
+    </div>
+    <p style="margin-top: 24px; color: var(--text-secondary);">Не диагноз. Не ярлык. Живое наблюдение, на которое можно опереться.</p>
+  </div>
+</section>
+
+<!-- ОТЗЫВЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Отзывы</p>
+    <h2>Что говорят те, кто прошёл</h2>
+    <div class="testimonials">
+      <div class="testimonial">
+        <blockquote>«У меня появился инструмент. Это не рефлексия — это зонтик: дождь пошёл — открыл.»</blockquote>
+        <cite>— собственник, 2 года работы</cite>
+      </div>
+      <div class="testimonial">
+        <blockquote>«В спорте нормально с тренером. А в бизнесе как будто стыдно. Портрет снимает этот стыд — вот цифры, на них и работаем.»</blockquote>
+        <cite>— собственник, 6 месяцев работы</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- О ТРЕНЕРСКОЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">05 / Контекст</p>
+    <h2>Что за Тренерская</h2>
+    <div class="about">
+      <p>Практика Алексея Шаповалова. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — нагрузка, восстановление, прогрессия</li>
+        <li><b>Системное мышление</b> — петли обратной связи, точки воздействия (по Медоуз)</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research</li>
+      </ul>
+      <p class="funnel"><b>Линейка:</b> Вслух → <b>Портрет</b> → Диагностика → Страт-сессия → Замер → Подписка.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ПОЛУЧИШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">06 / Что ты получишь</p>
+    <h2>Портрет на одну страницу. Простыми словами.</h2>
+    <ul class="bullets">
+      <li><b>Бот, который тебя знает.</b> «Вслух» учитывает твои оси молча. Подскажет, когда ты срываешься как обычно.</li>
+      <li><b>Подготовка к встрече с тренером.</b> На первой встрече не объясняешь, кто ты. Сразу обсуждаешь, что делать.</li>
+      <li><b>Опора на годы вперёд.</b> Каждая дальнейшая работа — диагностика, страт-сессия, квартальный Замер — опирается на твой Портрет.</li>
+      <li><b>Конкретный язык про себя.</b> Не «я устал», а «сработал мой риск». Не «должен», а «хочу — и понимаю почему».</li>
+    </ul>
+  </div>
+</section>
+
+<!-- УЗНАЁШЬ СЕБЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">07 / Триггеры</p>
+    <h2>Узнаёшь себя?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Хочешь вернуть курс? Или найти новый?</p>
+    <ul class="bullets">
+      <li>«Последние месяцы что-то не так — но не понимаю что.»</li>
+      <li>«Срываюсь без причины — потом жалею.»</li>
+      <li>«Команда смотрит — а я не знаю, что сказать.»</li>
+      <li>«Голова кружится, сам себе не виден.»</li>
+      <li>«Кем я теперь — не понимаю.»</li>
+      <li>«Без меня старый бизнес буксует — а я уже в новом.»</li>
+      <li>«Обладаю, но не радует.»</li>
+      <li>«Уехал, а голова осталась там.»</li>
+      <li>«Распыляюсь между бизнесами — никому не хватает меня.»</li>
+      <li>«Готовлю продажу — и не знаю, кем буду после.»</li>
+    </ul>
+  </div>
+</section>
+
+<!-- КАК ПОМОЖЕТ -->
+<section>
+  <div class="content">
+    <p class="section-num">08 / Как поможет</p>
+    <h2>Как Портрет тебе поможет</h2>
+    <ul class="bullets">
+      <li><b>30 минут вопросов</b> — и у тебя свой портрет. Не год самоанализа.</li>
+      <li><b>Почерк</b> — понимаешь, в каких ролях ты сильный. Решаешь «вернуться, развивать или отпустить» — по фактам, не по тревоге.</li>
+      <li><b>Срывы</b> — знаешь свои больные места. Не пишешь гневных писем — узнаёшь свой импульс заранее.</li>
+      <li><b>Топливо</b> — видишь, что двигает тебя на самом деле. Не «должен», а «хочу — и понимаю почему».</li>
+    </ul>
+  </div>
+</section>
+
+<!-- К ЧЕМУ ПРИДЁШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">09 / Точка Б</p>
+    <h2>К чему ты придёшь</h2>
+    <ul class="bullets">
+      <li>Увидишь, что ты — не «такой период». Ты — конкретный почерк.</li>
+      <li>Назовёшь свои срывы по имени. Не «я устал», а «сработал мой риск».</li>
+      <li>Перестанешь объяснять себя по чужим меркам.</li>
+      <li>Останешься на собственном курсе.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОМНЕНИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">10 / Сомнения</p>
+    <h2>Сомнения</h2>
+    <dl class="faq">
+      <dt>«Я и сам разберусь.»</dt>
+      <dd>Год самоанализа = 30 минут теста и страница. Сэкономишь 11 месяцев.</dd>
+
+      <dt>«Тесты — это ерунда.»</dt>
+      <dd>Портрет построен на тех же шкалах, по которым десятилетиями работают западные банки и консалтинг. Только язык простой — не для отдела кадров, а для тебя.</dd>
+
+      <dt>«А если не узнаю себя в результате?»</dt>
+      <dd>На пилоте узнают 8 из 10 [n=10]. Если ты в двух не узнал — поговорим лично, разберёмся.</dd>
+
+      <dt>«15 тысяч — деньги.»</dt>
+      <dd>В 5 раз дешевле похожей оценки в крупной компании. В 30 раз дешевле часа у дорогого консультанта. И это один раз, не каждый месяц.</dd>
+
+      <dt>«Один раз — и всё?»</dt>
+      <dd>Да. Портрет описывает твои постоянные характеристики — после 30 они меняются мало. Регулярная сверка «как ты сейчас» — это уже квартальный Замер. Отдельный продукт на основе твоего Портрета.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- КОНКУРЕНТЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">11 / Сравнение</p>
+    <h2>Почему не к другим</h2>
+    <div class="competitors">
+      <div class="row">
+        <div>
+          <span class="name">Похожие тесты в крупных компаниях</span>
+          <span class="price-tag">30–80 000 ₽</span>
+        </div>
+        <p>Сложный язык, отчёт в 30 страниц, бот ничего не знает.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Онлайн-тесты типов личности</span>
+          <span class="price-tag">бесплатно</span>
+        </div>
+        <p>Делят людей на 4 типа. Серьёзной науки нет.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Психолог</span>
+          <span class="price-tag">10–30 000 ₽ / встреча</span>
+        </div>
+        <p>Лечит душу, не управляет бизнесом. Портрет не лечит — он показывает, с чем работать.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Бизнес-клубы</span>
+          <span class="price-tag">500–600 000 ₽ / год</span>
+        </div>
+        <p>Сравнение с другими, а не с собой.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Сам себе психолог: дневник, размышления</span>
+          <span class="price-tag">бесплатно</span>
+        </div>
+        <p>В голове кружится. Портрет — 30 минут, и одна страница.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="content">
+    <h2>Получи свой Портрет.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot?start=portret" class="cta">Получить Портрет — 15 000 ₽</a>
+    <p class="meta">Полчаса вопросов · Приходит за 1–3 дня · Дальше бот «Вслух» работает с тобой иначе</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Big Five / FFM — John, O. P., &amp; Srivastava, S. (1999). The Big Five trait taxonomy.</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+      <li>Hogan Derail Research — Hogan, R., &amp; Hogan, J. (2001). Assessing leadership.</li>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
