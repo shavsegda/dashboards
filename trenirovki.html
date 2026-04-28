@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Тренировки — Тренерская</title>
+<meta name="description" content="Тренировки. Час с тренером раз в неделю. Чтобы не остановиться. 200 000 ₽/мес. Минимум 3 месяца.">
+<meta property="og:title" content="Тренировки — Тренерская">
+<meta property="og:description" content="Час с тренером раз в неделю. Чтобы не остановиться. 200 000 ₽/мес.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 64px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  max-width: 580px;
+}
+.hero .price {
+  font-family: var(--font-mono);
+  font-size: 15px; letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.hero .price span { white-space: nowrap; }
+.hero .price .num { color: var(--text); font-weight: 500; }
+
+.cta-block { margin: 32px 0 48px; }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta:hover { background: var(--accent-hover); }
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.cta-note {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  margin-top: 12px;
+  letter-spacing: 0.02em;
+}
+.cta-note a { color: var(--accent); }
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+  .hero .price { font-size: 14px; gap: 14px; }
+}
+
+/* SECTIONS */
+section { padding: 80px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 32px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 26px; margin-bottom: 24px; } }
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* LISTS */
+ul.bullets { list-style: none; padding: 0; }
+ul.bullets li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+}
+ul.bullets li:first-child { border-top: 1px solid var(--line-soft); }
+ul.bullets li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+
+/* STEPS (numbered) */
+ol.steps { list-style: none; padding: 0; counter-reset: steps; }
+ol.steps li {
+  position: relative;
+  padding: 16px 0 16px 56px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+  counter-increment: steps;
+}
+ol.steps li:first-child { border-top: 1px solid var(--line-soft); }
+ol.steps li::before {
+  content: counter(steps, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+ol.steps li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+ol.steps li .timing {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* INSIDE BOX */
+.inside {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-top: 24px;
+}
+.inside p { font-family: var(--font-serif); margin-bottom: 16px; }
+.inside .key {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.inside .key:not(:first-child) { margin-top: 24px; }
+@media (max-width: 640px) { .inside { padding: 28px 20px; } }
+
+/* TESTIMONIALS — 3 cards */
+.testimonials-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+.testimonial {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 24px;
+}
+.testimonial blockquote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px; line-height: 1.5;
+  margin-bottom: 16px;
+}
+.testimonial cite {
+  font-family: var(--font-mono);
+  font-size: 12px; font-style: normal;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+@media (max-width: 900px) {
+  .testimonials-3 { grid-template-columns: 1fr; }
+}
+
+/* ABOUT */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+.about ul { list-style: none; margin: 16px 0; }
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0; padding-left: 20px;
+  position: relative;
+}
+.about ul li::before {
+  content: '—';
+  position: absolute; left: 0;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.about .funnel {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.about .funnel b { color: var(--accent); }
+@media (max-width: 640px) { .about { padding: 28px 20px; } }
+
+/* FAQ */
+.faq dt {
+  font-family: var(--font-sans);
+  font-size: 18px; font-weight: 600;
+  margin-top: 28px; margin-bottom: 8px;
+}
+.faq dt:first-child { margin-top: 0; }
+.faq dd {
+  font-family: var(--font-serif);
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* COMPETITORS */
+.competitors { font-family: var(--font-serif); }
+.competitors .row {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px; align-items: baseline;
+}
+.competitors .row:first-child { border-top: 1px solid var(--line-soft); }
+.competitors .name {
+  font-family: var(--font-sans); font-weight: 600;
+}
+.competitors .price-tag {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  display: block; margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .competitors .row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* FINAL CTA */
+.final {
+  text-align: center;
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+.final h2 { margin: 0 auto 32px; text-align: center; }
+.final .meta {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .final { padding: 56px 0; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 16px;
+}
+footer.site ul { list-style: none; margin-bottom: 24px; }
+footer.site li { padding: 4px 0; }
+footer.site .copyright {
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Тренировки.</h1>
+    <p class="lede">Час с тренером раз в неделю. Чтобы не остановиться. Один на один, онлайн. Доступ между встречами в острый момент.</p>
+
+    <div class="price">
+      <span><span class="num">200 000 ₽</span> / мес</span>
+      <span>минимум <span class="num">3</span> месяца</span>
+      <span>один на один</span>
+    </div>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=trenirovki" class="cta">Договориться о Тренировках — 200 000 ₽/мес</a>
+      <p class="cta-note">Начать с <a href="https://shavsegda.github.io/dashboards/razbor.html">Разбора</a> (50 000 ₽, 1.5 часа)</p>
+    </div>
+
+    <div class="methods">
+      <span>Раз в неделю</span>
+      <span>1,5 часа</span>
+      <span>Доступ между встречами</span>
+    </div>
+  </div>
+</section>
+
+<!-- ЗАЛ К ТРЕНЕРУ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Что это</p>
+    <h2>Зал к тренеру раз в неделю — но не для тела.</h2>
+    <p>В спорте ты приходишь к тренеру не потому, что сам не можешь отжаться. Ты приходишь, чтобы не остановиться через месяц. Не травмироваться на максималках. И за год получить результат, который сам делал бы пять лет.</p>
+    <p>Те же 90 минут в неделю. Но с разницей — ты в форме или ты снова на диване.</p>
+    <p>Тренировки — то же самое для собственника в переходе. Один час один на один с тем, кто видит тебя со стороны и держит на курсе. Между встречами — короткий доступ, когда у тебя острый момент.</p>
+
+    <div style="margin-top: 32px;">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=trenirovki" class="cta">Договориться о Тренировках — 200 000 ₽/мес</a>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО МЕНЯЕТСЯ В ПЕРВЫЙ МЕСЯЦ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Что меняется</p>
+    <h2>Что меняется в первый месяц</h2>
+    <ul class="bullets">
+      <li>Перестаёшь делать глупости в момент эмоции — есть один человек, который снимает заряд.</li>
+      <li>Возвращаешься к курсу за неделю, не за месяц. Раз в 7 дней — собранным.</li>
+      <li>2-3 действия из Сборов доводятся до результата.</li>
+      <li>Меньше импульсивных решений — обрабатываешь через короткий контакт, не через срыв.</li>
+      <li>Стабильнее эмоциональный фон. Перестаёшь ловить себя на «всё плохо» по вечерам.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ЧТО ВНУТРИ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Что внутри</p>
+    <h2>Раз в неделю — 1,5 часа. Между встречами — доступ.</h2>
+
+    <h3 style="margin-top: 24px; margin-bottom: 16px;">Структура встречи</h3>
+    <ol class="steps">
+      <li>
+        <b>Вход</b>
+        <span class="timing">10 минут</span>
+        Где ты эмоционально, события недели.
+      </li>
+      <li>
+        <b>Сверка с треком</b>
+        <span class="timing">30 минут</span>
+        Что сдвинулось, где застрял, 3 собственные метрики.
+      </li>
+      <li>
+        <b>Главная тема недели</b>
+        <span class="timing">30 минут</span>
+        Один вопрос, который ты принёс. Глубокая работа.
+      </li>
+      <li>
+        <b>Решения</b>
+        <span class="timing">15 минут</span>
+        2-3 конкретных действия: что, когда, как узнаешь, что сделал.
+      </li>
+      <li>
+        <b>Выход</b>
+        <span class="timing">5 минут</span>
+        Короткая сверка состояния.
+      </li>
+    </ol>
+
+    <div class="inside">
+      <p class="key">МЕЖДУ ВСТРЕЧАМИ</p>
+      <p>Telegram или WhatsApp. 1-3 ответа за 3 часа в рабочее время. Когда нужно — 10-минутный звонок.</p>
+      <p>Применяется в трёх случаях: <b>острый момент</b> («сейчас импульс уволить всех, остановите меня»), <b>решение перед срочной встречей</b> («через 2 часа созвон с покупателем»), <b>микро-сверка</b> («сделал то, что договорились»).</p>
+      <p>Это не замена сессии. Это горячая линия, чтобы не делать глупостей.</p>
+
+      <p class="key">БЕРЕЖНОСТЬ</p>
+      <p>Без-контактное время — выходные с вечера пятницы до утра понедельника. Это обязательство о бережности к тебе и ко мне.</p>
+
+      <p class="key">САММАРИ И ДАШБОРД</p>
+      <p>Саммари каждой встречи в Telegram в течение 24 часов. Личная веб-страница — твой дашборд: трекер 3 метрик в динамике, статусы решений, карта пути.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ОТЗЫВЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Отзывы</p>
+    <h2>Что говорят те, кто на Тренировках</h2>
+    <div class="testimonials-3">
+      <div class="testimonial">
+        <blockquote>«Возвращаешь меня к себе. Каждый раз с эффектом разности потенциалов.»</blockquote>
+        <cite>— собственник, 2 года в работе</cite>
+      </div>
+      <div class="testimonial">
+        <blockquote>«Не даёт размотаться. Желе меня собирает.»</blockquote>
+        <cite>— собственник, 2 года в работе</cite>
+      </div>
+      <div class="testimonial">
+        <blockquote>«Я хочу чувствовать себя наполненным этой энергией.»</blockquote>
+        <cite>— собственник, 2 года в работе</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- О ТРЕНЕРСКОЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">05 / Контекст</p>
+    <h2>Что за Тренерская</h2>
+    <div class="about">
+      <p>Практика Алексея Шаповалова. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — Bompa &amp; Buzzichelli. Нагрузка, восстановление, прогрессия.</li>
+        <li><b>Системное мышление</b> — Meadows. Петли обратной связи, точки воздействия.</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research.</li>
+      </ul>
+      <p class="funnel"><b>Линейка:</b> Вслух → Портрет → Разбор → Сборы → <b>Тренировки</b> → Замер квартальный.</p>
+      <p style="margin-top: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary);">Сейчас на Тренировках двое — Ярослав и Сергей. Свободная ёмкость на 5-7 одновременно. Беру не больше 7, чтобы не терять глубину.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ПОЛУЧИШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">06 / Что ты получишь</p>
+    <h2>Возврат к курсу. Доступ в острый момент. Видимый прогресс.</h2>
+    <ul class="bullets">
+      <li><b>Возврат к курсу раз в неделю.</b> Приходишь размазанным, уходишь собранным.</li>
+      <li><b>Точные формулировки</b> про себя и ситуацию, которых сам искал бы месяц.</li>
+      <li><b>2-3 конкретных действия</b> на следующую неделю — что, когда, как узнаешь.</li>
+      <li><b>Доступ в острый момент</b> — не в одиночку с импульсом.</li>
+      <li><b>Трекер 3 собственных метрик</b> в динамике по неделям. Читается как показания прибора.</li>
+      <li><b>Саммари каждой встречи</b> — можно вернуться к решениям.</li>
+      <li><b>Стабильнее эмоциональный фон</b> через 1-2 месяца.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- УЗНАЁШЬ СЕБЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">07 / Триггеры</p>
+    <h2>Узнаёшь себя?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Хочешь удержать курс? Или обработать импульс, чтобы не наломать дров?</p>
+    <ul class="bullets">
+      <li>«За неделю я перестаю себя слышать.»</li>
+      <li>«Без меня бизнес буксует, ключевой менеджер скрывает провалы.»</li>
+      <li>«Срываюсь без причины — потом жалею.»</li>
+      <li>«Внешне всё достигнуто, внутри пусто. Нужен новый фокус.»</li>
+      <li>«Уехал, бизнес в РФ, размазан, не понимаю как управлять дистанционно.»</li>
+      <li>«Распыляюсь между бизнесами, выгораю, тревожусь за каждый.»</li>
+      <li>«Готовлю продажу — и не знаю, кем буду после.»</li>
+      <li>«Один раз в месяц встретиться — мало. Сорваться успею раньше.»</li>
+      <li>«В острые моменты звоню жене или пью. Хочу другой способ.»</li>
+    </ul>
+  </div>
+</section>
+
+<!-- КАК ПОМОГУТ -->
+<section>
+  <div class="content">
+    <p class="section-num">08 / Как поможет</p>
+    <h2>Как Тренировки тебе помогут</h2>
+    <ul class="bullets">
+      <li><b>Раз в неделю — собранный.</b> Между встречами теряешь фокус максимум на день, не на месяц.</li>
+      <li><b>Доступ в острый момент</b> — не пишешь гневное письмо в 23:47. Пишешь Алексею, получаешь зеркало за 3 часа, утром не жалеешь.</li>
+      <li><b>3 собственные метрики</b> — не социальные ожидания, а твои. Видны как показания прибора.</li>
+      <li><b>Структура встречи</b> — не разговор о жизни. Каждые 1,5 часа заканчиваются 2-3 действиями на неделю.</li>
+      <li><b>Накопление за квартал</b> — 13 встреч + 30-50 эпизодов короткого контакта. Видишь путь, не неделю.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- К ЧЕМУ ПРИДЁШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">09 / Точка Б</p>
+    <h2>К чему ты придёшь через 3 месяца</h2>
+    <ul class="bullets">
+      <li>«У меня есть курс, и я его держу.»</li>
+      <li>«Я не теряю фокус за неделю — максимум за день.»</li>
+      <li>«В острые моменты я пишу Алексею, а не действую импульсивно.»</li>
+      <li>«Я меряю себя по своим критериям, не по чужим.»</li>
+      <li>«Это я решаю, а не мои тревоги.»</li>
+      <li>«Я не тот, кем был три месяца назад.»</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОМНЕНИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">10 / Сомнения</p>
+    <h2>Сомнения</h2>
+    <dl class="faq">
+      <dt>«200 тысяч в месяц — большие деньги.»</dt>
+      <dd>В 1,5-3 раза дешевле западного executive coaching. В 4-5 раз дешевле Chief of Staff в штате. И это твоя единственная регулярная инвестиция в себя — не в команду, не в IT, не в маркетинг.</dd>
+
+      <dt>«Час в неделю — мало.»</dt>
+      <dd>Час встречи + 2-5 коротких контактов между = 7-15 точек контакта в неделю. Это не часовой коучинг — это постоянное присутствие в нужных моментах.</dd>
+
+      <dt>«Я уже работал с коучами.»</dt>
+      <dd>Не было между-сессионного доступа. Сорвался во вторник — терпишь до пятницы. Тренировки решают это. Плюс это бизнес + человек одновременно — никакой коуч не держит оба контекста.</dd>
+
+      <dt>«А если ритм не пойдёт?»</dt>
+      <dd>3 месяца — минимум, чтобы оценить. Дальше помесячно. Можно прекратить.</dd>
+
+      <dt>«Я зависну в зависимости от Алексея.»</dt>
+      <dd>Цель Тренировок — внутренний наблюдатель у тебя. Через 6-12 месяцев ты можешь уйти с наработанным. Алексей не держит — он строит твою устойчивость.</dd>
+
+      <dt>«Это коучинг?»</dt>
+      <dd>Нет. Коуч задаёт вопросы и ничего не знает о бизнесе. Алексей держит контекст бизнеса + контекст тебя. И между встречами доступен — а коуч нет.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- КОНКУРЕНТЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">11 / Сравнение</p>
+    <h2>Почему не к другим</h2>
+    <div class="competitors">
+      <div class="row">
+        <div>
+          <span class="name">Executive coaching ICF / Erickson</span>
+          <span class="price-tag">50–300 тысяч ₽ / мес</span>
+        </div>
+        <p>Шаблонный формат, нет бизнес-контекста, нет доступа между встречами. Тренировки — бизнес + человек + горячая линия.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Премиум западный коуч</span>
+          <span class="price-tag">300 тысяч – 1 миллион ₽ / мес</span>
+        </div>
+        <p>На английском, не понимает РФ контекст, формат с HR-заказчиком. Тренировки — русский, про собственника.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Мастермайнд-клубы (Атланты, Эквиум)</span>
+          <span class="price-tag">500–600 тысяч ₽ / год</span>
+        </div>
+        <p>Группа, поверхностно, раз в месяц. Тренировки — глубина 1-1 + еженедельный ритм + горячая линия.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">YPO / EO форумы</span>
+          <span class="price-tag">1–3 миллиона ₽ / год</span>
+        </div>
+        <p>На английском, групповой регламент. Тренировки — русский, без формальности.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Психотерапия</span>
+          <span class="price-tag">40–100 тысяч ₽ / мес</span>
+        </div>
+        <p>Глубокая внутренняя работа, но не про бизнес. Тренировки — внутреннее + бизнес-реальность вместе.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Chief of Staff в штате</span>
+          <span class="price-tag">500 тысяч – 1 миллион ₽ / мес</span>
+        </div>
+        <p>Операционная разгрузка, но не партнёр и не работает с тобой как с собственником.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">AI-коучи (BetterUp, ChatGPT)</span>
+          <span class="price-tag">2–10 тысяч ₽ / мес</span>
+        </div>
+        <p>24/7, но без контекста и удержания. Тренировки — живой человек + AI как дополнение, не замена.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="content">
+    <h2>Тренировки. Раз в неделю. Чтобы не остановиться.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot?start=trenirovki" class="cta">Договориться о Тренировках — 200 000 ₽/мес</a>
+    <p class="meta">Начать с <a href="https://shavsegda.github.io/dashboards/razbor.html" style="color: var(--accent);">Разбора</a> · 50 000 ₽ · 1.5 часа</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Спортивная периодизация — Bompa, T. &amp; Buzzichelli, C. (2018). Periodization.</li>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+      <li>Five Factor Model — John, O. P., &amp; Srivastava, S. (1999).</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+      <li>Hogan Derail Research — Hogan, R., &amp; Hogan, J. (2001).</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
