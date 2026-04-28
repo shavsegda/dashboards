@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Вслух — Тренерская</title>
+<meta name="description" content="Назови вслух, что болит. Увидь себя и своё дело со стороны. Бесплатный разговор в Telegram, без записи, 24/7.">
+<meta property="og:title" content="Вслух — Тренерская">
+<meta property="og:description" content="Назови вслух, что болит. Бесплатный разговор в Telegram.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 64px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  max-width: 580px;
+}
+.hero .price {
+  font-family: var(--font-mono);
+  font-size: 15px; letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.hero .price span { white-space: nowrap; }
+.hero .price .num { color: var(--text); font-weight: 500; }
+
+.cta-block { margin: 32px 0 48px; }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta:hover { background: var(--accent-hover); }
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+  .hero .price { font-size: 14px; gap: 14px; }
+}
+
+/* SECTIONS */
+section { padding: 80px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 32px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 26px; margin-bottom: 24px; } }
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* ROLES (5 cards) */
+.roles {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+}
+.role {
+  border-top: 2px solid var(--accent);
+  padding-top: 20px;
+}
+.role .role-num {
+  font-family: var(--font-mono);
+  font-size: 12px; color: var(--accent);
+  letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.role h3 {
+  font-family: var(--font-sans);
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role p {
+  font-size: 14px; line-height: 1.5;
+  color: var(--text-secondary);
+}
+@media (max-width: 900px) {
+  .roles { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .role h3 { font-size: 18px; }
+  .role p { font-size: 15px; }
+}
+@media (max-width: 520px) {
+  .roles { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* LISTS */
+ul.bullets { list-style: none; padding: 0; }
+ul.bullets li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+}
+ul.bullets li:first-child { border-top: 1px solid var(--line-soft); }
+ul.bullets li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+
+/* STEPS (numbered) */
+ol.steps { list-style: none; padding: 0; counter-reset: steps; }
+ol.steps li {
+  position: relative;
+  padding: 16px 0 16px 56px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+  counter-increment: steps;
+}
+ol.steps li:first-child { border-top: 1px solid var(--line-soft); }
+ol.steps li::before {
+  content: counter(steps, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* ABOUT */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+.about ul { list-style: none; margin: 16px 0; }
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0; padding-left: 20px;
+  position: relative;
+}
+.about ul li::before {
+  content: '—';
+  position: absolute; left: 0;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.about .funnel {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.about .funnel b { color: var(--accent); }
+@media (max-width: 640px) { .about { padding: 28px 20px; } }
+
+/* FAQ */
+.faq dt {
+  font-family: var(--font-sans);
+  font-size: 18px; font-weight: 600;
+  margin-top: 28px; margin-bottom: 8px;
+}
+.faq dt:first-child { margin-top: 0; }
+.faq dd {
+  font-family: var(--font-serif);
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* COMPETITORS */
+.competitors { font-family: var(--font-serif); }
+.competitors .row {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px; align-items: baseline;
+}
+.competitors .row:first-child { border-top: 1px solid var(--line-soft); }
+.competitors .name {
+  font-family: var(--font-sans); font-weight: 600;
+}
+.competitors .price-tag {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  display: block; margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .competitors .row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* FINAL CTA */
+.final {
+  text-align: center;
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+.final h2 { margin: 0 auto 32px; text-align: center; }
+.final .meta {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .final { padding: 56px 0; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 16px;
+}
+footer.site ul { list-style: none; margin-bottom: 24px; }
+footer.site li { padding: 4px 0; }
+footer.site .copyright {
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ACCESSIBILITY */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Назови вслух, что болит.</h1>
+    <p class="lede">Увидь себя и своё дело со стороны. Бесплатный разговор в Telegram. Без записи. 24/7.</p>
+
+    <div class="price">
+      <span>Бесплатно</span>
+      <span><span class="num">15</span> минут</span>
+      <span>Без регистрации</span>
+    </div>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot" class="cta">Начать разговор</a>
+    </div>
+
+    <div class="methods">
+      <span>5 режимов</span>
+      <span>Методика Алексея</span>
+      <span>Системное мышление</span>
+      <span>WCAG 2.1 AA</span>
+    </div>
+  </div>
+</section>
+
+<!-- РАЗОБРАТЬСЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Что это</p>
+    <h2>Разобраться в себе как в руководителе. За один разговор.</h2>
+    <p>Без терапии, без клуба, без публичности. Говоришь — помощник помогает увидеть систему.</p>
+
+    <ul class="bullets">
+      <li>Назови вслух, что болит.</li>
+      <li>Отдели «я» от «дела», «людей» и «обстоятельств».</li>
+      <li>Получи резюме — отправь его себе, жене или партнёру.</li>
+    </ul>
+
+    <div style="margin-top: 32px;">
+      <a href="https://t.me/vslukh_shapovalov_bot" class="cta">Начать разговор</a>
+    </div>
+  </div>
+</section>
+
+<!-- 5 РЕЖИМОВ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Как устроен</p>
+    <h2>5 режимов, которые включает помощник</h2>
+    <p>Тренер — это не только коуч. Тренеру нужны разные режимы под разный запрос. Помощник переключает их сам.</p>
+
+    <div class="roles">
+      <div class="role">
+        <p class="role-num">01</p>
+        <h3>Психолог</h3>
+        <p>Когда больно, тревога, «не понимаю себя».</p>
+      </div>
+      <div class="role">
+        <p class="role-num">02</p>
+        <h3>Коуч</h3>
+        <p>Когда не знаешь, что делать. Открытыми вопросами доводит до твоего ответа.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">03</p>
+        <h3>Ментор</h3>
+        <p>Когда хочешь услышать, как у других. Делится опытом, не учит.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">04</p>
+        <h3>Наставник</h3>
+        <p>Когда нужно «как правильно». Передаёт конкретный приём.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">05</p>
+        <h3>Трекер</h3>
+        <p>Когда надо довести до конца. Регулярные касания, отчёт.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 32px; color: var(--text-secondary);">Это и есть «Тренерская» — практика, которая не ограничена одной ролью.</p>
+  </div>
+</section>
+
+<!-- ЧТО ПОЛУЧИШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Что ты получишь</p>
+    <h2>Структуру вместо хаоса. Имя тому, что болит.</h2>
+    <ul class="bullets">
+      <li><b>Структуру вместо хаоса.</b> Помощник возвращает разговор в систему, когда ты её теряешь.</li>
+      <li><b>Имя тому, что болит.</b> Не «всё плохо», а конкретная формулировка проблемы.</li>
+      <li><b>Резюме разговора прямо в чат.</b> Можно переслать жене, партнёру или самому себе.</li>
+      <li><b>Возврат, когда снова надо.</b> Сегодня вечером, через неделю, через месяц.</li>
+      <li><b>Живой разговор с Алексеем — если захочешь глубже.</b></li>
+    </ul>
+  </div>
+</section>
+
+<!-- УЗНАЁШЬ СЕБЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Триггеры</p>
+    <h2>Узнаёшь себя?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Хочешь вернуть курс? Или найти новый?</p>
+    <ul class="bullets">
+      <li>«Без меня старый бизнес буксует».</li>
+      <li>«Я управляю, но не чувствую, что управляю».</li>
+      <li>«Не могу понять, чего хочу».</li>
+      <li>«Второй месяц не могу собраться с духом».</li>
+      <li>«Уехал, а голова осталась там».</li>
+      <li>«Распыляюсь между бизнесами — никому не хватает меня».</li>
+      <li>«Получил предложение о продаже — и не знаю, кем буду после».</li>
+      <li>Команда фильтрует тебе реальность.</li>
+      <li>В одиночку голова кружится.</li>
+      <li>Терапевт не про бизнес. Клуб не про тебя. Жене не хочется тревожить.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- КАК ВСЁ ПРОЙДЁТ -->
+<section>
+  <div class="content">
+    <p class="section-num">05 / Путь</p>
+    <h2>Как всё пройдёт</h2>
+    <ol class="steps">
+      <li>Откроешь бота. Без регистрации.</li>
+      <li>Ответишь на 2–3 коротких вопроса.</li>
+      <li>Пройдёшь разговор по методике Алексея — увидишь свою ситуацию как систему.</li>
+      <li>Получишь резюме прямо в чат.</li>
+      <li>Захочешь глубже — оффер на Портрет (15 000 ₽).</li>
+    </ol>
+  </div>
+</section>
+
+<!-- О ТРЕНЕРСКОЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">06 / Контекст</p>
+    <h2>Что за Тренерская</h2>
+    <div class="about">
+      <p>Практика Алексея Шаповалова. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — нагрузка, восстановление, прогрессия</li>
+        <li><b>Системное мышление</b> — петли обратной связи, точки воздействия (по Медоуз)</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research</li>
+      </ul>
+      <p class="funnel"><b>Линейка:</b> <b>Вслух</b> → Портрет → Диагностика → Страт-сессия → Замер → Подписка.</p>
+    </div>
+  </div>
+</section>
+
+<!-- К ЧЕМУ ПРИДЁШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">07 / Точка Б</p>
+    <h2>К чему придёшь</h2>
+    <ul class="bullets">
+      <li>Увидишь, что ты не один.</li>
+      <li>Поймёшь, где «я», где «дело», где «семья».</li>
+      <li>Почувствуешь курс.</li>
+      <li>Перестанешь платить тревогой за вопрос «с кем это обсудить».</li>
+      <li>Если захочешь точнее — сделаешь Портрет, и помощник начнёт работать с тобой иначе.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОМНЕНИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">08 / Сомнения</p>
+    <h2>Сомнения</h2>
+    <dl class="faq">
+      <dt>«Это же AI».</dt>
+      <dd>Не общий GPT. Внутри — методика Алексея из живой практики. Помощник переключает 5 режимов под твой запрос.</dd>
+
+      <dt>«А конфиденциальность?»</dt>
+      <dd>Свой контур в Telegram. Имена и цифры — только если ты сам назовёшь. Логи доступны только Алексею.</dd>
+
+      <dt>«Моему уровню этого мало».</dt>
+      <dd>Это первый шаг. Для глубины — Портрет (15 000 ₽), потом диагностика с Алексеем.</dd>
+
+      <dt>«Где подвох, если бесплатно?»</dt>
+      <dd>Подвоха нет. Алексей отдаёт первый слой. Платное — для тех, кто сам захочет.</dd>
+
+      <dt>«Не готов изливать душу».</dt>
+      <dd>И не надо. Вопросы безопасны. Можно говорить коротко.</dd>
+
+      <dt>«Один разговор и всё?»</dt>
+      <dd>Нет. Возвращаешься столько раз, сколько надо. Помощник доступен 24/7.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- КОНКУРЕНТЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">09 / Сравнение</p>
+    <h2>Почему не к другим</h2>
+    <div class="competitors">
+      <div class="row">
+        <div>
+          <span class="name">ChatGPT</span>
+          <span class="price-tag">20$ / мес</span>
+        </div>
+        <p>Общий, без методики и контекста собственника. Во «Вслухе» — методика Алексея.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Психотерапевт</span>
+          <span class="price-tag">30–80 тысяч / мес</span>
+        </div>
+        <p>Не про работу, формальная запись. «Вслух» — про дело и человека сразу, 24/7.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Бизнес-клубы</span>
+          <span class="price-tag">300–600 тысяч / год</span>
+        </div>
+        <p>Группой, статус мешает открыться. «Вслух» — один на один и анонимно.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Executive coaching</span>
+          <span class="price-tag">100–300 тысяч / мес</span>
+        </div>
+        <p>Дорого, формат «по часам». «Вслух» — бесплатно, с резюме.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Книги и подкасты</span>
+          <span class="price-tag">бесплатно</span>
+        </div>
+        <p>В одну сторону. «Вслух» — про твою ситуацию.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="content">
+    <h2>Назови вслух, что болит.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="cta">Начать разговор</a>
+    <p class="meta">15 минут · Без регистрации · Возвращайся, когда надо</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+      <li>Спортивная периодизация — Bompa, T. &amp; Buzzichelli, C. (2018). Periodization.</li>
+      <li>Big Five / FFM — John, O. P., &amp; Srivastava, S. (1999).</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
