@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Замер — Тренерская</title>
+<meta name="description" content="Замер. Раз в квартал — сверка с дашбордом и перекалибровка курса. 2-3 онлайн встречи за 5-7 дней. 250 000 ₽.">
+<meta property="og:title" content="Замер — Тренерская">
+<meta property="og:description" content="Раз в квартал — сверка с дашбордом и перекалибровка. 250 000 ₽.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 64px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  max-width: 580px;
+}
+.hero .price {
+  font-family: var(--font-mono);
+  font-size: 15px; letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.hero .price span { white-space: nowrap; }
+.hero .price .num { color: var(--text); font-weight: 500; }
+
+.cta-block { margin: 32px 0 48px; }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta:hover { background: var(--accent-hover); }
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.cta-note {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  margin-top: 12px;
+  letter-spacing: 0.02em;
+}
+.cta-note a { color: var(--accent); }
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+  .hero .price { font-size: 14px; gap: 14px; }
+}
+
+/* SECTIONS */
+section { padding: 80px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 32px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 26px; margin-bottom: 24px; } }
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* PLASTS (3 cards) */
+.plasts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+}
+.plast {
+  border-top: 2px solid var(--accent);
+  padding-top: 24px;
+}
+.plast .plast-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--accent);
+  letter-spacing: 0.1em; margin-bottom: 12px;
+}
+.plast h3 {
+  font-family: var(--font-sans);
+  font-size: 18px; font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.plast p {
+  font-size: 16px; color: var(--text-secondary);
+}
+@media (max-width: 720px) {
+  .plasts { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* LISTS */
+ul.bullets { list-style: none; padding: 0; }
+ul.bullets li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+}
+ul.bullets li:first-child { border-top: 1px solid var(--line-soft); }
+ul.bullets li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+
+/* INSIDE BOX */
+.inside {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-top: 24px;
+}
+.inside p { font-family: var(--font-serif); margin-bottom: 16px; }
+.inside .key {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.inside .key:not(:first-child) { margin-top: 24px; }
+@media (max-width: 640px) { .inside { padding: 28px 20px; } }
+
+/* MEETINGS (numbered) */
+ol.meetings { list-style: none; padding: 0; counter-reset: meetings; }
+ol.meetings li {
+  position: relative;
+  padding: 16px 0 16px 56px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+  counter-increment: meetings;
+}
+ol.meetings li:first-child { border-top: 1px solid var(--line-soft); }
+ol.meetings li::before {
+  content: 'Встреча ' counter(meetings);
+  position: absolute;
+  left: 0; top: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+ol.meetings li {
+  padding-left: 110px;
+}
+ol.meetings li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+@media (max-width: 640px) {
+  ol.meetings li { padding-left: 0; padding-top: 28px; }
+  ol.meetings li::before { top: 12px; }
+}
+
+/* ABOUT */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+.about ul { list-style: none; margin: 16px 0; }
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0; padding-left: 20px;
+  position: relative;
+}
+.about ul li::before {
+  content: '—';
+  position: absolute; left: 0;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.about .funnel {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.about .funnel b { color: var(--accent); }
+@media (max-width: 640px) { .about { padding: 28px 20px; } }
+
+/* FAQ */
+.faq dt {
+  font-family: var(--font-sans);
+  font-size: 18px; font-weight: 600;
+  margin-top: 28px; margin-bottom: 8px;
+}
+.faq dt:first-child { margin-top: 0; }
+.faq dd {
+  font-family: var(--font-serif);
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* COMPETITORS */
+.competitors { font-family: var(--font-serif); }
+.competitors .row {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px; align-items: baseline;
+}
+.competitors .row:first-child { border-top: 1px solid var(--line-soft); }
+.competitors .name {
+  font-family: var(--font-sans); font-weight: 600;
+}
+.competitors .price-tag {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  display: block; margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .competitors .row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* FINAL CTA */
+.final {
+  text-align: center;
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+.final h2 { margin: 0 auto 32px; text-align: center; }
+.final .meta {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .final { padding: 56px 0; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 16px;
+}
+footer.site ul { list-style: none; margin-bottom: 24px; }
+footer.site li { padding: 4px 0; }
+footer.site .copyright {
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Замер.</h1>
+    <p class="lede">Раз в квартал — сверка с дашбордом и перекалибровка курса. 2-3 онлайн встречи × 2-3 часа за 5-7 дней. Обновлённый дашборд на твоём URL — история накапливается.</p>
+
+    <div class="price">
+      <span><span class="num">250 000 ₽</span></span>
+      <span><span class="num">2-3</span> встречи</span>
+      <span>за <span class="num">5-7</span> дней</span>
+    </div>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=zamer" class="cta">Поставить Замер в календарь — 250 000 ₽</a>
+      <p class="cta-note">Или годовой пакет <a href="https://shavsegda.github.io/dashboards/trenirovki.html">Тренировки</a> + 4 Замера — со скидкой 30%</p>
+    </div>
+
+    <div class="methods">
+      <span>После Сборов</span>
+      <span>В Тренировках</span>
+      <span>Каждые 13 недель</span>
+    </div>
+  </div>
+</section>
+
+<!-- ТРЕНЕР ЗАМЕРЯЕТ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Что это</p>
+    <h2>Тренер замеряет форму раз в квартал.</h2>
+    <p>Спортсмен на регулярных Тренировках раз в квартал делает замер формы. Не для отчёта — чтобы понять, куда сдвинулась программа, что меняется в ближайшие 13 недель.</p>
+    <p>С тобой работает так же. После Сборов ты на Тренировках 13 недель. За это время — десятки решений, сотни эпизодов, изменения в команде и в семье. Без Замера ты идёшь по ощущениям. С Замером — сверка с картой, обновлённые метрики, перекалибровка на следующий квартал.</p>
+
+    <div class="plasts">
+      <div class="plast">
+        <p class="plast-num">01</p>
+        <h3>Признать отклонения</h3>
+        <p>Что не пошло, что устарело, где скатился к старому за 13 недель.</p>
+      </div>
+      <div class="plast">
+        <p class="plast-num">02</p>
+        <h3>Сверить курс</h3>
+        <p>С прошлой версией дашборда. Подтянуть, не переписать.</p>
+      </div>
+      <div class="plast">
+        <p class="plast-num">03</p>
+        <h3>Перекалибровать</h3>
+        <p>Систему управления — на следующие 13 недель.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=zamer" class="cta">Поставить Замер в календарь — 250 000 ₽</a>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО МЕНЯЕТСЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Что меняется</p>
+    <h2>После Замера</h2>
+    <ul class="bullets">
+      <li>Видишь путь, а не неделю — 13 недель в одном дашборде, с прогрессом по карте работ.</li>
+      <li>Знаешь, что менять на следующий квартал — не интуитивно, а по данным.</li>
+      <li>Команда видит, что у тебя есть план, а не настроение.</li>
+      <li>Через 4 Замера за год — путь, который можно показать партнёру или жене.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ЧТО ВНУТРИ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Что внутри</p>
+    <h2>Подготовка → 2-3 встречи → обновлённый дашборд.</h2>
+
+    <div class="inside">
+      <p class="key">ПОДГОТОВКА</p>
+      <p>1-2 дня работы Алексея до встреч. Метрики за 13 недель из твоего дашборда. Эпизоды из астры/пингов Тренировок. Сравнение с прошлым Замером или Сборами. Гипотезы по Работам 10-11 — где курс держится, где отклонения.</p>
+
+      <p class="key">МЕЖДУ ВСТРЕЧАМИ</p>
+      <p>5-7 дней. Не подряд. Между встречами проживаешь решения, не «бежишь дальше».</p>
+
+      <p class="key">ДАШБОРД</p>
+      <p>Обновлённый дашборд на том же URL, что после Сборов. История квартала добавляется, не заменяет старую. Через год клиент видит 4 версии своего дашборда — это путь, а не отдельные точки.</p>
+
+      <p class="key">СОПРОВОЖДЕНИЕ</p>
+      <p>30 дней уже встроены в Тренировки — отдельно не платятся.</p>
+    </div>
+
+    <h3 style="margin-top: 40px; margin-bottom: 16px;">Структура встреч</h3>
+    <ol class="meetings">
+      <li>
+        <b>Эмоциональный пласт + диагностика</b>
+        Где я сейчас относительно решений Сборов. 2-3 часа.
+      </li>
+      <li>
+        <b>Рациональный пласт</b>
+        Обновить видение, стратегию, тактику. Подтянуть, не переписать. 2-3 часа.
+      </li>
+      <li>
+        <b>Операционный пласт</b>
+        Что в системе управления требует корректировки на следующий квартал. 2-3 часа.
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- О ТРЕНЕРСКОЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Контекст</p>
+    <h2>Что за Тренерская</h2>
+    <div class="about">
+      <p>Практика Алексея Шаповалова. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — Bompa &amp; Buzzichelli. Нагрузка, восстановление, прогрессия.</li>
+        <li><b>Системное мышление</b> — Meadows. Петли обратной связи, точки воздействия.</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research.</li>
+      </ul>
+      <p class="funnel"><b>Линейка:</b> Вслух → Портрет → Разбор → Сборы → Тренировки → <b>Замер</b> (раз в квартал).</p>
+      <p style="margin-top: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary);">Замер опирается на твой дашборд из Сборов и данные Тренировок. Без них Замер не работает.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ПОЛУЧИШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">05 / Что ты получишь</p>
+    <h2>Обновлённый дашборд. План на квартал. Точка для разговора.</h2>
+    <ul class="bullets">
+      <li><b>Обновлённый дашборд</b> на твоём URL — видение/стратегия/тактика подтянуты, история накапливается.</li>
+      <li><b>Точную картину 13 недель</b> — не «вроде нормально», а где сдвинулся, где скатился, где удержал.</li>
+      <li><b>План на следующий квартал</b> — что меняется в команде, ритме, ритуалах.</li>
+      <li><b>Самоощущение «я иду»</b> — не интуитивное, а на данных.</li>
+      <li><b>Точку для разговора с партнёром / женой / командой</b> — обновлённый план, который можно показать.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- УЗНАЁШЬ СЕБЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">06 / Триггеры</p>
+    <h2>Узнаёшь себя?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Прошёл Сборы три месяца назад? В Тренировках еженедельно?</p>
+    <ul class="bullets">
+      <li>«Вроде нормально, но проверить стоит.»</li>
+      <li>«Что-то изменилось за 13 недель — не понимаю, в какую сторону.»</li>
+      <li>«Старый план не подходит, но переписывать всё с нуля — много.»</li>
+      <li>«Команда смотрит — а я не могу сказать, какой следующий квартал.»</li>
+      <li>«В кризисе хочется не тушить, а свериться с курсом.»</li>
+      <li>«Иду по интуиции — пора по данным.»</li>
+      <li>«Не помню, что обещал себе три месяца назад.»</li>
+    </ul>
+  </div>
+</section>
+
+<!-- КАК ПОМОЖЕТ -->
+<section>
+  <div class="content">
+    <p class="section-num">07 / Как поможет</p>
+    <h2>Как Замер тебе поможет</h2>
+    <ul class="bullets">
+      <li><b>Подготовка скиллом</b> /quarterly-review — Алексей приходит уже с данными, не тратит твоё время на сбор.</li>
+      <li><b>Три пласта</b> в компактном формате — не «новые Сборы», а апдейт.</li>
+      <li><b>Один дашборд</b> растёт вместе с тобой. Через год — 4 версии, через 2 года — 8. Это твоя история.</li>
+      <li><b>5-7 дней работы</b> — не 7-10 как Сборы. Меньше нагрузки, чаще сверка.</li>
+      <li><b>Две модели оплаты</b> — выбираешь под себя.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- К ЧЕМУ ПРИДЁШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">08 / Точка Б</p>
+    <h2>К чему ты придёшь через год — после 4 Замеров</h2>
+    <ul class="bullets">
+      <li>Карта 4 кварталов на одном дашборде.</li>
+      <li>Первые 12 месяцев новой роли — задокументированы.</li>
+      <li>Две перекалибровки курса — по данным, не по эмоции.</li>
+      <li>План на следующий год собирается на основе истории, а не интуиции.</li>
+      <li>На вопрос «как у тебя дела» отвечаешь не «нормально», а конкретно — потому что есть дашборд.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОМНЕНИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">09 / Сомнения</p>
+    <h2>Сомнения</h2>
+    <dl class="faq">
+      <dt>«Тренировки и так каждую неделю — зачем ещё 250к?»</dt>
+      <dd>Тренировки — постоянное удержание курса. Замер — сверка с картой. Это разные задачи. На Тренировках ты решаешь «что на этой неделе». На Замере — «куда я иду весь квартал».</dd>
+
+      <dt>«250 тысяч — большие деньги.»</dt>
+      <dd>В 2-12 раз дешевле финансового или операционного аудита. И это раз в квартал, не каждый месяц. Если возьмёшь годовой пакет «Тренировки + 4 Замера» — экономия 30% (1 миллион в год).</dd>
+
+      <dt>«5-7 дней — много времени.»</dt>
+      <dd>Это 6-9 часов сессий за 5-7 дней. Не подряд. Между встречами проживаешь — это не нагрузка, это часть работы.</dd>
+
+      <dt>«Я и сам могу пересмотреть план.»</dt>
+      <dd>Можешь. Только сам делаешь это «по ощущениям», без сравнения с метриками за 13 недель и без сопоставления с прошлой версией дашборда. Замер — внешний наблюдатель и плановая точка.</dd>
+
+      <dt>«А что если за квартал ничего не сдвинулось?»</dt>
+      <dd>Это тоже информация. Тогда Замер показывает, что мешает движению, и где система буксует. Без сдвигов — главный сигнал, что курс нужно пересматривать.</dd>
+
+      <dt>«Чем это отличается от Сборов?»</dt>
+      <dd>Сборы — один раз, для нового сезона: видение/стратегия/тактика с нуля. Замер — каждые 3 месяца, сверка и подтяжка существующего плана. Не пересматриваешь — корректируешь.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- КОНКУРЕНТЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">10 / Сравнение</p>
+    <h2>Почему не к другим</h2>
+    <div class="competitors">
+      <div class="row">
+        <div>
+          <span class="name">Внешний финансовый аудит (Big4)</span>
+          <span class="price-tag">500 тысяч – 3 миллиона ₽ / год</span>
+        </div>
+        <p>Только финансы, ретроспективно. Замер — бизнес + человек + история на одном дашборде.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Операционный аудит (консалтинг)</span>
+          <span class="price-tag">300 тысяч – 2 миллиона ₽ за проект</span>
+        </div>
+        <p>Дорого, формально. Замер дешевле в 2-8 раз и в контексте перехода.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Стратегическая ретроспектива с модератором</span>
+          <span class="price-tag">100–500 тысяч ₽ / день</span>
+        </div>
+        <p>Зависит от модератора, разовый. Замер — в системе с историей предыдущих сверок.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">NPS / опросы вовлечённости</span>
+          <span class="price-tag">50–200 тысяч ₽ / мес</span>
+        </div>
+        <p>Только команда. Замер — про собственника.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Внутренний audit committee</span>
+          <span class="price-tag">бесплатно</span>
+        </div>
+        <p>Требует политической воли. Замер — нейтральный внешний взгляд.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Самоанализ и дневник</span>
+          <span class="price-tag">бесплатно</span>
+        </div>
+        <p>В голове кружится. Замер — данные за 13 недель + внешнее зеркало.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="content">
+    <h2>Замер. Раз в квартал. По данным, не по ощущениям.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot?start=zamer" class="cta">Поставить Замер в календарь — 250 000 ₽</a>
+    <p class="meta">Или годовой пакет <a href="https://shavsegda.github.io/dashboards/trenirovki.html" style="color: var(--accent);">Тренировки</a> + 4 Замера — 2,4 миллиона ₽ вместо 3,4 миллиона</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Спортивная периодизация — Bompa, T. &amp; Buzzichelli, C. (2018). Periodization.</li>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+      <li>Five Factor Model — John, O. P., &amp; Srivastava, S. (1999).</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+      <li>Hogan Derail Research — Hogan, R., &amp; Hogan, J. (2001).</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
