@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Сборы — Тренерская</title>
+<meta name="description" content="Сборы. 7-10 дней работы со всеми системами твоей жизни. Видение на 5 лет, стратегия на год, тактика на квартал. 350 000 ₽.">
+<meta property="og:title" content="Сборы — Тренерская">
+<meta property="og:description" content="7-10 дней работы со всеми системами твоей жизни. 350 000 ₽.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 64px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  max-width: 580px;
+}
+.hero .price {
+  font-family: var(--font-mono);
+  font-size: 15px; letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.hero .price span { white-space: nowrap; }
+.hero .price .num { color: var(--text); font-weight: 500; }
+
+.cta-block { margin: 32px 0 48px; }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta:hover { background: var(--accent-hover); }
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.cta-note {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  margin-top: 12px;
+  letter-spacing: 0.02em;
+}
+.cta-note a { color: var(--accent); }
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+  .hero .price { font-size: 14px; gap: 14px; }
+}
+
+/* SECTIONS */
+section { padding: 80px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 32px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 26px; margin-bottom: 24px; } }
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* PLASTS (3 cards) */
+.plasts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+}
+.plast {
+  border-top: 2px solid var(--accent);
+  padding-top: 24px;
+}
+.plast .plast-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--accent);
+  letter-spacing: 0.1em; margin-bottom: 12px;
+}
+.plast h3 {
+  font-family: var(--font-sans);
+  font-size: 20px; font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.plast p {
+  font-size: 16px; color: var(--text-secondary);
+}
+@media (max-width: 720px) {
+  .plasts { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* LISTS */
+ul.bullets { list-style: none; padding: 0; }
+ul.bullets li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-serif);
+}
+ul.bullets li:first-child { border-top: 1px solid var(--line-soft); }
+ul.bullets li b {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: block; margin-bottom: 4px;
+}
+
+/* INSIDE BOX */
+.inside {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-top: 24px;
+}
+.inside p { font-family: var(--font-serif); margin-bottom: 16px; }
+.inside .key {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+@media (max-width: 640px) { .inside { padding: 28px 20px; } }
+
+/* TESTIMONIALS */
+.testimonials {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+.testimonial {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 28px;
+}
+.testimonial blockquote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px; line-height: 1.55;
+  margin-bottom: 16px;
+}
+.testimonial cite {
+  font-family: var(--font-mono);
+  font-size: 13px; font-style: normal;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+@media (max-width: 720px) {
+  .testimonials { grid-template-columns: 1fr; }
+}
+
+/* ABOUT */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+.about ul { list-style: none; margin: 16px 0; }
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0; padding-left: 20px;
+  position: relative;
+}
+.about ul li::before {
+  content: '—';
+  position: absolute; left: 0;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.about .funnel {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.about .funnel b { color: var(--accent); }
+@media (max-width: 640px) { .about { padding: 28px 20px; } }
+
+/* FAQ */
+.faq dt {
+  font-family: var(--font-sans);
+  font-size: 18px; font-weight: 600;
+  margin-top: 28px; margin-bottom: 8px;
+}
+.faq dt:first-child { margin-top: 0; }
+.faq dd {
+  font-family: var(--font-serif);
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+/* COMPETITORS */
+.competitors { font-family: var(--font-serif); }
+.competitors .row {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px; align-items: baseline;
+}
+.competitors .row:first-child { border-top: 1px solid var(--line-soft); }
+.competitors .name {
+  font-family: var(--font-sans); font-weight: 600;
+}
+.competitors .price-tag {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  display: block; margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .competitors .row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* FINAL CTA */
+.final {
+  text-align: center;
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+.final h2 { margin: 0 auto 32px; text-align: center; }
+.final .meta {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .final { padding: 56px 0; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 16px;
+}
+footer.site ul { list-style: none; margin-bottom: 24px; }
+footer.site li { padding: 4px 0; }
+footer.site .copyright {
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Сборы.</h1>
+    <p class="lede">7-10 дней работы со всеми системами твоей жизни. Видение на 5 лет. Стратегия на год. Тактика на квартал. Бизнес, семья, личное — вместе.</p>
+
+    <div class="price">
+      <span><span class="num">350 000 ₽</span></span>
+      <span>один раз</span>
+      <span>раз в год — обновление</span>
+    </div>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=sbory" class="cta">Договориться о Сборах — 350 000 ₽</a>
+      <p class="cta-note">Начать с <a href="https://shavsegda.github.io/dashboards/razbor.html">Разбора</a> (50 000 ₽, 1.5 часа)</p>
+    </div>
+
+    <div class="methods">
+      <span>5-6 встреч</span>
+      <span>7-10 дней</span>
+      <span>Дашборд + 30 дней сопровождения</span>
+    </div>
+  </div>
+</section>
+
+<!-- ПОЛЕВЫЕ СБОРЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Что это</p>
+    <h2>Полевые сборы перед новым сезоном.</h2>
+    <p>В спорте перед сезоном тренер выводит спортсмена из старого ритма. Ставит цели. Перестраивает программу. Это сборы.</p>
+    <p>С тобой работает так же. Если несколько лет ты живёшь на инерции — никакой стратегией это не починить. Нужно выйти из обычного ритма, посмотреть со стороны и собрать заново.</p>
+
+    <div class="plasts">
+      <div class="plast">
+        <p class="plast-num">01</p>
+        <h3>Отпустить старое</h3>
+        <p>Без этого новое будет повторением.</p>
+      </div>
+      <div class="plast">
+        <p class="plast-num">02</p>
+        <h3>Увидеть новое</h3>
+        <p>Видение, стратегия, тактика — со всеми системами.</p>
+      </div>
+      <div class="plast">
+        <p class="plast-num">03</p>
+        <h3>Встроить в живую систему</h3>
+        <p>План становится изменениями в команде, ритме, семье.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <a href="https://t.me/vslukh_shapovalov_bot?start=sbory" class="cta">Договориться о Сборах — 350 000 ₽</a>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ИЗМЕНИТСЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Что изменится</p>
+    <h2>После Сборов</h2>
+    <ul class="bullets">
+      <li>Перестанешь жить на инерции — будет план, в который веришь.</li>
+      <li>Получишь видение на 5 лет, которое не пересматриваешь каждую неделю.</li>
+      <li>Команда увидит твою новую роль и перестроится.</li>
+      <li>Семья перестанет быть «фоновой системой».</li>
+      <li>Через 3 месяца поймёшь, что план не на бумаге — в жизни.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ЧТО ВНУТРИ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Что внутри</p>
+    <h2>5-6 встреч за 7-10 дней. Дашборд на выходе.</h2>
+
+    <div class="inside">
+      <p class="key">ФОРМАТ</p>
+      <p>5-6 онлайн-встреч × 3-4 часа за 7-10 дней. Не подряд. Между встречами — проживаешь решения, не «бежишь дальше». Опционально финальная встреча очно.</p>
+
+      <p class="key">РЕЗУЛЬТАТ</p>
+      <p>Защищённая страница на shavsegda.github.io с твоим дашбордом: видение 5 лет, стратегия года, тактика квартала, перестройка системы.</p>
+
+      <p class="key">СОПРОВОЖДЕНИЕ</p>
+      <p>30 дней через бот «Вслух» — он знает твои решения и ловит откаты. Опционально премиум — 30 дней с Алексеем лично (другой продукт, +50-100 тысяч).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ОТЗЫВЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Отзывы</p>
+    <h2>Что говорят те, кто прошёл</h2>
+    <div class="testimonials">
+      <div class="testimonial">
+        <blockquote>«У меня появился инструмент. Это не рефлексия — это зонтик: дождь пошёл — открыл.»</blockquote>
+        <cite>— собственник, 2 года в работе</cite>
+      </div>
+      <div class="testimonial">
+        <blockquote>«До Сборов я планировал бизнес. После — научился планировать жизнь. Это разное.»</blockquote>
+        <cite>— собственник, 6 месяцев после Сборов</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- О ТРЕНЕРСКОЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">05 / Контекст</p>
+    <h2>Что за Тренерская</h2>
+    <div class="about">
+      <p>Практика Алексея Шаповалова. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — нагрузка, восстановление, прогрессия</li>
+        <li><b>Системное мышление</b> — петли обратной связи, точки воздействия (по Медоуз)</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research</li>
+      </ul>
+      <p class="funnel"><b>Линейка:</b> Вслух → Портрет → Разбор → <b>Сборы</b> → Замер → Подписка.</p>
+      <p style="margin-top: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary);">Через Сборы прошли двое — Ярослав и Сергей. Свободная ёмкость на ~3 клиента в год без потери качества.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ПОЛУЧИШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">06 / Что ты получишь</p>
+    <h2>Дашборд, план, ясность.</h2>
+    <ul class="bullets">
+      <li><b>Дашборд-результат.</b> Защищённая страница с видением 5 лет / стратегией года / тактикой квартала.</li>
+      <li><b>План перестройки системы управления.</b> Что меняется в команде, ритуалах, дашбордах.</li>
+      <li><b>Готовность к разговору с командой и партнёром.</b> План выдерживает критику, потому что построен на твоей реальности, а не на чужих метриках.</li>
+      <li><b>30 дней сопровождения через бот «Вслух».</b> Без откатов в первый месяц.</li>
+      <li><b>Готовность к Замеру через квартал и Подписке.</b> Сборы открывают путь дальше по линейке.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- УЗНАЁШЬ СЕБЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">07 / Триггеры</p>
+    <h2>Узнаёшь себя?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Хочешь пройти переход без потери себя? Или просто получить карту следующих 5 лет?</p>
+    <ul class="bullets">
+      <li>«Несколько лет живу на инерции, но не могу это назвать.»</li>
+      <li>«Стратегия на год есть, но я в неё не верю.»</li>
+      <li>«Бизнес, семья и личное живут отдельно. Не вместе.»</li>
+      <li>«Команда смотрит, а я не понимаю, кто я для них теперь.»</li>
+      <li>«Без меня старый бизнес буксует — а я уже в новом.»</li>
+      <li>«Уехал, и никаких рамок старой жизни больше нет.»</li>
+      <li>«Распыляюсь — каждый бизнес тянет в свою сторону.»</li>
+      <li>«Готовлю продажу — и не знаю, кем буду после.»</li>
+      <li>«Внешне всё есть, а внутри — пусто.»</li>
+    </ul>
+  </div>
+</section>
+
+<!-- КАК ПОМОГУТ -->
+<section>
+  <div class="content">
+    <p class="section-num">08 / Как поможет</p>
+    <h2>Как Сборы тебе помогут</h2>
+    <ul class="bullets">
+      <li><b>7-10 дней концентрированной работы</b> вне обычного ритма — без «потом доделаем».</li>
+      <li><b>Три пласта вместе.</b> Эмоциональный + рациональный + операционный. Без любого — план не пробьёт.</li>
+      <li><b>Все системы.</b> Бизнес + семья + личное собираются в одну жизнь, а не три раздельные.</li>
+      <li><b>Документ на 5 лет</b>, который выдерживает критику команды и партнёра.</li>
+      <li><b>Бот «Вслух» удерживает решения 30 дней</b> после Сборов.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- К ЧЕМУ ПРИДЁШЬ -->
+<section>
+  <div class="content">
+    <p class="section-num">09 / Точка Б</p>
+    <h2>К чему ты придёшь</h2>
+    <ul class="bullets">
+      <li>Поймёшь, кем будешь следующие 5 лет — и не будешь это пересматривать каждую неделю.</li>
+      <li>Перестанешь обсуждать «надо ли менять» — будешь делать.</li>
+      <li>Увидишь, как бизнес, семья и личное складываются в одну жизнь.</li>
+      <li>Команда получит ясного руководителя. Не «лидера-вдохновителя», а человека с курсом.</li>
+      <li>Через год повторишь Сборы — и увидишь, что переход пройден.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОМНЕНИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">10 / Сомнения</p>
+    <h2>Сомнения</h2>
+    <dl class="faq">
+      <dt>«350 тысяч — большие деньги.»</dt>
+      <dd>В 5-15 раз дешевле российского консалтинга. В 50 раз дешевле большого. И это один раз, а не каждый месяц.</dd>
+
+      <dt>«Я уже работал с консультантами / коучами.»</dt>
+      <dd>Большой консалтинг работает только с бизнесом. Терапевт — только с человеком. Сборы держат всё вместе — бизнес + семья + личное.</dd>
+
+      <dt>«Я не готов 7-10 дней на это тратить.»</dt>
+      <dd>Это не подряд. По 3-4 часа в день, между встречами — проживание. Время потратишь меньше, чем за месяц обычной интуитивной стратегии.</dd>
+
+      <dt>«А что если ничего не сложится?»</dt>
+      <dd>До Сборов есть Разбор (50 000 ₽, 1.5 часа). Если не сложится — Сборы не покупаешь.</dd>
+
+      <dt>«Онлайн — это формально.»</dt>
+      <dd>У релокантов, серийников в разных городах, готовящихся к продаже — нет другого варианта. Финальную встречу можно сделать очно по желанию.</dd>
+
+      <dt>«Это коучинг?»</dt>
+      <dd>Нет. На выходе — дашборд с цифрами и план, а не «понимание себя». Цель Сборов — изменения в жизни, а не разговоры о них.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- КОНКУРЕНТЫ -->
+<section>
+  <div class="content">
+    <p class="section-num">11 / Сравнение</p>
+    <h2>Почему не к другим</h2>
+    <div class="competitors">
+      <div class="row">
+        <div>
+          <span class="name">Большой консалтинг (BCG, McKinsey, Big-4)</span>
+          <span class="price-tag">15–50 миллионов ₽</span>
+        </div>
+        <p>Только бизнес, обезличенно, 3 месяца. Сборы — бизнес + человек + семья за 7-10 дней.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Российский консалтинг (Strategy Partners)</span>
+          <span class="price-tag">3–15 миллионов ₽</span>
+        </div>
+        <p>Процессы, не человек. Сборы — владелец как центр.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Premium executive coaching</span>
+          <span class="price-tag">300 тысяч – 1 миллион ₽ / мес</span>
+        </div>
+        <p>Корпоративные карьеры. Сборы — собственник среднего бизнеса в РФ.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Психотерапия длительная</span>
+          <span class="price-tag">10–30 тысяч ₽ / сессия</span>
+        </div>
+        <p>Не про бизнес, медленно. Сборы — эмоциональный пласт + бизнес-реальность вместе.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Mastermind / YPO</span>
+          <span class="price-tag">500–600 тысяч ₽ / год</span>
+        </div>
+        <p>Группа, медленно. Сборы — один на один, концентрированно.</p>
+      </div>
+      <div class="row">
+        <div>
+          <span class="name">Retreats / Vipassana</span>
+          <span class="price-tag">100–500 тысяч ₽</span>
+        </div>
+        <p>Без рабочего процесса после. У Сборов — дашборд + 30 дней сопровождения.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="content">
+    <h2>Сборы. Раз в год.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot?start=sbory" class="cta">Договориться о Сборах — 350 000 ₽</a>
+    <p class="meta">Начать с <a href="https://shavsegda.github.io/dashboards/razbor.html" style="color: var(--accent);">Разбора</a> · 50 000 ₽ · 1.5 часа</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Спортивная периодизация — Bompa, T. &amp; Buzzichelli, C. (2018). Periodization.</li>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+      <li>Five Factor Model — John, O. P., &amp; Srivastava, S. (1999).</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+      <li>Hogan Derail Research — Hogan, R., &amp; Hogan, J. (2001).</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
