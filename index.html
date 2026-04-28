@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Тренерская — сопровождение собственников</title>
+<meta name="description" content="Тренерская — практика сопровождения собственников среднего бизнеса в фазе перехода. Тренер с 5 режимами: психолог, коуч, ментор, наставник, трекер. Бизнес, семья, личное — вместе.">
+<meta property="og:title" content="Тренерская — сопровождение собственников">
+<meta property="og:description" content="Тренер с 5 режимами для собственника в фазе перехода. Бизнес + семья + личное.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 760px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 80px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 72px; font-weight: 600;
+  line-height: 1.0; letter-spacing: -0.03em;
+  margin-bottom: 32px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 24px; line-height: 1.4;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+  max-width: 620px;
+}
+
+.cta-block { margin: 32px 0 48px; }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 18px 36px;
+  font-family: var(--font-sans);
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta:hover { background: var(--accent-hover); }
+.cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.cta-secondary {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 16px;
+  letter-spacing: 0.02em;
+}
+.cta-secondary a { color: var(--accent); }
+
+.hero .methods {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.hero .methods span::after { content: ' · '; color: var(--line); }
+.hero .methods span:last-child::after { content: ''; }
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 48px; }
+  .hero h1 { font-size: 44px; }
+  .hero .lede { font-size: 19px; }
+}
+
+/* SECTIONS */
+section { padding: 80px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 16px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 36px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 32px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 26px; margin-bottom: 24px; } }
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* ROLES (5 cards) */
+.roles {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+}
+.role {
+  border-top: 2px solid var(--accent);
+  padding-top: 20px;
+}
+.role .role-num {
+  font-family: var(--font-mono);
+  font-size: 12px; color: var(--accent);
+  letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.role h3 {
+  font-family: var(--font-sans);
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.role p {
+  font-size: 14px; line-height: 1.5;
+  color: var(--text-secondary);
+}
+@media (max-width: 900px) {
+  .roles { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .role h3 { font-size: 18px; }
+  .role p { font-size: 15px; }
+}
+@media (max-width: 520px) {
+  .roles { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* PRODUCTS (vertical list) */
+.products {
+  border-top: 1px solid var(--line-soft);
+  margin-top: 32px;
+}
+.product {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 16px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: baseline;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.product:hover {
+  background: var(--bg-card);
+  margin: 0 -24px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+.product .num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+.product .info h3 {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.product .info p {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+.product .meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-align: right;
+  white-space: nowrap;
+}
+.product .meta .price {
+  display: block;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+@media (max-width: 640px) {
+  .product { grid-template-columns: 40px 1fr; gap: 12px; }
+  .product .meta { grid-column: 2; text-align: left; }
+  .product .info h3 { font-size: 20px; }
+  .product:hover { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* SEGMENTS */
+.segments {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+.segment {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 24px;
+}
+.segment h3 {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.segment blockquote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+@media (max-width: 720px) {
+  .segments { grid-template-columns: 1fr; }
+}
+
+/* ABOUT */
+.about {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+}
+.about ul { list-style: none; margin: 16px 0; }
+.about ul li {
+  font-family: var(--font-serif);
+  padding: 6px 0; padding-left: 20px;
+  position: relative;
+}
+.about ul li::before {
+  content: '—';
+  position: absolute; left: 0;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.about .signature {
+  font-family: var(--font-mono);
+  font-size: 14px; color: var(--text-secondary);
+  margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+@media (max-width: 640px) { .about { padding: 28px 20px; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site h3 {
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 16px;
+}
+footer.site ul { list-style: none; margin-bottom: 24px; }
+footer.site li { padding: 4px 0; }
+footer.site .copyright {
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Тренерская.</h1>
+    <p class="lede">Сопровождение собственников среднего бизнеса в фазе перехода. Тренер с 5 режимами под твой запрос. Бизнес, семья, личное — вместе.</p>
+
+    <div class="cta-block">
+      <a href="https://t.me/vslukh_shapovalov_bot" class="cta">Начать с Вслух — бесплатно</a>
+      <p class="cta-secondary">Или сразу <a href="razbor.html">записаться на Разбор</a> — 50 000 ₽, 1.5 часа</p>
+    </div>
+
+    <div class="methods">
+      <span>Спортивная периодизация</span>
+      <span>Системное мышление</span>
+      <span>Big Five · Schwartz · Hogan</span>
+    </div>
+  </div>
+</section>
+
+<!-- 5 РЕЖИМОВ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Подход</p>
+    <h2>Тренер — это не коуч. У тренера 5 режимов под твой запрос.</h2>
+    <p>Когда болит — нужен психолог. Когда не знаешь, что делать — коуч. Когда хочешь услышать, как у других — ментор. Когда нужно «как правильно» — наставник. Когда надо довести до конца — трекер.</p>
+    <p>Тренерская переключает их по контексту разговора — за час встречи или за 5-7 дней Сборов.</p>
+
+    <div class="roles">
+      <div class="role">
+        <p class="role-num">01</p>
+        <h3>Психолог</h3>
+        <p>Когда больно или тревога.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">02</p>
+        <h3>Коуч</h3>
+        <p>Когда не знаешь, что делать.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">03</p>
+        <h3>Ментор</h3>
+        <p>Когда нужно услышать, как у других.</p>
+      </div>
+      <div class="role">
+        <p class="role-num">04</p>
+        <h3>Наставник</h3>
+        <p>Когда нужно «как правильно».</p>
+      </div>
+      <div class="role">
+        <p class="role-num">05</p>
+        <h3>Трекер</h3>
+        <p>Когда надо довести до конца.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ЛИНЕЙКА -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Линейка</p>
+    <h2>Линейка как тренировочный цикл</h2>
+    <p>Шесть продуктов, которые складываются в путь. Не разные продажи — единый цикл подготовки спортсмена под собственника.</p>
+
+    <div class="products">
+      <a href="vslukh.html" class="product">
+        <span class="num">01</span>
+        <div class="info">
+          <h3>Вслух</h3>
+          <p>Бесплатный бот в Telegram. Назови вслух, что болит. Точка входа.</p>
+        </div>
+        <div class="meta">
+          <span class="price">0 ₽</span>
+          <span>24/7</span>
+        </div>
+      </a>
+      <a href="portret.html" class="product">
+        <span class="num">02</span>
+        <div class="info">
+          <h3>Портрет</h3>
+          <p>Глубинный психологический профиль. Почерк, срывы, топливо.</p>
+        </div>
+        <div class="meta">
+          <span class="price">15 000 ₽</span>
+          <span>раз в 3-5 лет</span>
+        </div>
+      </a>
+      <a href="razbor.html" class="product">
+        <span class="num">03</span>
+        <div class="info">
+          <h3>Разбор</h3>
+          <p>Стартовая встреча с тренером. 1.5 часа — что у тебя сейчас и что дальше.</p>
+        </div>
+        <div class="meta">
+          <span class="price">50 000 ₽</span>
+          <span>при входе</span>
+        </div>
+      </a>
+      <a href="sbory.html" class="product">
+        <span class="num">04</span>
+        <div class="info">
+          <h3>Сборы</h3>
+          <p>7-10 дней работы со всеми системами. Видение 5 лет, стратегия года, тактика квартала.</p>
+        </div>
+        <div class="meta">
+          <span class="price">350 000 ₽</span>
+          <span>один раз</span>
+        </div>
+      </a>
+      <a href="trenirovki.html" class="product">
+        <span class="num">05</span>
+        <div class="info">
+          <h3>Тренировки</h3>
+          <p>Час с тренером раз в неделю. Чтобы не остановиться. Доступ между встречами.</p>
+        </div>
+        <div class="meta">
+          <span class="price">200 000 ₽ / мес</span>
+          <span>еженедельно</span>
+        </div>
+      </a>
+      <a href="zamer.html" class="product">
+        <span class="num">06</span>
+        <div class="info">
+          <h3>Замер</h3>
+          <p>Квартальная сверка с дашбордом. Перекалибровка курса на следующие 13 недель.</p>
+        </div>
+        <div class="meta">
+          <span class="price">250 000 ₽</span>
+          <span>раз в квартал</span>
+        </div>
+      </a>
+    </div>
+
+    <p style="margin-top: 32px; font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary);">Через 1-3 года новой роли возможны повторные Сборы — если меняется фаза перехода.</p>
+  </div>
+</section>
+
+<!-- КОМУ ПОДХОДИТ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Кому</p>
+    <h2>Собственник в фазе перехода</h2>
+    <p>Бизнес 50-300 человек, оборот от 1 миллиарда ₽. Возраст 35-55. Старая роль больше не работает, новая — ещё не сложилась.</p>
+
+    <div class="segments">
+      <div class="segment">
+        <h3>С 2+ бизнесами</h3>
+        <blockquote>«Без меня старый бизнес буксует — а я уже в новом.»</blockquote>
+      </div>
+      <div class="segment">
+        <h3>В золотой клетке</h3>
+        <blockquote>«Внешне всё достигнуто, внутри пусто. Нужен новый фокус.»</blockquote>
+      </div>
+      <div class="segment">
+        <h3>Релокант</h3>
+        <blockquote>«Уехал, бизнес в РФ, размазан, не понимаю как управлять дистанционно.»</blockquote>
+      </div>
+      <div class="segment">
+        <h3>Серийник</h3>
+        <blockquote>«Распыляюсь между бизнесами, выгораю, тревожусь за каждый.»</blockquote>
+      </div>
+      <div class="segment" style="grid-column: 1 / -1;">
+        <h3>Готовится к exit</h3>
+        <blockquote>«Готовлю продажу — и не знаю, кем буду после.»</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ЧТО ЗА АЛЕКСЕЙ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Контекст</p>
+    <h2>Что за Алексей</h2>
+    <div class="about">
+      <p>Алексей Шаповалов. Бэкграунд: тренер из профессионального спорта + инженер технической кибернетики. Это и есть «Тренерская» — две дисциплины в одной практике.</p>
+      <p>Подход опирается на:</p>
+      <ul>
+        <li><b>Спортивную периодизацию</b> — Bompa &amp; Buzzichelli. Нагрузка, восстановление, прогрессия.</li>
+        <li><b>Системное мышление</b> — Meadows. Петли обратной связи, точки воздействия.</li>
+        <li><b>Научные шкалы психометрии</b> — Big Five, Schwartz, Hogan Derail Research.</li>
+      </ul>
+      <p>Не «коуч-вдохновитель». Не «бизнес-консультант» в чистом виде. Тренер, который держит и бизнес, и человека одновременно — потому что оба бэкграунда внутри одного человека.</p>
+      <p class="signature">Сейчас на Тренировках двое — Ярослав и Сергей. Свободная ёмкость на 5-7 одновременно. Беру не больше 7, чтобы не терять глубину.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section style="text-align: center; padding: 96px 0; border-bottom: 1px solid var(--line);">
+  <div class="content">
+    <h2 style="text-align: center; margin: 0 auto 32px;">Начать просто.</h2>
+    <a href="https://t.me/vslukh_shapovalov_bot" class="cta">Начать с Вслух — бесплатно</a>
+    <p style="font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary); margin-top: 24px;">Или сразу <a href="razbor.html" style="color: var(--accent);">записаться на Разбор</a> — 50 000 ₽, 1.5 часа</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <h3>Методология</h3>
+    <ul>
+      <li>Спортивная периодизация — Bompa, T. &amp; Buzzichelli, C. (2018). Periodization.</li>
+      <li>Системное мышление — Meadows, D. (2008). Thinking in Systems.</li>
+      <li>Five Factor Model — John, O. P., &amp; Srivastava, S. (1999).</li>
+      <li>Schwartz Theory of Basic Values — Schwartz, S. H. (1992, 2012).</li>
+      <li>Hogan Derail Research — Hogan, R., &amp; Hogan, J. (2001).</li>
+    </ul>
+
+    <h3 style="margin-top: 32px;">Дизайн</h3>
+    <ul>
+      <li>Nielsen 10 usability heuristics (1994)</li>
+      <li>Cialdini 6 principles of influence (1984)</li>
+      <li>Gestalt principles (Wertheimer, 1923)</li>
+      <li>WCAG 2.1 AA</li>
+    </ul>
+
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="https://t.me/vslukh_shapovalov_bot" style="color: var(--text-secondary);">@vslukh_shapovalov_bot</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
