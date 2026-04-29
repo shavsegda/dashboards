@@ -804,13 +804,22 @@ function renderItem(app) {
     </div>
     <div class="actions">
       ${!isFirst ? '<button class="secondary" onclick="prevItem()">Назад</button>' : ""}
-      <button onclick="nextItem()" ${currentAnswer===undefined?"disabled":""}>${isLast ? "Завершить блок" : "Дальше"}</button>
     </div>
   `;
 }
 
+let autoAdvanceTimer = null;
+
 function selectAnswer(globalIdx, value) {
-  state.answers[globalIdx] = value; saveState(); render();
+  state.answers[globalIdx] = value;
+  saveState();
+  render();
+  // Автопереход к следующему вопросу через 280мс — пользователь успевает увидеть выбор
+  if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = setTimeout(() => {
+    autoAdvanceTimer = null;
+    if (state.screen === "item") nextItem();
+  }, 280);
 }
 
 function prevItem() { if (state.itemIdxInBlock > 0) state.itemIdxInBlock--; render(); }
