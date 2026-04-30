@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="robots" content="noindex,nofollow,noarchive">
 <title>Бизнес-модель: Сопровождение собственников среднего бизнеса</title>
 <style>
   /* Базовые настройки страницы */
@@ -214,33 +213,9 @@
     body { background: #fff; padding: 0; }
     .canvas { page-break-inside: avoid; }
   }
-
-  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
-  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
-  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
-  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
-  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
-  #gate input:focus { outline: none; border-color: #f39c12; }
-  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  #gate button:hover { background: #e67e22; }
-  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
-  body.locked { overflow: hidden; }
-  #content { display: none; }
-  #content.unlocked { display: block; }
 </style>
 </head>
-<body class="locked">
-<div id="gate">
-  <div class="box">
-    <h2>🔒 Защищено</h2>
-    <p>Введи пароль, чтобы посмотреть дашборд</p>
-    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
-    <button id="unlock-btn">Открыть</button>
-    <div class="err" id="err"></div>
-  </div>
-</div>
-<div id="content">
-
+<body>
 <div class="container">
 
   <!-- Шапка -->
@@ -484,33 +459,5 @@ LTV в год = 3,7 М ₽.
   </div>
 
 </div>
-</div><!-- /content -->
-
-<script>
-  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
-  async function sha256(s) {
-    const buf = new TextEncoder().encode(s);
-    const hash = await crypto.subtle.digest("SHA-256", buf);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-  }
-  async function unlock() {
-    const val = document.getElementById("pwd").value;
-    const h = await sha256(val);
-    if (h === PWD_HASH) {
-      document.getElementById("gate").style.display = "none";
-      document.getElementById("content").classList.add("unlocked");
-      document.body.classList.remove("locked");
-    } else {
-      const err = document.getElementById("err");
-      err.textContent = "Неверный пароль";
-      setTimeout(() => err.textContent = "", 2000);
-      document.getElementById("pwd").value = "";
-    }
-  }
-  document.getElementById("unlock-btn").addEventListener("click", unlock);
-  document.getElementById("pwd").addEventListener("keydown", e => {
-    if (e.key === "Enter") unlock();
-  });
-</script>
 </body>
 </html>
