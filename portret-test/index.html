@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Портрет</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Портрет — пилот</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
@@ -86,6 +84,36 @@ button.secondary:hover { background: #ebe7dc; }
 </header>
 <main id="app"></main>
 <script>
+// === ЗАЩИТА ДОСТУПА ===
+// Без персонального токена в URL — заглушка с CTA в Telegram.
+// Алексей выдаёт токен после оплаты. Подробнее — _supabase/setup-tokens.js
+(function checkAccess() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  // Простая проверка: токен есть и достаточно длинный (UUID = 36 символов).
+  // Полная валидация через Supabase — следующий шаг (Кирилл).
+  if (!token || token.length < 16) {
+    document.body.innerHTML = `
+      <main style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center;padding:60px 24px;max-width:520px;margin:60px auto;color:#1a1a1a;">
+        <h1 style="font-size:26px;font-weight:600;margin-bottom:16px;letter-spacing:-0.01em;">Персональная страница</h1>
+        <p style="color:#555;margin-bottom:32px;font-size:16px;line-height:1.6;">
+          Портрет — индивидуальная диагностика. Доступ открывается после разговора с Алексеем.
+        </p>
+        <a href="https://t.me/vslukh_shapovalov_bot?start=portret"
+           style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:#fff;border-radius:8px;text-decoration:none;font-size:16px;font-weight:500;">
+          Написать Алексею
+        </a>
+        <p style="color:#999;margin-top:48px;font-size:13px;">
+          Если у тебя уже есть личная ссылка — открой её целиком, со всеми параметрами после знака вопроса.
+        </p>
+      </main>
+    `;
+    throw new Error('Доступ только по персональной ссылке');
+  }
+  // Сохраняем токен в глобальную переменную — пригодится для записи данных
+  window.PORTRET_TOKEN = token;
+})();
+
 // === ДАННЫЕ ===
 
 const SCALES = {
@@ -512,31 +540,10 @@ const TEXTS = {
 
 // === ЛОГИКА ===
 
-// Telegram WebApp
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
-const tgUser = tg?.initDataUnsafe?.user || null;
-const TELEGRAM_USER_ID = tgUser?.id || null;
-const TELEGRAM_FIRST_NAME = tgUser?.first_name || "";
-
-function getOrCreateLocalUid() {
-  let id = localStorage.getItem("local_uid");
-  if (!id) {
-    id = "u" + Math.random().toString(36).slice(2, 12);
-    localStorage.setItem("local_uid", id);
-  }
-  return id;
-}
-const CLIENT_ID = TELEGRAM_USER_ID ? ("tg_" + TELEGRAM_USER_ID) : ("local_" + getOrCreateLocalUid());
-const STORAGE_KEY = "portret_v3_" + CLIENT_ID;
-
-// Supabase client
-const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STORAGE_KEY = "portret_pilot_v2";
 
 let state = {
-  name: TELEGRAM_FIRST_NAME || "",
+  name: "",
   startDate: "",
   screen: "welcome",
   blockIdx: 0,
@@ -544,83 +551,16 @@ let state = {
   answers: {},
 };
 
-let lastSyncedCount = 0;
-let syncInFlight = false;
-
-function saveStateLocal() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
-}
-
-async function syncToSupabase(force) {
-  if (syncInFlight) return;
-  const total = Object.keys(state.answers).length;
-  // Шлём в облако: либо завершили, либо прошло 10+ новых ответов
-  if (!force && state.screen !== "results" && total - lastSyncedCount < 10) return;
-  syncInFlight = true;
-  try {
-    const isCompleted = state.screen === "results";
-    const payload = {
-      client_id: CLIENT_ID,
-      client_name: state.name || TELEGRAM_FIRST_NAME,
-      status: isCompleted ? "completed" : "in_progress",
-      answers: state.answers,
-      test_version: "v2",
-    };
-    if (state.startDate) payload.created_at = state.startDate;
-    if (isCompleted) {
-      payload.completed_at = new Date().toISOString();
-      try {
-        const { percentiles } = calculateScores();
-        payload.scale_scores = percentiles;
-      } catch (e) {}
-    }
-    await sb.from("portraits").upsert(payload, { onConflict: "client_id" });
-    lastSyncedCount = total;
-  } catch (e) {
-    console.error("Supabase sync failed:", e);
-  } finally {
-    syncInFlight = false;
-  }
-}
-
-function saveState() {
-  saveStateLocal();
-  syncToSupabase(false);
-}
-
-async function loadState() {
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+function loadState() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) state = Object.assign(state, JSON.parse(s));
   } catch(e) {}
-  try {
-    const { data } = await sb.from("portraits").select("*").eq("client_id", CLIENT_ID).maybeSingle();
-    if (data && data.answers) {
-      const cloudCount = Object.keys(data.answers).length;
-      const localCount = Object.keys(state.answers).length;
-      if (cloudCount > localCount) {
-        state.answers = data.answers;
-        state.name = data.client_name || state.name;
-        if (data.created_at) state.startDate = data.created_at;
-        if (data.status === "completed") state.screen = "results";
-        else if (cloudCount > 0) state.screen = "item";
-        lastSyncedCount = cloudCount;
-        saveStateLocal();
-      } else {
-        lastSyncedCount = cloudCount;
-      }
-    }
-  } catch (e) {
-    console.error("Supabase load failed:", e);
-  }
 }
-
 function resetState() {
-  state = { name: TELEGRAM_FIRST_NAME || "", startDate: "", screen: "welcome", blockIdx: 0, itemIdxInBlock: 0, answers: {} };
-  lastSyncedCount = 0;
-  saveStateLocal();
-  sb.from("portraits").delete().eq("client_id", CLIENT_ID).then(() => {}).catch(() => {});
-  render();
+  state = { name: "", startDate: "", screen: "welcome", blockIdx: 0, itemIdxInBlock: 0, answers: {} };
+  saveState(); render();
 }
 
 function getBlockItemIndices(blockId) {
@@ -804,22 +744,13 @@ function renderItem(app) {
     </div>
     <div class="actions">
       ${!isFirst ? '<button class="secondary" onclick="prevItem()">Назад</button>' : ""}
+      <button onclick="nextItem()" ${currentAnswer===undefined?"disabled":""}>${isLast ? "Завершить блок" : "Дальше"}</button>
     </div>
   `;
 }
 
-let autoAdvanceTimer = null;
-
 function selectAnswer(globalIdx, value) {
-  state.answers[globalIdx] = value;
-  saveState();
-  render();
-  // Автопереход к следующему вопросу через 280мс — пользователь успевает увидеть выбор
-  if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
-  autoAdvanceTimer = setTimeout(() => {
-    autoAdvanceTimer = null;
-    if (state.screen === "item") nextItem();
-  }, 280);
+  state.answers[globalIdx] = value; saveState(); render();
 }
 
 function prevItem() { if (state.itemIdxInBlock > 0) state.itemIdxInBlock--; render(); }
@@ -897,13 +828,7 @@ function toggleScale(el) {
   else { detail.style.display = "none"; el.classList.remove("expanded"); }
 }
 
-async function init() {
-  document.getElementById("app").innerHTML = '<p class="lead" style="margin-top: 32px;">Загружаю...</p>';
-  await loadState();
-  if (state.screen === "results") syncToSupabase(true);
-  render();
-}
-init();
+loadState(); render();
 </script>
 </body>
 </html>
