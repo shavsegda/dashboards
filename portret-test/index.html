@@ -87,11 +87,18 @@ button.secondary:hover { background: #ebe7dc; }
 <main id="app"></main>
 <script>
 // === ЗАЩИТА ДОСТУПА ===
-// Без персонального токена в URL — заглушка с CTA в Telegram.
+// Пускаем если есть ?token= (выдан Алексеем), или ?u=tg_XXX (как из бота),
+// или открыто внутри Telegram WebApp с пользовательскими данными.
+// Без идентификации — заглушка.
 (function checkAccess() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
-  if (!token || token.length < 16) {
+  const u = params.get('u');
+  const fromTelegram = !!(window.Telegram && window.Telegram.WebApp
+    && window.Telegram.WebApp.initDataUnsafe
+    && window.Telegram.WebApp.initDataUnsafe.user);
+  const ok = (token && token.length >= 16) || (u && u.length >= 4) || fromTelegram;
+  if (!ok) {
     document.body.innerHTML = `
       <main style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center;padding:60px 24px;max-width:520px;margin:60px auto;color:#1a1a1a;">
         <h1 style="font-size:26px;font-weight:600;margin-bottom:16px;letter-spacing:-0.01em;">Персональная страница</h1>
