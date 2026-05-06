@@ -202,13 +202,16 @@ function updateProgress() {
 const app = document.getElementById('app');
 
 function renderWelcome() {
+  const inTelegram = !!(window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function');
+  const history = getHistory();
   app.innerHTML = `
     <h1>Недельный замер</h1>
     <p class="lead">21 вопрос за 5–7 минут. Замеряем благополучие, настроение и тревогу. После — увидишь свой результат и динамику за все недели.</p>
     <p class="note">Бесплатно. Каждое воскресенье — новый замер. Все данные привязаны к твоему профилю.</p>
     <div class="actions">
       <button onclick="start()">Начать</button>
-      ${getHistory().length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+      ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+      ${inTelegram && history.length ? '<button class="secondary" onclick="sendToBotAndClose()">Отправить последний замер боту</button>' : ''}
     </div>
   `;
   updateProgress();
@@ -305,7 +308,8 @@ function renderResult(record) {
     ` : '<p class="note">Это твой первый замер. Возвращайся через неделю — увидишь динамику.</p>'}
 
     <div class="actions">
-      <button class="secondary" onclick="renderWelcome()">На главную</button>
+      <button onclick="sendToBotAndClose()">Готово, отправить боту</button>
+      <button class="secondary" onclick="renderWelcome()">Посмотреть историю</button>
     </div>
   `;
   updateProgress();
@@ -411,13 +415,20 @@ function getWeekStart() {
 
 // === ХРАНЕНИЕ ===
 function saveRecord(record) {
-  // 1. LocalStorage — всегда (для просмотра истории на этой странице)
+  // 1. LocalStorage — всегда (для показа истории на этой странице)
   const history = getHistory();
   history.push(record);
   localStorage.setItem('weekly_history_' + USER_ID, JSON.stringify(history));
+  // 2. Отправка боту произойдёт по нажатию «Готово» на экране результата.
+}
 
-  // 2. Telegram WebApp — отправляем боту, он пишет в Supabase через service key
-  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+function sendToBotAndClose() {
+  // Берём последнюю запись из истории и шлём боту.
+  const history = getHistory();
+  if (!history.length) return;
+  const record = history[history.length - 1];
+
+  if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function') {
     try {
       window.Telegram.WebApp.sendData(JSON.stringify({
         action: 'weekly_assessment',
@@ -427,17 +438,19 @@ function saveRecord(record) {
         phq9_total: record.phq9_total,
         gad7_total: record.gad7_total,
         answers: record.answers,
-        flags: { suicide_risk: (state.answers['PHQ-9_8'] || 0) >= 1 }
+        flags: { suicide_risk: (record.answers['PHQ-9_8'] || 0) >= 1 }
       }));
-      // Telegram автоматически закрывает Mini App после sendData,
-      // но при необходимости можно вручную:
-      // setTimeout(() => window.Telegram.WebApp.close(), 1500);
+      // Telegram сам закроет mini app после sendData.
+      // Но на всякий случай — явный close через секунду:
+      setTimeout(() => {
+        try { window.Telegram.WebApp.close(); } catch (e) {}
+      }, 800);
     } catch (e) {
-      console.warn('Telegram sendData failed:', e);
+      alert('Не получилось отправить боту: ' + e.message);
     }
+  } else {
+    alert('Mini App открыт вне Telegram — данные сохранены локально.');
   }
-  // Если открыто вне Telegram — данные только в LocalStorage,
-  // ничего не происходит. Это нормально для разработки и тестов.
 }
 
 function getHistory() {
