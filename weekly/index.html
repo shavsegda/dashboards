@@ -442,9 +442,17 @@ async function finish() {
 
   // Параллельно — сохранить в Supabase
   const ok = await saveToSupabase(record);
-  // После завершения сохранения — обновить экран (показать sync-status)
   if (ok) {
     history = await loadHistoryFromSupabase();
+    // Триггерим бота: пусть прочитает свежие данные и напишет осмысленный ответ.
+    // Сами данные уже в Supabase — sendData нужен только как сигнал.
+    if (tg && typeof tg.sendData === 'function') {
+      try {
+        tg.sendData(JSON.stringify({ action: 'weekly_done' }));
+      } catch (e) {
+        console.warn('sendData failed (not critical):', e);
+      }
+    }
   }
   renderResult(record);
 }
