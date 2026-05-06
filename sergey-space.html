@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Сергей · пространство</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+    --focus: #0057d9;
+    --main: #d13438;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    font-feature-settings: "kern", "calt";
+  }
+
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .header-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .header-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 24px 0;
+  }
+  .header-grid {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 4px 16px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .header-grid dt {
+    color: var(--ink-soft);
+    text-transform: lowercase;
+  }
+  .header-grid dd { margin: 0; }
+
+  .pathway {
+    margin: 40px 0 48px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .pathway-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+  .pathway-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .pathway-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .pathway-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pathway-legend-item::before {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--ink-faint);
+    background: #fff;
+  }
+  .pathway-legend-item.done::before {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .pathway-legend-item.current::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .pathway-track {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .pathway-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 14px 10px 16px;
+    border-right: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+    min-height: 100px;
+    text-align: center;
+  }
+  .pathway-step:last-child { border-right: none; }
+  .pathway-step::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--ink-faint);
+    background: #fff;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .pathway-step.year::before {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--ink-faint);
+    background: #fff;
+    transform: rotate(45deg);
+  }
+  .pathway-step-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .pathway-step-period {
+    font-size: 10px;
+    line-height: 1.3;
+    color: inherit;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+    opacity: 0.85;
+  }
+  .pathway-step.done::before {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .pathway-step.done { color: var(--ink); }
+  .pathway-step.current::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .pathway-step.current {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .pathway-step.current .pathway-step-label {
+    color: var(--accent);
+  }
+  .pathway-caption {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.5;
+  }
+  .pathway-caption .here {
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  section {
+    margin: 56px 0;
+  }
+  .sec-label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  section > h2 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px 0;
+    line-height: 1.25;
+  }
+  p { margin: 12px 0; }
+
+  .entries {
+    border-top: 1px solid var(--line);
+    margin: 16px 0;
+  }
+  .entry {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 24px;
+    align-items: start;
+  }
+  .entry-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .entry-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    white-space: nowrap;
+    align-self: start;
+  }
+  .entry-tag.main {
+    color: var(--main);
+    border-color: var(--main);
+  }
+  .entry-tag.active {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .entry-body {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .highlight {
+    margin: 32px 0;
+    padding: 20px 24px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+  }
+  .highlight-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .highlight-body {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .history-item {
+    margin: 20px 0;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    background: #fafafa;
+  }
+  .history-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+    gap: 16px;
+  }
+  .history-date {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+  .history-title {
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+  }
+  .history-body {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .history-body p { margin: 6px 0; }
+  .history-body strong { color: var(--ink); }
+
+  .step {
+    margin: 24px 0;
+    border: 1px solid var(--line);
+  }
+  .step-head {
+    padding: 14px 20px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .step-num {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+  }
+  .step-body {
+    padding: 20px;
+  }
+  .step-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 20px;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+  }
+  .step-grid dt {
+    color: var(--ink-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding-top: 2px;
+  }
+  .step-grid dd { margin: 0; }
+
+  input[type="text"], input[type="date"], input[type="number"], select, textarea {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 0;
+  }
+  input[type="number"] { width: 56px; text-align: center; }
+  input[type="date"] { min-width: 130px; }
+  textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 48px;
+    line-height: 1.5;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--focus);
+  }
+
+  .metrics .field {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .metrics .field:first-child { border-top: 1px solid var(--line); }
+  .metrics .field-num {
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+  .metrics input {
+    width: 100%;
+    padding: 6px 0;
+    border: none;
+    font-size: 14px;
+    color: var(--ink);
+    background: transparent;
+  }
+  .metrics input:focus { border: none; }
+  .metrics input::placeholder { color: var(--ink-faint); }
+
+  .map {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .map th, .map td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .map th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    font-weight: 500;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 10px;
+  }
+  .map td.num { font-variant-numeric: tabular-nums; }
+
+  .footer {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .footer p { margin: 8px 0; }
+  .footer .meta-hash {
+    margin-top: 20px;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .toolbar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 4px;
+    z-index: 10;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.12s;
+  }
+  .btn:hover { border-color: var(--ink); }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+
+  .save-indicator {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--ink);
+    color: #fff;
+    padding: 6px 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .save-indicator.show { opacity: 1; }
+
+  /* Парольный гейт */
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+
+  @media print {
+    .toolbar, .save-indicator, #gate { display: none; }
+    body { padding: 24px; max-width: 170mm; font-size: 10pt; }
+    .step, .entry, .highlight, .history-item { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 620px) {
+    body { padding: 32px 20px 80px; font-size: 13px; }
+    .header-title { font-size: 22px; }
+    .step-grid, .metrics .field { grid-template-columns: 1fr; gap: 4px; }
+    .step-grid dt { padding-top: 10px; }
+    .header-grid { grid-template-columns: 100px 1fr; }
+    .toolbar { top: 8px; right: 8px; }
+    .pathway-track { padding: 0 6px; gap: 2px; }
+  }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы посмотреть пространство</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="exportData()">Файл</button>
+  <button class="btn" onclick="window.print()">PDF</button>
+  <button class="btn" onclick="clearAll()">Стереть</button>
+</div>
+
+<div class="save-indicator" id="saveIndicator">Сохранено</div>
+
+<div class="header">
+  <div class="header-kicker">Пространство собственника · обновлено 2026-05-06</div>
+  <h1 class="header-title">Сергей</h1>
+  <dl class="header-grid">
+    <dt>тренер</dt><dd>Алексей Шаповалов</dd>
+    <dt>формат</dt><dd>еженедельная поддержка</dd>
+    <dt>в работе с</dt><dd>март 2026</dd>
+  </dl>
+</div>
+
+<div class="pathway">
+  <div class="pathway-head">
+    <div class="pathway-label">Тренировочный год</div>
+    <div class="pathway-legend">
+      <span class="pathway-legend-item done">пройдено</span>
+      <span class="pathway-legend-item current">сейчас</span>
+    </div>
+  </div>
+  <div class="pathway-track">
+    <div class="pathway-step">
+      <span class="pathway-step-label">1 квартал</span>
+      <span class="pathway-step-period">янв–март 2026</span>
+    </div>
+    <div class="pathway-step current">
+      <span class="pathway-step-label">2 квартал</span>
+      <span class="pathway-step-period">апр–июнь 2026</span>
+    </div>
+    <div class="pathway-step">
+      <span class="pathway-step-label">3 квартал</span>
+      <span class="pathway-step-period">июль–сент 2026</span>
+    </div>
+    <div class="pathway-step">
+      <span class="pathway-step-label">4 квартал</span>
+      <span class="pathway-step-period">окт–дек 2026</span>
+    </div>
+    <div class="pathway-step year">
+      <span class="pathway-step-label">Годовая</span>
+      <span class="pathway-step-period">декабрь 2026</span>
+    </div>
+  </div>
+  <div class="pathway-caption">
+    <span class="here">где ты сейчас.</span> 6 мая ты переоформил главную тему: «я не понимаю свою роль» → «мы оба не понимаем эту роль» (системный пробел партнёрства). Сам собрал свою роль через 5 функций над 250 млн прибыли в год. И сделал большие ходы — согласовал с акционерами 40 млн сжатия расходов по году, предъявил Ярославу «3 млн как условие сделки». Разрешил себе передать функцию: если задача не твоя — берёшь на неё человека.
+  </div>
+</div>
+
+<section>
+  <div class="sec-label">§ I</div>
+  <h2>Где ты сейчас</h2>
+  <p>Твоя роль — <strong>архитектор стратегии над метрикой 250 млн прибыли в год</strong>. Прогнозируешь, мониторишь отклонения, выбираешь как переживём, объясняешь, реализуешь план. Это та же роль, что год назад держала компанию, когда Слава сел в тюрьму — меняется состояние компании, не функция.</p>
+  <p>В одной роли пока совмещаешь архитектурную часть и узкое место — без тебя технически не внедряются изменения. Совмещение и есть выгорание под нагрузкой. Срачи с Ярославом по мелочам, по 2 часа на восстановление — это не настроение, это нагрузка узкого места под стратегической ответственностью.</p>
+  <p>Главный сдвиг недели — от «через меня всё, технически невозможно иначе» к <strong>«если есть задачи, которые я не могу делать, можно взять на эту задачу отдельного человека»</strong>. Решение по узкому месту: должен появиться менеджер сырых проектов, который менеджерит новые потенциально интересные инициативы. Ты остаёшься в архитектурной части.</p>
+  <p>Параллельно — твой личный проект с Димой. Хочешь «кайфануть, что инвестируешь в людей и бизнес растёт». Тревожит «не уверен, что это не фантазии мои». Решение через критерии — не отказ, а проверка через факт за 4-6 недель.</p>
+</section>
+
+<section>
+  <div class="sec-label">§ II</div>
+  <h2>Где корень сейчас</h2>
+
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">Бизнес</div>
+      <div class="entry-tag main">главное</div>
+      <div class="entry-body">Стратегия выбрана через действие: согласовал с акционерами <strong>40 млн сжатия расходов по году</strong> — большая часть недозаработка 50–80 млн закрывается через сжатие, не через усиление айт-проектов. Параллельно: «3 млн в месяц как условие сделки» предъявлено Ярославу — он воспринял позитивно, обещал пойти к акционерам. Предъявление де-факто роли через цену сделано.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Роль и партнёрство</div>
+      <div class="entry-tag active">фокус сейчас</div>
+      <div class="entry-body">Ты сам переоформил проблему: «мы оба не понимаем роль гендира в нашей связке». Это не личное, а системный пробел партнёрства — отсюда срачи по мелочам как столкновения двух разных интуиций о «должен / не должен». Решение: сначала ты описываешь свою роль на бумаге для себя, потом разговор с Ярославом — но не на этой неделе. На этой — снимаешь модель с себя, как делал 1 апреля для клиентов А.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Дима — личный проект</div>
+      <div class="entry-tag active">фокус сейчас</div>
+      <div class="entry-body">Твой подопечный, не часть основного бизнеса. Хочется инвестировать в его рост — открыть офис, нанять опытных рядом. Тормозит подозрение к собственной мечте: «не уверен, что это не фантазии мои». Решение — отделить фантазию от реальности через критерии за 4-6 недель, не через отказ. Пятница 8 мая — прописываешь критерии. Дима НЕ кандидат в менеджеры сырых проектов — это разные функции.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Ты сам</div>
+      <div class="entry-tag main">главное</div>
+      <div class="entry-body">Внутренний разрешающий ход: «если есть задачи, которые я не могу делать, можно взять на эту задачу отдельного человека». Это переход от позиции узкого места («через меня всё, технически невозможно») к позиции архитектора, который управляет системой через распределение ролей. Превентивная утренняя пауза работает — ловишь стресс рано, даёшь себе 1,5 часа. Реактивная сторона на этой неделе включалась — срачи с Ярославом, по 2 часа на восстановление.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Внешний мир</div>
+      <div class="entry-tag">фоном</div>
+      <div class="entry-body">Фасилитация встречи с конкурентами — здесь ты уже архитектор, Ярослав не вмешивается. Это место, где роль не оспаривается. Якорь в неделе срачей. Вопрос договорённостей с конкурентами по выплатам агентам и партнёрским соглашениям — отдельная зона, не требующая ресурса прямо сейчас.</div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <div class="highlight-label">Что под всем этим</div>
+    <div class="highlight-body">Один ход везде: <strong>сначала снимаешь модель с себя, потом несёшь</strong>. С клиентами А (1 апреля) — снять модель привлечения, потом передать сотрудникам. С айт-проектами (28 апреля) — собрать собственный инструмент выбора стратегии. С ролью гендира (6 мая) — описать свою роль и функцию того, кто закрывает узкое место, и только потом разговор с Ярославом. С Димой — прописать критерии, потом инвестиция. Это твой архитектурный паттерн. В нём ты сильный.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ III</div>
+  <h2>История встреч</h2>
+
+  <div class="history-item">
+    <div class="history-head">
+      <div class="history-title">Точка старта</div>
+      <div class="history-date">март 2026</div>
+    </div>
+    <div class="history-body">
+      <p><strong>Положение:</strong> формат подписки запущен. Первая квартальная сверка была запланирована, но соскочила за пару дней до даты. Внутри — паттерн «не знаю, какой запрос принести», ощущение, что встречи не дают накопительного эффекта.</p>
+      <p><strong>Главный сигнал:</strong> когда сам формулируешь запрос — он получается «высосанным из пальца». Когда не формулируешь — встреча без оси.</p>
+      <p><strong>Решение Алексея:</strong> с 28 апреля перейти на новый формат — ведущий держит структуру, темы готовятся заранее из графа работ. Гипотеза проверяется на 2–3 встречах.</p>
+    </div>
+  </div>
+
+  <div class="history-item">
+    <div class="history-head">
+      <div class="history-title">Модель привлечения клиентов класса А</div>
+      <div class="history-date">1 апреля 2026</div>
+    </div>
+    <div class="history-body">
+      <p><strong>Тема:</strong> построить систему привлечения клиентов класса А (~5 млн выручки) через сотрудников. Не продавать лично — собрать модель и передать.</p>
+      <p><strong>Главное, что увидел:</strong> доверие не делегируется напрямую. Сначала надо «снять модель с себя» — как именно ты выбираешь ЛПР, как ищешь точки сближения, как формируешь доверие. Слабое место сейчас — шаги 1–2 воронки (вход в контакт).</p>
+      <p><strong>Решение:</strong> не масштабировать гипотезу, а сначала описать собственный механизм. Роль — архитектор и тренер, не исполнитель.</p>
+      <p><strong>Первый шаг:</strong> пятница, 13:00, час работы с базой. 3–5 ЛПР. По каждому — почему ЛПР + точки сближения + идеи захода.</p>
+    </div>
+  </div>
+
+  <div class="history-item">
+    <div class="history-head">
+      <div class="history-title">Регуляция в моменте — «Виталик»</div>
+      <div class="history-date">21 апреля 2026</div>
+    </div>
+    <div class="history-body">
+      <p><strong>Тема:</strong> резкие перепады состояния. В ресурсе — «свернуть горы», в нересурсе — «любая мелочь выбивает». Триггер — ощущение неуважения или угрозы — переводит в агрессию или дистанцию. Остывание занимает 1–1,5 часа.</p>
+      <p><strong>Главное, что увидел:</strong> проблема не в эмоции, а в том, что в моменте состояние воспринимается как объективная реальность. Защитная система — «Виталик» — защищает от боли, но через агрессию. Невозможно «быть рациональным в эмоциональном». Можно — не действовать в искажёнке.</p>
+      <p><strong>Решение:</strong> разделить поведение на два этапа. В моменте — пауза (фраза + выход из контакта на 1–3 минуты). После остывания — вернуться и разрулить интеллектом.</p>
+      <p><strong>Первый шаг:</strong> при следующем «меня понесло» сказать на зуме «Коллеги, давайте паузу возьмём, я сейчас не в лучшем состоянии, вернусь позже». Критерий за 7 дней — минимум 1 ситуация, где взял паузу до эскалации.</p>
+    </div>
+  </div>
+
+  <div class="history-item">
+    <div class="history-head">
+      <div class="history-title">Документ айт-проектов: для кого он на самом деле</div>
+      <div class="history-date">28 апреля 2026</div>
+    </div>
+    <div class="history-body">
+      <p><strong>Тема:</strong> Кирилл и акционеры просят план айт-проектов с деньгами и сроками. Четыре активных направления — переезд платформы, Т-банк, ВТБ, МКБ. Ты пришёл со ступором: непонятно как считать и будет ли документом регулярно пользоваться кто-то кроме тебя.</p>
+      <p><strong>Главное, что увидел:</strong> проблема не в технике расчёта. Прошёл цепочку — Кириллу не нужен (ему проще риторикой), акционерам не нужен прямо, Ярославу — приходит «вспышками», конкретного запроса нет. Документ нужен <strong>тебе</strong>. Сначала сказал «для защиты», потом сам уточнил — «для выбора стратегии». Стратегия пока не выбрана: сократить расходы на сумму недозаработка (50–80 млн по году) или усилить проекты.</p>
+      <p><strong>Что увидел про роль:</strong> стратегические решения и видение — твои. Сейчас ты в позиции «фильтра чужих идей». Когда ярославские (Артём, Лёха) обходят тебя — у тебя злость, ты отпускаешь, задачи остаются в брошенном состоянии. Описал три модели реакции на обход (победил / тащу через колено / саботировал) — отдельная тема следующей встречи.</p>
+      <p><strong>Решение:</strong> делать документ как личный инструмент выбора стратегии. Цифры можно грубо. Закрыть один проект — посмотреть, как считается — решить, масштабировать ли.</p>
+      <p><strong>Первый шаг:</strong> сегодня, 28 апреля, 16:00 — один час под Т-банк. Когда запустится, сколько примерно принесёт. Это не отчёт для Кирилла, а первый кусочек развилки.</p>
+      <p><strong>Что забираешь:</strong> «Прицеливаемся в 3 млн в месяц. Жена будет счастлива, я буду счастлив. Это благородно. И мы ребёнка родим.»</p>
+    </div>
+  </div>
+
+  <div class="history-item">
+    <div class="history-head">
+      <div class="history-title">Роль гендира в связке с Ярославом</div>
+      <div class="history-date">6 мая 2026</div>
+    </div>
+    <div class="history-body">
+      <p><strong>Тема:</strong> ты пришёл с состоянием «не понимаю, что я делаю», полнедели срачей с Ярославом по мелочам, по 2 часа на восстановление. На фоне — большие ходы недели: согласовал 40 млн сжатия расходов по году, сказал Ярославу «вы мне заплатите, если я план по году», он принял позитивно. Но в моменте срача, когда Ярослав спрашивает «что ты делаешь вообще» — слов нет.</p>
+      <p><strong>Главное, что увидел:</strong> сам собрал свою роль через 5 функций над 250 млн прибыли — прогноз / мониторинг отклонений / выбор как переживать / объяснение / реализация. Признал ретроспективу: год назад спасал компанию, когда Слава сел в тюрьму. Это та же роль, по-разному включается под состояние компании.</p>
+      <p><strong>Главный сдвиг:</strong> переоформил проблему — «мы по-разному понимаем роль» → «мы оба не понимаем эту роль». Это не личное, а системный пробел партнёрства. И главный внутренний разрешающий ход: «если есть задачи, которые я не могу делать, можно взять на эту задачу отдельного человека». Архитектор, не узкое место.</p>
+      <p><strong>Решение:</strong> создать роль в системе — должен появиться менеджер сырых проектов. Не «работать над собой в моменте», а структурный инструмент. Сначала — описание роли на бумаге для себя. К Ярославу с разговором — не на этой неделе.</p>
+      <p><strong>Первый шаг:</strong> завтра, 7 мая, 14:00–16:00 — описать роль и функцию менеджера сырых проектов. Пятница, 8 мая, 14:00–16:00 — прописать критерии «движется или нет» по Диме на 4-6 недель.</p>
+      <p><strong>Что забираешь:</strong> «Профиль должности и критерии для дела с Димой.»</p>
+    </div>
+  </div>
+</section>
+
+<section class="metrics">
+  <div class="sec-label">§ IV</div>
+  <h2>Мои три метрики</h2>
+  <p style="color: var(--ink-soft); font-size: 13px; margin-bottom: 8px;">Три вещи, по которым ты сам меряешь свою неделю. Не выручка и не закрытые сделки, а то, что для тебя лично означает «иду правильно».</p>
+  <p style="color: var(--ink-soft); font-size: 13px; margin-bottom: 8px;">Финансовые проступают сами — 250 млн прибыли в год, 3 млн в месяц, 40 млн сжатия. На следующих встречах посмотрим, что появится из «нефинансовых».</p>
+  <div class="field">
+    <div class="field-num">01</div>
+    <input type="text" data-store="metric1" placeholder="первая метрика — выберем на встрече">
+  </div>
+  <div class="field">
+    <div class="field-num">02</div>
+    <input type="text" data-store="metric2" placeholder="вторая метрика">
+  </div>
+  <div class="field">
+    <div class="field-num">03</div>
+    <input type="text" data-store="metric3" placeholder="третья метрика">
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ V</div>
+  <h2>Что в работе прямо сейчас</h2>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">01</div>
+      <div class="step-title">Описание роли — завтра, 7 мая, 14:00–16:00</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>За два часа на бумаге: твоя роль гендира (5 функций над 250 млн прибыли — прогноз, мониторинг отклонений, выбор как переживать, объяснение, реализация) + функция менеджера сырых проектов (что делает, какой профиль, где границы с тобой). Снять модель с себя, как делал 1 апреля для клиентов А.</dd>
+        <dt>Срок</dt>
+        <dd>Завтра, 7 мая, 14:00–16:00 — слот в календаре</dd>
+        <dt>Как поймёшь</dt>
+        <dd>Документ на одной странице. Ты сам читаешь и видишь — это твой инструмент, не «галочка».</dd>
+        <dt>Что не делать</dt>
+        <dd>До 13 мая Ярославу не показываешь. Сначала свою рамку, потом разговор.</dd>
+        <dt>Принцип</dt>
+        <dd>Архитектор сначала снимает модель с себя, потом несёт. Это твоя сильная зона.</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">02</div>
+      <div class="step-title">Критерии Димы — пятница, 8 мая, 14:00–16:00</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Прописать критерии «движется или нет» на 4-6 недель по Диме. 3–5 пунктов: что должно проявиться, чтобы сказать «работает». С датой проверки. Продолжение работы, начатой в боте 02.05.</dd>
+        <dt>Срок</dt>
+        <dd>Пятница, 8 мая, 14:00–16:00 — слот в календаре</dd>
+        <dt>Как поймёшь</dt>
+        <dd>Список критериев с конкретными датами. Не «всё стало лучше», а «по этим N признакам видно, что работает».</dd>
+        <dt>Зачем</dt>
+        <dd>«Не уверен, что это не фантазии мои» — здоровая самопроверка. Проверим через факт за 4-6 недель, не через отказ.</dd>
+        <dt>Принцип</dt>
+        <dd>Создаёшь тест, не отказываешься. Тогда даже отрицательный результат = ясность.</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">03</div>
+      <div class="step-title">Разговор с Ярославом про человека — отложен до 13 мая</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Идея «должен появиться менеджер сырых проектов» появилась на встрече 6 мая. Ты сам остановил себя от разговора с Ярославом сейчас — на «почему? зачем?» нет короткого ответа. Сначала описание роли (шаг 01), потом разговор.</dd>
+        <dt>До</dt>
+        <dd>Следующая встреча с Алексеем, 13 мая</dd>
+        <dt>Что не делать</dt>
+        <dd>С Ярославом разговор сам не запускай. Если он в курилке снова заведёт — слушай, не разворачивай. Если потянет в живой разговор — пиши до того, как идти.</dd>
+        <dt>Что делать</dt>
+        <dd>Шаги 01 и 02 — это и есть подготовка. Когда документ будет в руках — разговор станет возможным, потому что у тебя готовый ответ на «почему? зачем?».</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">04</div>
+      <div class="step-title">Срачи и Виталик — фон, не разбираем сами</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Превентивная утренняя пауза работает — даёшь себе 1,5 часа, разговариваешь с собой, мир предупреждаешь. На этой неделе была реактивная сторона: срачи по мелочам с Ярославом, по 2 часа на восстановление. Сами эпизоды на встрече 6 мая не разбирали — это симптом большой рамки роли, которую ты сейчас собираешь.</dd>
+        <dt>Что важно</dt>
+        <dd>Если конкретный эпизод выбьет — отметь хотя бы одной строчкой боту. Не давай 2 часа на восстановление становиться нормой.</dd>
+        <dt>Когда вернёмся</dt>
+        <dd>Если повторится на этой неделе — копнём отдельно. Иначе — рамка роли уберёт причину.</dd>
+        <dt>Принцип</dt>
+        <dd>Не «убрать эмоцию», а «не действовать в искажёнке».</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ VI</div>
+  <h2>Карта пути впереди</h2>
+  <table class="map">
+    <thead>
+      <tr><th>Тема</th><th>Статус</th><th>Что впереди</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Описание роли + функции менеджера сырых проектов</td>
+        <td class="num">сейчас</td>
+        <td>Завтра 14:00–16:00 — снимаешь модель с себя на одной странице. К 13 мая документ есть, готов к разговору с Ярославом.</td>
+      </tr>
+      <tr>
+        <td>Критерии Димы на 4-6 недель</td>
+        <td class="num">сейчас</td>
+        <td>Пятница 14:00–16:00 — что должно проявиться, чтобы сказать «движется». С датой проверки. Это способ отделить фантазию от факта.</td>
+      </tr>
+      <tr>
+        <td>Разговор с Ярославом про менеджера сырых проектов</td>
+        <td class="num">отложен</td>
+        <td>Не на этой неделе. Сначала твоё описание в руках. На встрече 13 мая разберём, как заходить — на «почему? зачем?» Ярослава у тебя должен быть ответ через документ, не через слова в моменте.</td>
+      </tr>
+      <tr>
+        <td>3 млн как условие сделки — реакция треугольника</td>
+        <td class="num">наблюдаем</td>
+        <td>Слово предъявлено, Ярослав воспринял позитивно, обещал пойти к акционерам. На следующей встрече — что произошло, кто из акционеров что сказал.</td>
+      </tr>
+      <tr>
+        <td>40 млн сжатия расходов — выбор стратегии</td>
+        <td class="num">сделан</td>
+        <td>Согласовано с акционерами. Это поворот к стратегии «сократить» из развилки 28 апреля. На следующей встрече — что входит в эту цифру, какие статьи.</td>
+      </tr>
+      <tr>
+        <td>Т-банк со 28 апреля</td>
+        <td class="num">не проверен</td>
+        <td>Шаг от прошлой встречи. На сессии 6 мая не успели. Спросим в начале следующей встречи.</td>
+      </tr>
+      <tr>
+        <td>Срачи с Ярославом по мелочам</td>
+        <td class="num">фон</td>
+        <td>На этой неделе включалась реактивная сторона. Если повторится — копнём отдельно. Если рамка роли уберёт причину — сами уйдут.</td>
+      </tr>
+      <tr>
+        <td>Модель привлечения клиентов А</td>
+        <td class="num">в паузе</td>
+        <td>3–5 ЛПР висят с 1 апреля без проверки три встречи. Возможно, тема неактивна — спросим на 13 мая, актуально ли.</td>
+      </tr>
+      <tr>
+        <td>Свои три метрики</td>
+        <td class="num">проступают</td>
+        <td>Финансовые есть — 250 млн прибыли, 3 млн в месяц, 40 млн сжатия. Что появится из «нефинансовых» — ловим.</td>
+      </tr>
+      <tr>
+        <td>Бот «Вслух» как канал</td>
+        <td class="num">работает</td>
+        <td>Сам зафиксировал в Фазе 5: «когда блокнусь — напишу боту, мне с этим нормально». Используешь без сопротивления.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="footer">
+  <p>Это твоё пространство. Оно живёт между нашими встречами. Заполняй, когда удобно — поля сохраняются в твоём браузере, я их не вижу.</p>
+  <p>В остром моменте пиши в Telegram. Я в рабочее время на связи.</p>
+  <div class="meta-hash">doc.id · sergey.space.2026-05-06</div>
+</div>
+
+</div>
+
+<script>
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("sergey-space-unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  if (sessionStorage.getItem("sergey-space-unlocked") === "1") {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("content").classList.add("unlocked");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+
+  const STORAGE_PREFIX = 'space-sergey-';
+  const saveIndicator = document.getElementById('saveIndicator');
+  let saveTimeout;
+
+  function showSaved() {
+    saveIndicator.classList.add('show');
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveIndicator.classList.remove('show'), 1200);
+  }
+
+  function updateMetricLabels() {
+    for (let i = 1; i <= 3; i++) {
+      const input = document.querySelector(`[data-store="metric${i}"]`);
+      const value = input ? input.value.trim() : '';
+      document.querySelectorAll(`.metric-label[data-metric-label="${i}"]`).forEach(label => {
+        if (value) {
+          label.textContent = value;
+          label.classList.remove('placeholder');
+        } else {
+          label.textContent = `метрика ${i}`;
+          label.classList.add('placeholder');
+        }
+      });
+    }
+  }
+
+  document.querySelectorAll('[data-store]').forEach(el => {
+    const key = STORAGE_PREFIX + el.dataset.store;
+    const saved = localStorage.getItem(key);
+    if (saved !== null) el.value = saved;
+
+    const handler = () => {
+      localStorage.setItem(key, el.value);
+      showSaved();
+      if (/^metric[123]$/.test(el.dataset.store)) updateMetricLabels();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  updateMetricLabels();
+
+  function exportData() {
+    const data = {};
+    document.querySelectorAll('[data-store]').forEach(el => {
+      if (el.value) data[el.dataset.store] = el.value;
+    });
+    data._exported = new Date().toISOString();
+    data._client = 'Сергей';
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sergey-space-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAll() {
+    if (!confirm('Стереть всё, что ты вписал? Отменить нельзя.')) return;
+    document.querySelectorAll('[data-store]').forEach(el => {
+      localStorage.removeItem(STORAGE_PREFIX + el.dataset.store);
+      el.value = '';
+    });
+  }
+</script>
+
+</body>
+</html>
