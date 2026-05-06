@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Недельный замер</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
 body { min-height: 100vh; }
 
-/* Прогресс */
 .progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
 .progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 .progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
@@ -23,7 +23,6 @@ p { margin-bottom: 12px; color: #444; }
 .lead { font-size: 16px; color: #555; margin-bottom: 24px; }
 .note { font-size: 13px; color: #888; }
 
-/* Кнопки */
 button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
 button:hover { background: #333; }
 button:disabled { background: #ccc; cursor: not-allowed; }
@@ -31,7 +30,6 @@ button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d
 button.secondary:hover { background: #ebe7dc; }
 .actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* Карточка вопроса */
 .q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
 .q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
 .q-text { font-size: 18px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
@@ -42,7 +40,6 @@ button.secondary:hover { background: #ebe7dc; }
 .q-option.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
 .q-option-text { font-size: 15px; flex: 1; }
 
-/* Результат */
 .result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
 .result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0ede6; }
 .result-row:last-child { border-bottom: 0; }
@@ -54,14 +51,14 @@ button.secondary:hover { background: #ebe7dc; }
 .status-orange { background: #ffedd5; color: #9a3412; }
 .status-red    { background: #fee2e2; color: #991b1b; }
 
-/* История */
 .history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; font-size: 14px; }
 .history-date { color: #888; min-width: 90px; }
 .history-pills { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
 .pill { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
 
-/* Заглушка */
 .empty { text-align: center; padding: 40px 20px; color: #888; }
+.sync-status { font-size: 12px; color: #4a8c5e; }
+.sync-status.error { color: #b91c1c; }
 
 @media (max-width: 600px) {
   main { padding: 24px 16px 80px; }
@@ -79,35 +76,38 @@ button.secondary:hover { background: #ebe7dc; }
   </div>
 </header>
 <main id="app"></main>
-
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-// === ХРАНЕНИЕ ===
-// Данные сохраняются в LocalStorage браузера + отправляются боту
-// через Telegram.WebApp.sendData. Бот пишет в Supabase через service key.
-// Без Supabase ANON KEY на клиенте — это безопаснее.
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 
-// === ИДЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЯ ===
-function getUserId() {
-  // 1. Telegram WebApp SDK — приоритет
-  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
-    return 'tg_' + window.Telegram.WebApp.initDataUnsafe.user.id;
-  }
-  // 2. URL-параметр ?u=USER_ID
+const TELEGRAM_USER_ID = tg?.initDataUnsafe?.user?.id;
+const TELEGRAM_FIRST_NAME = tg?.initDataUnsafe?.user?.first_name || "";
+
+// === Идентификатор клиента ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+// Приоритет: 1) ?u=tg_XXX из URL (передаёт бот) 2) Telegram WebApp 3) anon LocalStorage
+function getClientId() {
   const params = new URLSearchParams(window.location.search);
   const u = params.get('u');
-  if (u) return 'url_' + u;
-  // 3. Fallback — LocalStorage анонимный ID
-  let anon = localStorage.getItem('anon_user_id');
-  if (!anon) {
-    anon = 'anon_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
-    localStorage.setItem('anon_user_id', anon);
-  }
-  return anon;
+  if (u) return u;
+  if (TELEGRAM_USER_ID) return "tg_" + TELEGRAM_USER_ID;
+  return "local_" + getOrCreateLocalUid();
 }
+const CLIENT_ID = getClientId();
+const STORAGE_KEY = "weekly_v1_" + CLIENT_ID;
 
-const USER_ID = getUserId();
+// === Supabase client ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// === ДАННЫЕ ТЕСТОВ ===
+// === Данные тестов ===
 const SCALE_WHO = [
   {label: 'Никогда', value: 0},
   {label: 'Иногда', value: 1},
@@ -116,18 +116,14 @@ const SCALE_WHO = [
   {label: 'Большую часть времени', value: 4},
   {label: 'Всё время', value: 5}
 ];
-
 const SCALE_PHQ_GAD = [
   {label: 'Совсем нет', value: 0},
   {label: 'Несколько дней', value: 1},
   {label: 'Более половины дней', value: 2},
   {label: 'Почти каждый день', value: 3}
 ];
-
 const TESTS = [
-  {
-    code: 'WHO-5',
-    title: 'Благополучие',
+  { code: 'WHO-5', title: 'Благополучие',
     instruction: 'Насколько каждое утверждение описывало твоё состояние за последние 2 недели?',
     scale: SCALE_WHO,
     questions: [
@@ -138,9 +134,7 @@ const TESTS = [
       'Мой день был наполнен делами, которые мне интересны'
     ]
   },
-  {
-    code: 'PHQ-9',
-    title: 'Настроение',
+  { code: 'PHQ-9', title: 'Настроение',
     instruction: 'Как часто за последние 2 недели тебя беспокоили следующие проблемы?',
     scale: SCALE_PHQ_GAD,
     questions: [
@@ -150,14 +144,12 @@ const TESTS = [
       'Чувство усталости или упадка сил',
       'Плохой аппетит или переедание',
       'Плохое мнение о себе — что я неудачник, либо подвёл себя или семью',
-      'Трудности с концентрацией внимания (например, при чтении или просмотре телевизора)',
-      'Замедленность в движениях или речи, заметная другим — или, наоборот, повышенная суетливость и беспокойство',
-      'Мысли о том, что лучше было бы умереть, или о том, чтобы причинить себе вред каким-нибудь образом'
+      'Трудности с концентрацией внимания',
+      'Замедленность в движениях или речи — или, наоборот, повышенная суетливость',
+      'Мысли о том, что лучше было бы умереть, или о том, чтобы причинить себе вред'
     ]
   },
-  {
-    code: 'GAD-7',
-    title: 'Тревога',
+  { code: 'GAD-7', title: 'Тревога',
     instruction: 'Как часто за последние 2 недели тебя беспокоили следующие проблемы?',
     scale: SCALE_PHQ_GAD,
     questions: [
@@ -172,19 +164,76 @@ const TESTS = [
   }
 ];
 
-// === СОСТОЯНИЕ ===
+// === Состояние ===
 const state = {
-  screen: 'welcome', // welcome | question | result | history
+  screen: 'welcome',
   testIdx: 0,
   questionIdx: 0,
-  answers: {}, // { 'WHO-5_0': 4, 'PHQ-9_2': 1, ... }
-  totalQuestions: TESTS.reduce((sum, t) => sum + t.questions.length, 0)
+  answers: {},
+  totalQuestions: TESTS.reduce((s, t) => s + t.questions.length, 0),
+  syncStatus: '', // 'syncing' | 'ok' | 'error'
+  syncMessage: ''
 };
 
-// === ЛОГИКА ПРОГРЕССА ===
-function answeredCount() {
-  return Object.keys(state.answers).length;
+let history = [];
+
+// === Supabase: история ===
+async function loadHistoryFromSupabase() {
+  try {
+    const { data, error } = await sb
+      .from("weekly_assessments")
+      .select("week_start, completed_at, who5_total, phq9_total, gad7_total, created_at")
+      .eq("client_id", CLIENT_ID)
+      .order("week_start", { ascending: false })
+      .limit(20);
+    if (error) {
+      console.error("Supabase load failed:", error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    console.error("Supabase load exception:", e);
+    return [];
+  }
 }
+
+// === Supabase: сохранение ===
+async function saveToSupabase(record) {
+  state.syncStatus = 'syncing';
+  state.syncMessage = 'Сохраняю...';
+  try {
+    const { error } = await sb
+      .from("weekly_assessments")
+      .upsert({
+        client_id: CLIENT_ID,
+        week_start: record.week_start,
+        completed_at: record.completed_at,
+        status: 'completed',
+        answers: record.answers,
+        who5_total: record.who5_total,
+        phq9_total: record.phq9_total,
+        gad7_total: record.gad7_total,
+        flags: record.flags
+      }, { onConflict: "client_id,week_start" });
+    if (error) {
+      console.error("Supabase save error:", error);
+      state.syncStatus = 'error';
+      state.syncMessage = 'Не удалось сохранить в облаке: ' + (error.message || 'неизвестная ошибка');
+      return false;
+    }
+    state.syncStatus = 'ok';
+    state.syncMessage = 'Сохранено в облаке. Бот теперь видит результат.';
+    return true;
+  } catch (e) {
+    console.error("Supabase save exception:", e);
+    state.syncStatus = 'error';
+    state.syncMessage = 'Ошибка сети: ' + e.message;
+    return false;
+  }
+}
+
+// === Прогресс ===
+function answeredCount() { return Object.keys(state.answers).length; }
 function updateProgress() {
   const bar = document.getElementById('progressBar');
   const fill = document.getElementById('progressFill');
@@ -198,24 +247,22 @@ function updateProgress() {
   count.textContent = (answeredCount()) + ' / ' + state.totalQuestions;
 }
 
-// === РЕНДЕР ===
+// === Рендер ===
 const app = document.getElementById('app');
 
 function renderWelcome() {
-  const inTelegram = !!(window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function');
-  const history = getHistory();
+  const inTelegram = !!tg;
   const tgIndicator = inTelegram
-    ? '<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp подключён · v4</p>'
-    : '<p class="note" style="color:#a16207;">⚠ Telegram WebApp не подключён — данные сохранятся только в этом браузере · v4</p>';
+    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
+    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
   app.innerHTML = `
     <h1>Недельный замер</h1>
     ${tgIndicator}
     <p class="lead">21 вопрос за 5–7 минут. Замеряем благополучие, настроение и тревогу. После — увидишь свой результат и динамику за все недели.</p>
-    <p class="note">Бесплатно. Каждое воскресенье — новый замер.</p>
+    <p class="note">Бесплатно. Каждое воскресенье — новый замер. Все данные привязаны к твоему профилю в боте.</p>
     <div class="actions">
       <button onclick="start()">Начать</button>
       ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
-      ${inTelegram && history.length ? '<button class="secondary" onclick="sendToBotAndClose()">Отправить последний замер боту</button>' : ''}
     </div>
   `;
   updateProgress();
@@ -226,7 +273,6 @@ function renderQuestion() {
   const q = test.questions[state.questionIdx];
   const key = test.code + '_' + state.questionIdx;
   const selected = state.answers[key];
-
   app.innerHTML = `
     <div class="q-card">
       <div class="q-block">${test.code} · ${test.title}</div>
@@ -251,87 +297,63 @@ function renderResult(record) {
   const who = record.who5_total;
   const phq = record.phq9_total;
   const gad = record.gad7_total;
-
   const whoStatus = who > 50 ? ['green','норма'] : who >= 29 ? ['yellow','внимание'] : ['red','тревожно'];
   const phqStatus = phq < 5 ? ['green','минимально'] : phq < 10 ? ['yellow','лёгкая'] : phq < 15 ? ['orange','умеренная'] : ['red','тяжёлая'];
   const gadStatus = gad < 5 ? ['green','минимально'] : gad < 10 ? ['yellow','лёгкая'] : gad < 15 ? ['orange','умеренная'] : ['red','тяжёлая'];
-
-  // Особый флажок — пункт 9 PHQ-9 (мысли о смерти/самоповреждении)
-  const phq9_q9 = state.answers['PHQ-9_8'];
-  const suicideFlag = phq9_q9 >= 1;
-
-  const history = getHistory();
-
+  const suicideFlag = (record.answers && record.answers['PHQ-9_8']) >= 1;
+  const syncBlock = state.syncStatus
+    ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
+    : '';
   app.innerHTML = `
     <h1>Твой замер</h1>
-    <p class="lead">Запись от ${new Date(record.created_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
-
+    <p class="lead">Запись от ${new Date(record.completed_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
+    ${syncBlock}
     <div class="result-card">
       <div class="result-row">
-        <div>
-          <div class="result-name">Благополучие · WHO-5</div>
-          <div class="note">Норма выше 50</div>
-        </div>
-        <div>
-          <span class="result-val">${who}</span><span class="result-status status-${whoStatus[0]}">${whoStatus[1]}</span>
-        </div>
+        <div><div class="result-name">Благополучие · WHO-5</div><div class="note">Норма выше 50</div></div>
+        <div><span class="result-val">${who}</span><span class="result-status status-${whoStatus[0]}">${whoStatus[1]}</span></div>
       </div>
       <div class="result-row">
-        <div>
-          <div class="result-name">Настроение · PHQ-9</div>
-          <div class="note">Норма ниже 5</div>
-        </div>
-        <div>
-          <span class="result-val">${phq}</span><span class="result-status status-${phqStatus[0]}">${phqStatus[1]}</span>
-        </div>
+        <div><div class="result-name">Настроение · PHQ-9</div><div class="note">Норма ниже 5</div></div>
+        <div><span class="result-val">${phq}</span><span class="result-status status-${phqStatus[0]}">${phqStatus[1]}</span></div>
       </div>
       <div class="result-row">
-        <div>
-          <div class="result-name">Тревога · GAD-7</div>
-          <div class="note">Норма ниже 5</div>
-        </div>
-        <div>
-          <span class="result-val">${gad}</span><span class="result-status status-${gadStatus[0]}">${gadStatus[1]}</span>
-        </div>
+        <div><div class="result-name">Тревога · GAD-7</div><div class="note">Норма ниже 5</div></div>
+        <div><span class="result-val">${gad}</span><span class="result-status status-${gadStatus[0]}">${gadStatus[1]}</span></div>
       </div>
     </div>
-
     ${suicideFlag ? `
       <div class="result-card" style="border-color:#dc2626;background:#fef2f2;">
         <h2 style="color:#991b1b;">Важно</h2>
-        <p>В одном из вопросов ты отметил мысли о смерти или самоповреждении. Это сигнал, который не стоит игнорировать.</p>
-        <p>Напиши Алексею или специалисту прямо сейчас. Это не диагноз — это просто момент, когда стоит поговорить.</p>
-        <div class="actions"><a href="https://t.me/vslukh_shapovalov_bot?start=help" style="text-decoration:none;"><button>Написать сейчас</button></a></div>
-      </div>
-    ` : ''}
-
+        <p>Ты отметил мысли о смерти или самоповреждении. Это сигнал, который не стоит игнорировать. Напиши Алексею или специалисту прямо сейчас.</p>
+      </div>` : ''}
     ${history.length > 1 ? `
       <h2>Динамика</h2>
       <p class="note">Сравнение с прошлыми неделями</p>
-      <div id="historyList">${renderHistoryList(history)}</div>
+      <div>${renderHistoryList(history)}</div>
     ` : '<p class="note">Это твой первый замер. Возвращайся через неделю — увидишь динамику.</p>'}
-
     <div class="actions">
-      <button onclick="sendToBotAndClose()">Готово, отправить боту</button>
-      <button class="secondary" onclick="renderWelcome()">Посмотреть историю</button>
+      <button class="secondary" onclick="renderWelcome()">На главную</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
     </div>
   `;
   updateProgress();
 }
 
-function renderHistoryList(history) {
-  return history.slice().reverse().map(r => {
-    const d = new Date(r.created_at).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'});
-    const wColor = r.who5_total > 50 ? 'green' : r.who5_total >= 29 ? 'yellow' : 'red';
-    const pColor = r.phq9_total < 5 ? 'green' : r.phq9_total < 10 ? 'yellow' : r.phq9_total < 15 ? 'orange' : 'red';
-    const gColor = r.gad7_total < 5 ? 'green' : r.gad7_total < 10 ? 'yellow' : r.gad7_total < 15 ? 'orange' : 'red';
+function renderHistoryList(records) {
+  return records.slice().reverse().map(r => {
+    const d = new Date(r.completed_at || r.week_start).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'});
+    const w = r.who5_total, p = r.phq9_total, g = r.gad7_total;
+    const wColor = w > 50 ? 'green' : w >= 29 ? 'yellow' : 'red';
+    const pColor = p < 5 ? 'green' : p < 10 ? 'yellow' : p < 15 ? 'orange' : 'red';
+    const gColor = g < 5 ? 'green' : g < 10 ? 'yellow' : g < 15 ? 'orange' : 'red';
     return `
       <div class="history-row">
         <div class="history-date">${d}</div>
         <div class="history-pills">
-          <span class="pill status-${wColor}">WHO ${r.who5_total}</span>
-          <span class="pill status-${pColor}">PHQ ${r.phq9_total}</span>
-          <span class="pill status-${gColor}">GAD ${r.gad7_total}</span>
+          <span class="pill status-${wColor}">WHO ${w}</span>
+          <span class="pill status-${pColor}">PHQ ${p}</span>
+          <span class="pill status-${gColor}">GAD ${g}</span>
         </div>
       </div>
     `;
@@ -339,7 +361,6 @@ function renderHistoryList(history) {
 }
 
 function showHistory() {
-  const history = getHistory();
   app.innerHTML = `
     <h1>История замеров</h1>
     <p class="lead">Все твои замеры за всё время.</p>
@@ -349,12 +370,16 @@ function showHistory() {
   updateProgress();
 }
 
-// === ДЕЙСТВИЯ ===
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
 function start() {
   state.screen = 'question';
   state.testIdx = 0;
   state.questionIdx = 0;
   state.answers = {};
+  state.syncStatus = '';
+  state.syncMessage = '';
   renderQuestion();
 }
 
@@ -362,8 +387,6 @@ function answer(value) {
   const test = TESTS[state.testIdx];
   const key = test.code + '_' + state.questionIdx;
   state.answers[key] = value;
-
-  // Следующий вопрос или следующий тест или результат
   if (state.questionIdx < test.questions.length - 1) {
     state.questionIdx++;
   } else if (state.testIdx < TESTS.length - 1) {
@@ -386,102 +409,51 @@ function prev() {
   renderQuestion();
 }
 
-function finish() {
-  state.screen = 'result';
-  // Подсчёт
-  let who = 0, phq = 0, gad = 0;
-  for (let i = 0; i < 5; i++) who += (state.answers['WHO-5_' + i] || 0);
-  who *= 4; // 0-100
-  for (let i = 0; i < 9; i++) phq += (state.answers['PHQ-9_' + i] || 0);
-  for (let i = 0; i < 7; i++) gad += (state.answers['GAD-7_' + i] || 0);
-
-  const record = {
-    user_id: USER_ID,
-    created_at: new Date().toISOString(),
-    week_start: getWeekStart(),
-    who5_total: who,
-    phq9_total: phq,
-    gad7_total: gad,
-    answers: { ...state.answers }
-  };
-
-  saveRecord(record);
-  renderResult(record);
-}
-
 function getWeekStart() {
-  // Понедельник текущей недели
   const d = new Date();
-  const day = d.getDay() || 7; // 1=пн, 7=вс
+  const day = d.getDay() || 7;
   d.setDate(d.getDate() - (day - 1));
   return d.toISOString().slice(0, 10);
 }
 
-// === ХРАНЕНИЕ ===
-function saveRecord(record) {
-  // 1. LocalStorage — всегда (для показа истории на этой странице)
-  const history = getHistory();
-  history.push(record);
-  localStorage.setItem('weekly_history_' + USER_ID, JSON.stringify(history));
-  // 2. Отправка боту произойдёт по нажатию «Готово» на экране результата.
-}
+async function finish() {
+  state.screen = 'result';
+  let who = 0, phq = 0, gad = 0;
+  for (let i = 0; i < 5; i++) who += (state.answers['WHO-5_' + i] || 0);
+  who *= 4;
+  for (let i = 0; i < 9; i++) phq += (state.answers['PHQ-9_' + i] || 0);
+  for (let i = 0; i < 7; i++) gad += (state.answers['GAD-7_' + i] || 0);
 
-function sendToBotAndClose() {
-  // Берём последнюю запись из истории и шлём боту.
-  const history = getHistory();
-  if (!history.length) {
-    alert('Нет данных замера для отправки.');
-    return;
+  const record = {
+    week_start: getWeekStart(),
+    completed_at: new Date().toISOString(),
+    who5_total: who,
+    phq9_total: phq,
+    gad7_total: gad,
+    answers: { ...state.answers },
+    flags: { suicide_risk: (state.answers['PHQ-9_8'] || 0) >= 1 }
+  };
+
+  // Локальная копия в стейте + LocalStorage (на всякий случай)
+  try { localStorage.setItem(STORAGE_KEY + '_last', JSON.stringify(record)); } catch (e) {}
+
+  // Сразу показать результат
+  renderResult(record);
+
+  // Параллельно — сохранить в Supabase
+  const ok = await saveToSupabase(record);
+  // После завершения сохранения — обновить экран (показать sync-status)
+  if (ok) {
+    history = await loadHistoryFromSupabase();
   }
-  const record = history[history.length - 1];
-
-  if (!window.Telegram || !window.Telegram.WebApp) {
-    alert('Telegram WebApp не определён. Открой через бот.');
-    return;
-  }
-  if (typeof window.Telegram.WebApp.sendData !== 'function') {
-    alert('sendData недоступна в этом клиенте Telegram.');
-    return;
-  }
-
-  try {
-    window.Telegram.WebApp.sendData(JSON.stringify({
-      action: 'weekly_assessment',
-      week_start: record.week_start,
-      completed_at: record.created_at,
-      who5_total: record.who5_total,
-      phq9_total: record.phq9_total,
-      gad7_total: record.gad7_total,
-      answers: record.answers,
-      flags: { suicide_risk: (record.answers['PHQ-9_8'] || 0) >= 1 }
-    }));
-    // Не закрываем автоматически — Telegram сделает это сам после доставки.
-    // Меняем экран на «Отправлено», чтобы пользователь точно знал, что код сработал.
-    app.innerHTML = `
-      <h1>Отправлено боту</h1>
-      <p class="lead">Данные замера улетели. Через секунду окно закроется автоматически — ответ от бота увидишь в чате.</p>
-      <p class="note">Если окно не закрылось — нажми «Закрыть» в углу Telegram.</p>
-    `;
-  } catch (e) {
-    alert('Не получилось отправить: ' + e.message);
-  }
-}
-
-function getHistory() {
-  const raw = localStorage.getItem('weekly_history_' + USER_ID);
-  if (!raw) return [];
-  try { return JSON.parse(raw); } catch { return []; }
-}
-
-// === Telegram WebApp SDK (если открыт в Telegram) ===
-if (window.Telegram && window.Telegram.WebApp) {
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
+  renderResult(record);
 }
 
 // === СТАРТ ===
-renderWelcome();
+(async () => {
+  history = await loadHistoryFromSupabase();
+  renderWelcome();
+})();
 </script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
 </html>
