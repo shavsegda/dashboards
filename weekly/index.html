@@ -204,10 +204,14 @@ const app = document.getElementById('app');
 function renderWelcome() {
   const inTelegram = !!(window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function');
   const history = getHistory();
+  const tgIndicator = inTelegram
+    ? '<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp подключён · v4</p>'
+    : '<p class="note" style="color:#a16207;">⚠ Telegram WebApp не подключён — данные сохранятся только в этом браузере · v4</p>';
   app.innerHTML = `
     <h1>Недельный замер</h1>
+    ${tgIndicator}
     <p class="lead">21 вопрос за 5–7 минут. Замеряем благополучие, настроение и тревогу. После — увидишь свой результат и динамику за все недели.</p>
-    <p class="note">Бесплатно. Каждое воскресенье — новый замер. Все данные привязаны к твоему профилю.</p>
+    <p class="note">Бесплатно. Каждое воскресенье — новый замер.</p>
     <div class="actions">
       <button onclick="start()">Начать</button>
       ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
@@ -425,31 +429,41 @@ function saveRecord(record) {
 function sendToBotAndClose() {
   // Берём последнюю запись из истории и шлём боту.
   const history = getHistory();
-  if (!history.length) return;
+  if (!history.length) {
+    alert('Нет данных замера для отправки.');
+    return;
+  }
   const record = history[history.length - 1];
 
-  if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.sendData === 'function') {
-    try {
-      window.Telegram.WebApp.sendData(JSON.stringify({
-        action: 'weekly_assessment',
-        week_start: record.week_start,
-        completed_at: record.created_at,
-        who5_total: record.who5_total,
-        phq9_total: record.phq9_total,
-        gad7_total: record.gad7_total,
-        answers: record.answers,
-        flags: { suicide_risk: (record.answers['PHQ-9_8'] || 0) >= 1 }
-      }));
-      // Telegram сам закроет mini app после sendData.
-      // Но на всякий случай — явный close через секунду:
-      setTimeout(() => {
-        try { window.Telegram.WebApp.close(); } catch (e) {}
-      }, 800);
-    } catch (e) {
-      alert('Не получилось отправить боту: ' + e.message);
-    }
-  } else {
-    alert('Mini App открыт вне Telegram — данные сохранены локально.');
+  if (!window.Telegram || !window.Telegram.WebApp) {
+    alert('Telegram WebApp не определён. Открой через бот.');
+    return;
+  }
+  if (typeof window.Telegram.WebApp.sendData !== 'function') {
+    alert('sendData недоступна в этом клиенте Telegram.');
+    return;
+  }
+
+  try {
+    window.Telegram.WebApp.sendData(JSON.stringify({
+      action: 'weekly_assessment',
+      week_start: record.week_start,
+      completed_at: record.created_at,
+      who5_total: record.who5_total,
+      phq9_total: record.phq9_total,
+      gad7_total: record.gad7_total,
+      answers: record.answers,
+      flags: { suicide_risk: (record.answers['PHQ-9_8'] || 0) >= 1 }
+    }));
+    // Не закрываем автоматически — Telegram сделает это сам после доставки.
+    // Меняем экран на «Отправлено», чтобы пользователь точно знал, что код сработал.
+    app.innerHTML = `
+      <h1>Отправлено боту</h1>
+      <p class="lead">Данные замера улетели. Через секунду окно закроется автоматически — ответ от бота увидишь в чате.</p>
+      <p class="note">Если окно не закрылось — нажми «Закрыть» в углу Telegram.</p>
+    `;
+  } catch (e) {
+    alert('Не получилось отправить: ' + e.message);
   }
 }
 
