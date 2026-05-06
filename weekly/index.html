@@ -81,10 +81,10 @@ button.secondary:hover { background: #ebe7dc; }
 <main id="app"></main>
 
 <script>
-// === КОНФИГ SUPABASE (заполнить Кириллу) ===
-const SUPABASE_URL = 'https://tsregyrxtmkxrxvpsvot.supabase.co';
-const SUPABASE_ANON_KEY = ''; // TODO: Кирилл подставит anon key из Supabase Dashboard
-const SUPABASE_ENABLED = !!SUPABASE_ANON_KEY; // если ключа нет — работаем только в LocalStorage
+// === ХРАНЕНИЕ ===
+// Данные сохраняются в LocalStorage браузера + отправляются боту
+// через Telegram.WebApp.sendData. Бот пишет в Supabase через service key.
+// Без Supabase ANON KEY на клиенте — это безопаснее.
 
 // === ИДЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЯ ===
 function getUserId() {
@@ -411,34 +411,33 @@ function getWeekStart() {
 
 // === ХРАНЕНИЕ ===
 function saveRecord(record) {
-  // 1. LocalStorage — всегда
+  // 1. LocalStorage — всегда (для просмотра истории на этой странице)
   const history = getHistory();
   history.push(record);
   localStorage.setItem('weekly_history_' + USER_ID, JSON.stringify(history));
 
-  // 2. Supabase — если ключ задан
-  if (SUPABASE_ENABLED) {
-    fetch(SUPABASE_URL + '/rest/v1/weekly_assessments', {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        client_id: USER_ID,
+  // 2. Telegram WebApp — отправляем боту, он пишет в Supabase через service key
+  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
+    try {
+      window.Telegram.WebApp.sendData(JSON.stringify({
+        action: 'weekly_assessment',
         week_start: record.week_start,
         completed_at: record.created_at,
-        status: 'completed',
-        answers: record.answers,
         who5_total: record.who5_total,
         phq9_total: record.phq9_total,
         gad7_total: record.gad7_total,
+        answers: record.answers,
         flags: { suicide_risk: (state.answers['PHQ-9_8'] || 0) >= 1 }
-      })
-    }).catch(e => console.warn('Supabase save failed:', e));
+      }));
+      // Telegram автоматически закрывает Mini App после sendData,
+      // но при необходимости можно вручную:
+      // setTimeout(() => window.Telegram.WebApp.close(), 1500);
+    } catch (e) {
+      console.warn('Telegram sendData failed:', e);
+    }
   }
+  // Если открыто вне Telegram — данные только в LocalStorage,
+  // ничего не происходит. Это нормально для разработки и тестов.
 }
 
 function getHistory() {
