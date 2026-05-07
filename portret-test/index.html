@@ -560,8 +560,29 @@ function getOrCreateLocalUid() {
   }
   return id;
 }
-const CLIENT_ID = TELEGRAM_USER_ID ? ("tg_" + TELEGRAM_USER_ID) : ("local_" + getOrCreateLocalUid());
+// Приоритет: ?u=... из URL (нужно для открытия во внешнем браузере для печати) → Telegram WebApp → анонимный local
+function getClientIdFromUrl() {
+  try { return new URLSearchParams(window.location.search).get("u"); } catch (e) { return null; }
+}
+const CLIENT_ID = getClientIdFromUrl() || (TELEGRAM_USER_ID ? ("tg_" + TELEGRAM_USER_ID) : ("local_" + getOrCreateLocalUid()));
 const STORAGE_KEY = "portret_v3_" + CLIENT_ID;
+const SHOULD_AUTO_PRINT = (() => {
+  try { return new URLSearchParams(window.location.search).get("print") === "1"; } catch (e) { return false; }
+})();
+
+// Печать: в Telegram window.print() не работает — открываем во внешнем браузере с ?u=...&print=1
+function printOrOpenExternal() {
+  if (tg && typeof tg.openLink === "function") {
+    const url = new URL(window.location.href);
+    url.searchParams.set("u", CLIENT_ID);
+    url.searchParams.set("print", "1");
+    try {
+      tg.openLink(url.toString(), { try_instant_view: false });
+      return;
+    } catch (e) { console.warn("openLink failed, fallback to print:", e); }
+  }
+  window.print();
+}
 
 // Supabase client
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -917,7 +938,7 @@ function renderResults(app) {
       <p class="note" style="margin-top: 16px;">Числа — перцентили относительно общенаселенческих норм для каждого инструмента. Свою выборку клиентов мы накапливаем — через год добавится вторая шкала «среди наших».</p>
     </div>
     <div class="actions no-print" style="margin-top: 24px;">
-      <button onclick="window.print()">Распечатать / сохранить как PDF</button>
+      <button onclick="printOrOpenExternal()">Распечатать / сохранить как PDF</button>
       <button class="secondary" onclick="if(confirm('Начать заново? Все ответы будут стёрты.')) resetState()">Пройти заново</button>
     </div>
   `;
@@ -935,6 +956,10 @@ async function init() {
   await loadState();
   if (state.screen === "results") syncToSupabase(true);
   render();
+  // Автозапуск печати при открытии во внешнем браузере по ссылке с ?print=1
+  if (SHOULD_AUTO_PRINT && state.screen === "results") {
+    setTimeout(() => { try { window.print(); } catch (e) { console.warn(e); } }, 600);
+  }
 }
 init();
 </script>
