@@ -197,37 +197,34 @@ async function loadHistoryFromSupabase() {
   }
 }
 
-// === Supabase: сохранение ===
-async function saveToSupabase(record) {
-  state.syncStatus = 'syncing';
-  state.syncMessage = 'Сохраняю...';
+// === Отправка боту через Telegram (надёжнее, чем fetch к Supabase из in-app браузера) ===
+// Бот получит payload, запишет в Supabase сервисным ключом и сам ответит в чат.
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') {
+    state.syncStatus = 'error';
+    state.syncMessage = 'Замер заполнен, но открой его через бота — иначе результат не сохранится.';
+    return false;
+  }
   try {
-    const { error } = await sb
-      .from("weekly_assessments")
-      .upsert({
-        client_id: CLIENT_ID,
+    tg.sendData(JSON.stringify({
+      action: 'weekly_assessment',
+      payload: {
         week_start: record.week_start,
         completed_at: record.completed_at,
-        status: 'completed',
-        answers: record.answers,
         who5_total: record.who5_total,
         phq9_total: record.phq9_total,
         gad7_total: record.gad7_total,
+        answers: record.answers,
         flags: record.flags
-      }, { onConflict: "client_id,week_start" });
-    if (error) {
-      console.error("Supabase save error:", error);
-      state.syncStatus = 'error';
-      state.syncMessage = 'Не удалось сохранить в облаке: ' + (error.message || 'неизвестная ошибка');
-      return false;
-    }
+      }
+    }));
     state.syncStatus = 'ok';
-    state.syncMessage = 'Сохранено в облаке. Бот теперь видит результат.';
+    state.syncMessage = 'Замер отправлен боту. Ответ придёт в чат через секунду.';
     return true;
   } catch (e) {
-    console.error("Supabase save exception:", e);
+    console.error('sendData failed:', e);
     state.syncStatus = 'error';
-    state.syncMessage = 'Ошибка сети: ' + e.message;
+    state.syncMessage = 'Не удалось отправить боту: ' + e.message;
     return false;
   }
 }
@@ -439,27 +436,22 @@ async function finish() {
     flags: { suicide_risk: (state.answers['PHQ-9_8'] || 0) >= 1 }
   };
 
-  // Локальная копия в стейте + LocalStorage (на всякий случай)
+  // Локальная копия (на случай, если пользователь захочет повторить отправку)
   try { localStorage.setItem(STORAGE_KEY + '_last', JSON.stringify(record)); } catch (e) {}
 
-  // Сразу показать результат
+  // Сначала отправляем боту через Telegram-канал — это мгновенно и не зависит от сети.
+  // Бот сам пишет в Supabase сервисным ключом и отвечает в чат.
+  sendToBot(record);
+
+  // Показываем результат с правильным sync-статусом
   renderResult(record);
 
-  // Параллельно — сохранить в Supabase
-  const ok = await saveToSupabase(record);
-  if (ok) {
-    history = await loadHistoryFromSupabase();
-    // Триггерим бота: пусть прочитает свежие данные и напишет осмысленный ответ.
-    // Сами данные уже в Supabase — sendData нужен только как сигнал.
-    if (tg && typeof tg.sendData === 'function') {
-      try {
-        tg.sendData(JSON.stringify({ action: 'weekly_done' }));
-      } catch (e) {
-        console.warn('sendData failed (not critical):', e);
-      }
-    }
-  }
-  renderResult(record);
+  // Параллельно подтянем историю из Supabase (для блока «Динамика»).
+  // Если сеть упадёт — не страшно, это только для отображения.
+  loadHistoryFromSupabase().then(h => {
+    history = h;
+    if (state.screen === 'result') renderResult(record);
+  }).catch(() => {});
 }
 
 // === СТАРТ ===
