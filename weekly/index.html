@@ -341,6 +341,11 @@ function renderResult(record) {
 }
 
 function renderHistoryList(records) {
+  // Словесные статусы для каждой шкалы — чтобы строка истории читалась как человеческий язык
+  const whoWord = w => w > 50 ? 'хорошо' : w >= 29 ? 'средне' : 'мало';
+  const phqWord = p => p < 5 ? 'ровно' : p < 10 ? 'просело' : p < 15 ? 'плохо' : 'тяжело';
+  const gadWord = g => g < 5 ? 'спокойно' : g < 10 ? 'лёгкая' : g < 15 ? 'заметная' : 'сильная';
+
   return records.slice().reverse().map(r => {
     const d = new Date(r.completed_at || r.week_start).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'});
     const w = r.who5_total, p = r.phq9_total, g = r.gad7_total;
@@ -351,9 +356,9 @@ function renderHistoryList(records) {
       <div class="history-row">
         <div class="history-date">${d}</div>
         <div class="history-pills">
-          <span class="pill status-${wColor}">WHO ${w}</span>
-          <span class="pill status-${pColor}">PHQ ${p}</span>
-          <span class="pill status-${gColor}">GAD ${g}</span>
+          <span class="pill status-${wColor}">Силы ${w} — ${whoWord(w)}</span>
+          <span class="pill status-${pColor}">Настроение ${p} — ${phqWord(p)}</span>
+          <span class="pill status-${gColor}">Тревога ${g} — ${gadWord(g)}</span>
         </div>
       </div>
     `;
