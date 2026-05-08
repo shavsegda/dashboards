@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>План перехода / Глеб Костюрин / 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+    --done: #1f7a1f;
+    --done-soft: #e6f4e6;
+    --warn: #b8860b;
+    --warn-soft: #fff8e6;
+    --fail: #d13438;
+    --fail-soft: #fdecec;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+  }
+  h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
+
+  .header { margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid var(--ink); }
+  .header-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-soft); margin-bottom: 20px; }
+  .header-title { font-size: 28px; line-height: 1.2; margin: 0 0 24px 0; }
+  .header-grid { display: grid; grid-template-columns: 130px 1fr; gap: 4px 16px; font-size: 13px; }
+  .header-grid dt { color: var(--ink-soft); text-transform: lowercase; }
+  .header-grid dd { margin: 0; }
+
+  .goal {
+    margin: 32px 0;
+    padding: 24px 28px;
+    border: 1px solid var(--ink);
+    background: #fafafa;
+  }
+  .goal-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 10px; }
+  .goal-text { font-size: 16px; line-height: 1.55; }
+
+  .pathway { margin: 40px 0; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .pathway-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .pathway-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); }
+  .pathway-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .pathway-step {
+    border: 1px solid var(--ink-faint);
+    background: #fff;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.3;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .pathway-step.done { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pathway-step.current { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pathway-step.focus { border: 2px solid var(--accent); }
+  .pathway-num { font-size: 9px; opacity: 0.6; margin-bottom: 2px; }
+  .pathway-caption { margin-top: 14px; font-size: 12px; color: var(--ink-soft); font-style: italic; }
+
+  section { margin: 56px 0; }
+  .sec-num { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 6px; }
+  .sec-title { font-size: 22px; margin: 0 0 16px 0; }
+
+  .card { border: 1px solid var(--line); padding: 20px 24px; margin: 14px 0; }
+  .card-title { font-size: 14px; font-weight: 600; margin: 0 0 8px 0; }
+  .card-meta { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
+  .card-body { font-size: 13px; line-height: 1.6; }
+  .card-body dt { color: var(--ink-soft); text-transform: lowercase; font-size: 11px; margin-top: 8px; }
+  .card-body dd { margin: 2px 0 0 0; }
+
+  .action { position: relative; }
+  .action-status {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border: 1px solid var(--ink-faint);
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+  }
+  .action-status[data-status="todo"] { color: var(--ink-soft); }
+  .action-status[data-status="doing"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .action-status[data-status="done"] { color: var(--done); border-color: var(--done); background: var(--done-soft); }
+  .action-status[data-status="missed"] { color: var(--fail); border-color: var(--fail); background: var(--fail-soft); }
+
+  .check { display: flex; align-items: flex-start; gap: 10px; margin: 6px 0; cursor: pointer; }
+  .check input[type="checkbox"] { margin: 4px 0 0 0; cursor: pointer; }
+  .check-text { font-size: 13px; flex: 1; }
+  .check input:checked + .check-text { text-decoration: line-through; color: var(--ink-soft); }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fafafa;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    color: var(--ink);
+  }
+  textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin: 12px 0 6px 0; display: block; }
+
+  .week {
+    border-left: 2px solid var(--line);
+    padding: 4px 0 4px 20px;
+    margin: 18px 0;
+  }
+  .week.current { border-left-color: var(--accent); }
+  .week-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); }
+  .week-title { font-size: 15px; font-weight: 600; margin: 4px 0 10px 0; }
+
+  footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-faint); display: flex; justify-content: space-between; }
+
+  .toolbar {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: #fff;
+    border: 1px solid var(--ink);
+    padding: 8px 14px;
+    font-size: 11px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .toolbar button {
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .toolbar button:hover { color: var(--accent); }
+  .toolbar .saved { color: var(--done); font-size: 10px; }
+
+  .system-map {
+    margin: 32px 0;
+    padding: 24px 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .system-map-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+  .system-map-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .layer {
+    border: 1px solid var(--line);
+    padding: 14px 10px 10px;
+    background: #fff;
+    text-align: center;
+    position: relative;
+  }
+  .layer-num {
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .layer-name {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .layer-score {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    margin: 6px 0;
+  }
+  .layer-score-line {
+    height: 4px;
+    background: var(--line);
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .layer-score-fill {
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.3s;
+  }
+  .layer.weak { background: var(--fail-soft); border-color: var(--fail); }
+  .layer.weak .layer-score-fill { background: var(--fail); }
+  .layer.strong { background: var(--accent-soft); border-color: var(--accent); }
+  .layer.strong .layer-score-fill { background: var(--accent); }
+  .layer-note {
+    font-size: 10px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    margin-top: 6px;
+    min-height: 28px;
+  }
+  .system-diagnosis {
+    background: #fafafa;
+    border-left: 2px solid var(--ink);
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .anti-block {
+    border: 1px solid var(--warn);
+    background: var(--warn-soft);
+    padding: 18px 22px;
+    margin: 24px 0;
+  }
+  .anti-block-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .anti-block-body { font-size: 12px; line-height: 1.6; }
+
+  .formula-block {
+    border: 2px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 18px 22px;
+    margin: 24px 0;
+  }
+  .formula-block-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--accent); }
+  .formula-block-body { font-size: 13px; line-height: 1.6; }
+
+  .assessment-block {
+    background: #fafafa;
+    border-left: 2px solid var(--warn);
+    padding: 14px 18px;
+    margin: 24px 0;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  @media print {
+    .toolbar { display: none; }
+    body { padding: 24px; }
+  }
+
+  /* Парольный гейт */
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы открыть план</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<header class="header">
+  <div class="header-kicker">План перехода · стартовый разбор · 2026-05-08</div>
+  <h1 class="header-title">Глеб Костюрин / 30 дней перехода</h1>
+  <dl class="header-grid">
+    <dt>пакет</dt><dd>«30 дней перехода» · 100 000 ₽</dd>
+    <dt>период</dt><dd>08.05.2026 → 15.06.2026 (~37 дней под South Hub)</dd>
+    <dt>встречи</dt><dd>4 × 1,5 ч · пятница 12:00 МСК · видеосвязь</dd>
+    <dt>тренер</dt><dd>Алексей Шаповалов</dd>
+    <dt>ai-агент</dt><dd>«Вслух» — память между встречами</dd>
+  </dl>
+</header>
+
+<div class="assessment-block">
+  <strong>Замер «Вслух» 07.05.2026:</strong> WHO-5 = 44 (снижено), PHQ-9 = 12 (умеренная депрессия), GAD-7 = 16 (тяжёлая тревога). Глеб: «состояние последних 3+ месяцев, может всю жизнь». Гештальт-терапевт раз в неделю, 4+ года — это его база, мы не дублируем. Пункт 9 PHQ-9 чист. Эмоциональный фон — для гештальт-терапевта; структурная работа — для пакета.
+</div>
+
+<div class="system-map">
+  <div class="system-map-head">
+    <div class="pathway-label">Системная карта клиента</div>
+    <div class="pathway-label">5 слоёв · оценка 0-10</div>
+  </div>
+  <div class="system-map-grid">
+    <div class="layer">
+      <div class="layer-num">01</div>
+      <div class="layer-name">Тело</div>
+      <div class="layer-score">6</div>
+      <div class="layer-score-line"><div class="layer-score-fill" style="width: 60%"></div></div>
+      <div class="layer-note">база есть, к вечеру высосан</div>
+    </div>
+    <div class="layer weak">
+      <div class="layer-num">02</div>
+      <div class="layer-name">Близкие</div>
+      <div class="layer-score">1-2</div>
+      <div class="layer-score-line"><div class="layer-score-fill" style="width: 15%"></div></div>
+      <div class="layer-note">«никому нахер не сдался»</div>
+    </div>
+    <div class="layer weak">
+      <div class="layer-num">03</div>
+      <div class="layer-name">Работа</div>
+      <div class="layer-score">2</div>
+      <div class="layer-score-line"><div class="layer-score-fill" style="width: 20%"></div></div>
+      <div class="layer-note">«шаг на месте с орденами»</div>
+    </div>
+    <div class="layer">
+      <div class="layer-num">04</div>
+      <div class="layer-name">Дело</div>
+      <div class="layer-score">5</div>
+      <div class="layer-score-line"><div class="layer-score-fill" style="width: 50%"></div></div>
+      <div class="layer-note">наставник, «ключевая ценность»</div>
+    </div>
+    <div class="layer">
+      <div class="layer-num">05</div>
+      <div class="layer-name">Смысл</div>
+      <div class="layer-score">5</div>
+      <div class="layer-score-line"><div class="layer-score-fill" style="width: 50%"></div></div>
+      <div class="layer-note">миссия — зависимости</div>
+    </div>
+  </div>
+  <div class="system-diagnosis">
+    <strong>Диагноз структуры:</strong> не одна ножка работа — <strong>раздвоение системы</strong>. Ведущая опора (работа) обвалилась с воображаемых 7 до реальных 2, близких практически нет. Но есть две живые тонкие ножки: наставничество (4) и миссия (5) — и это <strong>одна линия</strong>: «системным подходом помогать людям с правильными выборами». Текущая работа = тормозящая опора: ордена есть, миссии не служит.<br><br>
+    <strong>Системный лимит:</strong> не «одна ножка работа», а <strong>поведенческий паттерн «обход перед действием»</strong>. Пока паттерн не пойман — никакие действия не идут.<br><br>
+    <strong>Переключатель «царь/никто» во временной оси:</strong> в моменте «я важный дохуя» (10), в горизонте «в среде Сбера никто, не улавливаю» (2). Это и есть шпиндель — не пространственный, а временной.<br><br>
+    <strong>Что это значит для плана:</strong> карьера = слой 3, но это <strong>не самоцель</strong>. Карьера = ресурс для миссии (парадигма Глеба, она уже работает). План = разблокировать действия в слое 3 + минимальные интервенции в 1, 4, 5. Слой 2 не трогаем — это работа гештальт-терапевта.
+  </div>
+</div>
+
+<div class="goal">
+  <div class="goal-label">Цель к концу 30 дней</div>
+  <div class="goal-text" style="font-size: 13px; margin-bottom: 18px;">
+    <strong>30 дней = запуск процесса перехода, не получение оффера.</strong>
+    Реальный оффер из bigtech приходит через 3-6 месяцев живой воронки — это нормальный срок (правило Медоуз: оценку умножай на 3).
+  </div>
+  <div style="border-top: 1px solid var(--line); padding-top: 14px;">
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 8px;">Три уровня цели</div>
+    <ol style="margin: 0; padding-left: 20px; font-size: 13px;">
+      <li><strong>Сдвиг:</strong> ловить паттерн обхода в моменте — главное (запас)</li>
+      <li><strong>Воронка переходов запущена и живая</strong> — Глеб сам поддерживает поток (поток)</li>
+      <li><strong>Способность работать без тренера</strong> — проектирует следующие 30 дней сам</li>
+    </ol>
+  </div>
+  <div style="margin-top: 14px; font-size: 12px; color: var(--ink-soft);">
+    Поверхностные метрики: 2-3 разговора в bigtech начаты, South Hub пройден с 2-3 целевыми разговорами, воронка живая.
+  </div>
+</div>
+
+<div class="pathway">
+  <div class="pathway-head">
+    <div class="pathway-label">Карта перехода в найме</div>
+    <div class="pathway-label">7 работ</div>
+  </div>
+  <div class="pathway-grid">
+    <div class="pathway-step done"><div class="pathway-num">01</div>Признать девальвацию</div>
+    <div class="pathway-step current"><div class="pathway-num">02</div>Переписать историю</div>
+    <div class="pathway-step focus"><div class="pathway-num">03</div>Снять барьер «учеником»</div>
+    <div class="pathway-step"><div class="pathway-num">04</div>Восстановить delivery</div>
+    <div class="pathway-step"><div class="pathway-num">05</div>Запустить нетворкинг</div>
+    <div class="pathway-step"><div class="pathway-num">06</div>Войти в среду</div>
+    <div class="pathway-step"><div class="pathway-num">07</div>Удержать роль</div>
+  </div>
+  <div class="pathway-caption">начал переписывать историю про себя через «студент Сколково» (02), главная работа на 30 дней — снять барьер обхода перед действием (03)</div>
+</div>
+
+<section>
+  <div class="sec-num">I</div>
+  <h2 class="sec-title">Главный диагноз</h2>
+
+  <div class="card">
+    <div class="card-title">Твоя парадигма — уже работает</div>
+    <div class="card-body">
+      <strong>«Карьера = ресурс для миссии. Глеб-шпиндель в Ингосе гораздо меньше контрибьютит миссии, чем Глеб-ВП Сбера.»</strong>
+      <p style="font-size: 12px; color: var(--ink-soft); margin-top: 10px;">Это твоя собственная формулировка с встречи — поправил тренера. Парадигму не нужно ставить заново. Она собрана. Проблема в другом.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Главный механизм — паттерн «обход перед действием»</div>
+    <div class="card-body">
+      На встрече зафиксировано <strong>4 уровня обхода одного и того же действия</strong> (написать в bigtech):
+      <ol style="margin: 8px 0; padding-left: 20px;">
+        <li>«Контактов нет, не исследовал» — рационализация через «сначала research»</li>
+        <li>«Дима не релевантен миссии» — обход через свежесогласованную миссию</li>
+        <li>«10/10 → 5/10 → может через Илью» — переключение каналов вместо отправки</li>
+        <li>«Не хочу, чтобы знал, что я ищу работу» — обход через позиционный страх</li>
+      </ol>
+      Каждый обход — <strong>новая причина</strong>, ни одна не была реальной. Это и есть главная работа на 30 дней: ловить паттерн в моменте.
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-block-title">Рабочая формула на 30 дней</div>
+    <div class="formula-block-body">
+      Шпиндель <strong>не включается</strong>, когда одновременно:
+      <ol style="margin: 8px 0; padding-left: 20px;">
+        <li><strong>Кредит доверия</strong> (есть отношения с человеком)</li>
+        <li><strong>Позиция экспертного факта</strong> (есть конкретная роль / задача / основание для разговора)</li>
+      </ol>
+      Подтверждено в реальном времени: Сергей + студент Сколково = шпинделя нет, 10/10. Холодное «если че, заходи» = шпиндель сразу.
+      <p style="margin-top: 10px;"><strong>Перед каждым шагом 30 дней — сверяешься: оба условия на месте?</strong> Если нет одного — собрать.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">II</div>
+  <h2 class="sec-title">Что мы про тебя учли (узлы Портрета)</h2>
+
+  <div class="card">
+    <div class="card-title">Жажда результата 91 + Тяга к адреналину 96</div>
+    <div class="card-body">План на коротких победах, не марафон. Каждая неделя = видимый результат. <strong>Подтверждено на встрече:</strong> как только появилось ясное действие — 10/10.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Самодисциплина 17 + Тонус 28</div>
+    <div class="card-body">Главная ловушка — не воля, а энергия. Поэтому в Слое 1 интервенция = <strong>защита часа сна</strong>, не «пойди в зал». Спортзал не зайдёт под низкую дисциплину.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Самобичевание 99</div>
+    <div class="card-body">Самая опасная точка. Под неё — правило <strong>промах ≠ провал</strong>. Молчание ≠ отказ. Между 1 и 5 «нет» — не катастрофизировать.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Свои мысли 4</div>
+    <div class="card-body">Подтверждено в моменте: «синергия страхового и медицинского бизнеса» ты добавил <strong>сам</strong> — в моей версии этого не было. Это и ресурс, и риск. На встречах сверяемся: «это твоё или согласился, потому что я сказал?»</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Эмоциональный холод 93 + Уход в дела 84</div>
+    <div class="card-body">Под давлением закрываешься в рационализацию. Подтверждено: 4 уровня обхода через «таблички причин» вместо «что внутри». Тренер возвращает: «не теоретически — что внутри прямо сейчас?»</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">III</div>
+  <h2 class="sec-title">3 ключевых действия</h2>
+
+  <div class="card action">
+    <div class="action-status" data-action="1" data-status="todo" onclick="cycleStatus(this)">не начато</div>
+    <div class="card-title">Действие 1. Сергей Федосов → Ростислав Павлов</div>
+    <dl class="card-body">
+      <dt>канал</dt><dd>Сергей Федосов (основатель Медрокет, 3 года плотного партнёрства, лично знаком с Ростиславом)</dd>
+      <dt>цель</dt><dd>просьба представить Ростиславу (ВП Сбера по индустрии здоровья, вступил 22.04.2026)</dd>
+      <dt>к какой дате</dt><dd>08.05.2026 до 16:00 МСК (сегодня)</dd>
+      <dt>критерий</dt><dd>сообщение Сергею отправлено</dd>
+      <dt>как обходим шпинделя</dt><dd>кредит доверия (3 года партнёрства) + позиция «студент Сколково с работой по бизнес-модели ДМС» (не соискатель, а исследователь)</dd>
+      <dt>уверенность</dt><dd>10/10</dd>
+    </dl>
+    <div style="padding: 14px 16px; background: #fafafa; border-left: 2px solid var(--accent); margin-top: 14px; font-size: 13px;">
+      Привет, Сергей. Вижу, что ты в отпуске — без срочности.<br><br>
+      Я сейчас учусь в Сколково, в рамках обучения делаю работу по изменению бизнес-модели ДМС. Узнал, что Ростислав Павлов две недели назад зашёл ВП в Сбер на индустрию здоровья. Хочу организовать с ним 30 минут в формате исследовательского интервью — у меня есть наблюдения изнутри ДМС в Ингосе (цифровизация, работа с убыточностью, синергия страхового и медицинского бизнеса), которые ему как новому ВП могут быть интересны для старта.<br><br>
+      Если ты с ним на связи и было бы уместно меня представить — буду благодарен. Если не сейчас или не уместно — тоже окей.
+    </div>
+    <span class="field-label">Заметки по ходу</span>
+    <textarea data-key="action1-notes" rows="3" placeholder="Когда отправил, как Сергей ответил, что делаешь дальше…"></textarea>
+  </div>
+
+  <div class="card action">
+    <div class="action-status" data-action="2" data-status="todo" onclick="cycleStatus(this)">не начато</div>
+    <div class="card-title">Действие 2. Подготовка к South Hub (10-14.06)</div>
+    <dl class="card-body">
+      <dt>к какой дате</dt><dd>15.05.2026 — список 3-5 имён с мини-research</dd>
+      <dt>что собрать</dt><dd>имя, роль, что делает за последний год, какая зацепка для разговора</dd>
+      <dt>критерий</dt><dd>на встрече 16.05 у каждого имени есть подход</dd>
+      <dt>на South Hub</dt><dd>2-3 целевых разговора (не «сетевиться вообще»)</dd>
+      <dt>как обходим шпинделя</dt><dd>кредит доверия выше по умолчанию (одна площадка) + позиция экспертного факта от участия</dd>
+    </dl>
+    <span class="field-label">Заметки и список имён</span>
+    <textarea data-key="action2-notes" rows="4" placeholder="Имя · роль · что делает · зацепка для разговора"></textarea>
+  </div>
+
+  <div class="card action">
+    <div class="action-status" data-action="3" data-status="todo" onclick="cycleStatus(this)">не начато</div>
+    <div class="card-title">Действие 3. Поведенческое — ловить паттерн обхода</div>
+    <dl class="card-body">
+      <dt>что</dt><dd>сквозная работа всех 30 дней, не разовое действие</dd>
+      <dt>что делаешь, когда подвисаешь перед отправкой</dt><dd>задаёшь себе три вопроса: 1) это реальная преграда или пятый уровень обхода? 2) есть ли у меня кредит доверия + позиция экспертного факта? 3) если нет одного — что собрать?</dd>
+      <dt>критерий</dt><dd>паттерн ловится сам, до тренера</dd>
+    </dl>
+    <span class="field-label">Журнал моментов обхода</span>
+    <textarea data-key="action3-notes" rows="4" placeholder="Дата · что делал · какой обход включился · что сделал после…"></textarea>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">IV</div>
+  <h2 class="sec-title">Параллельные интервенции</h2>
+
+  <div class="card">
+    <div class="card-title">Слой 1 — Тело: защита часа сна</div>
+    <div class="card-body">
+      <strong>Шаг:</strong> один час до сна без работы. Не «пойди в зал», не «тренируйся» — защити час.<br>
+      <strong>Критерий:</strong> 25+ ночей за 30 дней.<br>
+      <strong>Почему:</strong> дисциплина 17 — давление спортом не сработает. Час тишины снимает «к вечеру высосан».
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Слой 4 — Дело: масштаб наставничества</div>
+    <div class="card-body">
+      <strong>Шаг:</strong> наставничество 2 раза в месяц вместо 1. Не заставляем — у тебя это уже работает, просто масштаб.<br>
+      <strong>Критерий:</strong> 2 наставнические сессии за 30 дней.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Слой 5 — Смысл: один разговор про миссию</div>
+    <div class="card-body">
+      <strong>Шаг:</strong> один разговор про детдом и зависимости с близким коллегой за 30 дней. Не проект — разговор.<br>
+      <strong>Критерий:</strong> разговор состоялся, тема живёт в речи.
+    </div>
+  </div>
+
+  <div class="card" style="background: #fafafa;">
+    <div class="card-title">Слой 2 — НЕ лезем</div>
+    <div class="card-body">Близкие 1-2 — глубокая тема. У тебя гештальт-терапевт 4+ года, это его зона. Тренерская работа сюда не вторгается.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">V</div>
+  <h2 class="sec-title">План на 4 недели</h2>
+
+  <div class="week current">
+    <div class="week-label">неделя 1 · 08-14.05</div>
+    <div class="week-title">Запуск Действия 1 + ловить паттерн обхода</div>
+    <label class="check"><input type="checkbox" data-key="w1-1"><span class="check-text">08.05 до 16:00 — сообщение Сергею Федосову отправлено</span></label>
+    <label class="check"><input type="checkbox" data-key="w1-2"><span class="check-text">Слой 1: защита часа сна — стартует с 09.05</span></label>
+    <label class="check"><input type="checkbox" data-key="w1-3"><span class="check-text">Поведенческое: фиксировать моменты обхода</span></label>
+  </div>
+
+  <div class="week">
+    <div class="week-label">неделя 2 · 15-21.05</div>
+    <div class="week-title">Список имён к South Hub + первая реакция Сергея</div>
+    <label class="check"><input type="checkbox" data-key="w2-1"><span class="check-text">К встрече 16.05 — список 3-5 имён к South Hub с мини-research</span></label>
+    <label class="check"><input type="checkbox" data-key="w2-2"><span class="check-text">Если Сергей ответил → пишем Ростиславу версию через Сколково</span></label>
+    <label class="check"><input type="checkbox" data-key="w2-3"><span class="check-text">Слой 4: запланирована первая наставническая сессия</span></label>
+    <label class="check"><input type="checkbox" data-key="w2-4"><span class="check-text">Встреча 1: пятница 16.05 в 12:00 МСК</span></label>
+  </div>
+
+  <div class="week">
+    <div class="week-label">неделя 3 · 22-28.05</div>
+    <div class="week-title">Подходы к именам South Hub</div>
+    <label class="check"><input type="checkbox" data-key="w3-1"><span class="check-text">Под каждое имя South Hub — подход (как подойти, что спросить)</span></label>
+    <label class="check"><input type="checkbox" data-key="w3-2"><span class="check-text">Слой 4: первая наставническая сессия проведена</span></label>
+    <label class="check"><input type="checkbox" data-key="w3-3"><span class="check-text">Слой 5: запланирован разговор про миссию</span></label>
+    <label class="check"><input type="checkbox" data-key="w3-4"><span class="check-text">Встреча 2: пятница 23.05 в 12:00 МСК</span></label>
+  </div>
+
+  <div class="week">
+    <div class="week-label">неделя 4 · 29.05-08.06</div>
+    <div class="week-title">Финальная подготовка к South Hub</div>
+    <label class="check"><input type="checkbox" data-key="w4-1"><span class="check-text">Топ-3 целевых на South Hub зафиксированы</span></label>
+    <label class="check"><input type="checkbox" data-key="w4-2"><span class="check-text">Представление о себе 30 секунд отрепетировано</span></label>
+    <label class="check"><input type="checkbox" data-key="w4-3"><span class="check-text">Слой 5: разговор про миссию состоялся</span></label>
+    <label class="check"><input type="checkbox" data-key="w4-4"><span class="check-text">Встреча 3: пятница 30.05 в 12:00 МСК</span></label>
+    <label class="check"><input type="checkbox" data-key="w4-5"><span class="check-text">Встреча 4 (разогрев): пятница 06.06 в 12:00 МСК</span></label>
+  </div>
+
+  <div class="week">
+    <div class="week-label">неделя 5 · 09-15.06 · South Hub + закрытие</div>
+    <div class="week-title">South Hub 10-14.06 + решение</div>
+    <label class="check"><input type="checkbox" data-key="w5-1"><span class="check-text">South Hub 10-14.06 — 2-3 целевых разговора</span></label>
+    <label class="check"><input type="checkbox" data-key="w5-2"><span class="check-text">Слой 4: вторая наставническая сессия</span></label>
+    <label class="check"><input type="checkbox" data-key="w5-3"><span class="check-text">Понимаешь следующие 30 дней без тренера</span></label>
+    <label class="check"><input type="checkbox" data-key="w5-4"><span class="check-text">Решение: Тренировки 200к или пауза + Замер 250к через 3-6 мес</span></label>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">VI</div>
+  <h2 class="sec-title">Ритм работы</h2>
+
+  <div class="card">
+    <div class="card-title">Еженедельные встречи</div>
+    <div class="card-body">
+    4 × 1,5 ч · <strong>пятница 12:00 МСК</strong> · видеосвязь<br><br>
+    <strong>Каждая встреча начинается с одного вопроса:</strong><br>
+    <em>«На что сейчас упирается процесс?»</em><br>
+    <p style="font-size: 12px; color: var(--ink-soft); margin: 8px 0 0 0;">Это переопределение текущего лимита. Не цепляемся за лимит первой встречи — он сменится.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AI-агент «Вслух»</div>
+    <div class="card-body">
+    <strong>Знает:</strong> системную карту, главный паттерн, формулу, план, замеры<br>
+    <strong>Между встречами:</strong> сверки, вопросы, моменты обхода<br>
+    <p style="font-size: 12px; color: var(--warn); margin: 8px 0 0 0;">⚠️ Автоматические утренние пинги пока не подключены технически — идут вручную / по запросу. Подключение — задача Алексея до конца недели.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Постепенный выход из зависимости</div>
+    <div class="card-body">
+    Через 30 дней должен мочь сам. Поэтому опоры снимаются постепенно:
+    <table style="width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 12px;">
+      <tr style="border-bottom: 1px solid var(--line);"><th style="text-align: left; padding: 6px 8px; color: var(--ink-soft); font-weight: 500;">Неделя</th><th style="text-align: left; padding: 6px 8px; color: var(--ink-soft); font-weight: 500;">AI-агент</th><th style="text-align: left; padding: 6px 8px; color: var(--ink-soft); font-weight: 500;">Встреча</th></tr>
+      <tr><td style="padding: 6px 8px;">1-2</td><td style="padding: 6px 8px;">реактивно (по запросу)</td><td style="padding: 6px 8px;">тренер ведёт полностью</td></tr>
+      <tr><td style="padding: 6px 8px;">3</td><td style="padding: 6px 8px;">реактивно</td><td style="padding: 6px 8px;">первые 15 мин — клиент сам</td></tr>
+      <tr><td style="padding: 6px 8px;">4</td><td style="padding: 6px 8px;">реактивно</td><td style="padding: 6px 8px;">клиент проектирует следующие 30 дней, тренер сверяет</td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">VII</div>
+  <h2 class="sec-title">Что делаем, когда срывается</h2>
+
+  <div class="anti-block">
+    <div class="anti-block-title">Правило 1. Промах ≠ провал</div>
+    <div class="anti-block-body">
+      Если шаг не сделался — на встрече разбираем по схеме:
+      <ol style="margin: 8px 0; padding-left: 20px;">
+        <li>Не сделалось / сделалось не так / сделалось без эффекта?</li>
+        <li>Что именно мешало (конкретно — не «лень», а что в голове было)?</li>
+        <li>Что нужно поменять — формулировка, время, шаг мельче, поддержка?</li>
+        <li>Идём дальше — не в самобичевание.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="anti-block">
+    <div class="anti-block-title">Правило 2. Стандарт не падает</div>
+    <div class="anti-block-body">
+      Если шаг не сделался — он <strong>переносится</strong>, а не «было слишком амбициозно, давай поменьше». Защита от спирали вниз.
+    </div>
+  </div>
+
+  <div class="anti-block">
+    <div class="anti-block-title">Правило 3. Нелинейность ответов — «1 vs 5»</div>
+    <div class="anti-block-body">
+      <strong>1 «нет»</strong> или молчание = шум, не сигнал. Не меняем подход.<br>
+      <strong>3 «нет» подряд</strong> = на встрече разбираем — может, формулировка не та.<br>
+      <strong>5 «нет» подряд</strong> = пора менять подход существенно.<br>
+      Между 1 и 5 — нет сигнала. Не катастрофизировать. Особенно важно — Сергей в отпуске, ответ может прийти через неделю.
+    </div>
+  </div>
+
+  <div class="anti-block">
+    <div class="anti-block-title">Правило 4. Аврал в Ингосе > 3 дней — встреча переносится без вины</div>
+    <div class="anti-block-body">
+      Лучше 4 встречи за 35 дней с реальным результатом, чем за 30 с пустыми руками.
+    </div>
+  </div>
+
+  <span class="field-label">Что заметил у себя на этой неделе</span>
+  <textarea data-key="anti-notes" rows="3" placeholder="Где включалось самобичевание, какой обход поймал, что я с этим делал…"></textarea>
+</section>
+
+<section>
+  <div class="sec-num">VIII</div>
+  <h2 class="sec-title">Метрики «получилось / не получилось»</h2>
+
+  <p style="font-size: 13px; color: var(--ink-soft); margin: 0 0 16px 0;">Двойной слой: что сделано (поток) + как изменилось состояние (запас). Не путать.</p>
+
+  <h3 style="font-size: 13px; margin: 24px 0 10px 0; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.1em;">Потоки — что сделал</h3>
+  <label class="check"><input type="checkbox" data-key="flow-1"><span class="check-text">2-3 разговора в bigtech начаты (Ростислав / South Hub)</span></label>
+  <label class="check"><input type="checkbox" data-key="flow-2"><span class="check-text">Список имён к South Hub собран и проработан</span></label>
+  <label class="check"><input type="checkbox" data-key="flow-3"><span class="check-text">South Hub: 2-3 целевых разговора</span></label>
+  <label class="check"><input type="checkbox" data-key="flow-4"><span class="check-text">4 еженедельных встречи проведены</span></label>
+
+  <h3 style="font-size: 13px; margin: 28px 0 10px 0; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.1em;">Запасы — как изменилось состояние (важнее)</h3>
+  <label class="check"><input type="checkbox" data-key="stock-1"><span class="check-text"><strong>Паттерн обхода ловится в моменте:</strong> распознаю его до тренера, не задним числом</span></label>
+  <label class="check"><input type="checkbox" data-key="stock-2"><span class="check-text"><strong>Формула «кредит + позиция» работает:</strong> 80% сообщений уходят без обхода</span></label>
+  <label class="check"><input type="checkbox" data-key="stock-3"><span class="check-text"><strong>Воронка живая:</strong> поддерживается без тренера</span></label>
+  <label class="check"><input type="checkbox" data-key="stock-4"><span class="check-text"><strong>Автономия:</strong> проектирую следующие 30 дней сам</span></label>
+
+  <div style="margin-top: 28px; padding: 18px 20px; background: var(--accent-soft); border-left: 2px solid var(--accent);">
+    <strong style="font-size: 13px;">Главный вопрос на 4-й встрече:</strong><br>
+    <span style="font-size: 13px;">Воронка переходов <strong>живая</strong>? Через 30 дней без меня я смогу её поддерживать?</span>
+    <p style="font-size: 12px; color: var(--ink-soft); margin: 10px 0 0 0;">Если ответ «да» — пакет сработал, даже если оффера ещё нет. Оффер придёт через 3-6 месяцев живой воронки.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">IX</div>
+  <h2 class="sec-title">После 30 дней — два варианта</h2>
+
+  <div class="card">
+    <div class="card-title">Вариант 1. Тренировки 200к/мес</div>
+    <div class="card-body">Минимум 3 месяца — если видишь ценность и хочешь глубже работать с системой целиком (включая слои 1, 4, 5).</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Вариант 2. Пауза</div>
+    <div class="card-body">Выходишь с тем, что собрал. Через 3-6 месяцев — Замер 250к для сверки.</div>
+  </div>
+
+  <p style="font-size: 12px; color: var(--ink-soft); margin-top: 16px;">Решение — на финальной встрече 06.06.2026 (после South Hub).</p>
+</section>
+
+<footer>
+  <div>Глеб Костюрин / план перехода / 2026-05-08</div>
+  <div>Алексей Шаповалов · Тренерская</div>
+</footer>
+
+<div class="toolbar">
+  <button onclick="exportData()">Экспорт JSON</button>
+  <button onclick="window.print()">Печать</button>
+  <button onclick="resetAll()">Сбросить</button>
+  <span class="saved" id="saved-indicator"></span>
+</div>
+
+</div>
+
+<script>
+  // Парольный гейт
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("gleb-unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  if (sessionStorage.getItem("gleb-unlocked") === "1") {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("content").classList.add("unlocked");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+</script>
+
+<script>
+  const STORAGE_PREFIX = 'plan-gleb-2026-05-08-';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type="checkbox"][data-key]').forEach(input => {
+      const key = STORAGE_PREFIX + input.dataset.key;
+      input.checked = localStorage.getItem(key) === 'true';
+      input.addEventListener('change', () => {
+        localStorage.setItem(key, input.checked);
+        showSaved();
+      });
+    });
+    document.querySelectorAll('textarea[data-key], input[type="text"][data-key]').forEach(field => {
+      const key = STORAGE_PREFIX + field.dataset.key;
+      field.value = localStorage.getItem(key) || '';
+      field.addEventListener('input', () => {
+        localStorage.setItem(key, field.value);
+        showSaved();
+      });
+    });
+    document.querySelectorAll('.action-status').forEach(el => {
+      const key = STORAGE_PREFIX + 'action-' + el.dataset.action + '-status';
+      const saved = localStorage.getItem(key);
+      if (saved) setStatus(el, saved);
+    });
+  });
+
+  function cycleStatus(el) {
+    const cycle = { todo: 'doing', doing: 'done', done: 'missed', missed: 'todo' };
+    const next = cycle[el.dataset.status] || 'todo';
+    setStatus(el, next);
+    const key = STORAGE_PREFIX + 'action-' + el.dataset.action + '-status';
+    localStorage.setItem(key, next);
+    showSaved();
+  }
+
+  function setStatus(el, status) {
+    el.dataset.status = status;
+    const labels = { todo: 'не начато', doing: 'в работе', done: 'закрыто', missed: 'промах' };
+    el.textContent = labels[status];
+  }
+
+  function showSaved() {
+    const ind = document.getElementById('saved-indicator');
+    ind.textContent = 'сохранено';
+    clearTimeout(window._saveTimer);
+    window._saveTimer = setTimeout(() => ind.textContent = '', 1500);
+  }
+
+  function exportData() {
+    const data = { _client: 'Глеб Костюрин', _date: '2026-05-08' };
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith(STORAGE_PREFIX)) {
+        data[k.replace(STORAGE_PREFIX, '')] = localStorage.getItem(k);
+      }
+    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plan-gleb-2026-05-08.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetAll() {
+    if (!confirm('Стереть все отметки и заметки?')) return;
+    Object.keys(localStorage).forEach(k => { if (k.startsWith(STORAGE_PREFIX)) localStorage.removeItem(k); });
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
