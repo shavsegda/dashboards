@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Библиотека — Тренерская</title>
+<meta name="description" content="Резюме книг, на которые опирается практика Тренерской. Каждая — 15-20 минут чтения. Бизнес-модели, системное мышление, СДВГ, спорт.">
+<meta property="og:title" content="Библиотека — Тренерская">
+<meta property="og:description" content="Резюме книг по бизнесу, системному мышлению, СДВГ и спорту. 15-20 минут на каждую.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 760px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.hero { padding: 96px 0 64px; border-bottom: 1px solid var(--line); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 72px; font-weight: 600;
+  line-height: 1.0; letter-spacing: -0.03em;
+  margin-bottom: 32px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 24px; line-height: 1.4;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  max-width: 620px;
+}
+.hero .meta {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { font-size: 44px; }
+  .hero .lede { font-size: 19px; }
+}
+
+/* SECTIONS */
+section { padding: 64px 0; border-bottom: 1px solid var(--line-soft); }
+@media (max-width: 640px) { section { padding: 48px 0; } }
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  letter-spacing: 0.1em; margin-bottom: 12px;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 32px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 24px; max-width: 720px;
+}
+@media (max-width: 640px) { h2 { font-size: 24px; margin-bottom: 20px; } }
+
+p { margin-bottom: 20px; }
+p:last-child { margin-bottom: 0; }
+
+/* BOOK LIST */
+.books { border-top: 1px solid var(--line-soft); margin-top: 24px; }
+
+.book {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line-soft);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+  align-items: start;
+}
+.book:hover {
+  background: var(--bg-card);
+  margin: 0 -24px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.book .info h3 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.book .info .author {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-bottom: 12px;
+}
+.book .info .desc {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.book .meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-align: right;
+  white-space: nowrap;
+  padding-top: 4px;
+}
+.book .meta .read {
+  display: block;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .book { grid-template-columns: 1fr; gap: 8px; }
+  .book .meta { text-align: left; padding-top: 0; }
+  .book .info h3 { font-size: 19px; }
+  .book:hover { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* APPROACH NOTE */
+.note {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 32px;
+  margin-top: 32px;
+}
+.note p {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+@media (max-width: 640px) { .note { padding: 24px 20px; } }
+
+/* FOOTER */
+footer.site {
+  padding: 64px 0 48px;
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+footer.site .copyright {
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ANIMATIONS */
+@media (prefers-reduced-motion: no-preference) {
+  section, .hero { animation: fadeIn 0.5s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="index.html" class="brand">Тренерская</a>
+    <a href="index.html" class="nav">← на главную</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="content">
+    <h1>Библиотека.</h1>
+    <p class="lede">Книги, на которые опирается практика. Каждое резюме — 15–20 минут чтения вместо 10–15 часов.</p>
+    <p class="meta">7 книг · 4 темы · резюме + полная суть для каждой</p>
+  </div>
+</section>
+
+<!-- БИЗНЕС И СТРАТЕГИЯ -->
+<section>
+  <div class="content">
+    <p class="section-num">01 / Бизнес и стратегия</p>
+    <h2>Как устроены модели и как их менять</h2>
+
+    <div class="books">
+      <a href="osterwalder-business-model.html" class="book">
+        <div class="info">
+          <h3>Построение бизнес-моделей</h3>
+          <p class="author">Александр Остервальдер, Ив Пинье · 2010</p>
+          <p class="desc">Единый язык для разговора о бизнесе — Канвас из 9 блоков. Как описать модель, разобрать, придумать новую и встроить в живую компанию. Стандарт стратсессий и продуктовых разборов.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>288 страниц</span>
+        </div>
+      </a>
+
+      <a href="gassmann-55-patterns.html" class="book">
+        <div class="info">
+          <h3>Бизнес-модели. 55 лучших шаблонов</h3>
+          <p class="author">Оливер Гассман, Каролин Франкенбергер, Микаэла Шик · 2014</p>
+          <p class="desc">90% инновационных моделей собраны из 55 повторяющихся шаблонов. Метод «Навигатор», волшебный треугольник кто-что-как-почему, каталог шаблонов с примерами. Дополняет Канвас.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>334 страницы</span>
+        </div>
+      </a>
+
+      <a href="pozitsionirovanie.html" class="book">
+        <div class="info">
+          <h3>Позиционирование. Битва за узнаваемость</h3>
+          <p class="author">Эл Райс, Джек Траут · 1981</p>
+          <p class="desc">Программная книга маркетинга. Позиционирование — это не то, что вы делаете с продуктом, а то, что вы делаете с сознанием клиента. Битва идёт в голове, а не на полке.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>~250 страниц</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- СИСТЕМНОЕ МЫШЛЕНИЕ -->
+<section>
+  <div class="content">
+    <p class="section-num">02 / Системное мышление</p>
+    <h2>Почему «решения» не работают</h2>
+
+    <div class="books">
+      <a href="meadows-systems-thinking.html" class="book">
+        <div class="info">
+          <h3>Системное мышление</h3>
+          <p class="author">Донелла Медоуз · 2008 (рус. 2025)</p>
+          <p class="desc">Поведение системы определяет её структура, а не события и не люди. Запасы, потоки, циклы обратной связи, точки воздействия. Сквозная оптика всех проектов Тренерской.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>272 страницы</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- МЫШЛЕНИЕ И СДВГ -->
+<section>
+  <div class="content">
+    <p class="section-num">03 / Мышление и СДВГ</p>
+    <h2>Как работают мозг и письмо</h2>
+
+    <div class="books">
+      <a href="sukharev-adhd.html" class="book">
+        <div class="info">
+          <h3>СДВГ у взрослых: от фактов к стратегиям</h3>
+          <p class="author">Павел Сухарев · 2025</p>
+          <p class="desc">Системное руководство по СДВГ. Нейробиология, 24 классические проблемы, четыре цикла жизни (функциональный, суточный, недельный, годовой). Опора во всех скиллах с длинными диалогами.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>338 страниц</span>
+        </div>
+      </a>
+
+      <a href="zettelkasten.html" class="book">
+        <div class="info">
+          <h3>Как делать полезные заметки (Zettelkasten)</h3>
+          <p class="author">Зонке Аренс · 2017</p>
+          <p class="desc">Метод Никласа Лумана: 58 книг и сотни статей за 30 лет. Мозг не хранилище — нужна внешняя сеть атомарных заметок. Письмо как среда мышления, а не запись готовых мыслей.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>~250 страниц</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- СПОРТ -->
+<section>
+  <div class="content">
+    <p class="section-num">04 / Спорт</p>
+    <h2>Тренировка как система</h2>
+
+    <div class="books">
+      <a href="uphill-athlete-training.html" class="book">
+        <div class="info">
+          <h3>Training for the Uphill Athlete</h3>
+          <p class="author">Стив Хаус, Килиан Джорнет, Скотт Джонстон · 2019</p>
+          <p class="desc">Методичка по тренировкам для горных бегунов и ультратрейлеров. Физиология выносливости, зоны интенсивности, периодизация. Каркас, чтобы спортсмен сам составил план под свою гонку.</p>
+        </div>
+        <div class="meta">
+          <span class="read">15–20 мин</span>
+          <span>~250 страниц</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="note">
+      <p>На каждой странице книги два режима — «Кратко» (15–20 мин, главные тезисы и применение) и «Полностью» (45–60 мин, концепции, цитаты, разбор по главам). Переключаются табами вверху страницы.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="content">
+    <div class="copyright">
+      <span>Тренерская · Алексей Шаповалов · 2026</span>
+      <span><a href="index.html" style="color: var(--text-secondary);">← на главную</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
