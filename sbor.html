@@ -750,7 +750,7 @@ footer.site a { color: var(--accent); text-decoration: none; }
     <nav class="site-nav">
       <a href="cases/" class="nav">Кейсы</a>
       <a href="sbor.html" class="nav active">Сбор</a>
-      <a href="https://t.me/shapovalov_vsegda" class="nav-cta">Записаться</a>
+      <a href="#zayavka" data-open="zayavka" class="nav-cta">Записаться</a>
     </nav>
   </div>
 </header>
@@ -763,7 +763,7 @@ footer.site a { color: var(--accent); text-decoration: none; }
     <p class="lede">Найти за полтора часа корень того, что блокирует движение, и собрать три действия с критериями и шагом на 48 часов.</p>
     <p class="meta-line">50 000 ₽ · Hogan-портрет на 15 000 ₽ включён · 1,5 часа · онлайн · возврат, если не подойдёт</p>
     <div class="cta-row">
-      <a href="sbor-zayavka.html" class="cta-primary">Оставить заявку на Сбор</a>
+      <a href="#zayavka" data-open="zayavka" class="cta-primary">Оставить заявку на Сбор</a>
       <a href="https://t.me/vslukh_shapovalov_bot" class="cta-secondary-btn">Сначала поговорить безопасно →</a>
     </div>
     <p class="hero-proof"><a href="cases/2026-05-08-strategiya-est-pervyj-shag-net.html">«10 из 10 за Сбор» — топ-менеджер 40+, переход в bigtech · май 2026 →</a></p>
@@ -1198,7 +1198,7 @@ footer.site a { color: var(--accent); text-decoration: none; }
 <section class="final-cta">
   <h2>Записаться на Сбор</h2>
   <p>Полтора часа. Карта пяти слоёв. Корень, не симптом. Три действия с критериями и шагом на 48 часов.</p>
-  <a href="sbor-zayavka.html" class="final-cta-button">Оставить заявку на Сбор</a>
+  <a href="#zayavka" data-open="zayavka" class="final-cta-button">Оставить заявку на Сбор</a>
   <p class="final-cta-price">50 000 ₽ · возврат после Сбора, если не подойдёт</p>
   <p class="final-cta-soft">Сейчас не время — <a href="https://t.me/vslukh_shapovalov_bot">поговорите с ботом «Вслух»</a>. Бесплатно.</p>
 </section>
@@ -1209,6 +1209,166 @@ footer.site a { color: var(--accent); text-decoration: none; }
     <a href="https://t.me/vslukh_shapovalov_bot">@vslukh_shapovalov_bot</a>
   </div>
 </footer>
+
+<!-- ZAYAVKA MODAL -->
+<div class="modal-overlay" id="zayavka-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-container">
+    <button class="modal-close" data-close-modal aria-label="Закрыть">×</button>
+
+    <!-- FORM VIEW -->
+    <div id="modal-form-view">
+      <div class="modal-kicker">Заявка на Сбор · 7 коротких полей</div>
+      <h2 id="modal-title">Прежде чем оставить заявку</h2>
+      <p class="modal-lede">Семь коротких вопросов. После — открою Telegram с готовой заявкой. Отвечу лично в течение 24 часов.</p>
+
+      <form class="modal-form" id="zayavka-form">
+
+        <div class="modal-field">
+          <label for="m-name">Имя</label>
+          <input type="text" id="m-name" name="name" required placeholder="Как к вам обращаться">
+        </div>
+
+        <div class="modal-field">
+          <label for="m-contact">Телеграм или email</label>
+          <input type="text" id="m-contact" name="contact" required placeholder="@username или email">
+        </div>
+
+        <div class="modal-field">
+          <label>Роль</label>
+          <div class="radio-row">
+            <label><input type="radio" name="role" value="Собственник" required> Собственник</label>
+            <label><input type="radio" name="role" value="Топ-менеджер"> Топ-менеджер</label>
+            <label><input type="radio" name="role" value="Соло-практик"> Соло-практик</label>
+            <label><input type="radio" name="role" value="Другое"> Другое</label>
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label for="m-sphere">Сфера</label>
+          <span class="field-hint">Одной строкой: индустрия, продукт или специализация</span>
+          <input type="text" id="m-sphere" name="sphere" required placeholder="Например: IT, недвижимость, медицина, стратегические сессии">
+        </div>
+
+        <div class="modal-field">
+          <label>Как давно длится застой</label>
+          <div class="radio-row">
+            <label><input type="radio" name="duration" value="меньше 3 месяцев" required> &lt; 3 мес</label>
+            <label><input type="radio" name="duration" value="3–12 месяцев"> 3–12 мес</label>
+            <label><input type="radio" name="duration" value="больше года"> &gt; года</label>
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label>Что уже пробовали</label>
+          <span class="field-hint">Можно несколько</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="tried" value="Коучинг"> Коучинг</label>
+            <label><input type="checkbox" name="tried" value="Психотерапия"> Психотерапия</label>
+            <label><input type="checkbox" name="tried" value="Ретриты, выезды"> Ретриты, выезды</label>
+            <label><input type="checkbox" name="tried" value="HR-консультант, карьерный коуч"> HR-консультант / карьерный коуч</label>
+            <label><input type="checkbox" name="tried" value="Ничего не пробовал"> Ничего не пробовал</label>
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label>Удобное окно для созвона</label>
+          <div class="radio-row">
+            <label><input type="radio" name="when" value="На этой неделе" required> На этой неделе</label>
+            <label><input type="radio" name="when" value="В ближайшие 2-3 недели"> Через 2-3 недели</label>
+            <label><input type="radio" name="when" value="Гибко, когда удобно вам"> Гибко</label>
+          </div>
+        </div>
+
+        <div class="modal-submit-row">
+          <button type="submit" class="modal-submit">Открыть Telegram и отправить</button>
+          <p class="modal-submit-hint">Откроется чат со мной с уже заполненным текстом заявки</p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- THANKS VIEW -->
+    <div class="modal-thanks" id="modal-thanks-view">
+      <div class="thanks-check">✓</div>
+      <h2>Готово</h2>
+      <p>Открыл Telegram с заявкой. Останется нажать «Отправить» в чате со мной.</p>
+      <p><strong>Отвечу лично в течение 24 часов.</strong> Согласуем время и формат, после — пришлю ссылку на Hogan-портрет (его проходим до Сбора).</p>
+
+      <div class="thanks-actions">
+        <a href="https://t.me/vslukh_shapovalov_bot" class="thanks-btn thanks-btn-primary" target="_blank">Пока жду — пройти Hogan-портрет в боте «Вслух» →</a>
+        <button class="thanks-btn thanks-btn-secondary" data-close-modal>Вернуться к странице</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const modal = document.getElementById('zayavka-modal');
+  const formView = document.getElementById('modal-form-view');
+  const thanksView = document.getElementById('modal-thanks-view');
+  const form = document.getElementById('zayavka-form');
+
+  function openModal() {
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    formView.style.display = 'block';
+    thanksView.classList.remove('shown');
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    if (window.location.hash === '#zayavka') {
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
+  // Triggers
+  document.querySelectorAll('[data-open="zayavka"]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+  document.querySelectorAll('[data-close-modal]').forEach(el => {
+    el.addEventListener('click', closeModal);
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  // Open by hash
+  if (window.location.hash === '#zayavka') {
+    openModal();
+  }
+
+  // Submit
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const name = data.get('name').trim();
+    const contact = data.get('contact').trim();
+    const role = data.get('role');
+    const sphere = data.get('sphere').trim();
+    const duration = data.get('duration');
+    const triedArr = data.getAll('tried');
+    const tried = triedArr.length ? triedArr.join(', ') : 'не указано';
+    const when = data.get('when');
+
+    const text = `Заявка на Сбор\n\nИмя: ${name}\nКонтакт: ${contact}\nРоль: ${role}\nСфера: ${sphere}\nЗастой длится: ${duration}\nЧто пробовал: ${tried}\nОкно для созвона: ${when}`;
+
+    const tgUrl = 'https://t.me/shapovalov_vsegda?text=' + encodeURIComponent(text);
+
+    window.open(tgUrl, '_blank');
+
+    formView.style.display = 'none';
+    thanksView.classList.add('shown');
+  });
+})();
+</script>
 
 </body>
 </html>
