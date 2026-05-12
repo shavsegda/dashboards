@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Заявка на Сбор · Тренерская</title>
+<meta name="description" content="Оставить заявку на Сбор — системную диагностику за полтора часа. 4 коротких вопроса, ответ в течение суток.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 640px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav:hover { color: var(--accent); }
+
+/* HERO */
+.form-hero {
+  padding: 56px 0 32px;
+}
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+h1 {
+  font-family: var(--font-sans);
+  font-size: 38px; font-weight: 600;
+  line-height: 1.1; letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.form-hero .lede {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+@media (max-width: 640px) { h1 { font-size: 28px; } }
+
+/* FORM */
+.form-wrap {
+  padding: 0 0 96px;
+}
+form { display: flex; flex-direction: column; gap: 28px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.field-hint {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-top: -4px;
+}
+.field input[type="text"],
+.field textarea,
+.field select {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 4px;
+  width: 100%;
+  resize: vertical;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field textarea { min-height: 96px; line-height: 1.5; }
+
+.radio-group { display: flex; flex-direction: column; gap: 8px; }
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: border-color 0.15s ease;
+}
+.radio-option:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(31, 78, 63, 0.04);
+}
+.radio-option input { margin-top: 4px; accent-color: var(--accent); }
+
+.submit-row {
+  margin-top: 16px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+button.submit {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 16px 32px;
+  font-family: var(--font-sans);
+  font-size: 16px; font-weight: 600;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+button.submit:hover { background: var(--accent-hover); }
+.submit-hint {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 16px;
+}
+
+/* THANK YOU */
+.thanks {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  padding: 40px;
+  margin-top: 32px;
+  display: none;
+}
+.thanks.shown { display: block; }
+.thanks h2 {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+.thanks p { margin-bottom: 16px; }
+.thanks-button {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 14px 28px;
+  font-family: var(--font-sans);
+  font-size: 15px; font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+.thanks-button:hover { background: var(--accent-hover); }
+
+/* FOOTER */
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 40px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+footer.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+  flex-wrap: wrap; gap: 16px;
+}
+footer.site a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/" class="brand">Тренерская</a>
+    <a href="sbor.html" class="nav">← Назад к Сбору</a>
+  </div>
+</header>
+
+<section class="form-hero">
+  <div class="content">
+    <div class="kicker">Заявка на Сбор · 4 коротких вопроса</div>
+    <h1>Прежде чем оставить заявку</h1>
+    <p class="lede">Четыре вопроса. Так я подготовлюсь к встрече точнее, и мы не потратим время на сбор контекста. После отправки заявка приходит мне в Telegram — отвечаю в течение суток.</p>
+  </div>
+</section>
+
+<section class="form-wrap">
+  <div class="content">
+    <form id="zayavka-form">
+
+      <div class="field">
+        <label for="name">Как вас зовут?</label>
+        <input type="text" id="name" name="name" required placeholder="Имя">
+      </div>
+
+      <div class="field">
+        <label>Кем вы себя считаете сегодня?</label>
+        <p class="field-hint">Выберите ближайший вариант. Это не финальная категория, помогает калибровать встречу</p>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="segment" value="Собственник в фазе перехода" required>
+            <span>Собственник бизнеса в фазе перехода</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="segment" value="Топ-менеджер с задумкой ухода">
+            <span>Топ-менеджер в найме, думаю про переход</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="segment" value="Соло-практик после партнёрства или найма">
+            <span>Соло-практик после партнёрства или найма</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="segment" value="Другое">
+            <span>Другое — опишу ниже</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="boli">Что сейчас болит сильнее всего?</label>
+        <p class="field-hint">Одним абзацем, своими словами. Не нужно красиво — нужно по делу</p>
+        <textarea id="boli" name="boli" required placeholder="Например: план перехода есть, шестой месяц не делаю первый шаг..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Когда хотите Сбор?</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="when" value="На этой неделе" required>
+            <span>На этой неделе</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="when" value="В ближайшие 2-3 недели">
+            <span>В ближайшие 2-3 недели</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="when" value="Когда удобно вам">
+            <span>Когда удобно вам — я гибкий</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="contact">Ваш Telegram или почта для связи</label>
+        <p class="field-hint">Чтобы мог ответить, если потеряемся в чате</p>
+        <input type="text" id="contact" name="contact" required placeholder="@username или email">
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="submit">Открыть Telegram и отправить</button>
+        <p class="submit-hint">Заявка откроется в Telegram с готовым текстом. Останется нажать «Отправить» в чате.</p>
+      </div>
+
+    </form>
+
+    <div id="thanks" class="thanks">
+      <h2>Готово</h2>
+      <p>Сейчас открылся Telegram с готовым текстом заявки. Если не открылся автоматически — нажмите кнопку ниже.</p>
+      <p>В чате просто нажмите «Отправить». Я отвечу в течение суток.</p>
+      <a id="thanks-link" href="#" class="thanks-button">Открыть чат с Алексеем →</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="container">
+    <span>Тренерская · сопровождение в фазе перехода</span>
+    <a href="https://t.me/vslukh_shapovalov_bot">@vslukh_shapovalov_bot</a>
+  </div>
+</footer>
+
+<script>
+document.getElementById('zayavka-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim();
+  const segment = document.querySelector('input[name="segment"]:checked').value;
+  const boli = document.getElementById('boli').value.trim();
+  const when = document.querySelector('input[name="when"]:checked').value;
+  const contact = document.getElementById('contact').value.trim();
+
+  const text = `Заявка на Сбор\n\nИмя: ${name}\nСегмент: ${segment}\nКогда хочу Сбор: ${when}\nКонтакт: ${contact}\n\nЧто болит:\n${boli}`;
+
+  const tgUrl = 'https://t.me/shapovalov_vsegda?text=' + encodeURIComponent(text);
+
+  // Открываем Telegram в новом окне
+  window.open(tgUrl, '_blank');
+
+  // Показываем благодарственный экран с резервной ссылкой
+  document.getElementById('thanks-link').href = tgUrl;
+  document.getElementById('thanks').classList.add('shown');
+  document.getElementById('zayavka-form').style.display = 'none';
+
+  // Прокручиваем к благодарственному экрану
+  document.getElementById('thanks').scrollIntoView({ behavior: 'smooth' });
+});
+</script>
+
+</body>
+</html>
