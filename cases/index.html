@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Кейсы — Тренерская</title>
+<meta name="description" content="Кейсы сопровождения собственников и соло-практиков в фазе перехода. Обезличенные истории клиентов.">
+<meta property="og:title" content="Кейсы — Тренерская">
+<meta property="og:description" content="Кейсы сопровождения собственников и соло-практиков. Обезличенные истории.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 760px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .site-nav {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+}
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav.active { color: var(--accent); font-weight: 500; }
+header.site .nav:hover { color: var(--accent); }
+@media (max-width: 520px) {
+  header.site .site-nav { gap: 16px; }
+  header.site .nav { font-size: 12px; }
+}
+
+/* HERO */
+.hero { padding: 80px 0 56px; border-bottom: 1px solid var(--line-soft); }
+
+.hero h1 {
+  font-family: var(--font-sans);
+  font-size: 56px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+.hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.4;
+  color: var(--text-secondary);
+  max-width: 620px;
+}
+@media (max-width: 640px) {
+  .hero { padding: 48px 0 32px; }
+  .hero h1 { font-size: 36px; }
+  .hero .lede { font-size: 18px; }
+}
+
+/* CASES LIST */
+.cases-list {
+  padding: 64px 0 96px;
+}
+.case-card {
+  border-bottom: 1px solid var(--line);
+  padding: 32px 0;
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+  transition: opacity 0.15s ease;
+}
+.case-card:first-child { padding-top: 0; }
+.case-card:hover { opacity: 0.7; }
+.case-card:hover h2 { color: var(--accent); }
+.case-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.case-card h2 {
+  font-family: var(--font-sans);
+  font-size: 32px; font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  transition: color 0.15s ease;
+}
+.case-card .case-lede {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.case-card .read-more {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+@media (max-width: 640px) {
+  .cases-list { padding: 40px 0 64px; }
+  .case-card h2 { font-size: 24px; }
+  .case-card .case-lede { font-size: 16px; }
+}
+
+/* FOOTER */
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 48px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+footer.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+  flex-wrap: wrap; gap: 16px;
+}
+footer.site a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/dashboards/" class="brand">Тренерская</a>
+    <nav class="site-nav">
+      <a href="/dashboards/cases/" class="nav active">Кейсы</a>
+      <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="content">
+    <h1>Кейсы</h1>
+    <p class="lede">Обезличенные истории клиентов в фазе перехода. Что приходило, как разбирали, что вышло.</p>
+  </div>
+</section>
+
+<section class="cases-list">
+  <div class="content">
+
+    <a href="2026-05-12-uchitsya-bolshe-ne-u-kogo.html" class="case-card">
+      <div class="case-meta">12 мая 2026 · Соло-консультант 40+</div>
+      <h2>Когда учиться больше не у кого</h2>
+      <p class="case-lede">Соло-консультант 40+ после выхода из партнёрства. Снаружи успех. Внутри — съел всех, на кого равнялся. За полтора часа собрал свою траекторию на десять лет — впервые без чужой копии.</p>
+      <span class="read-more">Читать кейс →</span>
+    </a>
+
+  </div>
+</section>
+
+<footer class="site">
+  <div class="container">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/vslukh_shapovalov_bot">@vslukh_shapovalov_bot</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Когда учиться больше не у кого — Кейс Тренерской</title>
+<meta name="description" content="Кейс соло-консультанта 40+. Снаружи успех, внутри — съел всех, на кого равнялся. За полтора часа собрал собственную траекторию на десять лет — без чужой копии.">
+<meta property="og:title" content="Когда учиться больше не у кого — Кейс Тренерской">
+<meta property="og:description" content="Соло-консультант 40+. Снаружи успех, внутри — съел всех, на кого равнялся. За полтора часа собрал свою траекторию на десять лет.">
+<meta property="og:type" content="article">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+  --warn: #C24A2D;
+  --warn-soft: #FBF1ED;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 720px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; line-height: 1.6; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .site-nav { display: flex; gap: 24px; align-items: baseline; }
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav.active { color: var(--accent); font-weight: 500; }
+header.site .nav:hover { color: var(--accent); }
+@media (max-width: 520px) {
+  header.site .site-nav { gap: 16px; }
+  header.site .nav { font-size: 12px; }
+}
+
+/* BREADCRUMB */
+.crumb {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  padding: 32px 0 0;
+}
+.crumb a { color: var(--text-secondary); text-decoration: none; }
+.crumb a:hover { color: var(--accent); }
+
+/* HERO */
+.case-hero {
+  padding: 32px 0 56px;
+  border-bottom: 1px solid var(--line);
+}
+.case-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.case-hero h1 {
+  font-family: var(--font-sans);
+  font-size: 64px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.03em;
+  margin-bottom: 28px;
+}
+.case-hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 640px;
+}
+@media (max-width: 640px) {
+  .case-hero { padding: 24px 0 40px; }
+  .case-hero h1 { font-size: 38px; }
+  .case-hero .lede { font-size: 19px; }
+}
+
+/* SECTIONS */
+section.block {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+section.block:last-of-type { border-bottom: none; }
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 32px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+h3 {
+  font-family: var(--font-sans);
+  font-size: 19px; font-weight: 600;
+  margin: 24px 0 12px;
+}
+@media (max-width: 640px) {
+  section.block { padding: 40px 0; }
+  h2 { font-size: 24px; }
+}
+
+p { margin-bottom: 18px; }
+p:last-child { margin-bottom: 0; }
+
+ul, ol { margin: 0 0 20px 24px; }
+li { margin-bottom: 8px; }
+li:last-child { margin-bottom: 0; }
+
+strong { font-weight: 600; color: var(--text); }
+em { font-style: italic; color: var(--text-secondary); }
+
+blockquote {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 24px;
+  margin: 24px 0;
+}
+@media (max-width: 640px) {
+  blockquote { font-size: 18px; padding-left: 16px; }
+}
+
+/* CALLOUT */
+.callout {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 24px 28px;
+  margin: 24px 0;
+  border-radius: 4px;
+}
+.callout-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.callout-warn {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+}
+.callout-warn .callout-label { color: var(--warn); }
+
+/* TWO COLUMNS (Преображение) */
+.transform {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 32px 0;
+}
+.transform-col {
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+}
+.transform-col.before { color: var(--text-secondary); }
+.transform-col.after { border-color: var(--accent); }
+.transform-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+.transform-col.after .transform-label { color: var(--accent); }
+@media (max-width: 640px) {
+  .transform { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* NUMBERED STEPS */
+.step-list { counter-reset: step; margin: 24px 0; }
+.step-item {
+  position: relative;
+  padding-left: 56px;
+  margin-bottom: 32px;
+}
+.step-item::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: -4px;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1;
+}
+.step-item h3 { margin-top: 0; }
+@media (max-width: 640px) {
+  .step-item { padding-left: 40px; }
+  .step-item::before { font-size: 24px; }
+}
+
+/* CTA */
+.cta-block {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+  margin: 32px 0;
+  border-radius: 4px;
+}
+.cta-price {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 16px 0 24px;
+  letter-spacing: 0.02em;
+}
+.cta-button {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 16px 32px;
+  font-family: var(--font-sans);
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta-button:hover { background: var(--accent-hover); }
+.cta-secondary {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 16px;
+}
+.cta-secondary a { color: var(--accent); }
+@media (max-width: 640px) {
+  .cta-block { padding: 28px; }
+}
+
+/* DECLINE LIST */
+.decline-list {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 28px 32px;
+  margin: 24px 0;
+}
+.decline-list h3 {
+  margin-top: 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+
+/* FOOTER */
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 48px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+footer.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+  flex-wrap: wrap; gap: 16px;
+}
+footer.site a { color: var(--accent); text-decoration: none; }
+
+.disclaimer {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 32px 0;
+  border-top: 1px solid var(--line-soft);
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="/dashboards/" class="brand">Тренерская</a>
+    <nav class="site-nav">
+      <a href="/dashboards/cases/" class="nav active">Кейсы</a>
+      <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+    </nav>
+  </div>
+</header>
+
+<div class="content">
+  <p class="crumb"><a href="/dashboards/cases/">← Все кейсы</a></p>
+</div>
+
+<section class="case-hero">
+  <div class="content">
+    <div class="case-meta">12 мая 2026 · Соло-консультант 40+</div>
+    <h1>Когда учиться больше не у кого</h1>
+    <p class="lede">Кейс соло-консультанта 40+. Снаружи успех. Внутри — съел всех, на кого равнялся. За полтора часа собрал свою траекторию на десять лет — впервые без чужой копии.</p>
+  </div>
+</section>
+
+<!-- Узнаёте? -->
+<section class="block">
+  <div class="content">
+    <h2>Узнаёте?</h2>
+    <p>Вам 35-45. Семья, доход, узнаваемая профессия. На бумаге — успех. Внутри:</p>
+    <ul>
+      <li>Горизонт — неделя. Не понимаете, кем будете через десять лет</li>
+      <li>Работа стала «часом за деньги». Раньше зажигала. Теперь обесценилась</li>
+      <li>Антимодели чёткие: точно знаете, кем не хотите быть в 60. Моделей — ноль</li>
+      <li>Партнёр, если был — ушёл или вы вышли. Тоже не модель</li>
+    </ul>
+    <p>И главное: <strong>учиться больше не у кого</strong>. Все, на кого равнялись раньше — отец, наставники, партнёры — уже не цель. Следующих нет.</p>
+    <p>Узнаёте — это про вас.</p>
+  </div>
+</section>
+
+<!-- Невидимый враг -->
+<section class="block">
+  <div class="content">
+    <h2>Невидимый враг</h2>
+    <p><strong>Привычка учиться только через готовую модель сверху.</strong></p>
+    <p>В 20-30 лет это сила: берёшь авторитета постарше, перенимаешь, обгоняешь, идёшь к следующему. К 40+ карта учителей исчерпывается. Все, у кого можно было учиться, уже учили. Привычка осталась. Мозг тщетно ищет следующего. Не находит. Энергия уходит в тревогу. Тревога — в обесценивание текущего.</p>
+    <p>Это не выгорание. Это <strong>исчерпавшаяся карта роста</strong>.</p>
+  </div>
+</section>
+
+<!-- Что было до встречи -->
+<section class="block">
+  <div class="content">
+    <h2>Что было до встречи</h2>
+    <p>Мужчина, 40+. Семья, дети. Доход выше среднего. В прошлом — партнёр в компании. Ушёл в начале 2026. Сейчас в свободном плавании: консалтинг и стратегические сессии. Работа та же — без партнёра.</p>
+    <p>Внутри:</p>
+    <ul>
+      <li>Стратсессии стали «часом за деньги»</li>
+      <li>Видения «кем буду через десять лет» нет</li>
+      <li>Наставника в окружении нет — некому сказать «вот так не смотрел»</li>
+      <li>Антимодели чёткие. Моделей — ноль</li>
+    </ul>
+    <p>Замеры по WHO-5 / PHQ-9 / GAD-7 — субклинические. Не в кризисе. Поэтому проблему сложно поймать: снаружи всё работает.</p>
+  </div>
+</section>
+
+<!-- Что сделали за полтора часа -->
+<section class="block">
+  <div class="content">
+    <h2>Что сделали за полтора часа</h2>
+
+    <div class="step-list">
+
+      <div class="step-item">
+        <h3>Системная карта — пять слоёв жизни</h3>
+        <p>Не «обсудим карьеру». Сначала картина целиком: тело, близкие, работа, дело помимо работы, смысл. По шкале и одной фразой к каждому.</p>
+        <p>Через семь минут видна структура. Во всех пяти слоях есть <strong>горизонталь</strong> — партнёры по спорту, круг друзей, клиенты, дети. Качественная жизнь сегодня.</p>
+        <p>И во всех пяти слоях <strong>нет вертикали сверху</strong>. Некому быть моделью «следующей версии себя» ни в одном.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Раскопка операционной системы</h3>
+        <p>Спросили: как раньше эта вертикаль появлялась? Сформулировал сам: «ставил целевую модель, рос до неё, понимал сделку, шёл к следующей».</p>
+        <p>Ключевое: <strong>всех съел</strong>. Фигур, которых можно поставить целевой моделью, в окружении больше нет.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Развилка парадигмы</h3>
+        <p>Не «какую профессию выбрать». А <strong>на какой операционной системе жизни жить дальше</strong>.</p>
+        <p>Два варианта:</p>
+        <ul>
+          <li>Найти новый тип модели — «архитектор собственной системы», не «эксперт в нише»</li>
+          <li>Сменить сам принцип — жить без модели</li>
+        </ul>
+        <p>Выбрал первый. На вопрос «знаете ли таких людей лично» ответил «не знаю». Это и стало опорой: <strong>если в окружении нет — значит первая модель этого типа = он сам через десять лет</strong>.</p>
+        <blockquote>Сформировать критерии того, что хочу создать → стать первым прецедентом, для которого ещё нет модели снаружи.</blockquote>
+        <p>Новая операционная система — его слова.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Переоткрытие текущей работы</h3>
+        <p>Стратсессии и консалтинг до встречи воспринимались как «час за деньги». Переоткрылись как <strong>исследовательский инструмент</strong>: каждая сессия — доступ внутрь чужого бизнеса, информация о возможностях, точка партнёрств.</p>
+        <p>Работа та же. Смысл — другой.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Карта системы через десять лет</h3>
+        <p>Семь элементов, которые назвал сам: несколько источников дохода в разных странах, влияние на индустрию, гибкость, семья с открытыми возможностями для детей, дом мечты, несколько бизнесов, мужской круг друзей «не постарел».</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Три действия на 1-3 месяца</h3>
+        <p>Каждое — с датой, критерием и шагом на 48 часов. Уверенность по двум — 10 из 10 и 8 из 10. По одному — 60-70%.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Преображение -->
+<section class="block">
+  <div class="content">
+    <h2>Преображение</h2>
+
+    <div class="transform">
+      <div class="transform-col before">
+        <div class="transform-label">Из</div>
+        <p>Соло-консультант на развилке. Снаружи успех. Внутри — «съел всё, что мог, не вижу следующего». Поиск чужой модели, которой нет.</p>
+      </div>
+      <div class="transform-col after">
+        <div class="transform-label">В</div>
+        <p>Первый архитектор собственной системы. Текущая работа — инструмент построения. Недовольство как топливо направлено на собственные критерии. Образ себя через десять лет — чёткий.</p>
+      </div>
+    </div>
+
+    <p>Не «человек, который перестал страдать». А <strong>человек, который перестал копировать</strong>.</p>
+  </div>
+</section>
+
+<!-- Что на кону -->
+<section class="block">
+  <div class="content">
+    <h2>Что на кону</h2>
+    <p>Если узнали себя и оставляете как есть:</p>
+    <ul>
+      <li><strong>5-10 лет жизни</strong> без траектории. Не на кризисе, а на горизонте недели</li>
+      <li><strong>Движок выгорает без новой цели.</strong> Недовольство, раньше двигавшее вверх, без направления превращается в раздражение</li>
+      <li><strong>Дети не видят пример системы.</strong> Растут на «папа работает», без видимой долгосрочной траектории</li>
+      <li><strong>Карта моделей сама не пополняется.</strong> Чем дольше ждать, что найдётся новый авторитет — тем меньше шансов. К 50-55 этой возможности нет</li>
+    </ul>
+    <p>И главное: вы продолжите делать <strong>ту же работу</strong>, но без её смысла. Десятилетие на 80% мощности вместо 100%.</p>
+  </div>
+</section>
+
+<!-- Почему я могу помочь -->
+<section class="block">
+  <div class="content">
+    <h2>Почему я могу помочь</h2>
+    <p>Собираю картину пяти слоёв жизни за полтора часа. Нахожу корень, не симптом. Вывожу к собственной формулировке новой траектории. Это работа <strong>системного диагноста</strong> — не коуч с долгими вопросами и не консультант по карьере.</p>
+    <p>Сам прошёл выход из похожего сценария. Знаю изнутри, что не работает: «найдите наставника», «отдохните и подумайте», коучинг общих вопросов. Что работает — соберём на встрече.</p>
+  </div>
+</section>
+
+<!-- Что входит в Сбор -->
+<section class="block">
+  <div class="content">
+    <h2>Что входит в Сбор</h2>
+    <ul>
+      <li><strong>Полтора часа</strong> один на один, онлайн или офлайн</li>
+      <li><strong>Системная карта пяти слоёв</strong> — диагностика структуры жизни и работы</li>
+      <li><strong>Главная находка</strong> — корень, не симптом</li>
+      <li><strong>Три действия</strong> на 1-3 месяца с датами и шагами на 48 часов</li>
+      <li><strong>Карта парадигмы</strong> — рабочий документ для возврата</li>
+      <li><strong>Короткий контакт через 2-3 недели</strong> — проверить движение</li>
+    </ul>
+
+    <div class="cta-block">
+      <h3 style="margin-top:0">Записаться на Сбор</h3>
+      <p class="cta-price">50 000 ₽ · точка входа · возврат денег после Сбора, если решили, что не ваше</p>
+      <a href="https://t.me/vslukh_shapovalov_bot" class="cta-button">Написать в Telegram</a>
+      <p class="cta-secondary">Сейчас не время — оставьте контакт в боте. Через 2-3 месяца напишу одной короткой мыслью без продажи.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Не подходит -->
+<section class="block">
+  <div class="content">
+    <h2>Не подходит, если</h2>
+
+    <div class="decline-list">
+      <ul>
+        <li>Хотите готовый ответ от эксперта, а не «увидеть себя»</li>
+        <li>В системе жизни острый кризис (тяжёлая депрессия, тревожное расстройство) — к специалисту, не ко мне</li>
+        <li>Нужна работа по личному бренду, продвижению, продажам — другая зона, направлю</li>
+        <li>Не готовы услышать про себя то, что отрицали пять лет</li>
+      </ul>
+    </div>
+
+    <p>Чем больше отказов узнаёте — тем точнее попадание Сбора.</p>
+  </div>
+</section>
+
+<p class="disclaimer">Кейс по реальной сессии. Имена и детали клиента изменены до полной неузнаваемости.</p>
+
+<footer class="site">
+  <div class="container">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/vslukh_shapovalov_bot">@vslukh_shapovalov_bot</a>
+  </div>
+</footer>
+
+</body>
+</html>

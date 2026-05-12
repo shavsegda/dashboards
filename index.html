@@ -65,12 +65,21 @@ header.site .brand {
   letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--text); text-decoration: none;
 }
+header.site .site-nav {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+}
 header.site .nav {
   font-family: var(--font-mono);
   font-size: 13px; color: var(--text-secondary);
   text-decoration: none;
 }
 header.site .nav:hover { color: var(--accent); }
+@media (max-width: 520px) {
+  header.site .site-nav { gap: 16px; }
+  header.site .nav { font-size: 12px; }
+}
 
 /* HERO */
 .hero { padding: 96px 0 80px; border-bottom: 1px solid var(--line); }
@@ -352,7 +361,10 @@ footer.site .copyright {
 <header class="site">
   <div class="container">
     <a href="/dashboards/" class="brand">Тренерская</a>
-    <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+    <nav class="site-nav">
+      <a href="/dashboards/cases/" class="nav">Кейсы</a>
+      <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+    </nav>
   </div>
 </header>
 
