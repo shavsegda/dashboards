@@ -240,6 +240,49 @@ header.site .nav-cta:hover { background: var(--accent-hover); color: #FFFFFF; }
   font-family: var(--font-mono);
   font-size: 13px;
 }
+
+/* CARD PREVIEW */
+.card-preview {
+  margin: 28px 0;
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+}
+.card-preview-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.card-preview p { font-size: 15px; }
+.card-preview-images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin: 24px 0;
+}
+.card-preview-images img {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: block;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+}
+.card-preview-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+}
+@media (max-width: 640px) {
+  .card-preview { padding: 24px; }
+  .card-preview-images { grid-template-columns: 1fr; gap: 14px; }
+}
 .hero .meta-line {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -1171,6 +1214,25 @@ footer.site a { color: var(--accent); text-decoration: none; }
         <li>Если острая клиника — направлю к специалисту, не работаю «вместо»</li>
         <li>Не работаю с прямыми конкурентами клиента одновременно</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ОБРАЗЕЦ КАРТЫ СБОРА -->
+<section class="block">
+  <div class="content">
+    <div class="sec-label">VII · Что физически унесёте</div>
+    <h2>Образец Карты Сбора</h2>
+    <p>«Карта Сбора в Markdown + HTML» — слова. Вот как это выглядит на самом деле — рабочий документ, который приходит в течение часа после встречи. Возвращаетесь к нему между действиями.</p>
+
+    <div class="card-preview">
+      <div class="card-preview-label">Образец · обезличенная версия</div>
+      <p>Имена, цифры и формулировки в образце — вымышленные. Структура и стиль документа — настоящие.</p>
+      <div class="card-preview-images">
+        <img src="images/card-sample-top.png" alt="Образец Карты Сбора: системная карта пяти слоёв и корневое противоречие">
+        <img src="images/card-sample-bottom.png" alt="Образец Карты Сбора: три действия с критериями и шагом на 48 часов">
+      </div>
+      <p><a href="sbor-card-example.html" class="card-preview-link" target="_blank">Открыть полный образец карты →</a></p>
     </div>
   </div>
 </section>
