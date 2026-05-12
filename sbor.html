@@ -614,6 +614,53 @@ blockquote {
 }
 
 /* DECLINE LIST */
+/* FAQ */
+.faq-list { margin: 28px 0 0; }
+.faq-item {
+  border-bottom: 1px solid var(--line);
+  padding: 0;
+}
+.faq-item:first-child { border-top: 1px solid var(--line); }
+.faq-item summary {
+  padding: 22px 36px 22px 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+  position: relative;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 0;
+  top: 24px;
+  font-size: 24px;
+  color: var(--accent);
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  font-family: var(--font-mono);
+}
+.faq-item[open] summary::after { transform: rotate(45deg); }
+.faq-item summary:hover { color: var(--accent); }
+.faq-content {
+  padding: 0 0 24px 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.faq-content p { margin-bottom: 12px; }
+.faq-content p:last-child { margin-bottom: 0; }
+@media (max-width: 640px) {
+  .faq-item summary { font-size: 16px; padding: 18px 32px 18px 0; }
+}
+
 .decline-list {
   background: var(--bg-card);
   border: 1px solid var(--line);
@@ -1067,6 +1114,82 @@ footer.site a { color: var(--accent); text-decoration: none; }
         <li>Не готовы услышать, что блокировка не в обстоятельствах, а в вашем поведенческом паттерне</li>
         <li>Нужна работа по личному бренду, продвижению, продажам — другая зона, направлю</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="block">
+  <div class="content">
+    <div class="sec-label">Частые вопросы</div>
+    <h2>Что обычно спрашивают</h2>
+
+    <div class="faq-list">
+
+      <details class="faq-item">
+        <summary>Полтора часа — этого хватит, чтобы найти корень?</summary>
+        <div class="faq-content">
+          <p>Да. Цель Сбора — не глубокая терапия и не полное решение. Цель — корневое противоречие в твоей системе пяти слоёв и три действия с шагом на 48 часов.</p>
+          <p>Я веду по протоколу: системная карта за 7 минут, раскопка корня, рабочая формула, действия. Это укладывается в полтора часа, потому что Hogan-портрет ты уже прошёл до встречи — мы не тратим время на сбор контекста.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>А если корень я и так знаю — зачем мне Сбор?</summary>
+        <div class="faq-content">
+          <p>Если знаете и действуете — не нужен.</p>
+          <p>Если знаете, но не двигаетесь полгода — корень не там, где вы его видите. Часто настоящий корень спрятан под рационализацией, которая выглядит как «вот же оно, всё ясно». Именно эту рационализацию мы ловим вживую на встрече.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Чем Сбор отличается от коучинговой сессии?</summary>
+        <div class="faq-content">
+          <p>Коуч задаёт вопросы и помогает вам ответить. Я <strong>формулирую за вас и проверяю</strong>: «правильно понимаю, что...?» Точность формулировок — это то, за что платят.</p>
+          <p>По Hogan-профилю и замеру я вижу карту чувствительных точек до встречи и веду к корню без 50 общих вопросов «что для вас важно».</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Я пройду Сбор и потом ничего не куплю — это норма?</summary>
+        <div class="faq-content">
+          <p>Да. Сбор — точка входа, не продажа Тренировок. Из десяти клиентов часть продолжает на Тренировках, часть уходит с тремя действиями и работает сама. Оба варианта рабочие.</p>
+          <p>Если после Сбора решите, что не ваше — возврат денег.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>А вы работаете с моей нишей?</summary>
+        <div class="faq-content">
+          <p>Если ниша — бизнес или роль в найме, и вы 35-50 в фазе перехода — работаю.</p>
+          <p>Я <strong>не специалист по нише</strong>, я системный диагност. Корневое противоречие у IT-собственника, владельца производства и топа в страховании устроено одинаково на уровне пяти слоёв. Отрасль не главное.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Что если на Сборе будет тяжело эмоционально?</summary>
+        <div class="faq-content">
+          <p>Сбор устроен как <strong>диагностический формат</strong>, не терапевтический. Корневое противоречие видно, разбор травм не делается.</p>
+          <p>Если в процессе становится понятно, что нужен психотерапевт — говорю прямо и направляю. Я не заменяю психотерапию, работаю параллельно с ней.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Можно посоветовать Сбор партнёру или коллеге?</summary>
+        <div class="faq-content">
+          <p>Можно. Передайте ссылку на этот лендинг. Запись через @shapovalov_vsegda — я согласую время напрямую с человеком.</p>
+          <p><strong>Не работаю с двумя партнёрами одного бизнеса одновременно</strong> — конфликт интересов. Один на один.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Когда лучше идти на Сбор, а когда сначала к психотерапевту?</summary>
+        <div class="faq-content">
+          <p>Сбор — для тех, у кого жизнь снаружи работает, а внутри застой. Системный план в стиле «не двигаюсь, не понимаю куда».</p>
+          <p>Если в системе острый кризис (тяжёлая депрессия, тревожное расстройство, разрушающиеся отношения) — сначала к специалисту. Психоэмоциональный замер в боте «Вслух» показывает уровень — если зашкаливает, я первый напишу про специалиста.</p>
+        </div>
+      </details>
+
     </div>
   </div>
 </section>
