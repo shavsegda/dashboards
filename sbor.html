@@ -194,6 +194,52 @@ header.site .nav-cta:hover { background: var(--accent-hover); color: #FFFFFF; }
     margin: 0 auto;
   }
 }
+.trainer-positioning {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.trainer-facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.trainer-facts li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+.trainer-philosophy {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 24px;
+  margin: 24px 0;
+}
+.trainer-canon {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.trainer-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.trainer-links a {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
 .hero .meta-line {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -1129,6 +1175,40 @@ footer.site a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
+<!-- КТО ПРОВОДИТ СБОР -->
+<section class="block">
+  <div class="content">
+    <div class="sec-label">Кто проводит Сбор</div>
+    <h2>Алексей Шаповалов</h2>
+
+    <div class="trainer-block">
+      <img src="images/aleksey.jpg" alt="Алексей Шаповалов" class="trainer-photo">
+      <div class="trainer-info">
+        <p class="trainer-positioning">Системный диагност для собственников и топов в фазе перехода. Тренер из профессионального спорта + инженер технической кибернетики + социолог.</p>
+
+        <ul class="trainer-facts">
+          <li><strong>С 5 лет в олимпийском спорте.</strong> Выступающий спортсмен, потом тренер. Спортивная периодизация — не из книги, из жизни.</li>
+          <li><strong>С 17 лет в бизнесе.</strong> 2 экзита и 10 фейлов. Прошёл больше десятка переходов изнутри.</li>
+          <li><strong>Образование.</strong> Инженер технической кибернетики · аспирант кафедры социологии · выпускник программы управления HR Университета Мичиган.</li>
+          <li><strong>Преподавание.</strong> Лектор Корпорации МСП, Университета Правительства Москвы, AntiMBA.</li>
+          <li><strong>Альпинист в составе экспедиций.</strong> Сходил в одиночку к Эвересту в несезон (без подъёма на пик). Получил горную болезнь на Килиманджаро. Жил в монастыре Непала, прошёл практику молчания.</li>
+        </ul>
+
+        <blockquote class="trainer-philosophy">
+          Я работаю с системой, не с темой. Корень редко там, где его ищут.
+        </blockquote>
+
+        <p class="trainer-canon">Опираюсь на: <strong>Bompa & Buzzichelli</strong> (периодизация) · <strong>Meadows</strong> (системы) · <strong>Sapolsky</strong> (биология поведения) · <strong>Hogan</strong> (психометрия) · <strong>Uphill Athlete</strong> (тренировки выносливости).</p>
+
+        <p class="trainer-links">
+          <a href="https://t.me/shapovalov_notes" class="trainer-link">Канал @shapovalov_notes →</a>
+          <a href="/" class="trainer-link">Подробнее о подходе на главной →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- КЕЙСЫ -->
 <section class="block">
   <div class="content">
@@ -1166,24 +1246,6 @@ footer.site a { color: var(--accent); text-decoration: none; }
       <div class="testimonial-meta">
         <span>Топ-менеджер 40+, переход в bigtech · май 2026</span>
         <span class="testimonial-score">10 из 10 за Сбор</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- КТО ПРОВОДИТ СБОР -->
-<section class="block">
-  <div class="content">
-    <div class="sec-label">Кто проводит Сбор</div>
-    <h2>Алексей Шаповалов</h2>
-
-    <div class="trainer-block">
-      <img src="images/aleksey.jpg" alt="Алексей Шаповалов" class="trainer-photo">
-      <div class="trainer-info">
-        <p>Тренер из профессионального спорта + инженер технической кибернетики. Тренерская — две дисциплины в одной практике.</p>
-        <p>Собираю картину пяти слоёв жизни за полтора часа. Нахожу корень, не симптом. Это работа <strong>системного диагноста</strong> — не коуч с долгими вопросами и не консультант по карьере.</p>
-        <p>Опираюсь на: <strong>Bompa & Buzzichelli</strong> (периодизация), <strong>Meadows</strong> (системы), <strong>Sapolsky</strong> (биология поведения), <strong>Hogan</strong> (психометрия).</p>
-        <p><a href="/" class="trainer-link">Подробнее о подходе на главной →</a></p>
       </div>
     </div>
   </div>
