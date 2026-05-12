@@ -409,6 +409,42 @@ blockquote {
   border-bottom: 1px solid var(--accent);
   padding-bottom: 2px;
 }
+
+/* TESTIMONIAL */
+.testimonial {
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent);
+  padding: 32px 36px;
+  margin-top: 40px;
+}
+.testimonial-quote {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+.testimonial-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.testimonial-score {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 15px;
+}
+@media (max-width: 640px) {
+  .testimonial { padding: 24px 24px; }
+  .testimonial-quote { font-size: 18px; }
+}
 @media (max-width: 640px) {
   .cases-preview { grid-template-columns: 1fr; gap: 14px; }
 }
@@ -805,6 +841,14 @@ footer.site a { color: var(--accent); text-decoration: none; }
     </div>
 
     <p><a href="cases/" class="cases-all-link">Все кейсы →</a></p>
+
+    <div class="testimonial">
+      <p class="testimonial-quote">«Самое ценное — инсайт про то, что я разделяю карьеру и смысл жизни, и это тормозит меня на пути к новой роли. И то, что я скатываюсь в лоха — и это тормоз для перехода.»</p>
+      <div class="testimonial-meta">
+        <span>Топ-менеджер 40+, переход в bigtech · май 2026</span>
+        <span class="testimonial-score">10 из 10 за Сбор</span>
+      </div>
+    </div>
   </div>
 </section>
 
