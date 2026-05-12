@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Когда стратегия есть, а первый шаг не делается — Кейс Тренерской</title>
+<meta name="description" content="Кейс топ-менеджера 40+ из крупной страховой. Стратегия перехода в bigtech была — действий не было. За полтора часа нашли механизм, который блокирует каждое сообщение.">
+<meta property="og:title" content="Когда стратегия есть, а первый шаг не делается — Кейс Тренерской">
+<meta property="og:description" content="Топ-менеджер 40+. Стратегия перехода в bigtech была шесть месяцев — ни одного действия. За полтора часа поймали паттерн обхода вживую.">
+<meta property="og:type" content="article">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F7F7F5;
+  --bg-card: #FFFFFF;
+  --text: #0A0A0A;
+  --text-secondary: #4A4A48;
+  --accent: #1F4E3F;
+  --accent-hover: #163A2E;
+  --line: #D4D4D2;
+  --line-soft: #E8E8E5;
+  --warn: #C24A2D;
+  --warn-soft: #FBF1ED;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --container: 1080px;
+  --content: 720px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 640px) { body { font-size: 16px; line-height: 1.6; } }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+.content { max-width: var(--content); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* HEADER */
+header.site {
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  font-family: var(--font-sans);
+}
+header.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+header.site .brand {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); text-decoration: none;
+}
+header.site .site-nav { display: flex; gap: 24px; align-items: baseline; }
+header.site .nav {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-secondary);
+  text-decoration: none;
+}
+header.site .nav.active { color: var(--accent); font-weight: 500; }
+header.site .nav:hover { color: var(--accent); }
+@media (max-width: 520px) {
+  header.site .site-nav { gap: 16px; }
+  header.site .nav { font-size: 12px; }
+}
+
+/* BREADCRUMB */
+.crumb {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  padding: 32px 0 0;
+}
+.crumb a { color: var(--text-secondary); text-decoration: none; }
+.crumb a:hover { color: var(--accent); }
+
+/* HERO */
+.case-hero {
+  padding: 32px 0 56px;
+  border-bottom: 1px solid var(--line);
+}
+.case-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.case-hero h1 {
+  font-family: var(--font-sans);
+  font-size: 60px; font-weight: 600;
+  line-height: 1.05; letter-spacing: -0.03em;
+  margin-bottom: 28px;
+}
+.case-hero .lede {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 640px;
+}
+@media (max-width: 640px) {
+  .case-hero { padding: 24px 0 40px; }
+  .case-hero h1 { font-size: 36px; }
+  .case-hero .lede { font-size: 19px; }
+}
+
+/* SECTIONS */
+section.block {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+section.block:last-of-type { border-bottom: none; }
+
+h2 {
+  font-family: var(--font-sans);
+  font-size: 32px; font-weight: 600;
+  line-height: 1.15; letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+h3 {
+  font-family: var(--font-sans);
+  font-size: 19px; font-weight: 600;
+  margin: 24px 0 12px;
+}
+@media (max-width: 640px) {
+  section.block { padding: 40px 0; }
+  h2 { font-size: 24px; }
+}
+
+p { margin-bottom: 18px; }
+p:last-child { margin-bottom: 0; }
+
+ul, ol { margin: 0 0 20px 24px; }
+li { margin-bottom: 8px; }
+li:last-child { margin-bottom: 0; }
+
+strong { font-weight: 600; color: var(--text); }
+em { font-style: italic; color: var(--text-secondary); }
+
+blockquote {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 24px;
+  margin: 24px 0;
+}
+@media (max-width: 640px) {
+  blockquote { font-size: 18px; padding-left: 16px; }
+}
+
+/* CALLOUT */
+.callout {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 24px 28px;
+  margin: 24px 0;
+  border-radius: 4px;
+}
+.callout-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* TWO COLUMNS */
+.transform {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 32px 0;
+}
+.transform-col {
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+}
+.transform-col.before { color: var(--text-secondary); }
+.transform-col.after { border-color: var(--accent); }
+.transform-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+.transform-col.after .transform-label { color: var(--accent); }
+@media (max-width: 640px) {
+  .transform { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* NUMBERED STEPS */
+.step-list { counter-reset: step; margin: 24px 0; }
+.step-item {
+  position: relative;
+  padding-left: 56px;
+  margin-bottom: 32px;
+}
+.step-item::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: -4px;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1;
+}
+.step-item h3 { margin-top: 0; }
+@media (max-width: 640px) {
+  .step-item { padding-left: 40px; }
+  .step-item::before { font-size: 24px; }
+}
+
+/* CTA */
+.cta-block {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 40px;
+  margin: 32px 0;
+  border-radius: 4px;
+}
+.cta-price {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 16px 0 24px;
+  letter-spacing: 0.02em;
+}
+.cta-button {
+  display: inline-block;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 16px 32px;
+  font-family: var(--font-sans);
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.cta-button:hover { background: var(--accent-hover); }
+.cta-secondary {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 16px;
+}
+.cta-secondary a { color: var(--accent); }
+@media (max-width: 640px) {
+  .cta-block { padding: 28px; }
+}
+
+/* PACKAGE LIST */
+.package {
+  border-left: 3px solid var(--accent);
+  padding: 8px 0 8px 20px;
+  margin: 16px 0 24px;
+}
+.package-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* DECLINE LIST */
+.decline-list {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 28px 32px;
+  margin: 24px 0;
+}
+.decline-list h3 {
+  margin-top: 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+
+/* FOOTER */
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 48px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+footer.site .container {
+  display: flex; justify-content: space-between; align-items: baseline;
+  flex-wrap: wrap; gap: 16px;
+}
+footer.site a { color: var(--accent); text-decoration: none; }
+
+.disclaimer {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 32px 0;
+  border-top: 1px solid var(--line-soft);
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <a href="../" class="brand">Тренерская</a>
+    <nav class="site-nav">
+      <a href="./" class="nav active">Кейсы</a>
+      <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+    </nav>
+  </div>
+</header>
+
+<div class="content">
+  <p class="crumb"><a href="./">← Все кейсы</a></p>
+</div>
+
+<section class="case-hero">
+  <div class="content">
+    <div class="case-meta">8 мая 2026 · Топ-менеджер 40+, переход в bigtech</div>
+    <h1>Когда стратегия есть, а первый шаг не делается</h1>
+    <p class="lede">Кейс топ-менеджера 40+ из крупной страховой. Стратегия перехода в bigtech была шесть месяцев — действий не было. За полтора часа поймали механизм, который блокирует каждое сообщение.</p>
+  </div>
+</section>
+
+<!-- Узнаёте? -->
+<section class="block">
+  <div class="content">
+    <h2>Узнаёте?</h2>
+    <p>Вам 35-50. Топ-менеджер в крупной компании. Доход высокий. Понимаете, что пора переходить — в другую отрасль, в bigtech, в крупный корпорат. Знаете, куда. Знаете, к кому.</p>
+    <p>И всё равно:</p>
+    <ul>
+      <li>Стратегия перехода есть. У HR-консультанта или собрали сами. Лежит в столе</li>
+      <li>Контакты есть. Имена топов в целевых компаниях знаете</li>
+      <li>Время есть. Текущая работа стабильна, аврал переносим</li>
+      <li>Но <strong>первый шаг не делается</strong>. Каждый раз перед сообщением — новая причина</li>
+    </ul>
+    <p>Через год — стратегия так и в столе. Контакты остыли. Окно закрывается.</p>
+    <p>Узнаёте — это про вас.</p>
+  </div>
+</section>
+
+<!-- Невидимый враг -->
+<section class="block">
+  <div class="content">
+    <h2>Невидимый враг</h2>
+    <p><strong>Поведенческий паттерн «обход перед действием».</strong></p>
+    <p>Это не «нет дисциплины». Не «лень». Не «слишком занят». Это <strong>рационализация в реальном времени</strong> — каждый обход выглядит логично, как настоящее препятствие. Но если поймать четыре подряд за одну минуту — видно: это не препятствия, это паттерн.</p>
+    <p>Включается за секунду до отправки сообщения. Связан с парадигмой «царь у себя, никто у топа». В среде, где ты признан — ты значим. В зеркале с человеком на два уровня выше — мгновенно «я никто, мне нечего сказать».</p>
+    <p>И каждый раз — новая причина, чтобы не делать. Самый коварный — потому что <strong>выглядит как взрослое решение</strong>.</p>
+  </div>
+</section>
+
+<!-- Что было до встречи -->
+<section class="block">
+  <div class="content">
+    <h2>Что было до встречи</h2>
+    <p>Мужчина, 40+. Топ-менеджер в крупной страховой компании. Доход высокий. Команда. Стратегические задачи.</p>
+    <p>Параллельно: гештальт-терапевт раз в неделю, четыре года плюс. Это его база, не ломаем.</p>
+    <p>Замеры на старте:</p>
+    <ul>
+      <li><strong>WHO-5 44</strong> — благополучие снижено</li>
+      <li><strong>PHQ-9 12</strong> — умеренная депрессия</li>
+      <li><strong>GAD-7 16</strong> — <strong>тяжёлая тревога</strong></li>
+    </ul>
+    <p>Шесть месяцев со стратегией перехода — ни одного отправленного сообщения. Контакты в целевых компаниях есть. Имена топов знает. Подходы — на бумаге.</p>
+  </div>
+</section>
+
+<!-- Что сделали за полтора часа -->
+<section class="block">
+  <div class="content">
+    <h2>Что сделали за полтора часа</h2>
+
+    <div class="step-list">
+
+      <div class="step-item">
+        <h3>Системная карта пяти слоёв</h3>
+        <p>Тело, близкие, работа, дело, смысл. По шкале и одной фразой к каждому.</p>
+        <p>Через семь минут видна структура — не «одна ножка работа». <strong>Раздвоение</strong>:</p>
+        <ul>
+          <li>Работа обвалилась с 7 до 2: «шаг на месте с орденами, в среде топов — никто»</li>
+          <li>Близких практически нет</li>
+          <li>Но есть две живые тонкие опоры: наставничество и миссия. И это <strong>одна линия</strong></li>
+        </ul>
+        <p>«Карьера = ресурс для миссии» — его собственная формулировка, поправил тренера на встрече. Парадигму не нужно ставить — она уже работает.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Раскопка шпинделя в реальном времени</h3>
+        <p>«Представь, что сегодня вечером пишешь топу на два уровня выше. Что в голове?»</p>
+        <blockquote>«Что я никто. Что мне нечего сказать».</blockquote>
+        <p>«Представь — пишешь человеку на твоём уровне или ниже. Что в голове?»</p>
+        <blockquote>«Спокойно. Я в позиции».</blockquote>
+        <p><strong>Переключатель</strong>. Не реальность, а <strong>позиция в зеркале с конкретным человеком</strong>.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Поведенческий паттерн «обход перед действием» — вживую</h3>
+        <p>Дали конкретное задание: «Прямо сейчас, при мне — напиши имя X. Что в голове?»</p>
+        <p>Записали <strong>четыре уровня обхода</strong> подряд:</p>
+        <ol>
+          <li>«Контактов нет, нужно сначала research» — рационализация через подготовку</li>
+          <li>«Этот человек нерелевантен миссии» — обход через свежесогласованную миссию</li>
+          <li>«10/10 → 5/10 → может через другого» — переключение каналов вместо отправки</li>
+          <li>«Не хочу, чтобы знал, что ищу работу» — позиционный страх</li>
+        </ol>
+        <blockquote>«Четвёртый раз за встречу ты нашёл новую причину не делать. Серия А → Б → В → Г. Это твой главный механизм. Тридцать дней мы его ловим в моменте».</blockquote>
+      </div>
+
+      <div class="step-item">
+        <h3>Парадигма «деревня и город»</h3>
+        <p>Назвали то, что под обходом:</p>
+        <blockquote>«Есть деревня — где ты царь. Есть город — где другие цари. Ты сейчас в деревне. В город идти страшно».</blockquote>
+        <p>Это <strong>картина мира по умолчанию</strong>. Из неё вытекает всё — шпиндель, страх писать первым, самобичевание после первого «нет».</p>
+        <p>Альтернатива: «Нет деревни и города. Есть ты с конкретным экспертным опытом. И среды, где этот опыт ценен по-разному. Ты не царь и не никто. Ты — специалист».</p>
+        <p>Рациональное знание парадигму не отключает. Поэтому весь план — это <strong>создать опыт жизни в новой парадигме через действия</strong>, не «понять».</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Рабочая формула на тридцать дней</h3>
+        <div class="callout">
+          <div class="callout-label">Формула обхода шпинделя</div>
+          <p style="margin: 0;"><strong>Шпиндель не включается, когда одновременно есть:</strong></p>
+          <ol style="margin-top: 12px; margin-bottom: 0;">
+            <li><strong>Кредит доверия</strong> — есть отношения с человеком</li>
+            <li><strong>Позиция экспертного факта</strong> — конкретная роль / задача / основание для разговора</li>
+          </ol>
+        </div>
+        <p>Подтвердили в моменте. С отношениями плюс экспертная роль — уверенность 10/10. Холодное «если что, заходи» — шпиндель включается сразу.</p>
+        <p>Перед каждым шагом тридцати дней клиент задаёт себе три вопроса:</p>
+        <ol>
+          <li>Это реальная преграда или N-й уровень обхода?</li>
+          <li>Есть оба условия — кредит доверия и позиция экспертного факта?</li>
+          <li>Если нет — что собрать?</li>
+        </ol>
+      </div>
+
+      <div class="step-item">
+        <h3>Черновик сообщения вживую</h3>
+        <p>Не «потом дома сам». Сейчас. Совместно написали черновик первого сообщения через знакомого человека — с углом «студент бизнес-школы, исследовательский интервью», не «соискатель».</p>
+        <p>Согласовали: отправляется сегодня вечером.</p>
+      </div>
+
+      <div class="step-item">
+        <h3>Три действия на тридцать дней + интервенции</h3>
+        <p>Каждое — с датой, критерием, шагом на 48 часов. Плюс минимальные интервенции в проседающие слои: тело (защита часа сна), дело (масштаб наставничества), смысл (один разговор про миссию).</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Преображение -->
+<section class="block">
+  <div class="content">
+    <h2>Преображение</h2>
+
+    <div class="transform">
+      <div class="transform-col before">
+        <div class="transform-label">Из</div>
+        <p>Топ-менеджер со стратегией в столе. На каждое действие — новая причина не делать. Считает, что «нужно больше дисциплины».</p>
+      </div>
+      <div class="transform-col after">
+        <div class="transform-label">В</div>
+        <p>Человек, который ловит свой паттерн обхода в моменте. Идёт через формулу «кредит доверия + позиция экспертного факта». Знает, что недовольство собой — маркер «включился шпиндель», не «я слабый».</p>
+      </div>
+    </div>
+
+    <p>Не «стал смелым». А <strong>перестал верить рационализациям</strong>.</p>
+  </div>
+</section>
+
+<!-- Что на кону -->
+<section class="block">
+  <div class="content">
+    <h2>Что на кону</h2>
+    <p>Если узнали себя и оставляете как есть:</p>
+    <ul>
+      <li><strong>Год — два</strong> ещё в текущей роли. Стратегия так и в столе. Контакты остывают</li>
+      <li><strong>Окно перехода в bigtech закрывается.</strong> После 45 кандидата без свежего опыта в индустрии берут реже</li>
+      <li><strong>Тревога копится</strong> в фоне. Гештальт-терапевт работает с одним слоем — но не убирает корневой паттерн действия</li>
+      <li><strong>В текущей компании теряете статус «своего».</strong> Когда внутри уже ушли, но снаружи остались — это считывают</li>
+      <li><strong>Дети видят, что папа недоволен, но ничего не меняется.</strong> Это формирует их собственную модель «терпения»</li>
+    </ul>
+    <p>Главное: <strong>стратегия перехода без действия — самая дорогая иллюзия контроля</strong>. Чувство «я знаю, куда идти» подменяет движение.</p>
+  </div>
+</section>
+
+<!-- Почему я могу помочь -->
+<section class="block">
+  <div class="content">
+    <h2>Почему я могу помочь</h2>
+    <p>Собираю картину пяти слоёв за полтора часа. Нахожу не «нет дисциплины», а <strong>конкретный механизм обхода</strong> в реальном времени. Это работа системного диагноста — не коуч с долгими вопросами и не консультант по найму.</p>
+    <p>Сам прошёл выход из похожей ситуации. Знаю изнутри, что не работает: «найдите HR-консультанта», «улучшите резюме», «составьте более чёткий план». Что работает — поймать паттерн вживую и дать формулу, которую вы применяете перед каждым шагом сами.</p>
+  </div>
+</section>
+
+<!-- Что входит -->
+<section class="block">
+  <div class="content">
+    <h2>Что входит</h2>
+
+    <div class="package">
+      <div class="package-label">Точка входа — Сбор (50 000 ₽, полтора часа)</div>
+      <ul>
+        <li>Системная карта пяти слоёв</li>
+        <li>Раскопка шпинделя и парадигмы</li>
+        <li>Поймать паттерн обхода вживую</li>
+        <li>Рабочая формула «кредит доверия + позиция экспертного факта»</li>
+        <li>Черновик первого сообщения, согласованный на встрече</li>
+      </ul>
+    </div>
+
+    <div class="package">
+      <div class="package-label">Если нужен темп — Тренировки (200 000 ₽/мес)</div>
+      <ul>
+        <li><strong>Еженедельная встреча</strong> по 1,5 часа</li>
+        <li><strong>AI-агент с памятью</strong> между встречами — знает контекст, парадигму, формулу</li>
+        <li><strong>Три ключевых действия</strong> с конкретикой и сценариями ответа</li>
+        <li>Через месяц — пересматриваем приоритеты, продолжаем или закрываем</li>
+      </ul>
+    </div>
+
+    <p>Цель — <strong>не получить оффер за месяц</strong>, а запустить живую воронку переходов и сдвинуть позицию из «царь/никто» в «специалист с конкретным опытом». Оффер из bigtech приходит обычно через 3-6 месяцев активного нетворкинга.</p>
+
+    <div class="cta-block">
+      <h3 style="margin-top:0">Записаться на Сбор</h3>
+      <p class="cta-price">50 000 ₽ · точка входа · возврат денег после Сбора, если решили, что не ваше</p>
+      <a href="https://t.me/shapovalov_vsegda" class="cta-button">Написать в Telegram</a>
+      <p class="cta-secondary">Сейчас не время — <a href="https://t.me/vslukh_shapovalov_bot">оставьте контакт в боте «Вслух»</a>. Через 2-3 месяца напишу одной короткой мыслью без продажи.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Не подходит -->
+<section class="block">
+  <div class="content">
+    <h2>Не подходит, если</h2>
+
+    <div class="decline-list">
+      <ul>
+        <li>Хотите тренинг по самопрезентации или составлению резюме — это другая зона</li>
+        <li>Считаете, что «нужно просто больше дисциплины» — этот метод не про это</li>
+        <li>В острой клинике (тяжёлая депрессия, тревожное расстройство) — параллельная работа с психотерапевтом обязательна, я не заменяю</li>
+        <li>Не готовы услышать, что блокировка не в обстоятельствах, а в вашем поведенческом паттерне</li>
+      </ul>
+    </div>
+
+    <p>Чем больше отказов узнаёте — тем точнее попадание Сбора.</p>
+  </div>
+</section>
+
+<p class="disclaimer">Кейс по реальной сессии. Имена, компании и детали клиента изменены до полной неузнаваемости.</p>
+
+<footer class="site">
+  <div class="container">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/vslukh_shapovalov_bot">@vslukh_shapovalov_bot</a>
+  </div>
+</footer>
+
+</body>
+</html>
