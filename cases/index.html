@@ -73,6 +73,16 @@ header.site .nav {
 }
 header.site .nav.active { color: var(--accent); font-weight: 500; }
 header.site .nav:hover { color: var(--accent); }
+header.site .nav-cta {
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  border-radius: 4px;
+}
+header.site .nav-cta:hover { background: var(--accent-hover); color: #FFFFFF; }
 @media (max-width: 520px) {
   header.site .site-nav { gap: 16px; }
   header.site .nav { font-size: 12px; }
@@ -217,7 +227,8 @@ footer.site a { color: var(--accent); text-decoration: none; }
     <a href="../" class="brand">Тренерская</a>
     <nav class="site-nav">
       <a href="./" class="nav active">Кейсы</a>
-      <a href="https://t.me/vslukh_shapovalov_bot" class="nav">@vslukh_shapovalov_bot</a>
+      <a href="../sbor.html" class="nav">Сбор</a>
+      <a href="https://t.me/shapovalov_vsegda" class="nav-cta">Записаться</a>
     </nav>
   </div>
 </header>
