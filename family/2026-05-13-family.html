@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Семейная планёрка / 2026-05-13</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+    --calm: #4a5568;
+    --calm-soft: #f7f8f9;
+    --warm: #8b6914;
+    --warm-soft: #fdf6e3;
+    --ok: #0a7d3e;
+    --ok-soft: #f0f9f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    font-feature-settings: "kern", "calt";
+    font-variant-numeric: tabular-nums;
+  }
+  .header { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
+  .header-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-soft); margin-bottom: 16px; }
+  .header-title { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 16px 0; }
+  .header-sub { font-size: 13px; color: var(--ink-soft); }
+  section { margin: 48px 0; }
+  section > h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 20px 0; line-height: 1.25; }
+  .sec-note { font-size: 12px; color: var(--ink-faint); margin-top: -12px; margin-bottom: 20px; font-style: italic; }
+  .kids-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kid-card { border: 1px solid var(--line); padding: 20px; background: var(--calm-soft); }
+  .kid-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .kid-age { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 14px; }
+  .kid-row { font-size: 12px; margin-bottom: 8px; }
+  .kid-row b { color: var(--ink-soft); font-weight: 500; display: block; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); font-weight: 500; border-bottom: 1px solid var(--line); }
+  td.num { text-align: right; white-space: nowrap; font-weight: 500; }
+  td.faint { color: var(--ink-soft); }
+  .status { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border: 1px solid var(--line); display: inline-block; white-space: nowrap; }
+  .status.open { color: var(--ink-soft); }
+  .status.work { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .status.urgent { color: var(--warm); border-color: var(--warm); background: var(--warm-soft); }
+  .status.done { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+  .hangs { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+  .hangs.long { color: var(--warm); font-weight: 600; }
+  .fillable { border: 1px dashed var(--line); padding: 20px; background: var(--accent-soft); min-height: 80px; }
+  .fillable p.empty { margin: 0; color: var(--ink-faint); font-style: italic; font-size: 13px; }
+  .fillable ul { margin: 0; padding-left: 20px; }
+  .fillable li { margin-bottom: 8px; }
+  .schedule { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; }
+  .schedule-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line-soft); gap: 16px; }
+  .schedule-row:last-child { border: none; }
+  .schedule-when { color: var(--accent); font-weight: 500; min-width: 130px; flex-shrink: 0; }
+  .schedule-what { color: var(--ink); flex: 1; }
+  .schedule-who { color: var(--ink-soft); font-size: 11px; min-width: 80px; text-align: right; flex-shrink: 0; }
+  .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .project-card { border: 1px solid var(--line); padding: 16px 18px; background: var(--bg); }
+  .project-card.highlight { border: 2px solid var(--accent); background: var(--accent-soft); }
+  .project-name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .project-where { font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+  .project-next { font-size: 12px; color: var(--ink); border-top: 1px solid var(--line-soft); padding-top: 8px; margin-top: 8px; }
+  .project-next b { color: var(--ink-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; display: block; margin-bottom: 2px; }
+  .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-faint); display: flex; justify-content: space-between; }
+  @media print { body { padding: 24px; } .fillable { background: transparent; } }
+
+  /* Парольный гейт */
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы посмотреть дашборд</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<div class="header">
+  <div class="header-kicker">Семья · Семейная планёрка</div>
+  <h1 class="header-title">Среда, 13 мая 2026</h1>
+  <div class="header-sub">
+    Встреча №3 · Алексей и Настя · ≈60 минут<br>
+    Чек-ин: Лёша — тяжело-нормально, Настя — усталость накопилась, морось не добавляет, но живём<br>
+    Закрытие: Лёша — «всё норм, работать пора», Настя — «нормально, рада, что спросил про нас как пару»
+  </div>
+</div>
+
+<section>
+  <h2>Что работает</h2>
+  <div class="sec-note">Вход через ресурс. Заполнено на встрече.</div>
+  <div class="fillable">
+    <ul>
+      <li><strong>Лёша вывез больницу с Василисой.</strong> Настя зафиксировала как главную благодарность недели — «я была рада, что рядом был Лёха, и что он вытянул этот сложный период».</li>
+      <li><strong>Гигиена Василисы держится.</strong> Методичка и календарь работают, Лёша несколько раз затащил умываться и чистить зубы.</li>
+      <li><strong>Осмотр Святослава 7 мая.</strong> Вес 6 кг, рост 61 см, по возрасту — норма.</li>
+      <li><strong>Океанариум всей семьёй в воскресенье.</strong> Василисе сильно понравилось, родителям тоже зашло. Восстановили семейное настроение после больницы.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Дети</h2>
+  <div class="kids-grid">
+    <div class="kid-card">
+      <div class="kid-name">Василиса</div>
+      <div class="kid-age">5 лет 11 дней — род. 2 мая 2021</div>
+      <div class="kid-row">
+        <b>ЧМТ 8 мая</b>
+        <span>Упала дома вечером пятницы, сотрясение. Лёша в больнице с ней до субботы 9.05. Сейчас без последствий. Сегодня первый день в саду.</span>
+      </div>
+      <div class="kid-row">
+        <b>Диагноз СДВГ — 12 мая</b>
+        <span>Как и у обоих родителей. Лекарства показаны, но пьём ближе к школе.</span>
+      </div>
+      <div class="kid-row">
+        <b>Назначено: ЭЭГ ×2</b>
+        <span>Рутинная + с депривацией сна, в течение 1–2 недель (до 26 мая). Настя — запись, ведение, поездка.</span>
+      </div>
+      <div class="kid-row">
+        <b>Режим 2 недели</b>
+        <span>Без спорта, без экранов. Вечером — аналоговые игры (Лего), бабушка/прогулки после сада.</span>
+      </div>
+    </div>
+    <div class="kid-card">
+      <div class="kid-name">Святослав</div>
+      <div class="kid-age">3 месяца 12 дней — род. 1 февраля 2026</div>
+      <div class="kid-row">
+        <b>Осмотр 7 мая</b>
+        <span>Норма. Вес 6 кг, рост 61 см. По возрасту.</span>
+      </div>
+      <div class="kid-row">
+        <b>20 мая — невролог</b>
+        <span>Плановый. По возрасту ещё ортопед + второй врач (уточнить).</span>
+      </div>
+      <div class="kid-row">
+        <b>Нагрузка</b>
+        <span>Мама в режиме «рядом», не «разгружает». Не закрывает физический дефицит Насти. См. открытые вопросы.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Открытые задачи</h2>
+  <div class="sec-note">Итог: 3 решения, 2 системных вопроса, переносы на 20 мая.</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Задача</th>
+        <th>Кто</th>
+        <th>До</th>
+        <th>Статус</th>
+        <th>Висит с</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Два звонка по Озону.</strong> Третий заход. Если снова не сделается — на 20 мая разбираем «почему не делается».</td>
+        <td>Лёша</td>
+        <td>20 мая</td>
+        <td><span class="status urgent">3-й перенос</span></td>
+        <td><span class="hangs long">🔁 6 мая</span></td>
+      </tr>
+      <tr>
+        <td><strong>Бассейн.</strong> Анализы Василисы собрать + справка от педиатра. Святослав — справка уже взята.</td>
+        <td>Настя</td>
+        <td>16–17 мая (выходные)</td>
+        <td><span class="status work">в работе</span></td>
+        <td><span class="hangs">6 мая</span></td>
+      </tr>
+      <tr>
+        <td><strong>Скилл `planerka-pary` + первая встреча.</strong> Лёша готовит по образцу `planerka-finance`. Настя — материалы по теме.</td>
+        <td>Лёша + Настя</td>
+        <td>пн 19 мая</td>
+        <td><span class="status urgent">срочно</span></td>
+        <td><span class="hangs">новое</span></td>
+      </tr>
+      <tr>
+        <td><strong>ЭЭГ Василисы (рутинная + с депривацией сна).</strong> Запись + ведение + поездка. Уточнить у лаборатории протокол подготовки.</td>
+        <td>Настя</td>
+        <td>до 26 мая</td>
+        <td><span class="status urgent">срочно</span></td>
+        <td><span class="hangs">новое</span></td>
+      </tr>
+      <tr>
+        <td><strong>Проект «СДВГ Василисы».</strong> Лёша — Сухарев + книги по детскому СДВГ. Настя — 2–3 варианта невролога.</td>
+        <td>оба</td>
+        <td>20 мая</td>
+        <td><span class="status work">в работе</span></td>
+        <td><span class="hangs">новое</span></td>
+      </tr>
+      <tr>
+        <td><strong>Физика Насти.</strong> Спина + сон 4,5 ч с перерывами систематически + мама не разгружает. Усилено: сон в красной зоне. Системный шаг.</td>
+        <td>оба</td>
+        <td>—</td>
+        <td><span class="status open">открыто</span></td>
+        <td><span class="hangs">6 мая</span></td>
+      </tr>
+      <tr>
+        <td><strong>Лёша — ночное перехватывание дыхания на грудной клетке.</strong> Новое 13.05. Уточнить у врача/массажиста.</td>
+        <td>Лёша</td>
+        <td>—</td>
+        <td><span class="status open">открыто</span></td>
+        <td><span class="hangs">новое</span></td>
+      </tr>
+      <tr>
+        <td><strong>Детальный разбор зон по списку (50+ задач).</strong> Перенос на 20 мая.</td>
+        <td>оба</td>
+        <td>20 мая</td>
+        <td><span class="status open">отложено</span></td>
+        <td><span class="hangs long">🔁 6 мая</span></td>
+      </tr>
+      <tr>
+        <td><strong>Предложение Лёши по интеграции 10 потребностей в среду.</strong> Перенос на 20 мая.</td>
+        <td>Лёша</td>
+        <td>20 мая</td>
+        <td><span class="status open">отложено</span></td>
+        <td><span class="hangs">6 мая</span></td>
+      </tr>
+      <tr>
+        <td><strong>Вечерняя гигиена Василисы — зона Лёши.</strong> Регулярная, методичка работает.</td>
+        <td>Лёша</td>
+        <td>—</td>
+        <td><span class="status done">в работе</span></td>
+        <td><span class="hangs long">🔁 29 апр</span></td>
+      </tr>
+      <tr>
+        <td><strong>Расхламление квартиры.</strong> Снято как активное, неделя была кризисная. Вернёмся системно после стабилизации.</td>
+        <td>—</td>
+        <td>—</td>
+        <td><span class="status open">снято</span></td>
+        <td><span class="hangs">6 мая</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Расписание недели (13–19 мая)</h2>
+  <div class="sec-note">Главные точки. Выходные собраны с учётом просевших потребностей.</div>
+  <div class="schedule">
+    <div class="schedule-row">
+      <span class="schedule-when">ср, 13 мая утром</span>
+      <span class="schedule-what">Семейная планёрка (сейчас).</span>
+      <span class="schedule-who">оба</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">в течение недели</span>
+      <span class="schedule-what">Настя — запись на ЭЭГ Василисы, добивает бассейн (анализы + справка). Лёша — скилл `planerka-pary` к понедельнику.</span>
+      <span class="schedule-who">оба</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">пт, 15 мая утром</span>
+      <span class="schedule-what">Финансовая планёрка (недельная, до 60 мин).</span>
+      <span class="schedule-who">оба</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">сб, 16 мая 8:00–11:00</span>
+      <span class="schedule-what">Длинная Лёши, 3,5 ч бега. Дома к 12. Без страховки.</span>
+      <span class="schedule-who">Лёша</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">сб, 16 мая днём</span>
+      <span class="schedule-what">Массаж Лёше (записать заранее, не дотягивать). Восстановление, плюс адресует ночное перехватывание дыхания.</span>
+      <span class="schedule-who">Лёша</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">сб, 16 мая вечером</span>
+      <span class="schedule-what">Музыка с Василисой 30–60 мин — гитара / петь. Творчество для Лёши, без экранов для Василисы, настрой на выступление.</span>
+      <span class="schedule-who">Лёша + Василиса</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">вс, 17 мая утром (2–3 ч)</span>
+      <span class="schedule-what">Слот «одна» Насте — физактивность + личное пространство. Лёша с детьми.</span>
+      <span class="schedule-who">Настя</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">вс, 17 мая 12–15</span>
+      <span class="schedule-what">Выступление Василисы по вокалу. Едут все вместе, со Святославом.</span>
+      <span class="schedule-who">семья</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">вс, 17 мая вечером</span>
+      <span class="schedule-what">Семья дома, восстановление.</span>
+      <span class="schedule-who">семья</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">пн, 19 мая утром</span>
+      <span class="schedule-what">Первая встреча проекта «Мы как пара». Скилл готовит Лёша к этому дню.</span>
+      <span class="schedule-who">Лёша + Настя</span>
+    </div>
+    <div class="schedule-row">
+      <span class="schedule-when">ср, 20 мая</span>
+      <span class="schedule-what">Семейная планёрка #4 + плановый невролог Святослава.</span>
+      <span class="schedule-who">оба + Святослав</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Совместные проекты</h2>
+  <div class="sec-note">Закреплён паттерн: каждый совместный проект — отдельная папка в Семья/Проекты/ с README внутри.</div>
+  <div class="projects-grid">
+    <div class="project-card highlight">
+      <div class="project-name">СДВГ Василисы (новый)</div>
+      <div class="project-where">Семья/Проекты/СДВГ-Василисы/. Диагноз 12.05 после ЧМТ. Запрос Лёши: управлять контекстом вокруг ребёнка и семьи СДВГшников, не «менять Василису».</div>
+      <div class="project-next"><b>до 20 мая</b>Лёша — Сухарев + книги по детскому СДВГ через /digest-book. Настя — невролог + ЭЭГ (до 26 мая).</div>
+    </div>
+    <div class="project-card highlight">
+      <div class="project-name">Мы как пара (новый)</div>
+      <div class="project-where">Семья/Проекты/Мы-как-пара/. Третий контур — понедельник утром. Стратегия двух ступеней: скилл `planerka-pary` → внешний специалист, если скилл не справится.</div>
+      <div class="project-next"><b>до 19 мая</b>Лёша — скилл + первая встреча. Настя — материалы по теме.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Распределение ответственности</div>
+      <div class="project-where">Семья/Проекты/Распределение-ответственности/. Файл Зоны-ответственности.md переоформлен в папку. Зоны Лёши: гигиена + утренние сборы + завоз + финансы. Список 50+ задач ждёт.</div>
+      <div class="project-next"><b>20 мая</b>Детальный разбор 50+ задач + следующая зона Лёше.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Озон — потерянная доставка</div>
+      <div class="project-where">~150к, страховка 9к. Третий перенос — неделя ушла в кризис.</div>
+      <div class="project-next"><b>20 мая</b>Если снова не сделается — разбираем «почему не делается», не «делаем».</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Бассейн для Василисы и Святослава</div>
+      <div class="project-where">Анализы Василисы (баночки взяты, собрать) + справка от педиатра. Святослав — справка взята.</div>
+      <div class="project-next"><b>до выходных</b>Настя дозакрывает.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">HR-проект с Настей</div>
+      <div class="project-where">Пауза на декрет.</div>
+      <div class="project-next"><b>осень</b>Держим в поле.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Состояние пары</h2>
+  <div class="sec-note">Содержание разговора в архив не идёт (правило блока). Только факт.</div>
+  <div class="fillable">
+    <ul>
+      <li>Блок открыт обоими.</li>
+      <li>Решено: тема не помещается в семейную среду. Открыт третий контур — понедельник утром.</li>
+      <li>Открыт проект «Мы как пара» — отдельная папка, отдельный регистр.</li>
+      <li>Согласована стратегия двух ступеней: скилл `planerka-pary` (Лёша готовит к 19 мая) → внешний специалист, если скилл не справится.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Решения этой встречи</h2>
+  <div class="sec-note">Три ключевых. Сверх трёх — открытые треки (проекты), не разовые задачи.</div>
+  <div class="fillable">
+    <ul>
+      <li><strong>Лёша — два звонка по Озону до 20 мая.</strong> Третий заход. Если снова не сделается — на 20 мая разбираем «почему не делается».</li>
+      <li><strong>Настя — бассейн добивает до выходных 16–17 мая.</strong> Анализы Василисы (собрать) + справка от педиатра.</li>
+      <li><strong>Лёша — до пн 19 мая:</strong> готовит скилл `planerka-pary` и проводит первую встречу. Настя — материалы по теме.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Открытые вопросы (на О_нас.md)</h2>
+  <div class="fillable">
+    <ul>
+      <li><strong>Физика Насти.</strong> Спина + сон 4,5 ч с перерывами систематически + мама не разгружает. Усилено. Системный шаг.</li>
+      <li><strong>Лёша — ночное перехватывание дыхания на грудной клетке</strong> (новое 13.05). Уточнить у врача/массажиста.</li>
+      <li>Детальный разбор зон ответственности по списку — перенос на 20 мая.</li>
+      <li>Предложение Лёши по интеграции 10 потребностей в среду — перенос на 20 мая.</li>
+      <li>HR-проект — осенью, Платформа здоровья — наблюдаем.</li>
+      <li><em>Сняты как активные:</em> системный слот Насти одной (уходит в «Мы как пара»), регулярный слот рабочих пересечений (туда же), расхламление квартиры (вернёмся после стабилизации).</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Журнал</h2>
+  <div class="fillable">
+    <ul>
+      <li><strong>Главный сдвиг встречи:</strong> открыты два новых проекта — «СДВГ Василисы» и «Мы как пара». Каждый в отдельной папке Семья/Проекты/. Паттерн «папка под проект» закреплён в Семья/CLAUDE.md.</li>
+      <li><strong>Третий контур планёрок.</strong> «Мы как пара» — понедельник утром, по аналогии с тем, как финансы вышли из семейной среды в финансовую пятницу 24.04.2026.</li>
+      <li><strong>Кризисная неделя пройдена.</strong> ЧМТ Василисы, диагноз СДВГ, Лёша в больнице. Большое решение — сразу системно: проект, ведущие, шаги, не точечные действия.</li>
+      <li><strong>Формат:</strong> блок «Состояние пары» сработал ключевым образом — Настя зафиксировала, что рада, что спросил.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="footer">
+  <span>Архив: Семья/Планёрки/2026-05-13-семейная.md</span>
+  <span>Среда · еженедельно · бытовой контур</span>
+</div>
+
+</div>
+
+<script>
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("family-unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  if (sessionStorage.getItem("family-unlocked") === "1") {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("content").classList.add("unlocked");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+</script>
+
+</body>
+</html>
