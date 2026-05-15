@@ -109,9 +109,18 @@ function getClientId() {
 const CLIENT_ID = getClientId();
 
 // === Supabase client (только для чтения истории) ===
+// Инициализация отказоустойчивая: если CDN-скрипт не загрузился или упал,
+// sb = null, и loadHistory() вернёт []. Без этого — белый экран на iOS.
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let sb = null;
+try {
+  if (window.supabase && window.supabase.createClient) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.error('Supabase init failed:', e);
+}
 
 // === Структура вопросов ===
 // 6 экранов. Каждый — короткий шаг.
@@ -218,6 +227,7 @@ let history = [];
 
 // === Supabase: загрузка истории ===
 async function loadHistory() {
+  if (!sb) return [];
   try {
     const { data, error } = await sb
       .from("daily_checkins")
@@ -458,11 +468,23 @@ function finish() {
   renderDone();
 }
 
+// === Глобальный error handler — чтобы белый экран хотя бы что-то показал ===
+window.addEventListener('error', (e) => {
+  if (app && !app.innerHTML.trim()) {
+    app.innerHTML = `<h1>Ошибка</h1><p>${escapeHtml(String(e.message || e))}</p>
+      <p class="note">Скажи Алексею — приложи скриншот.</p>`;
+  }
+});
+
 // === СТАРТ ===
-(async () => {
-  history = await loadHistory();
-  renderWelcome();
-})();
+// Рендерим welcome СРАЗУ — не ждём Supabase. История догружается в фоне
+// и обновляет welcome, когда придёт. Это спасает от белого экрана на iOS,
+// если CDN-скрипт Supabase зависает или RLS блокирует чтение.
+renderWelcome();
+loadHistory().then(h => {
+  history = h;
+  if (state.screen === 'welcome') renderWelcome();
+}).catch(e => console.error('history load failed:', e));
 </script>
 </body>
 </html>
