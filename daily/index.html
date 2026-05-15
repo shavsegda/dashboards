@@ -161,8 +161,25 @@ const QUESTIONS = [
     ]
   },
   {
+    id: 'contact',
+    block: 'Близкие',
+    title: 'Контакт с близкими',
+    sub: 'Был ли сегодня настоящий контакт с близкими — не «по делу»?',
+    fields: [
+      {
+        key: 'contact',
+        type: 'choice',
+        options: [
+          { label: 'Был', value: 'yes' },
+          { label: 'Частично', value: 'partial' },
+          { label: 'Не было', value: 'no' }
+        ]
+      }
+    ]
+  },
+  {
     id: 'control',
-    block: 'Я',
+    block: 'Работа',
     title: 'Контроль над днём',
     sub: 'Сегодня — кто вёл? День тебя или ты день?',
     fields: [
@@ -182,23 +199,6 @@ const QUESTIONS = [
           { label: 'Да, было', value: 'yes' },
           { label: 'Частично', value: 'partial' },
           { label: 'Нет', value: 'no' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'contact',
-    block: 'Близкие',
-    title: 'Контакт с близкими',
-    sub: 'Был ли сегодня настоящий контакт с близкими — не «по делу»?',
-    fields: [
-      {
-        key: 'contact',
-        type: 'choice',
-        options: [
-          { label: 'Был', value: 'yes' },
-          { label: 'Частично', value: 'partial' },
-          { label: 'Не было', value: 'no' }
         ]
       }
     ]
