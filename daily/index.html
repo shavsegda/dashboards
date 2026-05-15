@@ -4,76 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Как прошёл день</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body { min-height: 100vh; }
 
-.progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
-.progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
-.progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: #1a1a1a; transition: width 0.3s ease; width: 0%; }
-.progress-text { font-size: 12px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
 
-main { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
-h1 { font-size: 26px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
-h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
-p { margin-bottom: 12px; color: #444; }
-.lead { font-size: 16px; color: #555; margin-bottom: 24px; }
-.note { font-size: 13px; color: #888; }
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 16px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 28px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.note-soft { font-size: 13px; color: var(--graphite-65); text-transform: none; letter-spacing: normal; font-family: var(--font-sans); }
 
-button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
-button:hover { background: #333; }
-button:disabled { background: #ccc; cursor: not-allowed; }
-button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d4cfc2; padding: 12px 24px; }
-button.secondary:hover { background: #ebe7dc; }
-.actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button:disabled { background: var(--graphite-30); cursor: not-allowed; }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
 
-.q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
-.q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
-.q-text { font-size: 18px; line-height: 1.5; margin-bottom: 8px; font-weight: 500; }
-.q-instr { font-size: 14px; color: #666; margin-bottom: 16px; }
-.q-sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+.q-card { background: transparent; border: none; padding: 0; margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; }
+.q-text { font-size: 24px; line-height: 1.2; margin-bottom: 8px; font-weight: 500; letter-spacing: -0.02em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 20px; }
+.q-sub { font-size: 15px; color: var(--graphite-65); margin-bottom: 24px; line-height: 1.5; }
 
 /* Шкала 0-10 — кнопки в ряд */
-.scale-row { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; margin: 8px 0 4px; }
-.scale-btn { padding: 12px 0; border: 1px solid #e2dfd6; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; text-align: center; }
-.scale-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
-.scale-btn.selected { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 16px; }
+.scale-row { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; margin: 12px 0 6px; }
+.scale-btn { padding: 14px 0; border: 1px solid var(--graphite-15); background: transparent; cursor: pointer; font-family: var(--font-mono); font-size: 13px; font-weight: 400; color: var(--graphite); transition: all 0.15s; text-align: center; }
+.scale-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.scale-btn.selected { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
+.scale-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-bottom: 24px; padding-top: 8px; }
 
 /* Кнопки-варианты (большие) */
 .choice-row { display: grid; gap: 8px; }
-.choice-btn { padding: 14px 16px; border: 1px solid #e2dfd6; border-radius: 8px; background: #fff; cursor: pointer; font-size: 15px; text-align: left; transition: all 0.15s; }
-.choice-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
-.choice-btn.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+.choice-btn { padding: 16px 18px; border: 1px solid var(--graphite-15); background: transparent; cursor: pointer; font-family: var(--font-sans); font-size: 15px; color: var(--graphite); text-align: left; transition: all 0.15s; }
+.choice-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.choice-btn.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
 
 /* Часы сна — компактнее */
-.hours-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
-.hours-btn { padding: 14px 0; border: 1px solid #e2dfd6; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; text-align: center; }
-.hours-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
-.hours-btn.selected { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.hours-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0 6px; }
+.hours-btn { padding: 14px 0; border: 1px solid var(--graphite-15); background: transparent; cursor: pointer; font-family: var(--font-mono); font-size: 13px; color: var(--graphite); transition: all 0.15s; text-align: center; }
+.hours-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.hours-btn.selected { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
 
-textarea { width: 100%; padding: 12px 14px; border: 1px solid #e2dfd6; border-radius: 8px; font-family: inherit; font-size: 15px; min-height: 80px; resize: vertical; background: #fff; }
-textarea:focus { outline: none; border-color: #1a1a1a; }
+textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--graphite-15); border-radius: 0; font-family: var(--font-sans); font-size: 15px; line-height: 1.5; min-height: 96px; resize: vertical; background: transparent; color: var(--graphite); }
+textarea:focus { outline: none; border-color: var(--terracotta); }
 
-.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; }
-.history-date { color: #888; font-size: 12px; margin-bottom: 6px; }
-.history-vals { display: flex; gap: 12px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
-.history-vals span { font-size: 13px; }
-.history-note { color: #555; margin-top: 6px; font-size: 13px; font-style: italic; }
+.history-row { background: transparent; border: none; border-bottom: 1px solid var(--graphite-08); padding: 14px 0; font-size: 14px; }
+.history-row:last-child { border-bottom: none; }
+.history-date { font-family: var(--font-mono); color: var(--graphite-50); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.history-vals { display: flex; gap: 16px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.history-vals span { font-size: 13px; color: var(--graphite-75); }
+.history-note { color: var(--graphite-65); margin-top: 6px; font-size: 14px; font-style: italic; }
 
-.empty { text-align: center; padding: 40px 20px; color: #888; }
-.sync-status { font-size: 12px; color: #4a8c5e; }
-.sync-status.error { color: #b91c1c; }
+.empty { text-align: center; padding: 48px 20px; color: var(--graphite-50); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 12px; }
+.sync-status.error { color: #B91C1C; }
 
 @media (max-width: 600px) {
-  main { padding: 24px 16px 80px; }
-  h1 { font-size: 22px; }
-  .q-card { padding: 20px 16px; }
-  .q-text { font-size: 16px; }
-  .scale-btn { font-size: 12px; padding: 10px 0; }
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 21px; }
+  .scale-btn { font-size: 12px; padding: 12px 0; }
+  .scale-labels { font-size: 10px; }
 }
 </style>
 </head>
@@ -292,8 +314,8 @@ function renderWelcome() {
     <h1>Как прошёл день</h1>
     ${tgIndicator}
     <p class="lead">90 секунд — посмотри на свой день сверху. Что в порядке, что просело, что игнорируешь.</p>
-    <p class="note">Заполнять лучше вечером — оцениваешь день, а не планируешь. Бот ответит наблюдением в чате.</p>
-    ${alreadyDone ? '<p class="note" style="color:#a16207;margin-top:12px;">Сегодня уже заполнял — новый чек-ин перезапишет.</p>' : ''}
+    <p class="note-soft">Заполнять лучше вечером — оцениваешь день, а не планируешь. Бот ответит наблюдением в чате.</p>
+    ${alreadyDone ? '<p class="note-soft" style="color:#B85C38;margin-top:12px;">Сегодня уже заполнял — новый чек-ин перезапишет.</p>' : ''}
     <div class="actions">
       <button onclick="start()">${alreadyDone ? 'Перезаполнить' : 'Начать'}</button>
       ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
@@ -326,7 +348,7 @@ function renderQuestion() {
 
 function renderField(f) {
   if (f.type === 'hours') {
-    const label = f.label ? `<p class="note" style="margin-top:8px;">${f.label}</p>` : '';
+    const label = f.label ? `<p class="note-soft" style="margin-top:12px;margin-bottom:6px;">${f.label}</p>` : '';
     const opts = f.options.map(o => {
       const sel = state.answers[f.key] === o.value ? 'selected' : '';
       return `<div class="hours-btn ${sel}" onclick="setAnswer('${f.key}', ${o.value})">${o.label}</div>`;
@@ -334,7 +356,7 @@ function renderField(f) {
     return `${label}<div class="hours-row">${opts}</div>`;
   }
   if (f.type === 'scale') {
-    const label = f.label ? `<p class="note" style="margin-top:8px;">${f.label}</p>` : '';
+    const label = f.label ? `<p class="note-soft" style="margin-top:12px;margin-bottom:6px;">${f.label}</p>` : '';
     const buttons = [];
     for (let i = 0; i <= 10; i++) {
       const sel = state.answers[f.key] === i ? 'selected' : '';
@@ -474,7 +496,7 @@ function finish() {
 window.addEventListener('error', (e) => {
   if (app && !app.innerHTML.trim()) {
     app.innerHTML = `<h1>Ошибка</h1><p>${escapeHtml(String(e.message || e))}</p>
-      <p class="note">Скажи Алексею — приложи скриншот.</p>`;
+      <p class="note-soft">Скажи Алексею — приложи скриншот.</p>`;
   }
 });
 
