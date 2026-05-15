@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Как прошёл день</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
+.progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: #1a1a1a; transition: width 0.3s ease; width: 0%; }
+.progress-text { font-size: 12px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+
+main { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
+h1 { font-size: 26px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
+h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
+p { margin-bottom: 12px; color: #444; }
+.lead { font-size: 16px; color: #555; margin-bottom: 24px; }
+.note { font-size: 13px; color: #888; }
+
+button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
+button:hover { background: #333; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d4cfc2; padding: 12px 24px; }
+button.secondary:hover { background: #ebe7dc; }
+.actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+.q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
+.q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.q-text { font-size: 18px; line-height: 1.5; margin-bottom: 8px; font-weight: 500; }
+.q-instr { font-size: 14px; color: #666; margin-bottom: 16px; }
+.q-sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+
+/* Шкала 0-10 — кнопки в ряд */
+.scale-row { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; margin: 8px 0 4px; }
+.scale-btn { padding: 12px 0; border: 1px solid #e2dfd6; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; text-align: center; }
+.scale-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
+.scale-btn.selected { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 16px; }
+
+/* Кнопки-варианты (большие) */
+.choice-row { display: grid; gap: 8px; }
+.choice-btn { padding: 14px 16px; border: 1px solid #e2dfd6; border-radius: 8px; background: #fff; cursor: pointer; font-size: 15px; text-align: left; transition: all 0.15s; }
+.choice-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
+.choice-btn.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+
+/* Часы сна — компактнее */
+.hours-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
+.hours-btn { padding: 14px 0; border: 1px solid #e2dfd6; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; text-align: center; }
+.hours-btn:hover { border-color: #1a1a1a; background: #fafaf6; }
+.hours-btn.selected { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+textarea { width: 100%; padding: 12px 14px; border: 1px solid #e2dfd6; border-radius: 8px; font-family: inherit; font-size: 15px; min-height: 80px; resize: vertical; background: #fff; }
+textarea:focus { outline: none; border-color: #1a1a1a; }
+
+.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; }
+.history-date { color: #888; font-size: 12px; margin-bottom: 6px; }
+.history-vals { display: flex; gap: 12px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.history-vals span { font-size: 13px; }
+.history-note { color: #555; margin-top: 6px; font-size: 13px; font-style: italic; }
+
+.empty { text-align: center; padding: 40px 20px; color: #888; }
+.sync-status { font-size: 12px; color: #4a8c5e; }
+.sync-status.error { color: #b91c1c; }
+
+@media (max-width: 600px) {
+  main { padding: 24px 16px 80px; }
+  h1 { font-size: 22px; }
+  .q-card { padding: 20px 16px; }
+  .q-text { font-size: 16px; }
+  .scale-btn { font-size: 12px; padding: 10px 0; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+const TELEGRAM_USER_ID = tg?.initDataUnsafe?.user?.id;
+
+// === Идентификатор клиента ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  if (TELEGRAM_USER_ID) return "tg_" + TELEGRAM_USER_ID;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+
+// === Supabase client (только для чтения истории) ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// === Структура вопросов ===
+// 6 экранов. Каждый — короткий шаг.
+const QUESTIONS = [
+  {
+    id: 'sleep',
+    block: 'Тело',
+    title: 'Сон вчера',
+    fields: [
+      {
+        key: 'sleep_hours',
+        label: 'Сколько часов спал?',
+        type: 'hours',
+        options: [
+          { label: '<5 ч', value: 4 },
+          { label: '5–6 ч', value: 5.5 },
+          { label: '6–7 ч', value: 6.5 },
+          { label: '7–8 ч', value: 7.5 },
+          { label: '8+ ч', value: 8.5 }
+        ]
+      },
+      {
+        key: 'sleep_quality',
+        label: 'Качество сна?',
+        type: 'scale',
+        leftLabel: 'разбит',
+        rightLabel: 'выспался'
+      }
+    ]
+  },
+  {
+    id: 'energy',
+    block: 'Тело',
+    title: 'Энергия сейчас',
+    sub: 'Сколько в тебе сейчас сил — не настроение, а заряд.',
+    fields: [
+      { key: 'energy', type: 'scale', leftLabel: 'пусто', rightLabel: 'полный заряд' }
+    ]
+  },
+  {
+    id: 'control',
+    block: 'Дело',
+    title: 'Контроль над днём',
+    sub: 'Сегодня — кто вёл? День тебя или ты день?',
+    fields: [
+      { key: 'control', type: 'scale', leftLabel: 'день меня вёл', rightLabel: 'я вёл день' }
+    ]
+  },
+  {
+    id: 'did_important',
+    block: 'Дело',
+    title: 'Сделал важное',
+    sub: 'Сегодня было что-то твоё, ради чего стоило жить этот день?',
+    fields: [
+      {
+        key: 'did_important',
+        type: 'choice',
+        options: [
+          { label: 'Да, было', value: 'yes' },
+          { label: 'Частично', value: 'partial' },
+          { label: 'Нет', value: 'no' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'contact',
+    block: 'Близкие',
+    title: 'Контакт с близкими',
+    sub: 'Был ли сегодня настоящий контакт с близкими — не «по делу»?',
+    fields: [
+      {
+        key: 'contact',
+        type: 'choice',
+        options: [
+          { label: 'Был', value: 'yes' },
+          { label: 'Частично', value: 'partial' },
+          { label: 'Не было', value: 'no' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'note',
+    block: 'Смысл',
+    title: 'Что давит / что радует',
+    sub: 'Одной строкой, как первое пришло. Можно пропустить.',
+    fields: [
+      { key: 'note', type: 'text', placeholder: 'Сегодня…' }
+    ]
+  }
+];
+
+// === Состояние ===
+const state = {
+  screen: 'welcome',
+  questionIdx: 0,
+  answers: {},
+  syncStatus: '',
+  syncMessage: ''
+};
+
+let history = [];
+
+// === Supabase: загрузка истории ===
+async function loadHistory() {
+  try {
+    const { data, error } = await sb
+      .from("daily_checkins")
+      .select("checkin_date, completed_at, sleep_hours, sleep_quality, energy, control, did_important, contact, note")
+      .eq("client_id", CLIENT_ID)
+      .order("checkin_date", { ascending: false })
+      .limit(14);
+    if (error) { console.error("Supabase load failed:", error); return []; }
+    return data || [];
+  } catch (e) { console.error("load exception:", e); return []; }
+}
+
+// === Отправка боту ===
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') {
+    state.syncStatus = 'error';
+    state.syncMessage = 'Чек-ин заполнен, но открой его через бота — иначе не сохранится.';
+    return false;
+  }
+  try {
+    tg.sendData(JSON.stringify({
+      action: 'daily_checkin',
+      payload: record
+    }));
+    state.syncStatus = 'ok';
+    state.syncMessage = 'Чек-ин отправлен боту. Через секунду — наблюдение в чат.';
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    state.syncStatus = 'error';
+    state.syncMessage = 'Не удалось отправить боту: ' + e.message;
+    return false;
+  }
+}
+
+// === Прогресс ===
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'question') { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  const pct = ((state.questionIdx + 1) / QUESTIONS.length) * 100;
+  fill.style.width = pct + '%';
+  text.textContent = QUESTIONS[state.questionIdx].block;
+  count.textContent = (state.questionIdx + 1) + ' / ' + QUESTIONS.length;
+}
+
+// === Рендер ===
+const app = document.getElementById('app');
+
+function renderWelcome() {
+  state.screen = 'welcome';
+  const inTelegram = !!tg;
+  const tgIndicator = inTelegram
+    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
+    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
+  const todayCount = history.filter(r => r.checkin_date === todayStr()).length;
+  const alreadyDone = todayCount > 0;
+  app.innerHTML = `
+    <h1>Как прошёл день</h1>
+    ${tgIndicator}
+    <p class="lead">90 секунд — посмотри на свой день сверху. Что в порядке, что просело, что игнорируешь.</p>
+    <p class="note">Заполнять лучше вечером — оцениваешь день, а не планируешь. Бот ответит наблюдением в чате.</p>
+    ${alreadyDone ? '<p class="note" style="color:#a16207;margin-top:12px;">Сегодня уже заполнял — новый чек-ин перезапишет.</p>' : ''}
+    <div class="actions">
+      <button onclick="start()">${alreadyDone ? 'Перезаполнить' : 'Начать'}</button>
+      ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[state.questionIdx];
+  const fieldsHTML = q.fields.map(f => renderField(f)).join('');
+  const allFilled = q.fields.every(f => f.key === 'note' || state.answers[f.key] !== undefined);
+  const isLast = state.questionIdx === QUESTIONS.length - 1;
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">${q.block}</div>
+      <div class="q-text">${q.title}</div>
+      ${q.sub ? `<div class="q-sub">${q.sub}</div>` : ''}
+      ${fieldsHTML}
+    </div>
+    <div class="actions">
+      ${state.questionIdx > 0 ? '<button class="secondary" onclick="prev()">Назад</button>' : ''}
+      ${isLast
+        ? `<button onclick="finish()">Готово</button>`
+        : `<button onclick="next()" ${!allFilled ? 'disabled' : ''}>Дальше</button>`}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderField(f) {
+  if (f.type === 'hours') {
+    const label = f.label ? `<p class="note" style="margin-top:8px;">${f.label}</p>` : '';
+    const opts = f.options.map(o => {
+      const sel = state.answers[f.key] === o.value ? 'selected' : '';
+      return `<div class="hours-btn ${sel}" onclick="setAnswer('${f.key}', ${o.value})">${o.label}</div>`;
+    }).join('');
+    return `${label}<div class="hours-row">${opts}</div>`;
+  }
+  if (f.type === 'scale') {
+    const label = f.label ? `<p class="note" style="margin-top:8px;">${f.label}</p>` : '';
+    const buttons = [];
+    for (let i = 0; i <= 10; i++) {
+      const sel = state.answers[f.key] === i ? 'selected' : '';
+      buttons.push(`<div class="scale-btn ${sel}" onclick="setAnswer('${f.key}', ${i})">${i}</div>`);
+    }
+    return `
+      ${label}
+      <div class="scale-row">${buttons.join('')}</div>
+      <div class="scale-labels"><span>${f.leftLabel || '0'}</span><span>${f.rightLabel || '10'}</span></div>
+    `;
+  }
+  if (f.type === 'choice') {
+    const opts = f.options.map(o => {
+      const sel = state.answers[f.key] === o.value ? 'selected' : '';
+      return `<div class="choice-btn ${sel}" onclick="setAnswer('${f.key}', '${o.value}')">${o.label}</div>`;
+    }).join('');
+    return `<div class="choice-row">${opts}</div>`;
+  }
+  if (f.type === 'text') {
+    const val = state.answers[f.key] || '';
+    return `<textarea placeholder="${f.placeholder || ''}" oninput="setAnswer('${f.key}', this.value)">${escapeHtml(val)}</textarea>`;
+  }
+  return '';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+}
+
+function renderHistoryList(records) {
+  return records.map(r => {
+    const d = new Date(r.checkin_date + 'T00:00:00').toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+    const energy = r.energy ?? '—';
+    const control = r.control ?? '—';
+    const sleep = r.sleep_hours ?? '—';
+    const imp = r.did_important === 'yes' ? '✓' : r.did_important === 'partial' ? '~' : '✗';
+    const con = r.contact === 'yes' ? '✓' : r.contact === 'partial' ? '~' : '✗';
+    return `
+      <div class="history-row">
+        <div class="history-date">${d}</div>
+        <div class="history-vals">
+          <span>сон ${sleep}ч</span>
+          <span>энергия ${energy}</span>
+          <span>контроль ${control}</span>
+          <span>важное ${imp}</span>
+          <span>контакт ${con}</span>
+        </div>
+        ${r.note ? `<div class="history-note">${escapeHtml(r.note)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function showHistory() {
+  state.screen = 'history';
+  app.innerHTML = `
+    <h1>История чек-инов</h1>
+    <p class="lead">Последние 14 дней.</p>
+    ${history.length ? renderHistoryList(history) : '<div class="empty">Чек-инов пока нет.</div>'}
+    <div class="actions"><button class="secondary" onclick="renderWelcome()">На главную</button></div>
+  `;
+  updateProgress();
+}
+
+function renderDone() {
+  state.screen = 'done';
+  const syncBlock = state.syncStatus
+    ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
+    : '';
+  app.innerHTML = `
+    <h1>Готово</h1>
+    <p class="lead">Записал. Через секунду бот напишет в чат — что увидел в данных за последние дни.</p>
+    ${syncBlock}
+    <div class="actions">
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : '<button class="secondary" onclick="renderWelcome()">На главную</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+function start() {
+  state.screen = 'question';
+  state.questionIdx = 0;
+  state.answers = {};
+  state.syncStatus = '';
+  state.syncMessage = '';
+  renderQuestion();
+}
+
+function setAnswer(key, value) {
+  state.answers[key] = value;
+  renderQuestion();
+}
+
+function next() {
+  if (state.questionIdx < QUESTIONS.length - 1) {
+    state.questionIdx++;
+    renderQuestion();
+  }
+}
+
+function prev() {
+  if (state.questionIdx > 0) {
+    state.questionIdx--;
+    renderQuestion();
+  }
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+
+function finish() {
+  const a = state.answers;
+  const record = {
+    checkin_date: todayStr(),
+    completed_at: new Date().toISOString(),
+    sleep_hours: a.sleep_hours ?? null,
+    sleep_quality: a.sleep_quality ?? null,
+    energy: a.energy ?? null,
+    control: a.control ?? null,
+    did_important: a.did_important ?? null,
+    contact: a.contact ?? null,
+    note: (a.note || '').trim() || null
+  };
+  sendToBot(record);
+  renderDone();
+}
+
+// === СТАРТ ===
+(async () => {
+  history = await loadHistory();
+  renderWelcome();
+})();
+</script>
+</body>
+</html>
