@@ -355,7 +355,9 @@ function renderField(f) {
   }
   if (f.type === 'text') {
     const val = state.answers[f.key] || '';
-    return `<textarea placeholder="${f.placeholder || ''}" oninput="setAnswer('${f.key}', this.value)">${escapeHtml(val)}</textarea>`;
+    // НЕ вызываем setAnswer (он триггерит renderQuestion), иначе textarea
+    // пересоздаётся на каждой букве и теряет фокус на iOS. Просто пишем в state.
+    return `<textarea placeholder="${f.placeholder || ''}" oninput="state.answers['${f.key}'] = this.value">${escapeHtml(val)}</textarea>`;
   }
   return '';
 }
