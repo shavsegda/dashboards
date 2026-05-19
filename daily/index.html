@@ -246,6 +246,15 @@ const QUESTIONS = [
     fields: [
       { key: 'note', type: 'text', placeholder: 'Сегодня…' }
     ]
+  },
+  {
+    id: 'intention',
+    block: 'Завтра',
+    title: 'Что одно главное хочешь сделать завтра?',
+    sub: 'Одной фразой. Утром бот вернёт это как настройку дня. Можно пропустить.',
+    fields: [
+      { key: 'intention_tomorrow', type: 'text', placeholder: 'Например, дописать оффер…' }
+    ]
   }
 ];
 
@@ -494,8 +503,9 @@ function refreshNextButton() {
   const btn = document.getElementById('nextBtn');
   if (!btn) return;
   const q = QUESTIONS[state.questionIdx];
-  // _note поля и note всегда опциональные
-  const allFilled = q.fields.every(f => f.key === 'note' || state.answers[f.key] !== undefined);
+  // _note поля, note и intention_tomorrow — опциональные
+  const optional = new Set(['note', 'intention_tomorrow']);
+  const allFilled = q.fields.every(f => optional.has(f.key) || state.answers[f.key] !== undefined);
   btn.disabled = !allFilled;
 }
 
@@ -546,7 +556,8 @@ function finish() {
     control: a.control ?? null,
     did_important: a.did_important ?? null,
     contact: a.contact ?? null,
-    note: combinedNote
+    note: combinedNote,
+    intention_tomorrow: clean(a.intention_tomorrow) || null
   };
   sendToBot(record);
   renderDone();
