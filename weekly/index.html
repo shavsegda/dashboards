@@ -4,67 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Недельный замер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body { min-height: 100vh; }
 
-.progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
-.progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
-.progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: #1a1a1a; transition: width 0.3s ease; width: 0%; }
-.progress-text { font-size: 12px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
 
-main { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
-h1 { font-size: 26px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
-h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
-p { margin-bottom: 12px; color: #444; }
-.lead { font-size: 16px; color: #555; margin-bottom: 24px; }
-.note { font-size: 13px; color: #888; }
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 16px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 28px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.note-soft { font-size: 13px; color: var(--graphite-65); text-transform: none; letter-spacing: normal; font-family: var(--font-sans); }
 
-button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
-button:hover { background: #333; }
-button:disabled { background: #ccc; cursor: not-allowed; }
-button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d4cfc2; padding: 12px 24px; }
-button.secondary:hover { background: #ebe7dc; }
-.actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button:disabled { background: var(--graphite-30); cursor: not-allowed; }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
 
-.q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
-.q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
-.q-text { font-size: 18px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
-.q-instr { font-size: 14px; color: #666; margin-bottom: 16px; font-style: italic; }
+.q-card { background: transparent; border: none; padding: 0; margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; line-height: 1.5; }
 .q-options { display: grid; gap: 8px; }
-.q-option { display: flex; align-items: center; padding: 14px 16px; border: 1px solid #e2dfd6; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: #fff; user-select: none; }
-.q-option:hover { border-color: #1a1a1a; background: #fafaf6; }
-.q-option.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; background: transparent; user-select: none; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
 .q-option-text { font-size: 15px; flex: 1; }
 
-.result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
-.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0ede6; }
+.result-card { background: transparent; border: 1px solid var(--graphite-08); padding: 0; margin-bottom: 24px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); }
 .result-row:last-child { border-bottom: 0; }
-.result-name { font-size: 14px; color: #666; }
-.result-val { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.result-status { font-size: 12px; padding: 4px 10px; border-radius: 4px; margin-left: 12px; }
-.status-green  { background: #dcfce7; color: #166534; }
-.status-yellow { background: #fef9c3; color: #854d0e; }
-.status-orange { background: #ffedd5; color: #9a3412; }
-.status-red    { background: #fee2e2; color: #991b1b; }
+.result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
+.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
+.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+.result-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 8px; margin-left: 12px; border: 1px solid; }
+/* Семантика медицинских шкал сохранена, но в сдержанной палитре */
+.status-green  { border-color: var(--graphite-30); color: var(--graphite-65); }
+.status-yellow { border-color: var(--graphite-50); color: var(--graphite-75); }
+.status-orange { border-color: var(--terracotta); color: var(--terracotta); }
+.status-red    { border-color: var(--alert); color: var(--alert); background: var(--alert-tint); }
 
-.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; font-size: 14px; }
-.history-date { color: #888; min-width: 90px; }
-.history-pills { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
-.pill { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.alert-card { border: 1px solid var(--alert); background: var(--alert-tint); padding: 20px 22px; margin-bottom: 24px; }
+.alert-card h2 { color: var(--alert); margin-top: 0; }
+.alert-card p { color: var(--graphite); margin-bottom: 0; }
 
-.empty { text-align: center; padding: 40px 20px; color: #888; }
-.sync-status { font-size: 12px; color: #4a8c5e; }
-.sync-status.error { color: #b91c1c; }
+.history-row { background: transparent; border: none; border-bottom: 1px solid var(--graphite-08); padding: 14px 0; font-size: 14px; }
+.history-row:last-child { border-bottom: 0; }
+.history-date { font-family: var(--font-mono); color: var(--graphite-50); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.history-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; font-variant-numeric: tabular-nums; border: 1px solid; letter-spacing: 0.05em; }
+
+.empty { text-align: center; padding: 48px 20px; color: var(--graphite-50); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 12px; }
+.sync-status.error { color: var(--alert); }
 
 @media (max-width: 600px) {
-  main { padding: 24px 16px 80px; }
-  h1 { font-size: 22px; }
-  .q-card { padding: 20px 16px; }
-  .q-text { font-size: 16px; }
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 19px; }
+  .result-row { padding: 16px; }
+  .result-val { font-size: 22px; }
 }
 </style>
 </head>
@@ -250,8 +281,8 @@ const app = document.getElementById('app');
 function renderWelcome() {
   const inTelegram = !!tg;
   const tgIndicator = inTelegram
-    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
-    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
+    ? `<p class="note" style="color:var(--terracotta);">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
+    : `<p class="note" style="color:var(--alert);">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
   app.innerHTML = `
     <h1>Недельный замер</h1>
     ${tgIndicator}
@@ -307,21 +338,21 @@ function renderResult(record) {
     ${syncBlock}
     <div class="result-card">
       <div class="result-row">
-        <div><div class="result-name">Благополучие · WHO-5</div><div class="note">Норма выше 50</div></div>
+        <div><div class="result-name">Благополучие · WHO-5</div><div class="result-norm">Норма выше 50</div></div>
         <div><span class="result-val">${who}</span><span class="result-status status-${whoStatus[0]}">${whoStatus[1]}</span></div>
       </div>
       <div class="result-row">
-        <div><div class="result-name">Настроение · PHQ-9</div><div class="note">Норма ниже 5</div></div>
+        <div><div class="result-name">Настроение · PHQ-9</div><div class="result-norm">Норма ниже 5</div></div>
         <div><span class="result-val">${phq}</span><span class="result-status status-${phqStatus[0]}">${phqStatus[1]}</span></div>
       </div>
       <div class="result-row">
-        <div><div class="result-name">Тревога · GAD-7</div><div class="note">Норма ниже 5</div></div>
+        <div><div class="result-name">Тревога · GAD-7</div><div class="result-norm">Норма ниже 5</div></div>
         <div><span class="result-val">${gad}</span><span class="result-status status-${gadStatus[0]}">${gadStatus[1]}</span></div>
       </div>
     </div>
     ${suicideFlag ? `
-      <div class="result-card" style="border-color:#dc2626;background:#fef2f2;">
-        <h2 style="color:#991b1b;">Важно</h2>
+      <div class="alert-card">
+        <h2>Важно</h2>
         <p>Ты отметил мысли о смерти или самоповреждении. Это сигнал, который не стоит игнорировать. Напиши Алексею или специалисту прямо сейчас.</p>
       </div>` : ''}
     ${history.length > 1 ? `
