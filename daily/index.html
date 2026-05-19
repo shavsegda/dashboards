@@ -341,12 +341,23 @@ function renderQuestion() {
   const fieldsHTML = q.fields.map(f => renderField(f)).join('');
   const allFilled = q.fields.every(f => f.key === 'note' || state.answers[f.key] !== undefined);
   const isLast = state.questionIdx === QUESTIONS.length - 1;
+  // Опциональное «+ дописать» на уровне всего вопроса — кроме экрана со свободным текстом
+  const hasFreeText = q.fields.some(f => f.type === 'text');
+  const qNoteKey = q.id + '_note';
+  const qNoteVal = state.answers[qNoteKey] || '';
+  const qNoteHTML = hasFreeText ? '' : `
+    <details class="scale-note" ${qNoteVal ? 'open' : ''}>
+      <summary>+ дописать словами</summary>
+      <textarea placeholder="можно дописать…" oninput="state.answers['${qNoteKey}'] = this.value">${escapeHtml(qNoteVal)}</textarea>
+    </details>
+  `;
   app.innerHTML = `
     <div class="q-card">
       <div class="q-block">${q.block}</div>
       <div class="q-text">${q.title}</div>
       ${q.sub ? `<div class="q-sub">${q.sub}</div>` : ''}
       ${fieldsHTML}
+      ${qNoteHTML}
     </div>
     <div class="actions">
       ${state.questionIdx > 0 ? '<button class="secondary" onclick="prev()">Назад</button>' : ''}
@@ -373,8 +384,6 @@ function renderField(f) {
     const touched = state.answers[f.key] !== undefined;
     const val = touched ? state.answers[f.key] : 5;
     const untouchedClass = touched ? '' : 'untouched';
-    const noteKey = f.key + '_note';
-    const noteVal = state.answers[noteKey] || '';
     return `
       ${label}
       <input type="range" min="0" max="10" step="1" value="${val}"
@@ -382,10 +391,6 @@ function renderField(f) {
              oninput="onSlide('${f.key}', this)"
              onchange="onSlide('${f.key}', this)">
       <div class="scale-labels"><span>${f.leftLabel || '0'}</span><span>${f.rightLabel || '10'}</span></div>
-      <details class="scale-note" ${noteVal ? 'open' : ''}>
-        <summary>+ дописать словами</summary>
-        <textarea placeholder="можно дописать…" oninput="state.answers['${noteKey}'] = this.value">${escapeHtml(noteVal)}</textarea>
-      </details>
     `;
   }
   if (f.type === 'choice') {
@@ -514,13 +519,21 @@ function todayStr() {
 
 function finish() {
   const a = state.answers;
-  // Подшкальные комментарии и финальная заметка склеиваются в одно поле note.
+  // Комментарии по каждому вопросу + финальная заметка склеиваются в одно поле note.
   // Бот получает богатый контекст, БД не меняется.
-  const parts = [];
   const clean = v => (v || '').trim();
-  if (clean(a.sleep_quality_note)) parts.push(`Сон: ${clean(a.sleep_quality_note)}`);
-  if (clean(a.energy_note)) parts.push(`Энергия: ${clean(a.energy_note)}`);
-  if (clean(a.control_note)) parts.push(`Контроль: ${clean(a.control_note)}`);
+  const noteLabels = {
+    sleep: 'Сон',
+    energy: 'Энергия',
+    contact: 'Контакт',
+    control: 'Контроль',
+    did_important: 'Важное'
+  };
+  const parts = [];
+  for (const q of QUESTIONS) {
+    const txt = clean(a[q.id + '_note']);
+    if (txt) parts.push(`${noteLabels[q.id] || q.id}: ${txt}`);
+  }
   if (clean(a.note)) parts.push(clean(a.note));
   const combinedNote = parts.length ? parts.join('\n') : null;
   const record = {
