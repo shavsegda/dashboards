@@ -61,19 +61,20 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
 .scale-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; margin: 16px 0 6px; outline: none; }
 .scale-slider::-webkit-slider-runnable-track { height: 2px; background: var(--graphite-15); border: none; }
 .scale-slider::-moz-range-track { height: 2px; background: var(--graphite-15); border: none; }
-.scale-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: var(--terracotta); border-radius: 50%; margin-top: -10px; border: none; cursor: pointer; transition: transform 0.1s; }
-.scale-slider::-moz-range-thumb { width: 22px; height: 22px; background: var(--terracotta); border-radius: 50%; border: none; cursor: pointer; transition: transform 0.1s; }
+.scale-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: var(--terracotta); border: 2px solid var(--terracotta); border-radius: 50%; margin-top: -10px; cursor: pointer; transition: transform 0.1s, background 0.15s; }
+.scale-slider::-moz-range-thumb { width: 22px; height: 22px; background: var(--terracotta); border: 2px solid var(--terracotta); border-radius: 50%; cursor: pointer; transition: transform 0.1s, background 0.15s; }
 .scale-slider:active::-webkit-slider-thumb { transform: scale(1.15); }
 .scale-slider:active::-moz-range-thumb { transform: scale(1.15); }
-.scale-slider.untouched::-webkit-slider-thumb { opacity: 0; }
-.scale-slider.untouched::-moz-range-thumb { opacity: 0; }
+/* Untouched: пустой кружок — видно что бегунок, но выбор ещё не сделан */
+.scale-slider.untouched::-webkit-slider-thumb { background: var(--paper); border-color: var(--graphite-30); }
+.scale-slider.untouched::-moz-range-thumb { background: var(--paper); border-color: var(--graphite-30); }
 .scale-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-bottom: 4px; padding-top: 4px; }
 
 /* Опциональное свёрнутое поле под шкалой */
 .scale-note { margin: 8px 0 24px; }
-.scale-note summary { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); cursor: pointer; padding: 6px 0; list-style: none; user-select: none; }
+.scale-note summary { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); cursor: pointer; padding: 6px 0; list-style: none; user-select: none; }
 .scale-note summary::-webkit-details-marker { display: none; }
-.scale-note summary:hover { color: var(--terracotta); }
+.scale-note summary:hover { opacity: 0.75; }
 .scale-note[open] summary { color: var(--graphite-65); }
 .scale-note textarea { min-height: 64px; margin-top: 8px; font-size: 14px; }
 
