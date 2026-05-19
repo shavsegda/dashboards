@@ -57,12 +57,25 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
 .q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 20px; }
 .q-sub { font-size: 15px; color: var(--graphite-65); margin-bottom: 24px; line-height: 1.5; }
 
-/* Шкала 0-10 — кнопки в ряд */
-.scale-row { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; margin: 12px 0 6px; }
-.scale-btn { padding: 14px 0; border: 1px solid var(--graphite-15); background: transparent; cursor: pointer; font-family: var(--font-mono); font-size: 13px; font-weight: 400; color: var(--graphite); transition: all 0.15s; text-align: center; }
-.scale-btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
-.scale-btn.selected { background: var(--terracotta); color: var(--paper); border-color: var(--terracotta); }
-.scale-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-bottom: 24px; padding-top: 8px; }
+/* Шкала 0-10 — нативный бегунок без видимых цифр */
+.scale-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; margin: 16px 0 6px; outline: none; }
+.scale-slider::-webkit-slider-runnable-track { height: 2px; background: var(--graphite-15); border: none; }
+.scale-slider::-moz-range-track { height: 2px; background: var(--graphite-15); border: none; }
+.scale-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: var(--terracotta); border-radius: 50%; margin-top: -10px; border: none; cursor: pointer; transition: transform 0.1s; }
+.scale-slider::-moz-range-thumb { width: 22px; height: 22px; background: var(--terracotta); border-radius: 50%; border: none; cursor: pointer; transition: transform 0.1s; }
+.scale-slider:active::-webkit-slider-thumb { transform: scale(1.15); }
+.scale-slider:active::-moz-range-thumb { transform: scale(1.15); }
+.scale-slider.untouched::-webkit-slider-thumb { opacity: 0; }
+.scale-slider.untouched::-moz-range-thumb { opacity: 0; }
+.scale-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-bottom: 4px; padding-top: 4px; }
+
+/* Опциональное свёрнутое поле под шкалой */
+.scale-note { margin: 8px 0 24px; }
+.scale-note summary { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); cursor: pointer; padding: 6px 0; list-style: none; user-select: none; }
+.scale-note summary::-webkit-details-marker { display: none; }
+.scale-note summary:hover { color: var(--terracotta); }
+.scale-note[open] summary { color: var(--graphite-65); }
+.scale-note textarea { min-height: 64px; margin-top: 8px; font-size: 14px; }
 
 /* Кнопки-варианты (большие) */
 .choice-row { display: grid; gap: 8px; }
@@ -94,7 +107,6 @@ textarea:focus { outline: none; border-color: var(--terracotta); }
   main { padding: 28px 20px 80px; }
   h1 { font-size: 28px; }
   .q-text { font-size: 21px; }
-  .scale-btn { font-size: 12px; padding: 12px 0; }
   .scale-labels { font-size: 10px; }
 }
 </style>
@@ -339,8 +351,8 @@ function renderQuestion() {
     <div class="actions">
       ${state.questionIdx > 0 ? '<button class="secondary" onclick="prev()">Назад</button>' : ''}
       ${isLast
-        ? `<button onclick="finish()">Готово</button>`
-        : `<button onclick="next()" ${!allFilled ? 'disabled' : ''}>Дальше</button>`}
+        ? `<button id="nextBtn" onclick="finish()" ${!allFilled ? 'disabled' : ''}>Готово</button>`
+        : `<button id="nextBtn" onclick="next()" ${!allFilled ? 'disabled' : ''}>Дальше</button>`}
     </div>
   `;
   updateProgress();
@@ -357,15 +369,23 @@ function renderField(f) {
   }
   if (f.type === 'scale') {
     const label = f.label ? `<p class="note-soft" style="margin-top:12px;margin-bottom:6px;">${f.label}</p>` : '';
-    const buttons = [];
-    for (let i = 0; i <= 10; i++) {
-      const sel = state.answers[f.key] === i ? 'selected' : '';
-      buttons.push(`<div class="scale-btn ${sel}" onclick="setAnswer('${f.key}', ${i})">${i}</div>`);
-    }
+    // Если ещё не коснулся — класс untouched прячет thumb, value по центру.
+    const touched = state.answers[f.key] !== undefined;
+    const val = touched ? state.answers[f.key] : 5;
+    const untouchedClass = touched ? '' : 'untouched';
+    const noteKey = f.key + '_note';
+    const noteVal = state.answers[noteKey] || '';
     return `
       ${label}
-      <div class="scale-row">${buttons.join('')}</div>
+      <input type="range" min="0" max="10" step="1" value="${val}"
+             class="scale-slider ${untouchedClass}"
+             oninput="onSlide('${f.key}', this)"
+             onchange="onSlide('${f.key}', this)">
       <div class="scale-labels"><span>${f.leftLabel || '0'}</span><span>${f.rightLabel || '10'}</span></div>
+      <details class="scale-note" ${noteVal ? 'open' : ''}>
+        <summary>+ дописать словами</summary>
+        <textarea placeholder="можно дописать…" oninput="state.answers['${noteKey}'] = this.value">${escapeHtml(noteVal)}</textarea>
+      </details>
     `;
   }
   if (f.type === 'choice') {
@@ -456,6 +476,23 @@ function setAnswer(key, value) {
   renderQuestion();
 }
 
+// Бегунок: пишем в state без перерисовки — иначе теряется фокус и thumb прыгает.
+// Кнопку «Дальше» обновляем точечно.
+function onSlide(key, el) {
+  el.classList.remove('untouched');
+  state.answers[key] = parseInt(el.value, 10);
+  refreshNextButton();
+}
+
+function refreshNextButton() {
+  const btn = document.getElementById('nextBtn');
+  if (!btn) return;
+  const q = QUESTIONS[state.questionIdx];
+  // _note поля и note всегда опциональные
+  const allFilled = q.fields.every(f => f.key === 'note' || state.answers[f.key] !== undefined);
+  btn.disabled = !allFilled;
+}
+
 function next() {
   if (state.questionIdx < QUESTIONS.length - 1) {
     state.questionIdx++;
@@ -477,6 +514,15 @@ function todayStr() {
 
 function finish() {
   const a = state.answers;
+  // Подшкальные комментарии и финальная заметка склеиваются в одно поле note.
+  // Бот получает богатый контекст, БД не меняется.
+  const parts = [];
+  const clean = v => (v || '').trim();
+  if (clean(a.sleep_quality_note)) parts.push(`Сон: ${clean(a.sleep_quality_note)}`);
+  if (clean(a.energy_note)) parts.push(`Энергия: ${clean(a.energy_note)}`);
+  if (clean(a.control_note)) parts.push(`Контроль: ${clean(a.control_note)}`);
+  if (clean(a.note)) parts.push(clean(a.note));
+  const combinedNote = parts.length ? parts.join('\n') : null;
   const record = {
     checkin_date: todayStr(),
     completed_at: new Date().toISOString(),
@@ -486,7 +532,7 @@ function finish() {
     control: a.control ?? null,
     did_important: a.did_important ?? null,
     contact: a.contact ?? null,
-    note: (a.note || '').trim() || null
+    note: combinedNote
   };
   sendToBot(record);
   renderDone();
