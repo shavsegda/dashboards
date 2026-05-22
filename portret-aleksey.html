@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Портрет · Alexey · 29 апреля 2026</title>
+<meta name="description" content="Пример Портрета. Срез устойчивых черт: как обычно действуешь, где ломаешься под нагрузкой и что тебя двигает. Меняется медленно — раз в 3-5 лет.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 980px;
+  --gutter: 32px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.dot { color: var(--terracotta); }
+
+/* Header */
+.pt-header {
+  padding: 48px 0 56px;
+  border-bottom: 1px solid var(--graphite-15);
+  text-align: center;
+}
+.pt-header .badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--terracotta);
+  color: var(--terracotta);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.pt-header h1 {
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  margin: 0 0 12px;
+  line-height: 1;
+}
+.pt-header .meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--graphite-50);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.pt-header .lede {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--graphite-75);
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+/* Section */
+.pt-section { padding: 56px 0; border-bottom: 1px solid var(--graphite-15); }
+.pt-section:last-of-type { border-bottom: 0; }
+.pt-section .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 12px;
+}
+.pt-section h2 {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.pt-section .descr {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--graphite-65);
+  margin: 0 0 36px;
+  max-width: 600px;
+}
+
+/* Group */
+.pt-group {
+  background: var(--stone);
+  padding: 28px 32px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--terracotta);
+}
+.pt-group h3 {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 22px;
+  letter-spacing: -0.005em;
+}
+
+/* Scale row */
+.pt-scale {
+  display: grid;
+  grid-template-columns: 200px 1fr 60px;
+  gap: 20px;
+  align-items: center;
+  padding: 10px 0;
+}
+.pt-scale + .pt-scale { border-top: 1px solid var(--graphite-15); }
+.pt-scale .name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--graphite-90);
+}
+.pt-scale .bar-container {
+  position: relative;
+  height: 6px;
+  background: var(--graphite-08);
+  border-radius: 0;
+  overflow: hidden;
+}
+.pt-scale .bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--graphite);
+}
+.pt-scale.high .bar { background: var(--terracotta); }
+.pt-scale.low .bar { background: var(--terracotta); }
+.pt-scale .value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+  text-align: right;
+  color: var(--graphite);
+}
+.pt-scale.high .value { color: var(--terracotta); }
+.pt-scale.low .value { color: var(--terracotta); }
+
+/* Footer note */
+.pt-footer {
+  padding: 40px 0 56px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--graphite-65);
+}
+.pt-footer p { margin: 0 0 12px; max-width: 640px; }
+.pt-footer .em { font-style: italic; color: var(--graphite-50); }
+.pt-footer .back {
+  display: inline-block;
+  margin-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--terracotta);
+  text-decoration: none;
+  border-bottom: 1px solid var(--terracotta);
+  letter-spacing: 0.05em;
+  padding: 4px 0;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  :root { --gutter: 20px; }
+  .pt-header { padding: 36px 0 40px; }
+  .pt-section { padding: 40px 0; }
+  .pt-group { padding: 22px 20px; }
+  .pt-scale {
+    grid-template-columns: 1fr 60px;
+    grid-template-rows: auto auto;
+    gap: 8px 14px;
+    padding: 14px 0;
+  }
+  .pt-scale .name { grid-column: 1 / 2; grid-row: 1; }
+  .pt-scale .value { grid-column: 2 / 3; grid-row: 1; }
+  .pt-scale .bar-container { grid-column: 1 / 3; grid-row: 2; }
+}
+</style>
+</head>
+<body>
+
+<header class="pt-header">
+  <div class="container">
+    <div class="badge">Пример Портрета</div>
+    <h1>Alexey</h1>
+    <div class="meta">Портрет · 29 апреля 2026</div>
+    <p class="lede">Срез устойчивых черт: как обычно действуешь, где ломаешься под нагрузкой и что тебя двигает. Меняется медленно — раз в 3–5 лет имеет смысл переснять.</p>
+  </div>
+</header>
+
+<!-- Раздел 1: Стиль работы -->
+<section class="pt-section">
+  <div class="container">
+    <div class="eyebrow">Раздел 1</div>
+    <h2>Стиль работы<span class="dot">.</span></h2>
+    <p class="descr">Устойчивые черты характера — как обычно действуешь в работе и жизни. Меняются медленно, дают предсказуемость.</p>
+
+    <div class="pt-group">
+      <h3>Внутренняя ровность</h3>
+      <div class="pt-scale low"><div class="name">Спокойствие</div><div class="bar-container"><div class="bar" style="width: 13%"></div></div><div class="value">13</div></div>
+      <div class="pt-scale low"><div class="name">Сдержанность гнева</div><div class="bar-container"><div class="bar" style="width: 11%"></div></div><div class="value">11</div></div>
+      <div class="pt-scale low"><div class="name">Жизненный тонус</div><div class="bar-container"><div class="bar" style="width: 2%"></div></div><div class="value">2</div></div>
+      <div class="pt-scale low"><div class="name">Внутренняя уверенность</div><div class="bar-container"><div class="bar" style="width: 3%"></div></div><div class="value">3</div></div>
+      <div class="pt-scale"><div class="name">Контроль соблазнов</div><div class="bar-container"><div class="bar" style="width: 31%"></div></div><div class="value">31</div></div>
+      <div class="pt-scale low"><div class="name">Стрессоустойчивость</div><div class="bar-container"><div class="bar" style="width: 17%"></div></div><div class="value">17</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Заряд от людей</h3>
+      <div class="pt-scale"><div class="name">Дружелюбие</div><div class="bar-container"><div class="bar" style="width: 73%"></div></div><div class="value">73</div></div>
+      <div class="pt-scale low"><div class="name">Тяга к компании</div><div class="bar-container"><div class="bar" style="width: 20%"></div></div><div class="value">20</div></div>
+      <div class="pt-scale high"><div class="name">Напор</div><div class="bar-container"><div class="bar" style="width: 99%"></div></div><div class="value">99</div></div>
+      <div class="pt-scale"><div class="name">Бойкость</div><div class="bar-container"><div class="bar" style="width: 50%"></div></div><div class="value">50</div></div>
+      <div class="pt-scale high"><div class="name">Тяга к адреналину</div><div class="bar-container"><div class="bar" style="width: 96%"></div></div><div class="value">96</div></div>
+      <div class="pt-scale low"><div class="name">Бодрость</div><div class="bar-container"><div class="bar" style="width: 7%"></div></div><div class="value">7</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Любопытство</h3>
+      <div class="pt-scale low"><div class="name">Фантазия</div><div class="bar-container"><div class="bar" style="width: 3%"></div></div><div class="value">3</div></div>
+      <div class="pt-scale low"><div class="name">Чувство красоты</div><div class="bar-container"><div class="bar" style="width: 6%"></div></div><div class="value">6</div></div>
+      <div class="pt-scale"><div class="name">Глубина чувств</div><div class="bar-container"><div class="bar" style="width: 25%"></div></div><div class="value">25</div></div>
+      <div class="pt-scale high"><div class="name">Тяга к новому</div><div class="bar-container"><div class="bar" style="width: 92%"></div></div><div class="value">92</div></div>
+      <div class="pt-scale high"><div class="name">Любовь к идеям</div><div class="bar-container"><div class="bar" style="width: 84%"></div></div><div class="value">84</div></div>
+      <div class="pt-scale high"><div class="name">Открытость к иному</div><div class="bar-container"><div class="bar" style="width: 90%"></div></div><div class="value">90</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Тепло к людям</h3>
+      <div class="pt-scale high"><div class="name">Доверие к людям</div><div class="bar-container"><div class="bar" style="width: 98%"></div></div><div class="value">98</div></div>
+      <div class="pt-scale high"><div class="name">Прямота</div><div class="bar-container"><div class="bar" style="width: 75%"></div></div><div class="value">75</div></div>
+      <div class="pt-scale"><div class="name">Готовность помочь</div><div class="bar-container"><div class="bar" style="width: 57%"></div></div><div class="value">57</div></div>
+      <div class="pt-scale low"><div class="name">Гибкость в споре</div><div class="bar-container"><div class="bar" style="width: 16%"></div></div><div class="value">16</div></div>
+      <div class="pt-scale low"><div class="name">Скромность</div><div class="bar-container"><div class="bar" style="width: 0%"></div></div><div class="value">0</div></div>
+      <div class="pt-scale low"><div class="name">Сопереживание</div><div class="bar-container"><div class="bar" style="width: 3%"></div></div><div class="value">3</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Собранность</h3>
+      <div class="pt-scale low"><div class="name">Уверенность в делах</div><div class="bar-container"><div class="bar" style="width: 4%"></div></div><div class="value">4</div></div>
+      <div class="pt-scale high"><div class="name">Порядок</div><div class="bar-container"><div class="bar" style="width: 90%"></div></div><div class="value">90</div></div>
+      <div class="pt-scale"><div class="name">Чувство долга</div><div class="bar-container"><div class="bar" style="width: 70%"></div></div><div class="value">70</div></div>
+      <div class="pt-scale"><div class="name">Жажда результата</div><div class="bar-container"><div class="bar" style="width: 50%"></div></div><div class="value">50</div></div>
+      <div class="pt-scale low"><div class="name">Самодисциплина</div><div class="bar-container"><div class="bar" style="width: 6%"></div></div><div class="value">6</div></div>
+      <div class="pt-scale low"><div class="name">Осмотрительность</div><div class="bar-container"><div class="bar" style="width: 17%"></div></div><div class="value">17</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Раздел 2: Уязвимости -->
+<section class="pt-section">
+  <div class="container">
+    <div class="eyebrow">Раздел 2</div>
+    <h2>Уязвимости<span class="dot">.</span></h2>
+    <p class="descr">Где система ломается под нагрузкой. Не диагноз — карта чувствительных мест. Знание этих точек помогает их обходить.</p>
+
+    <div class="pt-group">
+      <h3>Тёмные грани</h3>
+      <div class="pt-scale high"><div class="name">Игра в свою пользу</div><div class="bar-container"><div class="bar" style="width: 84%"></div></div><div class="value">84</div></div>
+      <div class="pt-scale high"><div class="name">Самовозвышение</div><div class="bar-container"><div class="bar" style="width: 95%"></div></div><div class="value">95</div></div>
+      <div class="pt-scale high"><div class="name">Эмоциональный холод</div><div class="bar-container"><div class="bar" style="width: 80%"></div></div><div class="value">80</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Защитные реакции</h3>
+      <div class="pt-scale high"><div class="name">Уход в дела</div><div class="bar-container"><div class="bar" style="width: 99%"></div></div><div class="value">99</div></div>
+      <div class="pt-scale low"><div class="name">Отрицание</div><div class="bar-container"><div class="bar" style="width: 22%"></div></div><div class="value">22</div></div>
+      <div class="pt-scale"><div class="name">Алкоголь и таблетки</div><div class="bar-container"><div class="bar" style="width: 28%"></div></div><div class="value">28</div></div>
+      <div class="pt-scale high"><div class="name">Сдача</div><div class="bar-container"><div class="bar" style="width: 99%"></div></div><div class="value">99</div></div>
+      <div class="pt-scale"><div class="name">Выплёскивание</div><div class="bar-container"><div class="bar" style="width: 50%"></div></div><div class="value">50</div></div>
+      <div class="pt-scale high"><div class="name">Самобичевание</div><div class="bar-container"><div class="bar" style="width: 99%"></div></div><div class="value">99</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Раздел 3: Ценности -->
+<section class="pt-section">
+  <div class="container">
+    <div class="eyebrow">Раздел 3</div>
+    <h2>Ценности<span class="dot">.</span></h2>
+    <p class="descr">Что тебя по-настоящему двигает. Это устойчивая иерархия — что важно, а что нет, даже когда не задумываешься.</p>
+
+    <div class="pt-group">
+      <h3>Доказать и встать сверху</h3>
+      <div class="pt-scale high"><div class="name">Влияние</div><div class="bar-container"><div class="bar" style="width: 97%"></div></div><div class="value">97</div></div>
+      <div class="pt-scale high"><div class="name">Богатство</div><div class="bar-container"><div class="bar" style="width: 93%"></div></div><div class="value">93</div></div>
+      <div class="pt-scale"><div class="name">Репутация</div><div class="bar-container"><div class="bar" style="width: 74%"></div></div><div class="value">74</div></div>
+      <div class="pt-scale high"><div class="name">Победа</div><div class="bar-container"><div class="bar" style="width: 92%"></div></div><div class="value">92</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Свобода и движение</h3>
+      <div class="pt-scale high"><div class="name">Свои мысли</div><div class="bar-container"><div class="bar" style="width: 78%"></div></div><div class="value">78</div></div>
+      <div class="pt-scale high"><div class="name">Свои действия</div><div class="bar-container"><div class="bar" style="width: 90%"></div></div><div class="value">90</div></div>
+      <div class="pt-scale high"><div class="name">Жажда нового</div><div class="bar-container"><div class="bar" style="width: 97%"></div></div><div class="value">97</div></div>
+      <div class="pt-scale"><div class="name">Удовольствие</div><div class="bar-container"><div class="bar" style="width: 37%"></div></div><div class="value">37</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Корни и порядок</h3>
+      <div class="pt-scale"><div class="name">Своя безопасность</div><div class="bar-container"><div class="bar" style="width: 70%"></div></div><div class="value">70</div></div>
+      <div class="pt-scale low"><div class="name">Безопасность мира</div><div class="bar-container"><div class="bar" style="width: 10%"></div></div><div class="value">10</div></div>
+      <div class="pt-scale low"><div class="name">Традиция</div><div class="bar-container"><div class="bar" style="width: 3%"></div></div><div class="value">3</div></div>
+      <div class="pt-scale low"><div class="name">Соблюдение правил</div><div class="bar-container"><div class="bar" style="width: 23%"></div></div><div class="value">23</div></div>
+      <div class="pt-scale low"><div class="name">Не подвести своих</div><div class="bar-container"><div class="bar" style="width: 4%"></div></div><div class="value">4</div></div>
+      <div class="pt-scale low"><div class="name">Знание своего места</div><div class="bar-container"><div class="bar" style="width: 0%"></div></div><div class="value">0</div></div>
+    </div>
+
+    <div class="pt-group">
+      <h3>Забота о других</h3>
+      <div class="pt-scale"><div class="name">Забота о близких</div><div class="bar-container"><div class="bar" style="width: 26%"></div></div><div class="value">26</div></div>
+      <div class="pt-scale"><div class="name">Быть надёжным своим</div><div class="bar-container"><div class="bar" style="width: 26%"></div></div><div class="value">26</div></div>
+      <div class="pt-scale"><div class="name">Забота о людях</div><div class="bar-container"><div class="bar" style="width: 33%"></div></div><div class="value">33</div></div>
+      <div class="pt-scale"><div class="name">Беречь природу</div><div class="bar-container"><div class="bar" style="width: 34%"></div></div><div class="value">34</div></div>
+      <div class="pt-scale low"><div class="name">Принятие разных</div><div class="bar-container"><div class="bar" style="width: 6%"></div></div><div class="value">6</div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="pt-footer">
+  <div class="container">
+    <p>Это карта, не диагноз. Куда с ней идти — отдельный разговор.</p>
+    <p class="em">Числа — перцентили относительно общенаселенческих норм для каждого инструмента. Свою выборку клиентов мы накапливаем — через год добавится вторая шкала «среди наших».</p>
+    <a href="/razbor.html" class="back">← Вернуться к Разбору</a>
+  </div>
+</footer>
+
+</body>
+</html>
