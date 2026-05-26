@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Портрет / Таня Курюкова / 2026-05-26</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f3ee;
+    --paper-soft: #fcfaf6;
+    --ink: #1a1a1a;
+    --graphite: #4a4a4a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #dcd7cf;
+    --line-soft: #e8e3db;
+    --terracotta: #b85842;
+    --terracotta-soft: #f4e6e1;
+    --warn: #b8860b;
+    --warn-soft: #fff8e6;
+    --done: #1f7a1f;
+    --done-soft: #e6f4e6;
+    --fail: #d13438;
+    --fail-soft: #fdecec;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--paper); }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+  }
+  h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; margin-top: 0; }
+  code, .mono { font-family: "JetBrains Mono", monospace; font-size: 0.9em; }
+  a { color: var(--terracotta); }
+
+  /* Шапка */
+  .header { margin-bottom: 48px; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+  .header-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-soft); margin-bottom: 20px; }
+  .header-title { font-size: 32px; line-height: 1.15; margin: 0 0 24px 0; }
+  .header-grid { display: grid; grid-template-columns: 180px 1fr; gap: 6px 16px; font-size: 13px; }
+  .header-grid dt { color: var(--ink-soft); }
+  .header-grid dd { margin: 0; font-family: "JetBrains Mono", monospace; }
+
+  /* Главная ставка */
+  .stake {
+    margin: 32px 0;
+    padding: 28px 32px;
+    border-left: 4px solid var(--terracotta);
+    background: var(--terracotta-soft);
+  }
+  .stake-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--terracotta); font-weight: 600; margin-bottom: 12px; }
+  .stake-quote { font-size: 18px; line-height: 1.45; font-style: italic; margin-bottom: 12px; }
+  .stake-frame { font-size: 14px; color: var(--graphite); }
+
+  /* Секции */
+  section { margin: 56px 0; }
+  .sec-num { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 6px; }
+  .sec-title { font-size: 24px; margin: 0 0 20px 0; }
+
+  /* Таблицы */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  td.mono-cell { font-family: "JetBrains Mono", monospace; }
+  td.num { font-family: "JetBrains Mono", monospace; font-weight: 600; }
+
+  /* Bars в SDT */
+  .bar-cell { position: relative; min-width: 120px; }
+  .bar-track { height: 6px; background: var(--line-soft); border-radius: 3px; position: relative; }
+  .bar-fill { height: 100%; background: var(--ink); border-radius: 3px; }
+  .bar-fill.warn { background: var(--terracotta); }
+  .bar-fill.good { background: var(--done); }
+  .bar-label { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--graphite); margin-top: 4px; }
+
+  /* Карточки */
+  .card { border: 1px solid var(--line); padding: 20px 24px; margin: 14px 0; background: var(--paper-soft); }
+  .card-title { font-size: 15px; font-weight: 600; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: baseline; }
+  .card-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); font-weight: 500; }
+  .card-body { font-size: 14px; line-height: 1.6; }
+  .card-body dt { color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 10px; font-weight: 500; }
+  .card-body dd { margin: 3px 0 0 0; }
+
+  .card.crit-main { border-left: 4px solid var(--terracotta); background: #fffcfa; }
+  .card.crit-main .card-tag { color: var(--terracotta); }
+  .card.recommended { border: 2px solid var(--terracotta); background: var(--paper-soft); }
+  .card.recommended .card-tag { color: var(--terracotta); }
+
+  /* Списки */
+  ol li, ul li { margin: 6px 0; }
+  ol.proc { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.proc li { counter-increment: step; padding: 12px 16px 12px 56px; position: relative; border: 1px solid var(--line); margin: 8px 0; background: var(--paper-soft); }
+  ol.proc li::before {
+    content: counter(step);
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+  ol.proc li.danger::before { background: var(--terracotta); }
+
+  /* Опции */
+  .opts { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 24px 0; }
+  .opt { border: 1px solid var(--line); padding: 22px 26px; background: var(--paper-soft); }
+  .opt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .opt-name { font-size: 16px; font-weight: 600; }
+  .opt-price { font-family: "JetBrains Mono", monospace; font-size: 14px; color: var(--terracotta); font-weight: 600; }
+  .opt-body { font-size: 13px; line-height: 1.6; color: var(--graphite); }
+
+  /* Подвал */
+  .footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
+
+  /* Цитаты */
+  blockquote { margin: 12px 0; padding: 12px 18px; border-left: 3px solid var(--graphite); background: var(--paper-soft); font-style: italic; font-size: 14px; line-height: 1.55; }
+
+  /* Утилитарные */
+  .warn-tag { color: var(--terracotta); font-weight: 600; }
+  .good-tag { color: var(--done); font-weight: 600; }
+
+  /* Парольный гейт */
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: var(--terracotta); }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: var(--terracotta); color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #a04935; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы открыть портрет</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<header class="header">
+  <div class="header-kicker">Портрет · 2026-05-26</div>
+  <h1 class="header-title">Таня Курюкова<br><span style="font-weight: 400; color: var(--graphite); font-size: 22px;">переход собственник → топ</span></h1>
+  <dl class="header-grid">
+    <dt>Старт Альфа-банка</dt><dd>01.06.2026</dd>
+    <dt>Тренер</dt><dd>Алексей Шаповалов</dd>
+    <dt>Базовый замер</dt><dd>WHO-5 48 · PHQ-9 6 · GAD-7 6 (26.05)</dd>
+    <dt>Главный риск</dt><dd>Повтор Reforma-цикла в Альфе</dd>
+  </dl>
+</header>
+
+<div class="stake">
+  <div class="stake-label">Главная ставка</div>
+  <div class="stake-quote">«Потеря ещё одной беременности — 100%, после этого уже ничего не захочется, это даст депрессию до конца жизни.»</div>
+  <div class="stake-frame">Это не «карьера». Это сохранение возможности ещё одной беременности через ЭКО. Альфа — инструмент стабилизации денег и времени для этой главной ставки. Весь план выстроен вокруг неё.</div>
+</div>
+
+<section>
+  <div class="sec-num">I · Профиль базовых потребностей (SDT, BPNSFS)</div>
+  <table>
+    <thead>
+      <tr><th>Потребность</th><th class="bar-cell">Удовлетворение</th><th class="bar-cell">Фрустрация</th><th>Что значит</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Автономия</strong></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill good" style="width: 80%;"></div></div><div class="bar-label">4.00 / 5</div></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill warn" style="width: 60%;"></div></div><div class="bar-label">3.00 / 5 ⚠️</div></td>
+        <td>Asymmetry: «выбираю» + «давит». Пик П14 = 5/5 «давление делать слишком многое»</td>
+      </tr>
+      <tr>
+        <td><strong>Компетентность</strong></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill good" style="width: 85%;"></div></div><div class="bar-label">4.25 / 5</div></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width: 30%;"></div></div><div class="bar-label">1.50 / 5</div></td>
+        <td>Сильная зона. Никаких сомнений в способности справляться</td>
+      </tr>
+      <tr>
+        <td><strong>Связанность</strong></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill good" style="width: 100%;"></div></div><div class="bar-label">5.00 / 5 ⭐</div></td>
+        <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width: 25%;"></div></div><div class="bar-label">1.25 / 5</div></td>
+        <td>Максимум. Близкие — твоя опора, не источник давления</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Лимитирующая потребность:</strong> автономия в форме asymmetry.</p>
+  <p><strong>Системный диагноз:</strong> ты формально выбираешь — и при этом внутри ощущаешь обязанность соответствовать. Это не выгорание — это разрыв между «я хочу» и «я должна». Особенно в личном пространстве: единственное сформулированное желание для себя (ликийская тропа) ты упаковала как продукт для форум-группы.</p>
+  <p><strong>Запрос «не умею принимать такие решения» — это не дефицит компетентности.</strong> Это путаница: чей выбор, твой или внешний.</p>
+</section>
+
+<section>
+  <div class="sec-num">II · Хрупкие точки из Портрета</div>
+  <p>Эти узлы меняют логику плана. Не пересказ всего Портрета — только то, что влияет на работу.</p>
+  <div class="card">
+    <div class="card-title">Жажда результата 98 · Победа 81 · Прямота 91 <span class="card-tag">двигатели</span></div>
+    <div class="card-body">План — серия видимых результатов: договорённость о графике, замеры, отсечки. Не «работа над собой».</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Алкоголь/таблетки 100 · Отрицание 99 · Уход в дела 95 <span class="card-tag warn-tag">главный фоновый риск</span></div>
+    <div class="card-body">Под нагрузкой включится «всё нормально, я разберусь» — это паттерн Reforma. Самоотчёт — через цифру WHO-5, не через ощущение «всё ок».</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Свои мысли 85 · Гибкость в споре 16 · Знание места 3 · Традиция 4 <span class="card-tag">несовместимость с иерархией</span></div>
+    <div class="card-body">В Альфе будет столкновение. Критерий 2 ловит это рано — не дожидаясь, пока сорвёшься.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Самобичевание 83 <span class="card-tag">правило</span></div>
+    <div class="card-body">Промах ≠ провал. Если шаг не сделался — разбор, не уход в самокритику.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">III · Контекст финансов и семьи</div>
+  <table>
+    <tbody>
+      <tr><td>Подушка наличными</td><td class="num">1,5 млн ₽</td></tr>
+      <tr><td>Должны за квартиру</td><td class="num">3,5 млн ₽ — срок неясен</td></tr>
+      <tr><td>Дубай</td><td class="num">вложено 7 млн, ещё 7 нужно</td></tr>
+      <tr><td>Дом в Воронеже</td><td class="num">~4 млн (со слива)</td></tr>
+      <tr><td>Доход мужа</td><td class="num">~60к/мес, снижается</td></tr>
+      <tr><td>Альфа-банк</td><td class="num">500к зп + ~500к/мес квартальный — единственный надёжный поток</td></tr>
+      <tr><td>Беременность</td><td>планируется через ~5 мес, высокая вероятность ЭКО</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Финансовая позиция:</strong> ты НЕ в состоянии «уйти если что». Альфа — структурно необходимый поток на 5+ месяцев до попыток ЭКО.</p>
+</section>
+
+<section>
+  <div class="sec-num">IV · Цена бездействия (если повторишь Reforma-цикл)</div>
+  <table>
+    <tbody>
+      <tr><td>Год чистого дохода</td><td class="num">~6 млн ₽</td></tr>
+      <tr><td>Риск второй потерянной беременности</td><td>твоими словами — 100% депрессии до конца жизни</td></tr>
+      <tr><td>Дополнительная попытка ЭКО</td><td class="num">~1–2 млн ₽</td></tr>
+      <tr><td>Восстановление после депрессии</td><td>полгода–год выхода</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Минимальная цена повтора паттерна:</strong> 5–8 млн ₽ + риск беременности + здоровье.</p>
+  <p><strong>Соотношение к Кварталу Тренировок (600к):</strong> &gt; <strong>10:1</strong> с большим запасом.</p>
+</section>
+
+<section>
+  <div class="sec-num">V · 4 критерия «не моё» в Альфе</div>
+  <h2 class="sec-title">План перехода — главный артефакт сессии</h2>
+  <p>Записан сейчас на холодную голову, чтобы не повторить Reforma — год висения после того, как ты уже всё понимала.</p>
+
+  <div class="card">
+    <div class="card-title">Критерий 1 · Бюрократия <span class="card-tag">июль 2026</span></div>
+    <div class="card-body">
+      <blockquote>«Проделала работу и не получила обратной связи, не знаю что делать дальше, а все заняты.»</blockquote>
+      <dt>Порог</dt><dd>3 раза за июль я отправила работу или предложение, и через 5 рабочих дней не получила ни ответа, ни понимания следующего шага</dd>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Критерий 2 · «Лизать жопу» <span class="card-tag">любой месяц</span></div>
+    <div class="card-body">
+      <blockquote>«Если в течение месяца я 3 раза замечаю, что промолчала и(или) вынужденно согласилась с прямым мнением по решению, с которым внутри не согласна, ради сохранения отношений с конкретным руководителем — это сигнал.»</blockquote>
+      <dt>Порог</dt><dd>3 раза за любой календарный месяц</dd>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Критерий 3 · Вразрез с ценностями <span class="card-tag">любой месяц</span></div>
+    <div class="card-body">
+      <blockquote>«Если в течение месяца я 3 раза получаю отказ на свою инициативу с обоснованием "у нас так не делают / не положено / не твоя зона", без содержательного разбора по существу — это сигнал.»</blockquote>
+      <dt>Порог</dt><dd>3 раза за месяц</dd>
+    </div>
+  </div>
+
+  <div class="card crit-main">
+    <div class="card-title">Критерий 4 · Физика + время на медицину <span class="card-tag">⭐ главный</span></div>
+    <div class="card-body">
+      <blockquote>«Если 2 недели из месяца после старта Альфы мой WHO-5 опускается ниже 40 — это сигнал. Плюс невозможность располагать временем в рабочее время для обследований.»</blockquote>
+      <dt>Порог 4a</dt><dd>WHO-5 &lt; 40 минимум 2 недели из месяца (замер еженедельно в боте Вслух)</dd>
+      <dt>Порог 4b</dt><dd>отказ работодателя в гибком графике для медицинских визитов</dd>
+      <dt>Приоритет</dt><dd><span class="warn-tag">На первом месте.</span> WHO-5 — прокси хронического стресса, который физиологически снижает шанс зачатия. Сработал — стоп, нагрузка снимается прямо сейчас.</dd>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">VI · Процедура: что делать, когда сработал</div>
+  <ol class="proc">
+    <li><strong>Сработал любой критерий</strong> — в тот же день записать дату и факт в дневник (в боте Вслух — летопись срабатываний)</li>
+    <li><strong>Сработали 2 критерия в одном месяце</strong> — планируешь выход. Не «попробую ещё месяц». Параллельно с работой готовишь следующий шаг</li>
+    <li class="danger"><strong>Сработали 3 критерия за месяц</strong> — подаёшь заявление, обозначаешь срок ухода</li>
+  </ol>
+  <p><strong>Прецедент:</strong> Reforma — 1,5 года висения. Эта процедура — страховка от повтора.</p>
+</section>
+
+<section>
+  <div class="sec-num">VII · Quick Win — первые 1-2 недели в Альфе</div>
+
+  <div class="card">
+    <div class="card-title">Действие 1 · Договориться о гибком графике <span class="card-tag">до 14.06.2026</span></div>
+    <div class="card-body">
+      <dt>С кем</dt><dd>твой непосредственный руководитель в Альфе</dd>
+      <dt>Критерий «сделано»</dt><dd>есть договорённость — не 3 раза в неделю офис, а 2; возможность смещать рабочие часы под обследования</dd>
+      <dt>Обоснование</dt><dd>здоровье. Без подробностей про ЭКО</dd>
+      <dt>Сценарии ответа</dt>
+      <dd>✅ «Конечно, без вопросов» → продолжаешь по плану</dd>
+      <dd>⏳ «Обсудим позже» → один напоминатель через 5 дней, потом считается как сигнал</dd>
+      <dd>❌ «У нас политика, все 3 раза» → <span class="warn-tag">ранний сигнал критерия 4</span>, не дожидаешься WHO-5</dd>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Действие 2 · Записывать недельный замер в бот Вслух <span class="card-tag">каждый ПН с 08.06</span></div>
+    <div class="card-body">
+      <dt>Критерий «сделано»</dt><dd>4 замера за июнь</dd>
+      <dt>Что фиксирует</dt><dd>WHO-5 + субъективное наблюдение по 3 критериям</dd>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Действие 3 · Зафиксировать дату собственной отсечки <span class="card-tag">15.06 / 30.06</span></div>
+    <div class="card-body">
+      <dt>15 июня</dt><dd>2 недели после выхода — отсечка #1 (твоя из JTBD)</dd>
+      <dt>30 июня</dt><dd>месяц после выхода — отсечка #2</dd>
+      <dt>Что делаешь</dt><dd>30 минут — читаешь свой список критериев, смотришь — что сработало, что близко к порогу</dd>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-num">VIII · 4 правила срывов</div>
+  <ol>
+    <li><strong>Промах ≠ провал.</strong> Если шаг не сделался — разбор: не сделалось / не так / без эффекта? что мешало конкретно? что меняем? идём дальше — не в самобичевание.</li>
+    <li><strong>Стандарт не падает.</strong> Шаг переносится, не уменьшается. Защита от спирали Медоуз: плохой результат → снижают ожидания → ещё хуже. Туда не идём.</li>
+    <li><strong>Нелинейность ответов — «1 vs 5».</strong> 1 «нет» / молчание = шум. 3 подряд = разбор формулировки. 5 подряд = меняем подход существенно. Между 1 и 5 не катастрофизируем.</li>
+    <li><strong>Внешний форс-мажор — перенос без вины.</strong> Аврал &gt; 3 дней — встреча/шаг переносится. Лучше реальный результат с задержкой, чем пустые руки в срок.</li>
+  </ol>
+</section>
+
+<section>
+  <div class="sec-num">IX · Дальше — три пути</div>
+  <h2 class="sec-title">Решение жду до 1 июня 2026 — твой выход в Альфу</h2>
+
+  <div class="opts">
+    <div class="opt">
+      <div class="opt-head">
+        <div class="opt-name">Опция 1 · Разбор завершён — иду сам</div>
+        <div class="opt-price">0 ₽</div>
+      </div>
+      <div class="opt-body">
+        <strong>Состав:</strong> сегодняшняя диагностика + Портрет + план на 4 недели + критерии «не моё»<br>
+        <strong>Когда выбирать:</strong> если ты чувствуешь, что плана достаточно, и ты сама удержишь процедуру первые 13 недель<br>
+        <strong>Что дальше:</strong> через 2-3 недели коротко свяжусь, спрошу как идёт
+      </div>
+    </div>
+
+    <div class="opt recommended">
+      <div class="opt-head">
+        <div class="opt-name">Опция 2 · Квартал Тренировок + Замер <span class="card-tag">⭐ моя рекомендация</span></div>
+        <div class="opt-price">600 000 ₽ <span style="color: var(--ink-soft); font-weight: 400;">(540 000 ₽ при 100% предоплате)</span></div>
+      </div>
+      <div class="opt-body">
+        <strong>Состав:</strong> 3 месяца Тренировок — еженедельная встреча 1,5ч + асинхрон между; Замер в конце квартала (квартальная сверка по системной карте, 2-3 встречи)<br>
+        <strong>Оплата:</strong> квартал вперёд (предоплата) либо 50/50 (задаток + остаток через 45 дней)<br>
+        <strong>Когда выбирать:</strong> ты понимаешь, что нужен внешний контр-голос с компетенцией, который не позволит «обвести» критерии — как было в Reforma. Первые 13 недель Альфы — самые рискованные<br>
+        <strong>Почему рекомендую:</strong> твоя главная ставка — беременность — требует, чтобы критерии не были «обведены». В Reforma не было процедуры, и ты висела год. Сейчас процедура есть, но без внешнего голоса риск её нарушить высок: <span class="mono">Алкоголь/таблетки 100 + Отрицание 99</span> = «всё нормально» до поломки. Тренер раз в неделю проверяет цифру, не интерпретацию. Это страховка.
+      </div>
+    </div>
+
+    <div class="opt">
+      <div class="opt-head">
+        <div class="opt-name">Опция 3 · Год доверенного советника</div>
+        <div class="opt-price">3 450 000 ₽ <span style="color: var(--ink-soft); font-weight: 400;">(3 105 000 ₽ при полной предоплате)</span></div>
+      </div>
+      <div class="opt-body">
+        <strong>Состав:</strong> Разбор + 4 квартала Тренировок + 4 Замера<br>
+        <strong>Альтернатива:</strong> поквартально 776 000 × 4 (со скидкой) или 862 500 × 4 (без)<br>
+        <strong>Когда выбирать:</strong> избыточно для этапа. Если первый Квартал даст ясность — можно открыть на финальной встрече
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 24px; font-size: 13px; color: var(--graphite);"><em>Помесячная оплата не предусмотрена. Причина — финансовая независимость каждого следующего платежа от моего суждения. На квартале вперёд я говорю точнее, ты получаешь больше за те же деньги. Это часть продукта.</em></p>
+</section>
+
+<div class="footer">
+  Документ собран на Стартовом Разборе 26.05.2026 на основе JTBD-интервью 21.05.2026, Портрета бота Вслух (26.05.2026), опросника BPNSFS (24 пункта, 26.05.2026) и недельного замера в боте Вслух (26.05.2026: WHO-5 48, PHQ-9 6, GAD-7 6).<br>
+  <span class="mono">doc.id · portrait.tanya-kuryukova.2026-05-26</span>
+</div>
+
+</div>
+
+<script>
+  // Парольный гейт. Пароль: 010626 (дата старта Альфы)
+  const PWD_HASH = "b90e97f4eae90b89fae27840e851ea9802d84f8d512a58bf5460f926b5ab4717";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("tanya-unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  if (sessionStorage.getItem("tanya-unlocked") === "1") {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("content").classList.add("unlocked");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+</script>
+
+</body>
+</html>
