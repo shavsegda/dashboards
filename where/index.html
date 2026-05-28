@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Где я сейчас</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
+.progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: #1a1a1a; transition: width 0.3s ease; width: 0%; }
+.progress-text { font-size: 12px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+
+main { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
+h1 { font-size: 26px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
+h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
+p { margin-bottom: 12px; color: #444; }
+.lead { font-size: 16px; color: #555; margin-bottom: 24px; }
+.note { font-size: 13px; color: #888; }
+
+button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
+button:hover { background: #333; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d4cfc2; padding: 12px 24px; }
+button.secondary:hover { background: #ebe7dc; }
+.actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+.q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
+.q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.q-text { font-size: 18px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+.q-instr { font-size: 14px; color: #666; margin-bottom: 16px; font-style: italic; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 14px 16px; border: 1px solid #e2dfd6; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: #fff; user-select: none; }
+.q-option:hover { border-color: #1a1a1a; background: #fafaf6; }
+.q-option.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+.result-need { padding: 16px 0; border-bottom: 1px solid #f0ede6; }
+.result-need:last-child { border-bottom: 0; }
+.result-need-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+.result-need-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.result-need-label { font-size: 13px; color: #666; min-width: 130px; }
+.result-need-bar { flex: 1; height: 8px; background: #e2dfd6; border-radius: 4px; overflow: hidden; position: relative; }
+.result-need-bar-fill { height: 100%; transition: width 0.6s ease; }
+.bar-sat { background: #2d6a4f; }
+.bar-frust { background: #b45309; }
+.result-need-val { font-size: 14px; font-weight: 600; min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: start; font-size: 14px; }
+.history-date { color: #888; }
+.history-pills { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #555; font-variant-numeric: tabular-nums; }
+
+.empty { text-align: center; padding: 40px 20px; color: #888; }
+.sync-status { font-size: 12px; color: #4a8c5e; }
+.sync-status.error { color: #b91c1c; }
+
+@media (max-width: 600px) {
+  main { padding: 24px 16px 80px; }
+  h1 { font-size: 22px; }
+  .q-card { padding: 20px 16px; }
+  .q-text { font-size: 16px; }
+  .result-need-label { min-width: 110px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+const TELEGRAM_USER_ID = tg?.initDataUnsafe?.user?.id;
+
+// === Идентификатор клиента ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  if (TELEGRAM_USER_ID) return "tg_" + TELEGRAM_USER_ID;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+const STORAGE_KEY = "where_v1_" + CLIENT_ID;
+
+// === Supabase client ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// === Шкала ответов 1–5 ===
+const SCALE = [
+  {label: 'Совершенно неверно', value: 1},
+  {label: 'Скорее неверно', value: 2},
+  {label: 'Ни верно, ни неверно', value: 3},
+  {label: 'Скорее верно', value: 4},
+  {label: 'Полностью верно', value: 5}
+];
+
+// === BPNSFS-ru v2 — смешанный порядок ===
+// Порядок намеренно перемешан, чтобы клиент не угадывал шкалу.
+// Группировка по шкалам — только в логике подсчёта.
+const QUESTIONS = [
+  /*  1 */ 'Я чувствую выбор и свободу в том, чем занимаюсь.',
+  /*  2 */ 'Большая часть моих дел ощущается как «должен».',
+  /*  3 */ 'Я чувствую уверенность в том, что могу хорошо справляться с делами.',
+  /*  4 */ 'У меня есть серьёзные сомнения, смогу ли я справляться с делами хорошо.',
+  /*  5 */ 'Я чувствую, что люди, которые мне дороги, тоже дорожат мной.',
+  /*  6 */ 'Я чувствую себя исключённым из группы, к которой хочу принадлежать.',
+  /*  7 */ 'Я чувствую, что мои решения отражают то, чего я действительно хочу.',
+  /*  8 */ 'Я чувствую себя вынужденным делать многое, чего бы сам не выбрал.',
+  /*  9 */ 'Я чувствую себя способным в том, что делаю.',
+  /* 10 */ 'Я разочарован многими своими результатами.',
+  /* 11 */ 'Я чувствую связь с людьми, которые заботятся обо мне и о ком забочусь я.',
+  /* 12 */ 'Я чувствую, что важные для меня люди холодны и отстранены.',
+  /* 13 */ 'Я чувствую, что мой выбор выражает то, кто я есть на самом деле.',
+  /* 14 */ 'Я чувствую давление делать слишком многое.',
+  /* 15 */ 'Я чувствую себя компетентным, чтобы достигать своих целей.',
+  /* 16 */ 'Я чувствую неуверенность в своих способностях.',
+  /* 17 */ 'Я чувствую близость и связь с людьми, которые важны для меня.',
+  /* 18 */ 'У меня есть ощущение, что людям, с которыми я провожу время, я не нравлюсь.',
+  /* 19 */ 'Я чувствую, что занимаюсь тем, что мне действительно интересно.',
+  /* 20 */ 'Мои повседневные дела ощущаются как цепь обязательств.',
+  /* 21 */ 'Я чувствую, что могу довести до конца сложные задачи.',
+  /* 22 */ 'Я чувствую себя неудачником из-за ошибок, которые делаю.',
+  /* 23 */ 'Я ощущаю тепло в общении с людьми, с которыми провожу время.',
+  /* 24 */ 'Я чувствую, что мои отношения всего лишь поверхностные.'
+];
+
+// Индексы шкал (1-based, как в опроснике)
+const SCALE_INDEX = {
+  autonomy_satisfaction:   [1, 7, 13, 19],
+  autonomy_frustration:    [2, 8, 14, 20],
+  competence_satisfaction: [3, 9, 15, 21],
+  competence_frustration:  [4, 10, 16, 22],
+  relatedness_satisfaction:[5, 11, 17, 23],
+  relatedness_frustration: [6, 12, 18, 24]
+};
+
+// === Состояние ===
+const state = {
+  screen: 'welcome',
+  questionIdx: 0,
+  answers: {},  // { q1: 4, q2: 2, ... }
+  totalQuestions: QUESTIONS.length,
+  syncStatus: '',
+  syncMessage: ''
+};
+
+let history = [];
+
+// === Supabase: история ===
+async function loadHistoryFromSupabase() {
+  try {
+    const { data, error } = await sb
+      .from("quarterly_bpnsfs")
+      .select("checkin_date, completed_at, autonomy_satisfaction, autonomy_frustration, competence_satisfaction, competence_frustration, relatedness_satisfaction, relatedness_frustration, need_satisfaction_total, need_frustration_total")
+      .eq("client_id", CLIENT_ID)
+      .order("checkin_date", { ascending: false })
+      .limit(8);
+    if (error) {
+      console.error("Supabase load failed:", error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    console.error("Supabase load exception:", e);
+    return [];
+  }
+}
+
+// === Отправка боту ===
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') {
+    state.syncStatus = 'error';
+    state.syncMessage = 'Сверка заполнена, но открой её через бота — иначе результат не сохранится.';
+    return false;
+  }
+  try {
+    tg.sendData(JSON.stringify({
+      action: 'where_assessment',
+      payload: record
+    }));
+    state.syncStatus = 'ok';
+    state.syncMessage = 'Сверка отправлена боту. Ответ придёт в чат через секунду.';
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    state.syncStatus = 'error';
+    state.syncMessage = 'Не удалось отправить боту: ' + e.message;
+    return false;
+  }
+}
+
+// === Прогресс ===
+function answeredCount() { return Object.keys(state.answers).length; }
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'question') { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  const pct = (answeredCount() / state.totalQuestions) * 100;
+  fill.style.width = pct + '%';
+  text.textContent = 'Где я сейчас';
+  count.textContent = (answeredCount()) + ' / ' + state.totalQuestions;
+}
+
+// === Рендер ===
+const app = document.getElementById('app');
+
+function renderWelcome() {
+  const inTelegram = !!tg;
+  const tgIndicator = inTelegram
+    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
+    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
+  app.innerHTML = `
+    <h1>Где я сейчас</h1>
+    ${tgIndicator}
+    <p class="lead">Короткий срез по трём опорам: свобода, эффективность, близость. 24 утверждения, 5–7 минут.</p>
+    <p>Не оцениваем тебя. Смотрим, где сейчас сильно, где жмёт. Помогает прийти на Разбор уже зная, на чём фокусироваться.</p>
+    <p class="note">Лучше делать раз в квартал. Все ответы привязаны к твоему профилю в боте.</p>
+    <div class="actions">
+      <button onclick="start()">Начать</button>
+      ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderQuestion() {
+  const idx = state.questionIdx;
+  const qNum = idx + 1;
+  const q = QUESTIONS[idx];
+  const key = 'q' + qNum;
+  const selected = state.answers[key];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">Утверждение ${qNum} из ${state.totalQuestions}</div>
+      ${idx === 0 ? '<div class="q-instr">Оцени каждое утверждение — насколько оно было верным для тебя за последние несколько месяцев. Отвечай быстро, первой реакцией.</div>' : ''}
+      <div class="q-text">${q}</div>
+      <div class="q-options">
+        ${SCALE.map(s => `
+          <div class="q-option ${selected === s.value ? 'selected' : ''}" onclick="answer(${s.value})">
+            <span class="q-option-text">${s.label}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${idx === 0 ? '' : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// Округляем шкалу до 0.01
+function avg(indices) {
+  const vals = indices.map(i => state.answers['q' + i]).filter(v => v !== undefined);
+  if (!vals.length) return null;
+  const m = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return Math.round(m * 100) / 100;
+}
+
+function avgGroup(groupKey) {
+  // groupKey: 'satisfaction' или 'frustration'
+  const all = [];
+  for (const [k, indices] of Object.entries(SCALE_INDEX)) {
+    if (k.endsWith(groupKey)) all.push(...indices);
+  }
+  const vals = all.map(i => state.answers['q' + i]).filter(v => v !== undefined);
+  if (!vals.length) return null;
+  const m = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return Math.round(m * 100) / 100;
+}
+
+function computeRecord() {
+  return {
+    checkin_date: new Date().toISOString().slice(0, 10),
+    completed_at: new Date().toISOString(),
+    autonomy_satisfaction:   avg(SCALE_INDEX.autonomy_satisfaction),
+    autonomy_frustration:    avg(SCALE_INDEX.autonomy_frustration),
+    competence_satisfaction: avg(SCALE_INDEX.competence_satisfaction),
+    competence_frustration:  avg(SCALE_INDEX.competence_frustration),
+    relatedness_satisfaction:avg(SCALE_INDEX.relatedness_satisfaction),
+    relatedness_frustration: avg(SCALE_INDEX.relatedness_frustration),
+    need_satisfaction_total: avgGroup('satisfaction'),
+    need_frustration_total:  avgGroup('frustration'),
+    answers: { ...state.answers },
+    questionnaire_version: 'v2'
+  };
+}
+
+// Ширина бара: значение 1.0–5.0 → 0–100%
+function barWidth(v) {
+  if (v === null || v === undefined) return 0;
+  return Math.max(0, Math.min(100, ((v - 1) / 4) * 100));
+}
+
+function renderResult(record) {
+  const needs = [
+    {
+      title: 'Свобода (автономия)',
+      sat: record.autonomy_satisfaction,
+      frust: record.autonomy_frustration,
+    },
+    {
+      title: 'Эффективность (компетентность)',
+      sat: record.competence_satisfaction,
+      frust: record.competence_frustration,
+    },
+    {
+      title: 'Близость (связанность)',
+      sat: record.relatedness_satisfaction,
+      frust: record.relatedness_frustration,
+    },
+  ];
+
+  const syncBlock = state.syncStatus
+    ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
+    : '';
+
+  const needsHtml = needs.map(n => `
+    <div class="result-need">
+      <div class="result-need-title">${n.title}</div>
+      <div class="result-need-row">
+        <span class="result-need-label">Удовлетворённость</span>
+        <div class="result-need-bar"><div class="result-need-bar-fill bar-sat" style="width:${barWidth(n.sat)}%"></div></div>
+        <span class="result-need-val">${n.sat ?? '—'}</span>
+      </div>
+      <div class="result-need-row">
+        <span class="result-need-label">Фрустрация</span>
+        <div class="result-need-bar"><div class="result-need-bar-fill bar-frust" style="width:${barWidth(n.frust)}%"></div></div>
+        <span class="result-need-val">${n.frust ?? '—'}</span>
+      </div>
+    </div>
+  `).join('');
+
+  app.innerHTML = `
+    <h1>Твоя сверка</h1>
+    <p class="lead">Запись от ${new Date(record.completed_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
+    ${syncBlock}
+    <div class="result-card">${needsHtml}</div>
+    <p class="note">Шкала 1.0–5.0. Удовлетворённость — насколько эта опора сейчас в порядке. Фрустрация — насколько эта опора сейчас под давлением. Это не оценка тебя, а срез момента.</p>
+    ${history.length > 0 ? `
+      <h2>Прошлые сверки</h2>
+      <div>${renderHistoryList(history)}</div>
+    ` : '<p class="note">Это твоя первая сверка. Возвращайся раз в квартал — увидишь динамику.</p>'}
+    <div class="actions">
+      <button class="secondary" onclick="renderWelcome()">На главную</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderHistoryList(records) {
+  return records.slice().reverse().map(r => {
+    const d = new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', {day:'2-digit', month:'short', year:'numeric'});
+    const fmt = v => v === null || v === undefined ? '—' : v.toFixed(2);
+    return `
+      <div class="history-row">
+        <div class="history-date">${d}</div>
+        <div class="history-pills">
+          <div>Свобода: ${fmt(r.autonomy_satisfaction)} / ${fmt(r.autonomy_frustration)}</div>
+          <div>Эффективность: ${fmt(r.competence_satisfaction)} / ${fmt(r.competence_frustration)}</div>
+          <div>Близость: ${fmt(r.relatedness_satisfaction)} / ${fmt(r.relatedness_frustration)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showHistory() {
+  app.innerHTML = `
+    <h1>История сверок</h1>
+    <p class="lead">Все твои сверки. Формат: удовлетворённость / фрустрация.</p>
+    ${history.length ? renderHistoryList(history) : '<div class="empty">Сверок пока нет.</div>'}
+    <div class="actions"><button class="secondary" onclick="renderWelcome()">На главную</button></div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+function start() {
+  state.screen = 'question';
+  state.questionIdx = 0;
+  state.answers = {};
+  state.syncStatus = '';
+  state.syncMessage = '';
+  renderQuestion();
+}
+
+function answer(value) {
+  const key = 'q' + (state.questionIdx + 1);
+  state.answers[key] = value;
+  if (state.questionIdx < QUESTIONS.length - 1) {
+    state.questionIdx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.questionIdx > 0) {
+    state.questionIdx--;
+  }
+  renderQuestion();
+}
+
+async function finish() {
+  state.screen = 'result';
+  const record = computeRecord();
+
+  try { localStorage.setItem(STORAGE_KEY + '_last', JSON.stringify(record)); } catch (e) {}
+
+  sendToBot(record);
+  renderResult(record);
+
+  loadHistoryFromSupabase().then(h => {
+    history = h;
+    if (state.screen === 'result') renderResult(record);
+  }).catch(() => {});
+}
+
+// === СТАРТ ===
+(async () => {
+  history = await loadHistoryFromSupabase();
+  renderWelcome();
+})();
+</script>
+</body>
+</html>
