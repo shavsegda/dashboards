@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Диагностика / 2026-05-27</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function() {
+  var PASSWORD = "metelkin27";
+  var KEY = "metelkin-2026-05-27-auth";
+  if (sessionStorage.getItem(KEY) === "ok") return;
+  document.documentElement.style.visibility = "hidden";
+  function ask() {
+    var input = window.prompt("Пароль для открытия портрета:");
+    if (input === null) {
+      document.documentElement.innerHTML = "<body style='font-family:sans-serif;padding:32px;color:#444;'>Доступ только по паролю. Перезагрузите страницу, чтобы ввести пароль снова.</body>";
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+    if (input === PASSWORD) {
+      sessionStorage.setItem(KEY, "ok");
+      document.documentElement.style.visibility = "visible";
+    } else {
+      window.alert("Неверный пароль");
+      ask();
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ask);
+  } else {
+    ask();
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+    --focus: #0057d9;
+    --main: #d13438;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    font-feature-settings: "kern", "calt";
+  }
+
+  /* Шапка */
+  .header { margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid var(--ink); }
+  .header-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-soft); margin-bottom: 20px; }
+  .header-title { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 24px 0; }
+  .header-grid { display: grid; grid-template-columns: 90px 1fr; gap: 4px 16px; font-size: 13px; color: var(--ink); }
+  .header-grid dt { color: var(--ink-soft); text-transform: lowercase; }
+  .header-grid dd { margin: 0; }
+
+  /* Карта пути */
+  .pathway { margin: 40px 0 48px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .pathway-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+  .pathway-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); }
+  .pathway-legend { display: flex; gap: 14px; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.04em; }
+  .pathway-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .pathway-legend-item::before { content: ''; display: block; width: 10px; height: 10px; border: 1px solid var(--ink-faint); background: #fff; }
+  .pathway-legend-item.done::before { background: var(--ink); border-color: var(--ink); }
+  .pathway-legend-item.current::before { background: var(--accent); border-color: var(--accent); }
+  .pathway-legend-item.focus::before { border: 1px solid var(--accent); background: #fff; }
+  .pathway-track { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .pathway-step { display: flex; flex-direction: column; align-items: center; padding: 6px 0 8px; border-right: 1px solid var(--line); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+  .pathway-step:last-child { border-right: none; }
+  .pathway-step::before { content: ''; width: 11px; height: 11px; border: 1px solid var(--ink-faint); background: #fff; display: block; margin-bottom: 8px; }
+  .pathway-step.done::before { background: var(--ink); border-color: var(--ink); }
+  .pathway-step.done { color: var(--ink); }
+  .pathway-step.current::before { background: var(--accent); border-color: var(--accent); }
+  .pathway-step.current { color: var(--accent); font-weight: 600; background: var(--accent-soft); }
+  .pathway-step.focus::before { background: #fff; border: 1px solid var(--accent); }
+  .pathway-step.focus { color: var(--accent); }
+  .pathway-caption { margin-top: 18px; font-size: 12px; color: var(--ink); text-align: center; line-height: 1.5; }
+  .pathway-caption .here { color: var(--accent); font-weight: 600; letter-spacing: 0.02em; }
+
+  /* Секции */
+  section { margin: 56px 0; }
+  .sec-label { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; letter-spacing: 0.05em; }
+  section > h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 20px 0; line-height: 1.25; }
+  p { margin: 12px 0; }
+
+  /* 4 сущности */
+  .entries { border-top: 1px solid var(--line); margin: 16px 0; }
+  .entry { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 12px 24px; align-items: start; }
+  .entry-name { font-weight: 600; font-size: 14px; }
+  .entry-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); padding: 2px 8px; border: 1px solid var(--line); white-space: nowrap; align-self: start; }
+  .entry-tag.main { color: var(--main); border-color: var(--main); }
+  .entry-body { grid-column: 1 / -1; font-size: 14px; color: var(--ink); }
+
+  /* Выделенный блок */
+  .highlight { margin: 32px 0; padding: 20px 24px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+  .highlight-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+  .highlight-body { font-size: 14px; line-height: 1.65; }
+
+  .conclusion { margin-top: 32px; padding: 16px 20px; background: #fafafa; border: 1px solid var(--line); }
+  .conclusion-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+
+  /* Три действия */
+  .step { margin: 24px 0; border: 1px solid var(--line); }
+  .step-head { padding: 14px 20px; background: #fafafa; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .step-num { font-size: 11px; color: var(--ink-soft); letter-spacing: 0.08em; }
+  .step-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .step-body { padding: 20px; }
+  .step-grid { display: grid; grid-template-columns: 140px 1fr; gap: 10px 20px; font-size: 13px; margin: 0 0 16px 0; }
+  .step-grid dt { color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding-top: 2px; }
+  .step-grid dd { margin: 0; }
+
+  .tracker { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line); }
+  .tracker-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .tracker-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; font-size: 12px; }
+  .tracker-row label { color: var(--ink-soft); display: inline-flex; align-items: center; gap: 8px; }
+
+  /* Формы */
+  input[type="text"], input[type="date"], input[type="number"], select, textarea { font-family: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 0; }
+  input[type="number"] { width: 56px; text-align: center; }
+  input[type="date"] { min-width: 130px; }
+  textarea { width: 100%; resize: vertical; min-height: 48px; line-height: 1.5; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--focus); }
+
+  /* Метрики */
+  .metrics .field { display: grid; grid-template-columns: 50px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .metrics .field:first-child { border-top: 1px solid var(--line); }
+  .metrics .field-num { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.05em; }
+  .metrics input { width: 100%; padding: 6px 0; border: none; font-size: 14px; color: var(--ink); background: transparent; }
+  .metrics input:focus { border: none; }
+  .metrics input::placeholder { color: var(--ink-faint); }
+
+  /* Трекер серии */
+  .streak { display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: #fafafa; border: 1px solid var(--line); margin: 16px 0 24px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .streak-label { text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); font-size: 11px; font-weight: 500; }
+  .streak-circles { display: flex; gap: 4px; }
+  .streak-circle { width: 14px; height: 14px; border: 1px solid var(--ink-faint); background: #fff; transition: all 0.15s; }
+  .streak-circle.filled { background: var(--ink); border-color: var(--ink); }
+  .streak-count { color: var(--ink-soft); margin-left: auto; font-size: 11px; letter-spacing: 0.05em; }
+
+  /* Сверки */
+  .weeks { border-top: 1px solid var(--line); }
+  .week { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .week-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; font-size: 13px; }
+  .week-num { font-weight: 600; letter-spacing: 0.02em; }
+  .week-date-wrap { font-size: 11px; color: var(--ink-soft); letter-spacing: 0.05em; }
+  .week-prompts { display: grid; gap: 12px; }
+  .week-prompt label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+  .week-prompt textarea { min-height: 32px; }
+
+  /* Развилка */
+  .fork { border-top: 1px solid var(--line); }
+  .fork-item { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start; }
+  .fork-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.1em; padding-top: 2px; }
+  .fork-body { font-size: 14px; }
+
+  /* Карта следующих шагов */
+  .map { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  .map th, .map td { text-align: left; vertical-align: top; padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line); }
+  .map th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); font-weight: 500; border-bottom: 1px solid var(--ink); padding-bottom: 10px; }
+  .map td.num { font-variant-numeric: tabular-nums; }
+
+  /* Шкала */
+  .shkala { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .shkala th, .shkala td { text-align: left; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .shkala th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); font-weight: 500; border-bottom: 1px solid var(--ink); }
+  .shkala td:not(:first-child), .shkala th:not(:first-child) { text-align: center; }
+  .shkala input { width: 56px; }
+  .shkala-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .shkala input { font-variant-numeric: tabular-nums; }
+  .shkala-bar { width: 64px; height: 6px; background: #fff; border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .shkala-bar::before, .shkala-bar::after { content: ''; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+  .shkala-bar::before { left: 50%; }
+  .shkala-bar::after { display: none; }
+  .shkala-fill { display: block; height: 100%; background: var(--ink); width: 0; transition: width 0.2s; position: relative; z-index: 1; }
+
+  /* Узлы портрета */
+  .nodes { border-top: 1px solid var(--line); margin: 16px 0; }
+  .node { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .node-key { font-weight: 600; color: var(--ink); }
+  .node-key .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .node-body { color: var(--ink); margin-top: 4px; }
+
+  /* План на 4 недели */
+  .plan-week { border: 1px solid var(--line); margin: 16px 0; }
+  .plan-week-head { padding: 12px 18px; background: #fafafa; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+  .plan-week-title { font-weight: 600; }
+  .plan-week-dates { color: var(--ink-soft); font-size: 11px; letter-spacing: 0.05em; }
+  .plan-week-body { padding: 14px 18px; }
+  .plan-focus { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 8px; }
+  .plan-focus span { color: var(--ink); text-transform: none; letter-spacing: normal; font-weight: 500; }
+  .plan-items { list-style: none; padding: 0; margin: 8px 0 0; }
+  .plan-items li { padding: 6px 0; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .plan-items input[type="checkbox"] { margin: 5px 0 0; }
+
+  /* Правила срывов */
+  details.rules { border: 1px solid var(--line); padding: 0; margin: 24px 0; }
+  details.rules summary { padding: 14px 20px; background: #fafafa; cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+  details.rules summary::marker { color: var(--ink-soft); }
+  details.rules .rules-body { padding: 14px 24px 20px; font-size: 13px; }
+  details.rules .rules-body h4 { font-size: 13px; margin: 18px 0 6px; }
+  details.rules .rules-body h4:first-child { margin-top: 0; }
+
+  /* Цена бездействия */
+  .price { padding: 20px 24px; background: #fafafa; border: 1px solid var(--line); margin: 24px 0; }
+  .price-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 10px; font-weight: 600; }
+  .price-body { font-size: 14px; }
+  .price-quote { border-left: 3px solid var(--main); padding: 8px 16px; margin: 14px 0; color: var(--ink); font-style: italic; }
+
+  /* Опции */
+  .options { display: grid; gap: 14px; margin: 16px 0; }
+  .option { border: 1px solid var(--line); padding: 18px 22px; }
+  .option.recommended { border-color: var(--accent); border-width: 2px; background: var(--accent-soft); }
+  .option-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .option-title { font-size: 15px; font-weight: 600; }
+  .option-badge { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 600; padding: 2px 8px; border: 1px solid var(--accent); }
+  .option-price { font-size: 13px; color: var(--ink); font-weight: 500; margin: 4px 0; }
+  .option-body { font-size: 13px; color: var(--ink); line-height: 1.6; }
+  .option-when { color: var(--ink-soft); font-size: 12px; margin-top: 6px; }
+
+  .recommendation { padding: 18px 22px; border: 1px solid var(--ink); background: #fff; margin: 18px 0; }
+  .recommendation-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink); font-weight: 600; margin-bottom: 8px; }
+  .recommendation-body { font-size: 14px; }
+
+  .deadline { padding: 14px 20px; background: var(--accent-soft); border-left: 3px solid var(--accent); margin: 18px 0; font-size: 13px; }
+
+  /* Подвал */
+  .footer { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--ink); font-size: 12px; color: var(--ink-soft); line-height: 1.7; }
+  .footer p { margin: 8px 0; }
+  .footer .meta-hash { margin-top: 20px; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Панель */
+  .toolbar { position: fixed; top: 16px; right: 16px; display: flex; gap: 4px; z-index: 10; }
+  .btn { font-family: inherit; font-size: 11px; padding: 6px 12px; border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--ink); text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.12s; }
+  .btn:hover { border-color: var(--ink); }
+  .btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+
+  .save-indicator { position: fixed; bottom: 16px; right: 16px; background: var(--ink); color: #fff; padding: 6px 14px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+  .save-indicator.show { opacity: 1; }
+
+  @media print {
+    .toolbar, .save-indicator { display: none; }
+    body { padding: 24px; max-width: 170mm; font-size: 10pt; }
+    .step, .week, .entry, .highlight, .plan-week, .option { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 620px) {
+    body { padding: 32px 20px 80px; font-size: 13px; }
+    .header-title { font-size: 22px; }
+    .step-grid, .fork-item, .metrics .field { grid-template-columns: 1fr; gap: 4px; }
+    .step-grid dt { padding-top: 10px; }
+    .header-grid { grid-template-columns: 80px 1fr; }
+    .toolbar { top: 8px; right: 8px; }
+    .pathway-track { padding: 0 6px; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="exportData()">Файл</button>
+  <button class="btn" onclick="window.print()">PDF</button>
+  <button class="btn" onclick="clearAll()">Стереть</button>
+</div>
+
+<div class="save-indicator" id="saveIndicator">Сохранено</div>
+
+<div class="header">
+  <div class="header-kicker">Диагностика · 2026-05-27</div>
+  <h1 class="header-title">Алексей Метелкин / портрет собственника</h1>
+  <dl class="header-grid">
+    <dt>от</dt><dd>Алексей Шаповалов</dd>
+    <dt>формат</dt><dd>одна страница по итогу сессии</dd>
+    <dt>срок решения</dt><dd>до понедельника 01.06.2026</dd>
+    <dt>контакт</dt><dd>в течение 2 недель — короткая сверка по шагам</dd>
+  </dl>
+</div>
+
+<div class="pathway">
+  <div class="pathway-head">
+    <div class="pathway-label">Путь перехода · 12 шагов</div>
+    <div class="pathway-legend">
+      <span class="pathway-legend-item done">пройдено</span>
+      <span class="pathway-legend-item current">сейчас</span>
+      <span class="pathway-legend-item focus">следующее</span>
+    </div>
+  </div>
+  <div class="pathway-track">
+    <div class="pathway-step done">01</div>
+    <div class="pathway-step done">02</div>
+    <div class="pathway-step done">03</div>
+    <div class="pathway-step current">04</div>
+    <div class="pathway-step focus">05</div>
+    <div class="pathway-step">06</div>
+    <div class="pathway-step focus">07</div>
+    <div class="pathway-step">08</div>
+    <div class="pathway-step">09</div>
+    <div class="pathway-step">10</div>
+    <div class="pathway-step">11</div>
+    <div class="pathway-step">12</div>
+  </div>
+  <div class="pathway-caption">
+    <span class="here">ты здесь:</span> сигнал, диагноз и принятие, что возврата не будет (01–03) — закрыты. Сейчас решаешь, кем быть дальше (04), и параллельно открыты — переопределение метрик (05) и поиск человека в орбите (07).
+  </div>
+</div>
+
+<section>
+  <div class="sec-label">§ I</div>
+  <h2>Что с тобой сейчас</h2>
+  <p>Ты на переходе из материальной ветки в смысловую. Материальная закрыта: заработал, что планировал, доход от собственных средств подравнивается с клиентским, через 2 года расти не хочешь.</p>
+  <p>Духовная ветка глубокая — 8 лет медитации, Куприянов, Тель-Авив, Уилбер, ретриты. Но видения через 2 года нет — на прямой вопрос ответил «нет ответа».</p>
+  <p>Внутри две части: одна — «гора фантиков, помрёшь, будешь хохотать над собой». Вторая — «давайте попробуем интегрировать осознанность в работу». Это твой собственный синтез как направление. Не разделить две ветки, а соединить.</p>
+  <p>Главная единица измерения работы — твоя, ты сам назвал на сессии: <strong>часы свободы и ощущение свободности</strong>.</p>
+</section>
+
+<section>
+  <div class="sec-label">§ II</div>
+  <h2>Где корень</h2>
+
+  <div class="entries">
+    <div class="entry">
+      <div class="entry-name">Бизнес</div>
+      <div class="entry-tag">частично</div>
+      <div class="entry-body">50% операционка / 15% стратегия / 35% торговля. Документооборот нарастает последние месяцы. Если операционку отдать — бизнес будет жить, доходность чуть ниже, устойчивость выше. То есть уйти физически можешь — но не уходишь.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Люди вокруг тебя</div>
+      <div class="entry-tag main">главное</div>
+      <div class="entry-body">Один крупный клиент — психологическая зависимость от его одобрения. «Один из самых [важных] людей в городе», «ощущение избранности», «единственный с кем побаиваюсь». Финансовая зависимость ~30%, статусная почти полная. Никого «в орбите по горизонтали», с кем возникает резонанс, — нет, и никогда не было живого.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Что они могут в принципе</div>
+      <div class="entry-tag main">по ключевому</div>
+      <div class="entry-body">Главный клиент по ценностям не близок — «оранжевый или красный по спиральной динамике». Брокеры, падл, Куприянов — все каналы дают «социально классных», но не ровню по горизонтали. Уилбер был, но через книги, абстрактным.</div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-name">Внешний мир</div>
+      <div class="entry-tag">фоновое</div>
+      <div class="entry-body">Рынок волатильный, агрессивная торговля. Документооборот растёт. Близкая ровня в орбите не появляется по инерции.</div>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <div class="highlight-label">Твои собственные метрики</div>
+    <div class="highlight-body">Ты сам назвал на сессии: «лучший ROI для меня — количество свободных часов и ощущение свободности». Прежние метрики обесцениваются — «гора фантиков». Новые ещё не операционализированы, но уже названы: <strong>часы свободы</strong>, <strong>ощущение свободности (1–10)</strong>, <strong>% операционки</strong>.</div>
+  </div>
+
+  <div class="conclusion">
+    <div class="conclusion-label">Если одной фразой</div>
+    Автономия удерживается извне — одобрением и операционкой как каналом подкрепления. В материальной ветке этот механизм даёт результат, ты его легитимизировал. В духовно-смысловой не работает: там нужен резонансный человек в орбите по горизонтали, которого никогда не было.
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ II.B</div>
+  <h2>Главный поведенческий механизм</h2>
+  <div class="highlight" style="border-left-color: var(--main); background: #fff5f5;">
+    <div class="highlight-label" style="color: var(--main);">Что ловится в моменте</div>
+    <div class="highlight-body"><strong>Включаешь канал подкрепления, когда не видишь видения.</strong> В отсутствие ясного «куда хочу» — бессознательно берёшь операционку, привязываешься к одобрению одного важного человека, ищешь «социально классных чуваков». Все эти каналы дают «избранность», «значимость», «авторитет» — но не дают опоры внутри.</div>
+  </div>
+  <p><strong>Как ловится:</strong></p>
+  <ul>
+    <li>Замечаешь себя в новой оперативной задаче, которую не обязательно было брать</li>
+    <li>Звонок от важного клиента ощущается как событие дня</li>
+    <li>В новых компаниях быстро замечаешь, кто «социально интереснее»</li>
+    <li>После одобрения — короткая эйфория, потом тишина и поиск следующего</li>
+  </ul>
+  <p><strong>Как обходим:</strong></p>
+  <ol>
+    <li>Видение через 2 года в письме (Действие 2) — внутренний референс, который не зависит от внешнего</li>
+    <li>Один человек в орбите по горизонтали (Действие 3 → реальный контакт) — заменяет дрейф между разными источниками одобрения</li>
+    <li>Регулярные Замеры (раз в квартал) — внешнее подкрепление прогресса от системы, а не от случайных людей</li>
+  </ol>
+  <p style="color: var(--ink-soft); font-size: 12px;">⚠️ Это сквозная работа, не разовое действие. Минимум год.</p>
+</section>
+
+<section>
+  <div class="sec-label">§ III</div>
+  <h2>Что ты уже делаешь — и почему этого мало</h2>
+  <p><strong>Что есть.</strong> Ежедневная медитация 8 лет (30+30 мин). Группа Куприянова 600к/год, 12 дней офлайн. Тель-Авив 2024 — психоделические практики, 3–4 месяца. Уилбер. 6–7 ретритов. Випассана (закрыта в 2013).</p>
+  <p><strong>Сила.</strong> Глубоко интегрированная практика. Сердечность снимается. Осознанность развита. Инсайты получены.</p>
+  <p><strong>Чего не хватает.</strong> Инсайт без перепрошивки. Твои слова: «после Израиля я понял, что всё, что должен делал в жизни — ради одобрения. А потом обрадовался, что благодаря этому заработал и в спорте продвинулся, теперь всё понял и можешь работать и двигаться дальше». Механизм увиден и легитимизирован, но не заменён. В духовно-смысловой ветке нет наставника/орбиты, нет подкрепления прогресса, нет видения через 2 года.</p>
+</section>
+
+<section>
+  <div class="sec-label">§ III.B</div>
+  <h2>Что про тебя учли</h2>
+  <p style="color: var(--ink-soft); font-size: 13px;">Узлы из твоего Портрета, которые меняют логику плана.</p>
+  <div class="nodes">
+    <div class="node">
+      <div class="node-key">Самовозвышение <span class="num">95</span> + Свои мысли <span class="num">65</span></div>
+      <div class="node-body">Не давить диагнозом. Все формулировки идут через гипотезы — «возможно так», «узнаёшь?». В работе — тот же принцип.</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Прямота <span class="num">9</span> + Гибкость в споре <span class="num">9</span></div>
+      <div class="node-body">«Нет» прямо ты вряд ли скажешь. Молчание после темы значит «не туда». Внимание к паузам.</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Тяга к компании <span class="num">2</span> + Дружелюбие <span class="num">11</span></div>
+      <div class="node-body">Один контакт работает сильнее группы. Mastermind и форум-группы тебе не подойдут. Формат — 1-на-1.</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Жажда результата <span class="num">84</span> + Открытость к иному <span class="num">97</span></div>
+      <div class="node-body">Нужны короткие видимые победы плюс сложная интеллектуальная рамка одновременно. План раздробленный, рамка системная.</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Внутренняя уверенность <span class="num">6</span> + Сдержанность гнева <span class="num">6</span></div>
+      <div class="node-body">Невротичная база под витриной победителя. Замеры с накоплением — критически важны: без подтверждения прогресса фигура теряет силу (так было с Уилбером).</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Алкоголь и таблетки <span class="num">94</span> + Выплёскивание <span class="num">91</span></div>
+      <div class="node-body">Фоновый риск self-medication под стрессом. В Замерах будет прямой вопрос про восстановление.</div>
+    </div>
+    <div class="node">
+      <div class="node-key">Самобичевание <span class="num">62</span></div>
+      <div class="node-body">Правило «промах ≠ провал» включаю обязательно. Подробности — в правилах срывов ниже.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ IV</div>
+  <h2>Три шага на месяц</h2>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">01</div>
+      <div class="step-title">Реестр операционных задач + первый отказ от новой</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Сделать операционку видимой. По каждой задаче пометка — «делегировать к дате» или «оставить себе». Не отбирать силой воли, а превратить подкрепляющий канал из бессознательного в управляемый.</dd>
+        <dt>До какой даты</dt>
+        <dd>Реестр готов к субботе 30.05.2026. Первый отказ от новой оперативной задачи — в течение 48 часов после её появления.</dd>
+        <dt>Как поймёшь</dt>
+        <dd>Список всех текущих оперативных задач, минимум 2 помечены «делегировать к 30.06».</dd>
+        <dt>Первое в 2 дня</dt>
+        <dd>Сегодня вечером (28.05) выписать первые 5 задач за последнюю неделю.</dd>
+      </dl>
+      <div class="tracker">
+        <div class="tracker-label">Трекер</div>
+        <div class="tracker-row">
+          <label>Статус
+            <select data-store="action1-status">
+              <option value="">—</option>
+              <option value="not-started">не начато</option>
+              <option value="in-progress">в процессе</option>
+              <option value="done">сделано</option>
+              <option value="blocked">застрял</option>
+            </select>
+          </label>
+          <label>Дата <input type="date" data-store="action1-date"></label>
+          <label>Уверенность <input type="number" min="1" max="10" data-store="action1-confidence"> / 10</label>
+        </div>
+        <textarea data-store="action1-note" placeholder="Что вышло, что помешало"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">02</div>
+      <div class="step-title">Страница «Через 2 года»</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Одна страница (не больше) с конкретикой: где живёшь, что делаешь утром-днём-вечером, кто рядом, что чувствуешь, просыпаясь. Не общие слова, а сцены. На странице — фраза «через 2 года я хочу _», самооценка «откликается» 8+/10.</dd>
+        <dt>До какой даты</dt>
+        <dd>Черновик — 10.06.2026. Финальная версия — 24.06.2026.</dd>
+        <dt>Как поймёшь</dt>
+        <dd>Самооценка «откликается» по фразе — 8+/10. Видение — твой внутренний референс, замена внешнего подкрепления.</dd>
+        <dt>Первое в 2 дня</dt>
+        <dd>Написать первые 3 предложения. Любые. Чтобы лист не был чистым.</dd>
+      </dl>
+      <div class="tracker">
+        <div class="tracker-label">Трекер</div>
+        <div class="tracker-row">
+          <label>Статус
+            <select data-store="action2-status">
+              <option value="">—</option>
+              <option value="not-started">не начато</option>
+              <option value="in-progress">в процессе</option>
+              <option value="done">сделано</option>
+              <option value="blocked">застрял</option>
+            </select>
+          </label>
+          <label>Дата <input type="date" data-store="action2-date"></label>
+          <label>Уверенность <input type="number" min="1" max="10" data-store="action2-confidence"> / 10</label>
+        </div>
+        <textarea data-store="action2-note" placeholder="Что вышло, что помешало"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">03</div>
+      <div class="step-title">Список 5–10 живых людей «в орбите»</div>
+    </div>
+    <div class="step-body">
+      <dl class="step-grid">
+        <dt>Суть</dt>
+        <dd>Список имён живых людей (не Уилбера, не покойников) — по одной фразе «что в нём резонирует». Любая сфера: бизнес, духовность, наука, искусство, спорт. Знакомые, малознакомые, незнакомые — все, о ком ты что-то знаешь.</dd>
+        <dt>До какой даты</dt>
+        <dd>03.06.2026 (среда)</dd>
+        <dt>Как поймёшь</dt>
+        <dd>5+ имён, по каждому — одна фраза «что резонирует». Из 10 потом выкристаллизуется 1–2 живых контакта.</dd>
+        <dt>Первое в 2 дня</dt>
+        <dd>Записать первое имя, которое приходит в голову, без оценки.</dd>
+      </dl>
+      <div class="tracker">
+        <div class="tracker-label">Трекер</div>
+        <div class="tracker-row">
+          <label>Статус
+            <select data-store="action3-status">
+              <option value="">—</option>
+              <option value="not-started">не начато</option>
+              <option value="in-progress">в процессе</option>
+              <option value="done">сделано</option>
+              <option value="blocked">застрял</option>
+            </select>
+          </label>
+          <label>Дата <input type="date" data-store="action3-date"></label>
+          <label>Уверенность <input type="number" min="1" max="10" data-store="action3-confidence"> / 10</label>
+        </div>
+        <textarea data-store="action3-note" placeholder="Что вышло, что помешало"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="metrics">
+  <div class="sec-label">§ V</div>
+  <h2>Мои три метрики</h2>
+  <p style="color: var(--ink-soft); font-size: 13px;">Метрики, которые ты сам назвал на сессии. Заполни цифрой baseline (как сейчас) — сверяться каждую неделю.</p>
+  <div class="field">
+    <div class="field-num">01</div>
+    <input type="text" data-store="metric1" placeholder="часы свободы за неделю (baseline)">
+  </div>
+  <div class="field">
+    <div class="field-num">02</div>
+    <input type="text" data-store="metric2" placeholder="ощущение свободности 1–10 (baseline)">
+  </div>
+  <div class="field">
+    <div class="field-num">03</div>
+    <input type="text" data-store="metric3" placeholder="% операционки от рабочего времени (baseline 50%)">
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ VI</div>
+  <h2>Еженедельная сверка</h2>
+  <p style="color: var(--ink-soft); font-size: 13px;">Пятница, 10 минут. Три вопроса — и ты на курсе.</p>
+
+  <div class="streak">
+    <div class="streak-label">Серия</div>
+    <div class="streak-circles" id="streakCircles">
+      <span class="streak-circle" data-week="1"></span>
+      <span class="streak-circle" data-week="2"></span>
+      <span class="streak-circle" data-week="3"></span>
+      <span class="streak-circle" data-week="4"></span>
+    </div>
+    <div class="streak-count" id="streakCount">0 из 4</div>
+  </div>
+
+  <div class="weeks">
+    <div class="week" data-week-block="1">
+      <div class="week-head">
+        <div class="week-num">Неделя 01</div>
+        <div class="week-date-wrap">Дата <input type="date" data-store="week1-date"></div>
+      </div>
+      <div class="week-prompts">
+        <div class="week-prompt"><label>Что сдвинулось</label><textarea data-store="week1-moved"></textarea></div>
+        <div class="week-prompt"><label>Где застрял</label><textarea data-store="week1-stuck"></textarea></div>
+        <div class="week-prompt"><label>Что на следующую</label><textarea data-store="week1-next"></textarea></div>
+      </div>
+    </div>
+
+    <div class="week" data-week-block="2">
+      <div class="week-head">
+        <div class="week-num">Неделя 02</div>
+        <div class="week-date-wrap">Дата <input type="date" data-store="week2-date"></div>
+      </div>
+      <div class="week-prompts">
+        <div class="week-prompt"><label>Что сдвинулось</label><textarea data-store="week2-moved"></textarea></div>
+        <div class="week-prompt"><label>Где застрял</label><textarea data-store="week2-stuck"></textarea></div>
+        <div class="week-prompt"><label>Что на следующую</label><textarea data-store="week2-next"></textarea></div>
+      </div>
+    </div>
+
+    <div class="week" data-week-block="3">
+      <div class="week-head">
+        <div class="week-num">Неделя 03</div>
+        <div class="week-date-wrap">Дата <input type="date" data-store="week3-date"></div>
+      </div>
+      <div class="week-prompts">
+        <div class="week-prompt"><label>Что сдвинулось</label><textarea data-store="week3-moved"></textarea></div>
+        <div class="week-prompt"><label>Где застрял</label><textarea data-store="week3-stuck"></textarea></div>
+        <div class="week-prompt"><label>Что на следующую</label><textarea data-store="week3-next"></textarea></div>
+      </div>
+    </div>
+
+    <div class="week" data-week-block="4">
+      <div class="week-head">
+        <div class="week-num">Неделя 04</div>
+        <div class="week-date-wrap">Дата <input type="date" data-store="week4-date"></div>
+      </div>
+      <div class="week-prompts">
+        <div class="week-prompt"><label>Что сдвинулось</label><textarea data-store="week4-moved"></textarea></div>
+        <div class="week-prompt"><label>Где застрял</label><textarea data-store="week4-stuck"></textarea></div>
+        <div class="week-prompt"><label>Что на следующую</label><textarea data-store="week4-next"></textarea></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ VI.B</div>
+  <h2>План на 4 недели</h2>
+  <p style="color: var(--ink-soft); font-size: 13px;">Расписание шагов по неделям. Если работаем в формате Тренировок — встречи привязываются сюда.</p>
+
+  <div class="plan-week">
+    <div class="plan-week-head">
+      <div class="plan-week-title">Неделя 01</div>
+      <div class="plan-week-dates">27.05 – 02.06</div>
+    </div>
+    <div class="plan-week-body">
+      <div class="plan-focus">Фокус · <span>Реестр + первое имя в орбиту</span></div>
+      <ul class="plan-items">
+        <li><input type="checkbox" data-store="w1c1"> 28–30.05: Реестр всех операционных задач + пометки «делегировать к дате» / «оставить себе»</li>
+        <li><input type="checkbox" data-store="w1c2"> 28.05: Записать первое имя из «орбиты», без оценки</li>
+        <li><input type="checkbox" data-store="w1c3"> К 03.06 (среда): полный список 5–10 имён + «что резонирует» по каждому</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="plan-week">
+    <div class="plan-week-head">
+      <div class="plan-week-title">Неделя 02</div>
+      <div class="plan-week-dates">03.06 – 09.06</div>
+    </div>
+    <div class="plan-week-body">
+      <div class="plan-focus">Фокус · <span>Делегирование первой задачи + первые предложения «через 2 года»</span></div>
+      <ul class="plan-items">
+        <li><input type="checkbox" data-store="w2c1"> Передать минимум одну операционную задачу подрядчику / брокеру</li>
+        <li><input type="checkbox" data-store="w2c2"> Написать первые 3–5 предложений страницы «через 2 года»</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="plan-week">
+    <div class="plan-week-head">
+      <div class="plan-week-title">Неделя 03</div>
+      <div class="plan-week-dates">10.06 – 16.06</div>
+    </div>
+    <div class="plan-week-body">
+      <div class="plan-focus">Фокус · <span>Видение в черновике + первый шаг к человеку из орбиты</span></div>
+      <ul class="plan-items">
+        <li><input type="checkbox" data-store="w3c1"> Черновик страницы «через 2 года» — к 10.06</li>
+        <li><input type="checkbox" data-store="w3c2"> Из списка орбиты — один человек, с которым готов сделать первый контакт (написать / встретиться / прочитать)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="plan-week">
+    <div class="plan-week-head">
+      <div class="plan-week-title">Неделя 04 — закрытие</div>
+      <div class="plan-week-dates">17.06 – 24.06</div>
+    </div>
+    <div class="plan-week-body">
+      <div class="plan-focus">Фокус · <span>Финальная страница + мини-Замер</span></div>
+      <ul class="plan-items">
+        <li><input type="checkbox" data-store="w4c1"> Финальная версия страницы «через 2 года», «откликается» 8+/10</li>
+        <li><input type="checkbox" data-store="w4c2"> Мини-Замер: % операционки, часы свободы за неделю, ощущение свободности 1–10</li>
+        <li><input type="checkbox" data-store="w4c3"> Если выбрана Опция 3 — первая еженедельная встреча Тренировок ставится в это окно</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="color: var(--ink-soft); font-size: 12px;">Если ты не покупаешь Опцию 2 или 3 — этот план работает как самопроект на 4 недели, без встреч. Через 3 недели — мини-Замер по той же шкале сам себе.</p>
+</section>
+
+<details class="rules">
+  <summary>4 правила срывов</summary>
+  <div class="rules-body">
+    <h4>1. Промах ≠ провал</h4>
+    <p>Если шаг не сделался — разбираем по схеме: не сделалось / сделалось не так / без эффекта? Что мешало конкретно (не «лень», а что в голове)? Что меняем — формулировка, время, шаг мельче, поддержка? Идём дальше, не в самобичевание.</p>
+    <h4>2. Стандарт не падает</h4>
+    <p>Шаг переносится, не уменьшается. Защита от спирали «снижение производительности» — плохой результат → снижаем ожидания → ещё хуже. Туда не идём.</p>
+    <h4>3. Нелинейность ответов («1 vs 5»)</h4>
+    <p>1 «нет» / молчание = шум, не сигнал. 3 «нет» подряд = разбираем формулировку. 5 «нет» подряд = меняем подход. Между 1 и 5 нет сигнала — не катастрофизировать.</p>
+    <h4>4. Внешний форс-мажор — перенос без вины</h4>
+    <p>Если на основной работе аврал больше 3 дней — встреча/шаг переносится без вины. Лучше реальный результат с задержкой, чем пустые руки в срок.</p>
+  </div>
+</details>
+
+<section>
+  <div class="sec-label">§ VII</div>
+  <h2>Что дальше</h2>
+  <div class="fork">
+    <div class="fork-item">
+      <div class="fork-label">Сам</div>
+      <div class="fork-body">Прожить три действия 4 недели + видение + список. Через 4 недели — мини-сверка, куда сдвинулось.</div>
+    </div>
+    <div class="fork-item">
+      <div class="fork-label">Со мной</div>
+      <div class="fork-body">Год доверенного советника. Еженедельные Тренировки + 4 Замера с накоплением истории. Длинный горизонт + регулярное подкрепление прогресса (твой критический элемент) + я как один человек в орбите на год. Детали — в разделе «Дальше — три пути».</div>
+    </div>
+    <div class="fork-item">
+      <div class="fork-label">С другими</div>
+      <div class="fork-body">Куприянов и духовные ретриты остаются — они дают сердечность и снятие брони. Но они не закрывают работу 04 (новая роль) и 05 (свои метрики). Психотерапия — параллельная ветка.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ VIII</div>
+  <h2>Карта следующих шагов</h2>
+  <table class="map">
+    <thead>
+      <tr><th>Тема</th><th>Горит</th><th>Что есть на рынке</th><th>Что имеет смысл тебе</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Принять решение о новой роли (04)</td>
+        <td class="num"><strong>9 / 10</strong></td>
+        <td>executive coaching, mastermind, менторы, терапия</td>
+        <td>Тренировки. Замеры по часам свободы и ощущению свободности</td>
+      </tr>
+      <tr>
+        <td>Переопределить свои метрики (05)</td>
+        <td class="num"><strong>8 / 10</strong></td>
+        <td>ценностная терапия, VIA, retreats, coaching</td>
+        <td>Тренировки + Замеры. Метрики уже названы тобой — нужно операционализировать</td>
+      </tr>
+      <tr>
+        <td>Найти человека в орбите (07)</td>
+        <td class="num"><strong>8 / 10</strong></td>
+        <td>mastermind, peer advisory, coaching</td>
+        <td>Действие 3 (список) → один реальный контакт в течение года. Не группа</td>
+      </tr>
+      <tr>
+        <td>Перестроить систему управления (06)</td>
+        <td class="num">6 / 10</td>
+        <td>управленческий консалтинг, делегирование</td>
+        <td>Действие 1 (реестр). После — модуль внутри Тренировок</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <div class="sec-label">§ IX</div>
+  <h2>Как было и как стало</h2>
+  <p style="color: var(--ink-soft); font-size: 13px;">Заполни «До» сегодня. «После» — после сессии. Через месяц — на финальной сверке.</p>
+  <table class="shkala">
+    <thead>
+      <tr><th>Параметр</th><th>До</th><th>После</th><th>Через месяц</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Тревога по будущему через 2 года</td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-trevoga-do" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-trevoga-posle" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-trevoga-mesyats" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+      </tr>
+      <tr>
+        <td>Ясность видения через 2 года</td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-yasnost-do" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-yasnost-posle" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-yasnost-mesyats" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+      </tr>
+      <tr>
+        <td>Ощущение свободности</td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-svoboda-do" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-svoboda-posle" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+        <td><div class="shkala-cell"><input type="number" min="1" max="10" data-store="shkala-svoboda-mesyats" data-bar><span class="shkala-bar"><span class="shkala-fill"></span></span></div></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <div class="sec-label">§ X</div>
+  <h2>Цена бездействия</h2>
+  <div class="price">
+    <div class="price-label">Главная единица — не деньги</div>
+    <div class="price-body">Ты сам отказался мерить ROI в деньгах: <strong>«лучший ROI для меня — количество свободных часов и ощущение свободности»</strong>. Это и есть твоя новая шкала. В деньгах — порядок 5 млн ₽/год дополнительного дохода при перенаправлении части времени с операционки на свои инвестиции. Но это не главное.</div>
+    <div class="price-quote">«Жизнь пройдёт зря. Окажусь на смертном одре, и будет глубочайшее разочарование, что я всё просрал, хотя мне всё было дано.»</div>
+    <div class="price-body">Это твоя цена бездействия — экзистенциальная, сильнее любых денег. По Вайсу клиент с такой ценой покупает без давления; продавать не буду.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">§ XI</div>
+  <h2>Дальше — три пути</h2>
+
+  <div class="options">
+    <div class="option">
+      <div class="option-head">
+        <div class="option-title">Опция 1. Разбор завершён — иду сам</div>
+        <div class="option-price">50 000 ₽ (оплачено)</div>
+      </div>
+      <div class="option-body">Сегодняшний Разбор + этот Портрет + план на 4 недели.</div>
+      <div class="option-when">Когда выбрать — хочешь прожить три действия и вернуться позже.</div>
+    </div>
+
+    <div class="option">
+      <div class="option-head">
+        <div class="option-title">Опция 2. Квартал Тренировок + Замер</div>
+        <div class="option-price">900 000 ₽ — или 810 000 ₽ за полную предоплату</div>
+      </div>
+      <div class="option-body">3 месяца Тренировок (еженедельная встреча 1,5 ч + асинхрон) + Замер в конце квартала (2–3 встречи по системной карте). Оплата: квартал вперёд либо 50/50 (задаток + остаток через 45 дней).</div>
+      <div class="option-when">Когда выбрать — хочешь попробовать формат, не готов сразу на год.</div>
+    </div>
+
+    <div class="option recommended">
+      <div class="option-head">
+        <div class="option-title">Опция 3. Год доверенного советника</div>
+        <div class="option-badge">Рекомендую</div>
+      </div>
+      <div class="option-price">3 450 000 ₽ — или 3 105 000 ₽ за полную предоплату. Альтернатива — поквартально 776 000 × 4 (со скидкой) или 862 500 × 4 (без)</div>
+      <div class="option-body">Разбор + 4 квартала Тренировок + 4 Замера. Каждый Замер открывает следующий квартал. Оплата: квартал вперёд × 4. Контракт неотменяем.</div>
+      <div class="option-when">Когда выбрать — три задачи (операционка, человек в орбите, видение) связаны и требуют длинного горизонта. Регулярные Замеры с накоплением — твой критический элемент удержания.</div>
+    </div>
+  </div>
+
+  <div class="recommendation">
+    <div class="recommendation-label">Моя рекомендация</div>
+    <div class="recommendation-body"><strong>Опция 3. Год доверенного советника.</strong> Три задачи в разных слоях, длинный горизонт нужен по существу: метрики «часы свободы» и «ощущение свободности» меряются месяцами, а человек в орбите выстраивается за квартал минимум. Один год с регулярными квартальными Замерами по твоей новой шкале даёт ровно то, что ты назвал на сессии — резонансный человек в орбите + подтверждение прогресса.</div>
+  </div>
+
+  <p style="color: var(--ink-soft); font-size: 12px; margin: 24px 0 8px;"><strong>Принцип оплаты вперёд.</strong> Помесячная оплата не предусмотрена. Причина — финансовая независимость каждого следующего платежа от моего суждения. На квартале/годе вперёд я говорю точнее, а ты получаешь больше за те же деньги. Это часть продукта.</p>
+
+  <div class="deadline">
+    <strong>Срок ответа.</strong> Решение жду до понедельника <strong>01.06.2026</strong>. До этого срока — проживи три действия из плана. Не возвращайся к деталям продукта — почувствуй, нужен ли сопровождающий. Если что-то не сходится, пиши, разберём.
+  </div>
+</section>
+
+<div class="footer">
+  <p>Через две недели напишу — спрошу, как с шагами.</p>
+  <p>Ничего не продаю силой. Карта выше показывает, куда идти. Решаешь сам.</p>
+  <p style="margin-top: 20px;">Всё, что ты вписываешь на этой странице, остаётся у тебя в браузере. Я это не вижу. Хочешь сохранить — жми «Файл» вверху.</p>
+  <div class="meta-hash">doc.id · portrait.metelkin.2026-05-27</div>
+</div>
+
+<script>
+  const STORAGE_PREFIX = 'portrait-metelkin-2026-05-27-';
+  const saveIndicator = document.getElementById('saveIndicator');
+  let saveTimeout;
+
+  function showSaved() {
+    saveIndicator.classList.add('show');
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveIndicator.classList.remove('show'), 1200);
+  }
+
+  function updateShkalaBar(input) {
+    const cell = input.closest('.shkala-cell');
+    if (!cell) return;
+    const fill = cell.querySelector('.shkala-fill');
+    if (!fill) return;
+    const value = parseFloat(input.value);
+    if (isNaN(value)) { fill.style.width = '0%'; return; }
+    const clamped = Math.max(0, Math.min(10, value));
+    fill.style.width = (clamped * 10) + '%';
+  }
+
+  function updateStreak() {
+    const weeks = [1, 2, 3, 4];
+    let done = 0;
+    weeks.forEach(n => {
+      const circle = document.querySelector(`.streak-circle[data-week="${n}"]`);
+      const fields = document.querySelectorAll(`[data-store^="week${n}-"]`);
+      const hasContent = Array.from(fields).some(f => f.value && f.value.trim() !== '');
+      if (circle) circle.classList.toggle('filled', hasContent);
+      if (hasContent) done++;
+    });
+    const counter = document.getElementById('streakCount');
+    if (counter) counter.textContent = `${done} из 4`;
+  }
+
+  document.querySelectorAll('[data-store]').forEach(el => {
+    const key = STORAGE_PREFIX + el.dataset.store;
+    const saved = localStorage.getItem(key);
+    if (saved !== null) {
+      if (el.type === 'checkbox') el.checked = saved === 'true';
+      else el.value = saved;
+    }
+    if (el.hasAttribute('data-bar')) updateShkalaBar(el);
+
+    const handler = () => {
+      const val = el.type === 'checkbox' ? el.checked : el.value;
+      localStorage.setItem(key, val);
+      showSaved();
+      if (el.hasAttribute('data-bar')) updateShkalaBar(el);
+      if (el.dataset.store.startsWith('week') && !el.dataset.store.startsWith('week-')) updateStreak();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  updateStreak();
+
+  function exportData() {
+    const data = {};
+    document.querySelectorAll('[data-store]').forEach(el => {
+      const val = el.type === 'checkbox' ? el.checked : el.value;
+      if (val !== '' && val !== false) data[el.dataset.store] = val;
+    });
+    data._exported = new Date().toISOString();
+    data._client = 'Алексей Метелкин';
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'portrait-metelkin-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAll() {
+    if (!confirm('Стереть всё, что ты вписал? Отменить нельзя.')) return;
+    document.querySelectorAll('[data-store]').forEach(el => {
+      localStorage.removeItem(STORAGE_PREFIX + el.dataset.store);
+      if (el.type === 'checkbox') el.checked = false;
+      else el.value = '';
+      if (el.hasAttribute('data-bar')) updateShkalaBar(el);
+    });
+    updateStreak();
+  }
+</script>
+
+</body>
+</html>
