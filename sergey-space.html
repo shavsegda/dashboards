@@ -503,6 +503,193 @@
     .toolbar { top: 8px; right: 8px; }
     .pathway-track { padding: 0 6px; gap: 2px; }
   }
+
+  /* ─── Секция «Замеры» ─── */
+  .zamer-section { margin: 56px 0; }
+  .zamer-block {
+    margin: 24px 0;
+    border: 1px solid var(--line);
+  }
+  .zamer-block[open] { border-color: var(--ink); }
+  .zamer-block summary {
+    cursor: pointer;
+    padding: 14px 20px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    list-style: none;
+  }
+  .zamer-block summary::-webkit-details-marker { display: none; }
+  .zamer-block summary::before {
+    content: '▸';
+    color: var(--ink-soft);
+    margin-right: 8px;
+    font-size: 11px;
+  }
+  .zamer-block[open] summary::before { content: '▾'; }
+  .zamer-num { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .zamer-date {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+  .zamer-body { padding: 20px 24px; }
+  .zamer-period {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+  }
+  .zamer-headline {
+    margin: 0 0 24px 0;
+    padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    font-size: 14px;
+    line-height: 1.55;
+    font-weight: 500;
+  }
+  .zamer-h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin: 24px 0 10px 0;
+  }
+  .zamer-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 24px 0;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .zamer-table th, .zamer-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  .zamer-table th {
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #fafafa;
+  }
+  .zamer-table .num { text-align: right; font-weight: 500; }
+  .zamer-wheel {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin: 16px 0 24px 0;
+    flex-wrap: wrap;
+  }
+  .zamer-wheel svg { flex: 0 0 240px; width: 240px; height: 240px; }
+  .zamer-wheel-axis { stroke: var(--line); stroke-width: 1; }
+  .zamer-wheel-label {
+    font-size: 9px;
+    fill: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .zamer-wheel-fill {
+    fill: var(--accent);
+    fill-opacity: 0.15;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+  }
+  .zamer-wheel-dot { fill: var(--accent); }
+  .zamer-wheel-list { flex: 1; min-width: 200px; font-size: 12px; line-height: 1.7; }
+  .zamer-wheel-list dl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    margin: 0;
+  }
+  .zamer-wheel-list dt { color: var(--ink); }
+  .zamer-wheel-list dd {
+    margin: 0;
+    text-align: right;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .zamer-wheel-list dd.low { color: var(--main); }
+  .zamer-ca {
+    margin: 8px 0 24px 0;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    background: #fafafa;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .zamer-ca dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 8px 16px;
+  }
+  .zamer-ca dt {
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding-top: 3px;
+  }
+  .zamer-ca dd { margin: 0; }
+  .zamer-pattern, .zamer-stake { margin: 8px 0 24px 0; font-size: 14px; line-height: 1.65; }
+  .zamer-stake-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 6px 16px;
+    margin: 8px 0;
+  }
+  .zamer-stake-row dt {
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    font-size: 12px;
+  }
+  .zamer-stake-row dd { margin: 0; font-weight: 500; }
+  .zamer-parallel {
+    margin: 8px 0 24px 0;
+    padding: 12px 16px;
+    border-left: 2px solid var(--ink-faint);
+    background: var(--line-soft);
+    font-size: 13px;
+  }
+  .zamer-parallel-label {
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .zamer-quote {
+    margin: 24px 0 8px 0;
+    padding: 18px 24px;
+    border-left: 3px solid var(--ink);
+    font-size: 15px;
+    line-height: 1.55;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .zamer-quote::before { content: '«'; color: var(--ink-faint); margin-right: 4px; }
+  .zamer-quote::after { content: '»'; color: var(--ink-faint); margin-left: 4px; }
+  .zamer-next {
+    margin: 16px 0 0 0;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
 </style>
 </head>
 <body class="locked">
@@ -709,6 +896,141 @@
       <p><strong>Что забираешь:</strong> «Посчитать деньги по второй компании с Димой.»</p>
     </div>
   </div>
+</section>
+
+<section id="zameri" class="zamer-section">
+  <div class="sec-label">§ III½</div>
+  <h2>Замеры</h2>
+
+  <details class="zamer-block" open>
+    <summary>
+      <span class="zamer-num">Замер Z1</span>
+      <span class="zamer-date">28 мая 2026</span>
+    </summary>
+    <div class="zamer-body">
+
+      <div class="zamer-period">Период: 2026-04-28 → 2026-05-28, 4 недели формальных Тренировок (в рамках Тактики 90 дней)</div>
+
+      <div class="zamer-headline">Ставка по сну формально не делалась, но самочувствие выросло через другую ставку — «научился замечать второго я и договариваться с ним». Вышел из аварийного режима, теперь нужен регулярный.</div>
+
+      <div class="zamer-h3">Табло</div>
+      <table class="zamer-table">
+        <thead>
+          <tr><th>Показатель</th><th class="num">План</th><th class="num">Факт</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Запаздывающий: сон 5 ночей × 7+ часов в неделю</td>
+            <td class="num">10 из 12 недель</td>
+            <td class="num">не замерялось; Тело 12/10</td>
+          </tr>
+          <tr>
+            <td>Опережающий: сон до 23:00, без телефона за час</td>
+            <td class="num">14 ночей из 21</td>
+            <td class="num">не делал как процесс</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="zamer-h3">Колесо 10 сфер</div>
+      <div class="zamer-wheel">
+        <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+          <g class="zamer-wheel-axis">
+            <line x1="130" y1="10"  x2="130" y2="250"/>
+            <line x1="10"  y1="130" x2="250" y2="130"/>
+            <line x1="45"  y1="45"  x2="215" y2="215"/>
+            <line x1="215" y1="45"  x2="45"  y2="215"/>
+            <line x1="130" y1="130" x2="220" y2="80"/>
+            <line x1="130" y1="130" x2="220" y2="180"/>
+            <line x1="130" y1="130" x2="40"  y2="180"/>
+            <line x1="130" y1="130" x2="40"  y2="80"/>
+          </g>
+          <circle cx="130" cy="130" r="24"  fill="none" class="zamer-wheel-axis"/>
+          <circle cx="130" cy="130" r="60"  fill="none" class="zamer-wheel-axis"/>
+          <circle cx="130" cy="130" r="96"  fill="none" class="zamer-wheel-axis"/>
+
+          <polygon class="zamer-wheel-fill" points="130,58 151,101 233,97 233,163 200,227 130,238 81,198 73,149 50,104 67,43"/>
+
+          <circle class="zamer-wheel-dot" cx="130" cy="58"  r="3"/>
+          <circle class="zamer-wheel-dot" cx="151" cy="101" r="3"/>
+          <circle class="zamer-wheel-dot" cx="233" cy="97"  r="3"/>
+          <circle class="zamer-wheel-dot" cx="233" cy="163" r="3"/>
+          <circle class="zamer-wheel-dot" cx="200" cy="227" r="3"/>
+          <circle class="zamer-wheel-dot" cx="130" cy="238" r="3"/>
+          <circle class="zamer-wheel-dot" cx="81"  cy="198" r="3"/>
+          <circle class="zamer-wheel-dot" cx="73"  cy="149" r="3"/>
+          <circle class="zamer-wheel-dot" cx="50"  cy="104" r="3"/>
+          <circle class="zamer-wheel-dot" cx="67"  cy="43"  r="3"/>
+
+          <text class="zamer-wheel-label" x="130" y="6"    text-anchor="middle">работа</text>
+          <text class="zamer-wheel-label" x="222" y="62"   text-anchor="start">обучение</text>
+          <text class="zamer-wheel-label" x="252" y="134"  text-anchor="end">отношения</text>
+          <text class="zamer-wheel-label" x="222" y="206"  text-anchor="start">семья</text>
+          <text class="zamer-wheel-label" x="158" y="258"  text-anchor="middle">тело</text>
+          <text class="zamer-wheel-label" x="100" y="258"  text-anchor="middle">друзья</text>
+          <text class="zamer-wheel-label" x="38"  y="206"  text-anchor="end">внешность</text>
+          <text class="zamer-wheel-label" x="8"   y="134"  text-anchor="start">культура</text>
+          <text class="zamer-wheel-label" x="38"  y="62"   text-anchor="end">природа</text>
+          <text class="zamer-wheel-label" x="100" y="6"    text-anchor="middle">смысл</text>
+        </svg>
+
+        <div class="zamer-wheel-list">
+          <dl>
+            <dt>Работа</dt><dd>6</dd>
+            <dt>Обучение</dt><dd class="low">3</dd>
+            <dt>Личные отношения</dt><dd>9</dd>
+            <dt>Семья</dt><dd>9</dd>
+            <dt>Тело</dt><dd>12</dd>
+            <dt>Друзья</dt><dd>9</dd>
+            <dt>Внешность</dt><dd>7</dd>
+            <dt>Культура</dt><dd>н/д</dd>
+            <dt>Природа</dt><dd>7</dd>
+            <dt>Смысл</dt><dd>9</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="zamer-h3">Conceptual Agreement</div>
+      <div class="zamer-ca">
+        <dl>
+          <dt>Objective</dt><dd>Маржинальность по 3 ключевым банкам (Промсвязь, ВТБ, Газпром); антидемпинговое соглашение через ассоциацию агрегаторов</dd>
+          <dt>Metric</dt><dd>Еженедельно: объём продаж + маржа в деньгах. Маржинальность ассоциации с 9% до 13%</dd>
+          <dt>Value</dt>
+          <dd>
+            — Бизнес: 40 млн прибыли (потенциал 120 млн с объединением ВБЦ)<br>
+            — Лично: 2,4 млн (6% от прибыли) + повышение ЗП с 500к до 1 млн в месяц<br>
+            — Сила говорить с акционерами за конкретный результат
+          </dd>
+        </dl>
+      </div>
+
+      <div class="zamer-h3">Главный паттерн квартала</div>
+      <p class="zamer-pattern">Архитектор системы — решаешь проблемы через создание роли и структуры. Тёмная сторона того же: на низкие рычаги (правила, регулярность) напор не направлен — «проёбывал по кругу».</p>
+
+      <div class="zamer-h3">Новая ставка на 13 недель</div>
+      <div class="zamer-stake">
+        <div class="zamer-stake-row">
+          <dt>КВЦ</dt><dd>Продвинуться от инерционных 100 млн до 140 млн прибыли к 31 августа 2026 (+40 млн)</dd>
+        </div>
+        <div class="zamer-stake-row">
+          <dt>Опережающий</dt><dd>1 встреча в неделю с каждым из 5 руководителей (Козлова, Амиран, Гутков, Сергей К, Сёмкин К) — разбор сокращения расходов, решение по сумме и плану</dd>
+        </div>
+        <div class="zamer-stake-row">
+          <dt>Норма</dt><dd>5 встреч в неделю × 13 недель</dd>
+        </div>
+      </div>
+
+      <div class="zamer-parallel">
+        <div class="zamer-parallel-label">Параллельная интервенция (вне КВЦ)</div>
+        <strong>Обучение (3/10):</strong> брать книгу в поезд при каждой поездке.
+      </div>
+
+      <div class="zamer-quote">Первый квартал успешно прошёл. Второй квартал больше про регулярность и систематизацию.</div>
+
+      <div class="zamer-next">Следующий Замер ориентировочно — август 2026</div>
+
+    </div>
+  </details>
 </section>
 
 <section class="metrics">
