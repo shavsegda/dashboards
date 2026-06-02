@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Что делать, когда упёрся в потолок, хотя делаешь всё правильно</title>
+<meta name="description" content="Большой разговор о вертикальном развитии взрослого человека — без жаргона. Почему привычные приёмы перестают работать, как устроены ступени роста и что с этим делать.">
+
+<!-- Open Graph — карточка-превью в Telegram и соцсетях -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Что делать, когда упёрся в потолок, хотя делаешь всё правильно">
+<meta property="og:description" content="Почему привычные приёмы перестают работать, как устроены ступени роста взрослого человека и что с этим делать. Большой разговор без жаргона.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/potolok.html">
+<!-- og:image добавь после: картинку-обложку 1200×630 -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 720px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+
+/* Шапка */
+header {
+  padding: 72px 0 40px;
+  border-bottom: 1px solid var(--graphite-15);
+}
+header h1 {
+  font-weight: 600;
+  font-size: clamp(30px, 5.5vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 18px 0 16px;
+}
+header h1 .dot { color: var(--terracotta); }
+header .lead {
+  font-size: 19px;
+  color: var(--graphite-75);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Контент-секции */
+article { padding: 8px 0 0; }
+section { padding: 40px 0; border-bottom: 1px solid var(--graphite-08); }
+section:last-of-type { border-bottom: none; }
+
+h2.section-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  margin: 0 0 22px;
+  font-size: clamp(23px, 3.4vw, 30px);
+}
+
+p { margin: 0 0 18px; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+/* Выделенная мысль */
+.pullquote {
+  font-size: clamp(21px, 3.2vw, 26px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--graphite);
+  border-left: 4px solid var(--terracotta);
+  padding: 6px 0 6px 22px;
+  margin: 28px 0;
+}
+
+/* Байка / врезка */
+.aside {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  border-radius: 4px;
+  padding: 22px 26px;
+  margin: 24px 0;
+  font-size: 16px;
+  color: var(--graphite-75);
+  line-height: 1.58;
+}
+
+/* Две колонки контраста */
+.contrast {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0;
+}
+@media (max-width: 640px) { .contrast { grid-template-columns: 1fr; } }
+.contrast-col {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  padding: 24px;
+  border-radius: 4px;
+}
+.contrast-col.accent { background: var(--terracotta-tint); border-color: var(--terracotta); }
+.contrast-col .c-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 8px;
+}
+.contrast-col.accent .c-label { color: var(--terracotta); }
+.contrast-col h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 12px; }
+.contrast-col p { margin: 0 0 10px; color: var(--graphite-75); font-size: 15.5px; line-height: 1.55; }
+.contrast-col p:last-child { margin-bottom: 0; }
+
+/* Лестница ступеней */
+.ladder { margin: 24px 0; border: 1px solid var(--graphite-15); border-radius: 4px; overflow: hidden; background: white; }
+.rung {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--graphite-08);
+  align-items: start;
+}
+.rung:last-child { border-bottom: none; }
+.rung .num {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--graphite-30);
+  line-height: 1.4;
+}
+.rung .r-name { font-weight: 600; font-size: 17px; letter-spacing: -0.01em; margin: 0 0 4px; }
+.rung .r-name .sci { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--graphite-50); letter-spacing: 0.05em; }
+.rung .r-text { font-size: 15px; color: var(--graphite-75); line-height: 1.5; margin: 0; }
+.rung .r-text .vp { color: var(--graphite-90); }
+.rung .r-text .vp b { font-weight: 600; }
+.rung.child { background: var(--stone); }
+.rung.child .r-text { font-size: 14.5px; }
+.rung.adult { background: var(--terracotta-tint); }
+.rung.adult .num { color: var(--terracotta); }
+.rung.peak { background: white; }
+
+.ladder-note {
+  font-size: 15px;
+  color: var(--graphite-75);
+  background: var(--graphite);
+  color: var(--paper);
+  padding: 20px 24px;
+  border-radius: 4px;
+  margin: 24px 0;
+  line-height: 1.55;
+}
+.ladder-note b { color: var(--terracotta); font-weight: 600; }
+
+/* Облако из трёх точек */
+.cloud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+@media (max-width: 640px) { .cloud { grid-template-columns: 1fr; } }
+.cloud-card { background: white; border: 1px solid var(--graphite-15); border-radius: 4px; padding: 22px; }
+.cloud-card .cc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 8px;
+}
+.cloud-card p { font-size: 14.5px; color: var(--graphite-75); line-height: 1.5; margin: 0; }
+
+/* Список-карточки (установки, заблуждения) */
+.cards { margin: 24px 0; }
+.card-item {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  border-left: 4px solid var(--graphite-30);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-bottom: 12px;
+}
+.card-item:last-child { margin-bottom: 0; }
+.card-item h4 { margin: 0 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.card-item p { margin: 0; font-size: 15px; color: var(--graphite-75); line-height: 1.55; }
+.card-item.accent { border-left-color: var(--terracotta); background: var(--terracotta-tint); }
+
+/* Простой список с точками */
+ul.dots { margin: 18px 0; padding-left: 0; list-style: none; }
+ul.dots li {
+  position: relative;
+  padding: 0 0 12px 26px;
+  font-size: 16.5px;
+  color: var(--graphite-90);
+  line-height: 1.55;
+}
+ul.dots li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--terracotta);
+}
+ul.dots li:last-child { padding-bottom: 0; }
+
+/* Нумерованные шаги */
+ol.steps { margin: 24px 0 0; padding: 0; list-style: none; counter-reset: n; }
+ol.steps li {
+  counter-increment: n;
+  position: relative;
+  padding: 18px 0 18px 60px;
+  border-bottom: 1px solid var(--graphite-08);
+}
+ol.steps li:last-child { border-bottom: none; }
+ol.steps li::before {
+  content: counter(n);
+  position: absolute;
+  left: 0;
+  top: 16px;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--terracotta);
+  line-height: 1;
+}
+ol.steps li h4 { margin: 0 0 6px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+ol.steps li p { margin: 0; font-size: 15.5px; color: var(--graphite-75); line-height: 1.55; }
+
+/* Финальный зов */
+.cta {
+  background: var(--graphite);
+  color: var(--paper);
+  padding: 44px 36px;
+  border-radius: 4px;
+  margin: 32px 0 0;
+}
+.cta .eyebrow { color: rgba(244,242,236,0.5); }
+.cta h3 {
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 14px 0 16px;
+}
+.cta p { font-size: 16px; line-height: 1.6; color: rgba(244,242,236,0.85); margin: 0 0 14px; }
+.cta .btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 3px;
+  letter-spacing: -0.01em;
+  transition: background 0.2s ease;
+}
+.cta .btn:hover { background: var(--terracotta-dark); }
+
+footer {
+  padding: 32px 0 56px;
+  font-size: 12px;
+  color: var(--graphite-50);
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}
+footer p { margin: 3px 0; }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 32px; }
+  section { padding: 32px 0; }
+  .cta { padding: 32px 24px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <div class="eyebrow accent">Лонгрид · вертикальное развитие</div>
+    <h1>Что делать, когда упёрся в потолок, хотя делаешь всё правильно<span class="dot">.</span></h1>
+    <p class="lead">Большой разговор о вертикальном развитии взрослого человека.</p>
+  </div>
+</header>
+
+<article>
+
+<!-- Вступление -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Ты делаешь всё как раньше — а оно не работает</h2>
+    <p>Тот же подход, те же цели, те же задачи и приёмы. Они годами тебя вытаскивали.</p>
+    <p>А сейчас чего-то забуксовало. Может, уже начало разваливаться или только перестало радовать.</p>
+    <p>Ты жмёшь на те же педали, а машина не едет. Работаешь больше — толку меньше. Добился того, к чему шёл, — а внутри пусто. Знакомо?</p>
+    <p>Это потолок. Многие, кто в него упёрся, делают одну и ту же ошибку — ищут поломку в себе. Выгорел, сломался, обленился, потерял хватку. И начинают себя чинить: собраться, поднажать, вернуть мотивацию.</p>
+    <p>А чинить нечего. Ты не сломался. Ты, скорее всего, перерос свой способ жить — и сам этого ещё не понял.</p>
+    <p>Дальше — большой разговор о том, как взрослый человек растёт. На Западе про это написаны горы книг. На русском — ничего понятного и достоверно научного одновременно. Я прямо сейчас попробую это исправить.</p>
+  </div>
+</section>
+
+<!-- Два вида роста -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Главное, что нужно понять: рост бывает двух видов</h2>
+    <p>Представь стакан воды.</p>
+    <div class="contrast">
+      <div class="contrast-col">
+        <div class="c-label">Горизонтальный рост</div>
+        <h3>Больше воды в стакан</h3>
+        <p>Новые знания, навыки, опыт, связи. Ты становишься умнее, опытнее, профессиональнее.</p>
+        <p>Этим занято почти всё обучение в мире — курсы, книги, тренинги.</p>
+      </div>
+      <div class="contrast-col accent">
+        <div class="c-label">Вертикальный рост</div>
+        <h3>Сам стакан становится больше</h3>
+        <p>Меняется не содержимое, а вместимость. Не «сколько ты знаешь», а каким способом ты вообще видишь мир.</p>
+        <p>Об этом почти никто не говорит понятно.</p>
+      </div>
+    </div>
+    <p>Разница огромная. Можно сорок лет наливать воду — читать книги, ходить на тренинги, набирать опыт — и оставаться тем же стаканом. Много знающим, но видящим мир ровно так же, как в тридцать.</p>
+    <p>Потолок — это всегда про вертикаль. Ты упёрся не потому, что мало знаешь. Ты упёрся потому, что твой стакан полон. Доливать бесполезно — нужен стакан побольше.</p>
+    <p>И вот ключевое: <strong>вертикальный рост нельзя купить, выучить или ускорить силой воли.</strong> Стакан не становится больше оттого, что ты сильнее стараешься. Он растёт по своим законам. О них мы сейчас и поговорим.</p>
+  </div>
+</section>
+
+<!-- Как растёт стакан -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Как именно растёт стакан</h2>
+    <p>Полвека психологи развития, от Жана Пиаже до гарвардского профессора Роберта Кигана, изучали один вопрос: что меняется в человеке, когда он переходит на новый уровень?</p>
+    <p>Если коротко — меняется граница между тем, <strong>чем ты являешься</strong>, и тем, <strong>на что ты можешь посмотреть</strong>.</p>
+    <div class="aside">
+      Есть старая байка. Старая рыба плывёт мимо двух молодых и спрашивает: «Ну как вам вода?» Молодые переглядываются: «Какая вода?»<br><br>
+      Рыба не видит воду. Она в ней живёт, вода — это она сама. Чтобы увидеть воду, надо хотя бы на миг оказаться снаружи.
+    </div>
+    <p>С человеком так же. На каждом уровне есть твоя «вода» — то, чем ты являешься, не замечая этого. И есть то, на что ты способен посмотреть со стороны и взять под контроль.</p>
+    <p class="pullquote">Рост — это когда вода, в которой ты плавал, становится водой, на которую ты смотришь.</p>
+    <p>Пример. Молодой человек <em>есть</em> мнения своей компании. Скажи ему, что его друзья неправы, — он оскорбится, будто задели его самого. Он и его группа — одно. Это его вода.</p>
+    <p>Проходят годы. Он начинает замечать: «А ведь это просто взгляды моей среды. Я могу их разделять, а могу нет». В этот момент мнения группы перестали быть им. Они стали тем, на что он смотрит. Вода стала видимой. Стакан вырос.</p>
+    <p>Каждый уровень — это новая граница. То, чем ты был на прошлой ступени, на следующей становится инструментом в твоих руках. Поэтому рост и ощущается как освобождение: ты начинаешь управлять тем, что раньше управляло тобой.</p>
+    <p>И тут важно снять главный страх роста: «если я изменюсь — я потеряю себя, разучусь тому, что умею». Не потеряешь. Ступени устроены как матрёшка: каждая следующая <strong>вкладывает в себя все предыдущие</strong>, не выбрасывая их.</p>
+    <p>Достигатель не разучился быть профи — он забрал экспертизу внутрь и добавил умение видеть приоритеты и горизонт. Стратег не растерял целеустремлённость Достигателя — он вложил её в более широкую картину. Ничего не выбрасывается. Всё прежнее едет с тобой наверх — только теперь служит тебе, а не правит тобой.</p>
+    <p>Поэтому вертикальный рост — это не «стать другим человеком». Это стать собой попросторнее. Большая матрёшка, внутри которой целы все меньшие.</p>
+  </div>
+</section>
+
+<!-- Лестница -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Лестница: 10 ступеней, которые может пройти человек</h2>
+    <p>Киган и его коллега Сюзанна Кук-Гройтер составили карту этих ступеней. Не из головы — через тесты на тысячах людей разных профессий и стран. Дам её целиком, с понятными человеческими названиями.</p>
+    <p>Важно: это не оценки. Ступень выше — не «лучше человек». Это шире взгляд. И каждый из нас где-то на этой лестнице, обычно — между двумя ступенями. Начало лестницы мы все прошли в детстве, поэтому о нём — коротко.</p>
+
+    <div class="ladder">
+      <div class="rung child">
+        <div class="num">1</div>
+        <div><div class="r-name">Младенец <span class="sci">Симбиотическая</span></div><p class="r-text">Ещё не отделяет себя от мира и матери. Точка отсчёта, нулевая отметка.</p></div>
+      </div>
+      <div class="rung child">
+        <div class="num">2</div>
+        <div><div class="r-name">Дитя <span class="sci">Импульсивная</span></div><p class="r-text">«Я хочу — дай сейчас». Мир делится на тех, кто исполняет желания, и тех, кто мешает. Чужой точки зрения пока нет.</p></div>
+      </div>
+      <div class="rung child">
+        <div class="num">3</div>
+        <div><div class="r-name">Хитрец <span class="sci">Самозащитная</span></div><p class="r-text">«Каждый сам за себя, кто не успел — тот лох». Видит выгоду, не парится правилами и моралью. У взрослых в чистом виде редко, но под сильным стрессом сюда откатывается почти каждый. Иногда такие люди оказываются и у власти: чуют короткую выгоду, не мучаются этикой.</p></div>
+      </div>
+      <div class="rung adult">
+        <div class="num">4</div>
+        <div><div class="r-name">Свой <span class="sci">Дипломат</span></div><p class="r-text">Я — часть группы, и это меня определяет. Думаю как принято, ценю что ценят вокруг. Главный страх — быть отвергнутым. <span class="vp"><b>Вода:</b> мнения группы — он их не выбирал, он ими является. <b>Потолок:</b> однажды «как все» становится тесно, и надо решиться иметь своё.</span></p></div>
+      </div>
+      <div class="rung adult">
+        <div class="num">5</div>
+        <div><div class="r-name">Знаток <span class="sci">Эксперт</span></div><p class="r-text">Я знаю, как правильно. Я мастер. Тяну сам, никому не доверю. Критику переживаю болезненно — это удар по тому, кто я есть. <span class="vp"><b>Вода:</b> собственная правота, «правильный способ — мой способ». <b>Потолок:</b> всё держится на тебе, ты упёрся в собственные руки. Расти — значит отпустить контроль, а это страшно.</span></p></div>
+      </div>
+      <div class="rung adult">
+        <div class="num">6</div>
+        <div><div class="r-name">Достигатель <span class="sci">Сознательный</span></div><p class="r-text">Ставлю цели — добиваюсь. Планы, результаты, горизонт на годы. Веду машину, а не сижу на пассажирском. Вершина, к которой стремится западная культура. <span class="vp"><b>Вода:</b> своя система целей кажется единственно верной. <b>Потолок:</b> добиваешься всего — а оно перестаёт зажигать. «Добился. И что дальше?»</span></p></div>
+      </div>
+      <div class="rung adult">
+        <div class="num">7</div>
+        <div><div class="r-name">Ищущий <span class="sci">Индивидуалист</span></div><p class="r-text">Старые цели больше не греют. Видишь: твоя система ценностей — одна из возможных, её вложили среда и время. Много вопросов, мало опор. <span class="vp"><b>Вода:</b> впервые смотришь на свой компас со стороны. <b>Потолок:</b> застрять в «всё равноценно, ничего не выбрать». Выход — собрать новую, осознанную цельность.</span></p></div>
+      </div>
+      <div class="rung adult">
+        <div class="num">8</div>
+        <div><div class="r-name">Стратег <span class="sci">Автономный</span></div><p class="r-text">Держит противоречия, не разрываясь. Видит связи, циклы, длинные тренды. Понимает, что разные люди живут в разных картинах мира, — и ценит это. Берёт ответственность за системы вокруг. До Стратега и выше доходит меньше 15% взрослых.</p></div>
+      </div>
+      <div class="rung peak">
+        <div class="num">9</div>
+        <div><div class="r-name">Видящий <span class="sci">Маг</span></div><p class="r-text">Видит, как сам ум создаёт картину мира. Эго становится прозрачным для самого себя. Чаще — глубокие практики, философы, редкие учителя.</p></div>
+      </div>
+      <div class="rung peak">
+        <div class="num">10</div>
+        <div><div class="r-name">Свидетель <span class="sci">Унитарная</span></div><p class="r-text">Присутствие без жёсткого «я» в центре. Простота на той стороне сложности. В обычной жизни почти не встречается — уровень духовных мастеров.</p></div>
+      </div>
+    </div>
+
+    <p class="ladder-note">На ступенях <b>«Свой»</b> и <b>«Знаток»</b> остаётся больше половины взрослых — по оценке Кигана, около 58%. То есть большинство людей всю жизнь живёт на двух нижних взрослых ступенях. Это не приговор — просто так устроена статистика роста.</p>
+
+    <p>Прочитал — и где-то узнал себя? Скорее всего, не в одной ступени, а сразу в нескольких. Так и должно быть. И вот почему.</p>
+  </div>
+</section>
+
+<!-- Облако -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Ты не на одной ступени, а на нескольких сразу</h2>
+    <p>Лестница — удобная картинка, но она врёт в одном: будто ты стоишь на конкретной ступеньке. На самом деле ты размазан по нескольким. У тебя не точка, а облако. В этом облаке есть три важные точки.</p>
+
+    <div class="cloud">
+      <div class="cloud-card">
+        <div class="cc-label">Ядро</div>
+        <p>Ступень, на которой ты живёшь в обычной жизни — спокоен, без давления. Это твой дом. Большую часть времени ты здесь.</p>
+      </div>
+      <div class="cloud-card">
+        <div class="cc-label">Куда падаешь под стрессом</div>
+        <p>Когда давит, страшно или больно — соскальзываешь на ступень-другую вниз. Это не деградация. Это как спуститься в подвал, когда наверху пожар. Отпустит — поднимешься.</p>
+      </div>
+      <div class="cloud-card">
+        <div class="cc-label">Куда тянешься на подъёме</div>
+        <p>В хорошие моменты — поддержка, безопасность, новый опыт — на короткое время дотягиваешься на ступень выше. Это твой край роста. Отсюда и начнётся переход.</p>
+      </div>
+    </div>
+
+    <p>И тут важно знать и помнить три вещи:</p>
+    <div class="cards">
+      <div class="card-item">
+        <h4>Не пугайся отката</h4>
+        <p>«Я же вроде вырос, а опять сорвался в контроль и обиды» — это нормально. Под стрессом откатываются все. Ты не потерял уровень, ты временно спустился в подвал.</p>
+      </div>
+      <div class="card-item">
+        <h4>Не суди о человеке по худшему моменту</h4>
+        <p>И о себе тоже. Кризис показывает не кто ты есть, а куда ты падаешь.</p>
+      </div>
+      <div class="card-item">
+        <h4>Рост живёт на верхнем крае</h4>
+        <p>Ты не перепрыгиваешь с ядра сразу на две ступени выше. Ты всё чаще задерживаешься на той, до которой уже иногда дотягиваешься, — пока она не станет новым домом.</p>
+      </div>
+    </div>
+
+    <p>Поэтому честный портрет человека — не «он Достигатель», а «дома он Достигатель, под стрессом падает к Знатоку, а на подъёме пробует Ищущего». Три точки, не одна. Именно на этом верхнем крае и болит потолок — тянет наверх, а старое держит.</p>
+  </div>
+</section>
+
+<!-- Почему нельзя перепрыгнуть -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Почему нельзя просто взять и перепрыгнуть</h2>
+    <p>Тут начинается самое обидное. Ты не перейдёшь на новую ступень усилием воли. И это не отговорка, а механика. Киган различает два типа задач.</p>
+    <div class="contrast">
+      <div class="contrast-col">
+        <div class="c-label">Технические</div>
+        <h3>Доучить навык</h3>
+        <p>Новый язык, новая программа, новая методика продаж. Решаются на твоей нынешней ступени, головой. Подучился — справился.</p>
+      </div>
+      <div class="contrast-col accent">
+        <div class="c-label">Адаптивные</div>
+        <h3>Перестроить себя</h3>
+        <p>Тут навык бессилен. Можно прочитать сто книг про делегирование и продолжать тянуть всё на себе. Можно знать всё про баланс — и снова работать на износ.</p>
+      </div>
+    </div>
+    <p>Цифра, которая отрезвляет: люди на диетах в среднем за пять лет возвращают <strong>107% сброшенного веса</strong>. Не потому что не знают, как худеть. А потому что для них это адаптивная задача, а они решают её технически — одной диетой.</p>
+    <p>Потолок — всегда адаптивная задача. Поэтому «поднажать как раньше» и не работает. Ты лечишь техникой то, что требует перестройки.</p>
+  </div>
+</section>
+
+<!-- Иммунитет -->
+<section>
+  <div class="container">
+    <h2 class="section-title">У тебя внутри есть защита, которая держит старое</h2>
+    <p>Киган нашёл этому имя — <strong>иммунитет к переменам</strong>.</p>
+    <p>Это как иммунная система, только психическая. Ты искренне, всем сердцем хочешь измениться. А внутри работает скрытая защита, которая возвращает тебя назад. Не из вредности — она когда-то тебя спасала.</p>
+    <p>Пример из его практики. Человек хочет научиться делегировать. Умом хочет. А не может. Копнули — внутри установка: «руководитель, который сам ничего не делает, ничего не стоит». Пока эта установка невидима, она сильнее любого тренинга. Это и есть потолок изнутри.</p>
+    <p>Такие установки Киган называет базовыми допущениями. Это то, что ты принимаешь за факт о мире, даже не замечая, что это всего лишь предположение:</p>
+    <ul class="dots">
+      <li>«Без меня всё развалится».</li>
+      <li>«Если ошибусь — потеряю уважение навсегда».</li>
+      <li>«Отдыхать — значит лениться».</li>
+      <li>«Если откажу — меня сочтут плохим».</li>
+    </ul>
+    <p>Ты ведёшь себя так, будто это железная правда. И не проверяешь — потому что не видишь как предположение. Это табличка «Опасно, не входить» на двери, в которую ты ни разу не заглядывал.</p>
+    <p>Хорошая новость: иммунитет можно сделать видимым. А что увидел — то уже можешь проверить. И часто оказывается, что за дверью никакой опасности нет.</p>
+  </div>
+</section>
+
+<!-- Как переход -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Как тогда происходит переход</h2>
+    <p>Если не силой воли — то как? Учёные изучили это за десятилетия и назвали двигатель роста <strong>оптимальным конфликтом</strong>. Это когда сходятся четыре вещи разом:</p>
+    <ul class="dots">
+      <li>что-то важное для тебя под угрозой;</li>
+      <li>привычный способ это решить не срабатывает;</li>
+      <li>от проблемы нельзя сбежать;</li>
+      <li>и нельзя сделать вид, что её нет.</li>
+    </ul>
+    <p>Узнаёшь? Это и есть твой тупик. Твоя злость на то, что ничего не выходит. Твоё «так больше нельзя».</p>
+    <p>Это не сбой, а двигатель. Именно через такую воронку человек переходит наверх. Новая ступень открывается не от хорошей жизни, а когда старый способ окончательно перестаёт справляться с чем-то важным.</p>
+    <p class="pullquote">«Плохо» — хорошая новость. Потолок одной ступени есть пол следующей.</p>
+    <p>Что помогает переходу, кроме самого кризиса:</p>
+    <div class="cards">
+      <div class="card-item accent">
+        <h4>Сделать невидимое видимым</h4>
+        <p>Назвать свою скрытую установку. Названная — теряет власть.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Проверять, а не верить</h4>
+        <p>Не «я плохой, если откажу», а маленький эксперимент: откажи один раз и посмотри, что реально будет. Обычно мир не рушится.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Не в одиночку</h4>
+        <p>Сам себя за волосы из болота вытащил только барон Мюнхгаузен. Нужен кто-то, кто уже стоял на твоей верхней ступени, — чтобы дать и поддержку, и вызов.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Время</h4>
+        <p>Переход между ступенями — месяцы, иногда годы. Будешь торопить — скатишься обратно.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Заблуждения -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Чего НЕ говорит эта теория — частые заблуждения</h2>
+    <p>Раз уж мы разбираем предмет всерьёз — вот ошибки, в которые попадают почти все, кто впервые слышит про уровни.</p>
+    <div class="cards">
+      <div class="card-item">
+        <h4>«Выше — значит счастливее»</h4>
+        <p>Нет. Выше — значит шире взгляд и больше свободы. Но и больше сложности, и больше ответственности. Счастья на этой лестнице нет.</p>
+      </div>
+      <div class="card-item">
+        <h4>«Я прочитал про уровни — значит, я на верхнем»</h4>
+        <p>Самая частая ловушка. Знать про ступени и быть на ступени — разные вещи. Можно блестяще пересказать всю теорию и жить по логике «я профи, я прав». Уровень виден не в том, что ты знаешь, а в том, как ты действуешь под давлением.</p>
+      </div>
+      <div class="card-item">
+        <h4>«Это про интеллект»</h4>
+        <p>Нет. Умные люди с высоким IQ сплошь и рядом застревают на средних ступенях. Ум — это размер не стакана, а струи, которой ты в него наливаешь. Зрелость и сообразительность — разное.</p>
+      </div>
+      <div class="card-item">
+        <h4>«Можно прокачаться за выходные»</h4>
+        <p>Нельзя. Никакой марафон, ретрит или интенсив не передвинет тебя на ступень. Они могут запустить процесс, но сам переход — долгий.</p>
+      </div>
+      <div class="card-item">
+        <h4>«Двигаться вверх — всегда отделяться и крепнуть»</h4>
+        <p>В первой половине пути — да. Но дальше рост идёт в другую сторону: не «укрепить своё я», а смягчить его границы, увидеть себя как часть большего. На Западе это часто принимают за слабость или регресс. Это не регресс, а вторая половина дороги.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Что делать -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Что делать, когда упёрся в потолок</h2>
+    <p>Соберём всё в понятную практику.</p>
+    <ol class="steps">
+      <li>
+        <h4>Перестань себя чинить</h4>
+        <p>Ты не сломан. Каждая попытка «вернуться в форму» тянет тебя вниз, на пройденную ступень.</p>
+      </li>
+      <li>
+        <h4>Признай: это адаптивная задача</h4>
+        <p>Новый курс, книга или лайфхак не сработают. Дело не в навыке, а в том, каким человеком надо стать.</p>
+      </li>
+      <li>
+        <h4>Найди свою скрытую установку</h4>
+        <p>Какое «правило о мире» ты принимаешь за истину? Назови его вслух. Это половина дела.</p>
+      </li>
+      <li>
+        <h4>Проверь её маленьким экспериментом</h4>
+        <p>Не ломай жизнь — сделай один шаг против установки и посмотри, что будет на самом деле.</p>
+      </li>
+      <li>
+        <h4>Найди проводника</h4>
+        <p>Того, кто уже был на твоей верхней ступени. Один человек редко перерастает себя сам.</p>
+      </li>
+      <li>
+        <h4>Дай себе время</h4>
+        <p>Месяцы, не выходные. Не торопи — иначе выгоришь от собственного напора.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- CTA -->
+<section>
+  <div class="container">
+    <h2 class="section-title">С чего начать прямо сейчас</h2>
+    <p>Самый честный первый шаг — увидеть свою карту. Понять, на какой ты ступени, во что упёрся, какая установка тебя держит и куда идёт выход.</p>
+    <p>Это то, что я разбираю с людьми на первой встрече. За полтора часа — где ты сейчас, что за потолок над тобой и какая следующая ступень.</p>
+    <p>Не «как стать лучше». А «где ты на самом деле и куда тебе расти».</p>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>Посмотрим твою карту вместе</h3>
+      <p>Если статья отозвалась — приходи на Разбор. За полтора часа соберём твою карту: ядро, потолок и следующая ступень.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+  </div>
+</section>
+
+</article>
+
+<footer>
+  <div class="container">
+    <p>Методика · Сюзанна Кук-Гройтер (2013) + Роберт Киган и Лайза Лэйхи (2009)</p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+
+</body>
+</html>
