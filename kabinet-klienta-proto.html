@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Кабинет клиента · прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--graphite);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body { min-height: 100vh; }
+
+main { max-width: 760px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* Шапка */
+.header { margin-bottom: 36px; }
+.header-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.header-kicker .badge-proto {
+  border: 1px solid var(--terracotta);
+  color: var(--terracotta);
+  padding: 2px 8px;
+  letter-spacing: 0.15em;
+}
+.header h1 {
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+.header h1 .sub {
+  display: block;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--graphite-50);
+  letter-spacing: 0;
+  margin-top: 8px;
+}
+.header-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--graphite-50);
+  letter-spacing: 0.05em;
+}
+
+/* Слой */
+.layer {
+  padding: 32px 0;
+  border-top: 1px solid var(--graphite-08);
+}
+.layer:first-of-type { border-top: none; padding-top: 8px; }
+.layer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.layer-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--graphite-50);
+  text-transform: uppercase;
+}
+.layer-title {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.layer-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+
+/* СЛОЙ 1 — Идентичность */
+.identity {
+  margin: 12px 0 28px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 32px;
+  align-items: center;
+}
+.identity-ends {
+  display: contents;
+}
+.identity-ends .from {
+  font-size: 16px;
+  color: var(--graphite-65);
+  line-height: 1.35;
+  font-weight: 400;
+}
+.identity-ends .to {
+  font-size: 16px;
+  color: var(--graphite);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.identity-arrow {
+  font-family: var(--font-mono);
+  color: var(--terracotta);
+  font-size: 22px;
+}
+.identity-pos {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--graphite-65);
+  line-height: 1.5;
+  text-align: center;
+  font-style: italic;
+}
+@media (max-width: 700px) {
+  .identity { grid-template-columns: 1fr; gap: 14px; text-align: left; }
+  .identity-arrow { display: none; }
+}
+
+/* SDT */
+.sdt {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--graphite-08);
+}
+.sdt-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sdt-head .sdt-src {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+.sdt-grid {
+  display: grid;
+  grid-template-columns: 130px 130px 1fr 1fr 36px;
+  gap: 10px 14px;
+  align-items: center;
+  font-size: 13px;
+}
+.sdt-col-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--graphite-50);
+  text-align: center;
+}
+.sdt-need {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--graphite);
+}
+.sdt-type {
+  font-size: 12px;
+  color: var(--graphite-65);
+}
+.sdt-bar {
+  height: 22px;
+  background: var(--graphite-08);
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+.sdt-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--graphite-30);
+}
+.sdt-bar-fill.now { background: var(--terracotta); }
+.sdt-bar-val {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--graphite);
+  font-variant-numeric: tabular-nums;
+}
+.sdt-bar.sdt-bar-pending {
+  background: transparent;
+  border: 1px dashed var(--graphite-15);
+  justify-content: center;
+}
+.sdt-bar.sdt-bar-pending .sdt-bar-val { color: var(--graphite-30); font-weight: 400; }
+.sdt-trend {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--graphite-30);
+}
+.sdt-trend.good { color: var(--terracotta); }
+.sdt-trend.bad { color: var(--alert); }
+.sdt-note {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--graphite-65);
+  line-height: 1.6;
+}
+.sdt-note strong { color: var(--graphite); font-weight: 500; }
+
+/* Колесо 10 сфер */
+.wheel {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--graphite-08);
+}
+.wheel-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wheel-head .wheel-src {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+  text-transform: none;
+}
+.wheel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 24px;
+}
+.wheel-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.wheel-name { color: var(--graphite); }
+.wheel-bar {
+  height: 6px;
+  background: var(--graphite-08);
+  position: relative;
+}
+.wheel-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--graphite-50);
+}
+.wheel-bar-fill.high { background: var(--graphite); }
+.wheel-bar-fill.low { background: var(--alert); }
+.wheel-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--graphite);
+  text-align: right;
+}
+.wheel-val.low { color: var(--alert); }
+@media (max-width: 700px) {
+  .wheel-grid { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* СЛОЙ 2 — две колонки */
+.layer-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.col-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--graphite-08);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.col-head .col-tag {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--graphite-50);
+  text-transform: none;
+  font-weight: 400;
+}
+
+/* Графики 12 недель */
+.chart-baseline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--graphite-65);
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chart-baseline .baseline-name { color: var(--graphite); font-weight: 500; }
+.chart-baseline .baseline-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+.chart-baseline .baseline-num { color: var(--graphite); font-weight: 500; }
+.chart-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 110px;
+  position: relative;
+}
+.chart-row.sm { height: 64px; }
+.chart-bar {
+  flex: 1;
+  background: var(--graphite-15);
+  min-height: 2px;
+}
+.chart-bar.current { background: var(--terracotta); }
+.chart-target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--graphite-30);
+  pointer-events: none;
+}
+.chart-target::after {
+  content: "цель";
+  position: absolute;
+  right: 0;
+  top: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  background: var(--paper);
+  padding: 0 4px;
+}
+.chart-labels {
+  display: flex;
+  gap: 3px;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+.chart-labels span { flex: 1; text-align: center; }
+.chart-stack { display: flex; flex-direction: column; gap: 18px; }
+
+/* Пульс недели */
+.pulse {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--graphite-08);
+}
+.pulse-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pulse-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.pulse-title .pulse-sub {
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: var(--graphite-50);
+}
+.pulse-src {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+.pulse-grid {
+  display: grid;
+  grid-template-columns: 90px repeat(7, 1fr) 50px;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+}
+.pulse-grid > .pulse-label {
+  color: var(--graphite-75);
+  font-size: 13px;
+}
+.pulse-grid > .pulse-dow {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--graphite-50);
+  text-transform: uppercase;
+}
+.pulse-dot {
+  width: 100%;
+  height: 18px;
+  background: var(--graphite-08);
+  position: relative;
+}
+.pulse-dot.full { background: var(--graphite); }
+.pulse-dot.mid { background: var(--graphite-50); }
+.pulse-dot.low { background: var(--graphite-15); }
+.pulse-dot.empty { background: var(--graphite-08); }
+.pulse-dot.check { background: var(--graphite); }
+.pulse-dot.check::after {
+  content: "✓";
+  color: var(--paper);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+}
+.pulse-dot.cross { background: var(--alert-tint); border: 1px solid var(--alert); }
+.pulse-dot.cross::after {
+  content: "✗";
+  color: var(--alert);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+}
+.pulse-sum {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+
+/* СЛОЙ 3 — табло недели */
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.score {
+  border: 1px solid var(--graphite-08);
+  padding: 18px 18px 20px;
+}
+.score .type {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--graphite-50);
+  margin-bottom: 8px;
+}
+.score .name {
+  font-size: 14px;
+  margin-bottom: 14px;
+  color: var(--graphite);
+  line-height: 1.35;
+  font-weight: 500;
+}
+.score .nums {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.score .fact { font-size: 28px; font-weight: 500; color: var(--graphite); }
+.score .sep { color: var(--graphite-30); }
+.score .plan { font-size: 14px; color: var(--graphite-50); }
+.score .delta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--graphite-50);
+}
+.score .progress-track {
+  height: 2px;
+  background: var(--graphite-08);
+  margin-top: 12px;
+}
+.score .progress-fill {
+  height: 100%;
+  background: var(--graphite-65);
+}
+.score .progress-fill.terra { background: var(--terracotta); }
+
+.commitments {
+  padding-top: 8px;
+}
+.commitments-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 12px;
+}
+.commitment {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--graphite-08);
+  font-size: 14px;
+}
+.commitment:last-child { border-bottom: none; }
+.commitment .check {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--graphite-30);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--paper);
+  font-weight: 600;
+}
+.commitment.done .check {
+  background: var(--graphite);
+  border-color: var(--graphite);
+}
+.commitment.done .text {
+  text-decoration: line-through;
+  color: var(--graphite-50);
+}
+.commitment .text { flex: 1; line-height: 1.5; }
+.commitment .due {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+
+/* СЛОЙ 4 — Маршрут */
+.route {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.route-stage {
+  flex: 1;
+  padding: 18px 20px;
+  border: 1px solid var(--graphite-08);
+}
+.route-stage + .route-stage { border-left: none; }
+.route-stage.done { background: transparent; }
+.route-stage.current {
+  border-color: var(--terracotta);
+  border-width: 1px;
+  background: var(--terracotta-tint);
+}
+.route-stage.upcoming { opacity: 0.55; }
+.route-stage .stage-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--graphite-50);
+}
+.route-stage.done .stage-status { color: var(--graphite-65); }
+.route-stage.current .stage-status { color: var(--terracotta); }
+.route-stage .stage-name { font-weight: 500; font-size: 15px; margin-bottom: 4px; letter-spacing: -0.01em; }
+.route-stage .stage-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--graphite-50);
+}
+
+/* Подсказка снизу */
+.hint {
+  margin-top: 40px;
+  padding: 20px 22px;
+  border: 1px solid var(--graphite-08);
+  font-size: 13px;
+  color: var(--graphite-75);
+  line-height: 1.6;
+}
+.hint .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Адаптив */
+@media (max-width: 700px) {
+  main { padding: 24px 18px 60px; }
+  .header h1 { font-size: 28px; }
+  .layer-title { font-size: 19px; }
+  .scoreboard { grid-template-columns: 1fr; }
+  .layer-2-cols { grid-template-columns: 1fr; gap: 28px; }
+  .layer-2-cols .col-state { padding-top: 16px; border-top: 1px solid var(--graphite-08); }
+  .route { flex-direction: column; }
+  .route-stage + .route-stage { border-left: 1px solid var(--graphite-08); border-top: none; }
+  .pulse-grid { grid-template-columns: 70px repeat(7, 1fr) 40px; font-size: 11px; }
+  .sdt-grid { grid-template-columns: 100px 100px 1fr 1fr 30px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<main>
+
+  <header class="header">
+    <div class="header-kicker">
+      <span>Кабинет · Замер 1 пройден 28.05.2026 · квартал 2 стартует 4 июня</span>
+      <span class="badge-proto">Прототип</span>
+    </div>
+    <h1>Сергей<span class="sub">Тренерская · сопровождение собственника</span></h1>
+    <div class="header-meta">Обновлено 29.05.2026</div>
+  </header>
+
+  <!-- СЛОЙ 1 — ЭТА НЕДЕЛЯ -->
+  <section class="layer">
+    <div class="layer-head">
+      <h2 class="layer-title"><span class="layer-num">01</span>Эта неделя</h2>
+      <div class="layer-hint">обновляешь сам по понедельникам</div>
+    </div>
+
+    <div class="scoreboard" style="grid-template-columns: 2fr 1fr;">
+      <div class="score">
+        <div class="type">опережающий · главная ставка</div>
+        <div class="name">Встречи с 5 руководителями · разбор сокращения расходов</div>
+        <div class="nums">
+          <span class="fact">3</span>
+          <span class="sep">/</span>
+          <span class="plan">5</span>
+          <span class="delta">встреч за неделю</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill terra" style="width: 60%"></div></div>
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--graphite-08); font-size: 12px; color: var(--graphite-65); display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--graphite-50);">КОЗЛОВА</span>
+            <span style="color: var(--graphite); font-size: 13px;">✓ вт</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--graphite-50);">АМИРАН</span>
+            <span style="color: var(--graphite); font-size: 13px;">✓ ср</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--graphite-50);">ГУТКОВ</span>
+            <span style="color: var(--graphite); font-size: 13px;">✓ ср</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--graphite-50);">СЕРГЕЙ К</span>
+            <span style="color: var(--graphite-50); font-size: 13px;">до чт</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--graphite-50);">СЁМКИН К</span>
+            <span style="color: var(--graphite-50); font-size: 13px;">до пт</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score">
+        <div class="type">параллельно</div>
+        <div class="name">Книга в поезд при поездке</div>
+        <div class="nums">
+          <span class="fact">1</span>
+          <span class="sep">/</span>
+          <span class="plan">1</span>
+          <span class="delta">поездки</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width: 100%"></div></div>
+        <div style="margin-top: 14px; font-size: 11px; color: var(--graphite-50); line-height: 1.5;">
+          Сфера Обучение (3/10). Триггер — каждая поездка.
+        </div>
+      </div>
+    </div>
+
+    <div class="commitments">
+      <div class="commitments-title">Обязательство недели 1</div>
+      <div class="commitment">
+        <div class="check"></div>
+        <div class="text">До <strong>четверга 4 июня</strong> запланировать и провести встречи с 5 руководителями · 5 табличек после каждой</div>
+        <div class="due">9/10 уверенности</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- МОСТ — связь Слоя 1 с другими слоями -->
+  <div style="padding: 18px 22px; border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); margin: 8px 0 16px; font-size: 13px; color: var(--graphite-75); line-height: 1.55;">
+    <strong style="color: var(--graphite); font-weight: 500;">Зачем эти 5 встреч →</strong>
+    двигают <strong>прибыль 100 → 140 млн</strong> и <strong>ЗП 500 → 1 000к</strong> (Слой 2). Через рост опоры «Справляюсь» закрывают «давит свобода» (Слой 3). Заземляют тебя в правила и регулярность (бывший слабый рычаг).
+  </div>
+
+  <!-- СЛОЙ 2 — ЧТО НАКОПИЛОСЬ -->
+  <section class="layer">
+    <div class="layer-head">
+      <h2 class="layer-title"><span class="layer-num">02</span>Что накопилось</h2>
+      <div class="layer-hint">12 недель назад → сейчас</div>
+    </div>
+
+    <div class="layer-2-cols">
+
+      <!-- Дело -->
+      <div class="col-behavior">
+        <div class="col-head"><span>Дело</span><span class="col-tag">13 недель</span></div>
+
+        <div class="chart-stack">
+
+          <!-- Прибыль -->
+          <div>
+            <div class="chart-baseline">
+              <div class="baseline-name">Прибыль компании <span style="color: var(--graphite-50); font-weight: 400;">млн ₽</span></div>
+              <div class="baseline-meta">старт <span class="baseline-num">100</span> · цель <span class="baseline-num">140</span></div>
+            </div>
+            <div class="chart-row sm">
+              <div class="chart-target" style="bottom: 100%"></div>
+              <div class="chart-bar current" style="height: 71%"></div>
+              <div class="chart-bar" style="height: 73%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 75%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 77%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 79%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 81%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 84%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 86%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 88%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 90%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 93%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 96%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 100%; background: var(--graphite-08);"></div>
+            </div>
+          </div>
+
+          <!-- ЗП -->
+          <div>
+            <div class="chart-baseline">
+              <div class="baseline-name">Личная ЗП <span style="color: var(--graphite-50); font-weight: 400;">тыс ₽ / мес</span></div>
+              <div class="baseline-meta">старт <span class="baseline-num">500</span> · цель <span class="baseline-num">1 000</span></div>
+            </div>
+            <div class="chart-row sm">
+              <div class="chart-target" style="bottom: 100%"></div>
+              <div class="chart-bar current" style="height: 50%"></div>
+              <div class="chart-bar" style="height: 50%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 50%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 50%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 60%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 60%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 60%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 70%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 70%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 80%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 90%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 95%; background: var(--graphite-08);"></div>
+              <div class="chart-bar" style="height: 100%; background: var(--graphite-08);"></div>
+            </div>
+            <div class="chart-labels">
+              <span>н1</span><span>н2</span><span>н3</span><span>н4</span>
+              <span>н5</span><span>н6</span><span>н7</span><span>н8</span>
+              <span>н9</span><span>н10</span><span>н11</span><span>н12</span><span>н13</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px 14px; border: 1px solid var(--graphite-08); font-size: 12px; color: var(--graphite-65); line-height: 1.5;">
+          <strong style="color: var(--graphite); font-weight: 500;">+ дивиденды 2,4 млн ₽</strong> (6% доли) — годовой горизонт.
+          Сейчас неделя 1, серое — план до конца квартала.
+        </div>
+      </div>
+
+      <!-- Состояние -->
+      <div class="col-state">
+        <div class="col-head"><span>Состояние</span><span class="col-tag">из бота «Вслух»</span></div>
+
+        <div class="chart-stack">
+
+          <div>
+            <div class="chart-baseline">
+              <div class="baseline-name">WHO-5 <span style="color: var(--graphite-50); font-weight: 400;">благополучие</span></div>
+              <div class="baseline-meta">цель <span class="baseline-num">70+</span> · сейчас <span class="baseline-num">76</span></div>
+            </div>
+            <div class="chart-row sm">
+              <div class="chart-target" style="bottom: 70%"></div>
+              <div class="chart-bar" style="height: 36%"></div>
+              <div class="chart-bar" style="height: 40%"></div>
+              <div class="chart-bar" style="height: 44%"></div>
+              <div class="chart-bar" style="height: 48%"></div>
+              <div class="chart-bar" style="height: 52%"></div>
+              <div class="chart-bar" style="height: 56%"></div>
+              <div class="chart-bar" style="height: 60%"></div>
+              <div class="chart-bar" style="height: 60%"></div>
+              <div class="chart-bar" style="height: 68%"></div>
+              <div class="chart-bar" style="height: 72%"></div>
+              <div class="chart-bar" style="height: 64%"></div>
+              <div class="chart-bar current" style="height: 76%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="chart-baseline">
+              <div class="baseline-name">PHQ-9 <span style="color: var(--graphite-50); font-weight: 400;">депрессия · меньше — лучше</span></div>
+              <div class="baseline-meta">цель <span class="baseline-num">≤4</span> · сейчас <span class="baseline-num">5</span></div>
+            </div>
+            <div class="chart-row sm">
+              <div class="chart-target" style="bottom: 20%"></div>
+              <div class="chart-bar" style="height: 55%"></div>
+              <div class="chart-bar" style="height: 50%"></div>
+              <div class="chart-bar" style="height: 50%"></div>
+              <div class="chart-bar" style="height: 45%"></div>
+              <div class="chart-bar" style="height: 45%"></div>
+              <div class="chart-bar" style="height: 45%"></div>
+              <div class="chart-bar" style="height: 40%"></div>
+              <div class="chart-bar" style="height: 40%"></div>
+              <div class="chart-bar" style="height: 35%"></div>
+              <div class="chart-bar" style="height: 30%"></div>
+              <div class="chart-bar" style="height: 30%"></div>
+              <div class="chart-bar current" style="height: 25%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="chart-baseline">
+              <div class="baseline-name">GAD-7 <span style="color: var(--graphite-50); font-weight: 400;">тревога · меньше — лучше</span></div>
+              <div class="baseline-meta">цель <span class="baseline-num">≤4</span> · сейчас <span class="baseline-num">6</span></div>
+            </div>
+            <div class="chart-row sm">
+              <div class="chart-target" style="bottom: 20%"></div>
+              <div class="chart-bar" style="height: 60%"></div>
+              <div class="chart-bar" style="height: 55%"></div>
+              <div class="chart-bar" style="height: 55%"></div>
+              <div class="chart-bar" style="height: 50%"></div>
+              <div class="chart-bar" style="height: 50%"></div>
+              <div class="chart-bar" style="height: 45%"></div>
+              <div class="chart-bar" style="height: 45%"></div>
+              <div class="chart-bar" style="height: 40%"></div>
+              <div class="chart-bar" style="height: 40%"></div>
+              <div class="chart-bar" style="height: 35%"></div>
+              <div class="chart-bar" style="height: 35%"></div>
+              <div class="chart-bar current" style="height: 30%"></div>
+            </div>
+            <div class="chart-labels">
+              <span>-11</span><span>-10</span><span>-9</span><span>-8</span>
+              <span>-7</span><span>-6</span><span>-5</span><span>-4</span>
+              <span>-3</span><span>-2</span><span>-1</span><span>сейчас</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pulse">
+      <div class="pulse-head">
+        <div class="pulse-title">Пульс последних 7 дней <span class="pulse-sub">· ежедневный срез</span></div>
+        <div class="pulse-src">данные из бота «Вслух»</div>
+      </div>
+      <div class="pulse-grid">
+        <span></span>
+        <span class="pulse-dow">пн</span><span class="pulse-dow">вт</span><span class="pulse-dow">ср</span>
+        <span class="pulse-dow">чт</span><span class="pulse-dow">пт</span><span class="pulse-dow">сб</span><span class="pulse-dow">вс</span>
+        <span></span>
+
+        <span class="pulse-label">Сон</span>
+        <div class="pulse-dot full"></div><div class="pulse-dot full"></div><div class="pulse-dot low"></div>
+        <div class="pulse-dot mid"></div><div class="pulse-dot full"></div><div class="pulse-dot mid"></div><div class="pulse-dot full"></div>
+        <span class="pulse-sum">6/7</span>
+
+        <span class="pulse-label">Энергия</span>
+        <div class="pulse-dot low"></div><div class="pulse-dot mid"></div><div class="pulse-dot full"></div>
+        <div class="pulse-dot full"></div><div class="pulse-dot full"></div><div class="pulse-dot low"></div><div class="pulse-dot mid"></div>
+        <span class="pulse-sum">5/7</span>
+
+        <span class="pulse-label">Контроль</span>
+        <div class="pulse-dot low"></div><div class="pulse-dot mid"></div><div class="pulse-dot full"></div>
+        <div class="pulse-dot low"></div><div class="pulse-dot full"></div><div class="pulse-dot low"></div><div class="pulse-dot mid"></div>
+        <span class="pulse-sum">4/7</span>
+
+        <span class="pulse-label">Важное</span>
+        <div class="pulse-dot check"></div><div class="pulse-dot check"></div><div class="pulse-dot cross"></div>
+        <div class="pulse-dot check"></div><div class="pulse-dot check"></div><div class="pulse-dot cross"></div><div class="pulse-dot check"></div>
+        <span class="pulse-sum">5/7</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛОЙ 3 — КЕМ СТАНОВИШЬСЯ -->
+  <section class="layer">
+    <div class="layer-head">
+      <h2 class="layer-title"><span class="layer-num">03</span>Кем становишься</h2>
+      <div class="layer-hint">обновляется на Сборах и Замерах</div>
+    </div>
+
+    <div class="identity">
+      <div class="identity-ends">
+        <div class="from">Архитектор с верхними рычагами</div>
+        <div class="identity-arrow">→</div>
+        <div class="to">Архитектор с заземлением в правилах и регулярности</div>
+      </div>
+    </div>
+    <div class="identity-pos">Сильная зона — цели и смысл. Слабая — правила, регулярность. Туда заземляемся.</div>
+
+    <div class="sdt">
+      <div class="sdt-head">
+        <span>Где опора, где давит</span>
+        <span class="sdt-src">обновляется на Разборе и Замере</span>
+      </div>
+      <div class="sdt-grid">
+
+        <span></span>
+        <span></span>
+        <span class="sdt-col-time">Старт · 20.05</span>
+        <span class="sdt-col-time">Следующий замер</span>
+        <span></span>
+
+        <div class="sdt-need">Свободен</div>
+        <div class="sdt-type">опора</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 70%"></div><span class="sdt-bar-val">3.50</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+        <div></div>
+        <div class="sdt-type">давит</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 55%"></div><span class="sdt-bar-val">2.75</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+        <div class="sdt-need">Справляюсь</div>
+        <div class="sdt-type">опора</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 80%"></div><span class="sdt-bar-val">4.00</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+        <div></div>
+        <div class="sdt-type">давит</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 45%"></div><span class="sdt-bar-val">2.25</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+        <div class="sdt-need">Не один</div>
+        <div class="sdt-type">опора</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 95%"></div><span class="sdt-bar-val">4.75</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+        <div></div>
+        <div class="sdt-type">давит</div>
+        <div class="sdt-bar"><div class="sdt-bar-fill" style="width: 30%"></div><span class="sdt-bar-val">1.50</span></div>
+        <div class="sdt-bar sdt-bar-pending"><span class="sdt-bar-val">—</span></div>
+        <div class="sdt-trend">—</div>
+
+      </div>
+      <div class="sdt-note">
+        <strong>Давит свобода.</strong> Источник — новые люди в системе.<br>
+        <strong>Опора — близкие.</strong> Узкий круг 5–7 человек.
+      </div>
+    </div>
+
+    <div class="wheel">
+      <div class="wheel-head">
+        <span>Колесо 10 сфер</span>
+        <span class="wheel-src">шкала 0–10 · Тело 12 — здоровье сработало</span>
+      </div>
+      <div class="wheel-grid">
+        <div class="wheel-row">
+          <span class="wheel-name">Тело</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill high" style="width: 100%"></div></div>
+          <span class="wheel-val">12</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Личные отношения</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill high" style="width: 90%"></div></div>
+          <span class="wheel-val">9</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Семья</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill high" style="width: 90%"></div></div>
+          <span class="wheel-val">9</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Друзья</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill high" style="width: 90%"></div></div>
+          <span class="wheel-val">9</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Смысл жизни</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill high" style="width: 90%"></div></div>
+          <span class="wheel-val">9</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Внешность</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill" style="width: 70%"></div></div>
+          <span class="wheel-val">7</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Природа</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill" style="width: 70%"></div></div>
+          <span class="wheel-val">7</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Работа</span>
+          <div class="wheel-bar"><div class="wheel-bar-fill" style="width: 60%"></div></div>
+          <span class="wheel-val">6</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Обучение <span style="color: var(--alert); font-size: 11px;">· лимит</span></span>
+          <div class="wheel-bar"><div class="wheel-bar-fill low" style="width: 30%"></div></div>
+          <span class="wheel-val low">3</span>
+        </div>
+        <div class="wheel-row">
+          <span class="wheel-name">Культура</span>
+          <div class="wheel-bar"></div>
+          <span class="wheel-val" style="color: var(--graphite-50);">н/д</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЛОЙ 4 — Маршрут -->
+  <section class="layer">
+    <div class="layer-head">
+      <h2 class="layer-title"><span class="layer-num">04</span>Где ты в маршруте</h2>
+      <div class="layer-hint">путь Тренерской</div>
+    </div>
+    <div class="route">
+      <div class="route-stage done">
+        <div class="stage-status">✓ Пройден</div>
+        <div class="stage-name">Разбор · Сборы</div>
+        <div class="stage-date">апрель 2026</div>
+      </div>
+      <div class="route-stage done">
+        <div class="stage-status">✓ Пройден</div>
+        <div class="stage-name">Тренировки кв. 1</div>
+        <div class="stage-date">28.04 → 28.05</div>
+      </div>
+      <div class="route-stage done">
+        <div class="stage-status">✓ Пройден</div>
+        <div class="stage-name">Замер 1</div>
+        <div class="stage-date">20 · 25 · 28.05</div>
+      </div>
+      <div class="route-stage current">
+        <div class="stage-status">Старт 4 июня</div>
+        <div class="stage-name">Тренировки кв. 2</div>
+        <div class="stage-date">04.06 → 28.08 · 13 недель</div>
+      </div>
+      <div class="route-stage upcoming">
+        <div class="stage-status">Через 13 нед</div>
+        <div class="stage-name">Замер 2</div>
+        <div class="stage-date">~28.08.2026</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="hint">
+    <span class="lbl">Как пользоваться</span>
+    Слой 1 — твоя игра на неделе, ведёшь сам. Слой 2 — куда двигаешься за квартал. Слой 3 — кем становишься за полгода. Сверка по Слою 1 каждую неделю, по Слою 3 — на Замерах.
+  </div>
+
+</main>
+
+</body>
+</html>
