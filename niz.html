@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Нижние ступени: где мы все начинали — и куда падаем, когда совсем прижало</title>
+<meta name="description" content="Три нижние ступени развития. На них взрослые не живут, но через них прошёл каждый — и в каждого они иногда возвращаются. Младенец, Дитя и Хитрец — аварийное дно психики.">
+
+<!-- Open Graph — карточка-превью в Telegram и соцсетях -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Нижние ступени: где мы все начинали — и куда падаем, когда совсем прижало">
+<meta property="og:description" content="Три нижние ступени развития. На них взрослые не живут, но через них прошёл каждый — и в каждого они иногда возвращаются.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/niz.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 720px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+
+header {
+  padding: 72px 0 40px;
+  border-bottom: 1px solid var(--graphite-15);
+}
+header h1 {
+  font-weight: 600;
+  font-size: clamp(28px, 5vw, 42px);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin: 18px 0 16px;
+}
+header h1 .dot { color: var(--terracotta); }
+header .lead {
+  font-size: 18px;
+  color: var(--graphite-75);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+article { padding: 8px 0 0; }
+section { padding: 40px 0; border-bottom: 1px solid var(--graphite-08); }
+section:last-of-type { border-bottom: none; }
+
+h2.section-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  margin: 0 0 22px;
+  font-size: clamp(23px, 3.4vw, 30px);
+}
+
+p { margin: 0 0 18px; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+.intro-link { color: var(--terracotta-dark); text-decoration: underline; text-underline-offset: 2px; }
+
+.pullquote {
+  font-size: clamp(21px, 3.2vw, 26px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--graphite);
+  border-left: 4px solid var(--terracotta);
+  padding: 6px 0 6px 22px;
+  margin: 28px 0;
+}
+
+.cards { margin: 24px 0; }
+.card-item {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  border-left: 4px solid var(--graphite-30);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-bottom: 12px;
+}
+.card-item:last-child { margin-bottom: 0; }
+.card-item h4 { margin: 0 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.card-item p { margin: 0; font-size: 15px; color: var(--graphite-75); line-height: 1.55; }
+.card-item.accent { border-left-color: var(--terracotta); background: var(--terracotta-tint); }
+
+.cta {
+  background: var(--graphite);
+  color: var(--paper);
+  padding: 44px 36px;
+  border-radius: 4px;
+  margin: 32px 0 0;
+}
+.cta .eyebrow { color: rgba(244,242,236,0.5); }
+.cta h3 {
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 14px 0 16px;
+}
+.cta p { font-size: 16px; line-height: 1.6; color: rgba(244,242,236,0.85); margin: 0 0 14px; }
+.cta .btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 3px;
+  letter-spacing: -0.01em;
+  transition: background 0.2s ease;
+}
+.cta .btn:hover { background: var(--terracotta-dark); }
+
+footer {
+  padding: 32px 0 56px;
+  font-size: 12px;
+  color: var(--graphite-50);
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}
+footer p { margin: 3px 0; }
+footer a { color: var(--graphite-50); }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 32px; }
+  section { padding: 32px 0; }
+  .cta { padding: 32px 24px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <div class="eyebrow accent">Уровни развития · нижние ступени</div>
+    <h1>Нижние ступени: где мы все начинали — и куда падаем, когда совсем прижало<span class="dot">.</span></h1>
+    <p class="lead">Три нижние ступени. На них взрослые не живут. Но через них прошёл каждый — и в каждого они иногда возвращаются.</p>
+  </div>
+</header>
+
+<article>
+
+<section>
+  <div class="container">
+    <p>У взрослого развития есть карта — лестница ступеней, по которой человек растёт всю жизнь. Целиком я разбирал её в <a class="intro-link" href="potolok.html">отдельном большом тексте</a>. Большинство глав — про взрослые ступени, где мы стоим. Эта — про три нижние, под ними. Там взрослый не живёт постоянно. Но знать их важно по двум причинам: с них все мы начинали в детстве, и в них же срываемся, когда жизнь бьёт особенно сильно.</p>
+    <p>Поэтому тут не будет «ты, скорее всего, здесь». Скорее — «ты бываешь здесь, и стоит научиться это замечать».</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Младенец: слияние с миром</h2>
+    <p>Самая первая ступень. Точка отсчёта.</p>
+    <p>Младенец ещё не отделяет себя от мира и от матери. Он и мир — одно. Нет «я» и «не-я», нет границы. Это не метафора — так буквально устроено сознание в самом начале жизни.</p>
+    <p>У взрослого следов этой ступени почти не остаётся. Она всплывает разве что в крайних состояниях — глубоком горе, болезни, на грани, — когда человек теряет всякую опору и проваливается в довербальное «меня размывает». Знать о ней нужно только для полноты карты: вот откуда всё начинается. С нуля, со слияния.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Дитя: «я хочу — дай сейчас»</h2>
+    <p>Вторая ступень. Маленький ребёнок двух-четырёх лет.</p>
+    <p>Здесь уже есть «я», и оно громко хочет. Мир делится на тех, кто исполняет желания, и тех, кто мешает. Чужой точки зрения пока нет вообще — есть только моё «хочу», прямо сейчас, без отсрочки. Нет «завтра», нет «подожди», нет «а как другому». Эмоции — через край и сразу в действие.</p>
+    <p>Взрослый давно это перерос. Но Дитя в нём вспыхивает — и чаще, чем хочется признавать. Когда невыносимо хочется немедленно, любой ценой. Когда внутри поднимается «я хочу, и плевать на последствия». Импульсивная покупка, резкое слово сгоряча, истерика на пустом месте, «дай сейчас» вопреки всему. Это не порок — это древний нижний этаж, который иногда берёт управление.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Хитрец: аварийное дно взрослого</h2>
+    <p>Третья ступень — и самая важная в этой главе. Потому что сюда взрослый срывается чаще всего.</p>
+    <p>Хитрец живёт по закону «каждый сам за себя, кто не успел — тот лох». Мир для него — враждебная территория, игра с нулевой суммой: или я выиграл, или меня обыграли. Он видит выгоду, ловит момент, не парится правилами и моралью. Виноваты всегда другие. Защита одна — нападение, обман, отыгрывание.</p>
+    <p>В чистом виде у взрослых эта ступень встречается редко. Но под сильным ударом сюда падает почти каждый. Когда прижало по-настоящему — потеря, предательство, угроза, унижение — тёплый и сложный мир вдруг схлопывается в простое и холодное:</p>
+    <p class="pullquote">«Все против меня. Кругом враги. Надо защищаться и бить первым».</p>
+    <p>Это и есть Хитрец. Аварийный режим психики. В нём человек делает то, чего на своих обычных ступенях себе не позволил бы: хитрит, мстит, обесценивает, идёт по головам, заглушает боль чем придётся.</p>
+    <p>И отдельно стоит сказать: некоторые на этой ступени не срываются временно, а живут. Чуют короткую выгоду, не мучаются этикой, играют вдолгую только если выгодно. Иногда такие люди оказываются у власти и в больших деньгах — потому что готовы на то, на что другие не готовы. Это не «недоразвитость». Это просто ступень, на которой человек застрял, и она бывает по-своему эффективной — на короткой дистанции и чужой ценой.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Зачем это знать взрослому</h2>
+    <p>Ты не живёшь на этих ступенях. Но они никуда не делись — это нижние этажи, и они всегда под тобой. Вот зачем держать их в поле зрения.</p>
+    <div class="cards">
+      <div class="card-item accent">
+        <h4>Чтобы узнавать свой срыв</h4>
+        <p>Человек не на одной ступени, а на нескольких сразу. Куда ты падаешь, когда совсем плохо, — это твоё дно, твой аварийный этаж. У кого-то это Хитрец («все против меня»), у кого-то Дитя («хочу немедленно»). Знать своё дно — значит узнавать его в момент, а не задним числом.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Чтобы не стыдиться, а замечать</h4>
+        <p>Сорваться вниз под ударом — не позор и не провал. Это делают все, даже самые зрелые. Стыд тут не помогает. Помогает одно: вовремя заметить «ага, меня прижало, и я свалился в режим войны со всеми» — и не наделать из этого режима непоправимого.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Чтобы понимать других</h4>
+        <p>Когда кто-то рядом вдруг становится мелочным, мстительным, «все враги» — часто это не его суть, а его аварийный этаж под нагрузкой. Это не оправдывает, но объясняет. И иногда помогает не отвечать тем же.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Где ты на самом деле</h2>
+    <p>Эти три ступени — фундамент лестницы. Не то место, где стоит твоя жизнь, а то, откуда она выросла и куда иногда проваливается под тяжестью.</p>
+    <p>Самое ценное, что можно с этим сделать, — узнать своё дно. Куда именно срываешься ты, по какому сигналу, что включает аварийный режим. Это часть твоей карты — и, может, самая практичная: знать не только, куда растёшь, но и куда падаешь.</p>
+    <p>Это то, что я разбираю с людьми на первой встрече — за полтора часа собираем всю карту: и ядро, и рост, и дно.</p>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>Знать не только, куда растёшь, но и куда падаешь</h3>
+      <p>Если хочешь увидеть свою карту целиком — приходи на Разбор. За полтора часа соберём её всю: ядро, рост и дно.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+  </div>
+</section>
+
+</article>
+
+<footer>
+  <div class="container">
+    <p>Методика · Сюзанна Кук-Гройтер + Роберт Киган</p>
+    <p>Полная карта ступеней · <a href="potolok.html">потолок</a> · первая взрослая ступень · <a href="svoy.html">Свой</a></p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+
+</body>
+</html>
