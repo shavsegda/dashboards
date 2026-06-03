@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Ищущий: старые цели больше не греют, а новых ещё нет. И кто ты теперь?</title>
+<meta name="description" content="Ищущий — первая ступень, на которую выходят с вершины Достигателя. Когда «успешная жизнь» перестаёт быть ответом. Как узнать себя, в чём сила, где потолок и как растут дальше.">
+
+<!-- Open Graph — карточка-превью в Telegram и соцсетях -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ищущий: старые цели больше не греют, а новых ещё нет. И кто ты теперь?">
+<meta property="og:description" content="Первая ступень, на которую выходят с вершины Достигателя. Когда «успешная жизнь» перестаёт быть ответом. Как узнать себя, в чём сила, где потолок и как растут дальше.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/ischuschiy.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 720px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+
+header {
+  padding: 72px 0 40px;
+  border-bottom: 1px solid var(--graphite-15);
+}
+header h1 {
+  font-weight: 600;
+  font-size: clamp(28px, 5vw, 42px);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin: 18px 0 16px;
+}
+header h1 .dot { color: var(--terracotta); }
+header .lead {
+  font-size: 18px;
+  color: var(--graphite-75);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+article { padding: 8px 0 0; }
+section { padding: 40px 0; border-bottom: 1px solid var(--graphite-08); }
+section:last-of-type { border-bottom: none; }
+
+h2.section-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  margin: 0 0 22px;
+  font-size: clamp(23px, 3.4vw, 30px);
+}
+
+p { margin: 0 0 18px; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+.intro-link { color: var(--terracotta-dark); text-decoration: underline; text-underline-offset: 2px; }
+
+.pullquote {
+  font-size: clamp(21px, 3.2vw, 26px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--graphite);
+  border-left: 4px solid var(--terracotta);
+  padding: 6px 0 6px 22px;
+  margin: 28px 0;
+}
+
+.aside {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  border-radius: 4px;
+  padding: 22px 26px;
+  margin: 24px 0;
+  font-size: 16px;
+  color: var(--graphite-75);
+  line-height: 1.58;
+}
+
+ul.checks { margin: 22px 0; padding-left: 0; list-style: none; }
+ul.checks li {
+  position: relative;
+  padding: 0 0 14px 30px;
+  font-size: 16.5px;
+  color: var(--graphite-90);
+  line-height: 1.5;
+}
+ul.checks li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--terracotta);
+  font-weight: 600;
+}
+ul.checks li:last-child { padding-bottom: 0; }
+
+.cards { margin: 24px 0; }
+.card-item {
+  background: white;
+  border: 1px solid var(--graphite-15);
+  border-left: 4px solid var(--graphite-30);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-bottom: 12px;
+}
+.card-item:last-child { margin-bottom: 0; }
+.card-item h4 { margin: 0 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.card-item p { margin: 0; font-size: 15px; color: var(--graphite-75); line-height: 1.55; }
+.card-item.accent { border-left-color: var(--terracotta); background: var(--terracotta-tint); }
+
+.cloud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+@media (max-width: 640px) { .cloud { grid-template-columns: 1fr; } }
+.cloud-card { background: white; border: 1px solid var(--graphite-15); border-radius: 4px; padding: 22px; }
+.cloud-card .cc-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 8px;
+}
+.cloud-card p { font-size: 14.5px; color: var(--graphite-75); line-height: 1.5; margin: 0; }
+
+.cta {
+  background: var(--graphite);
+  color: var(--paper);
+  padding: 44px 36px;
+  border-radius: 4px;
+  margin: 32px 0 0;
+}
+.cta .eyebrow { color: rgba(244,242,236,0.5); }
+.cta h3 {
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 14px 0 16px;
+}
+.cta p { font-size: 16px; line-height: 1.6; color: rgba(244,242,236,0.85); margin: 0 0 14px; }
+.cta .btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 3px;
+  letter-spacing: -0.01em;
+  transition: background 0.2s ease;
+}
+.cta .btn:hover { background: var(--terracotta-dark); }
+
+footer {
+  padding: 32px 0 56px;
+  font-size: 12px;
+  color: var(--graphite-50);
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}
+footer p { margin: 3px 0; }
+footer a { color: var(--graphite-50); }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 32px; }
+  section { padding: 32px 0; }
+  .cta { padding: 32px 24px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <div class="eyebrow accent">Уровни развития · крупным планом</div>
+    <h1>Ищущий: старые цели больше не греют, а новых ещё нет. И кто ты теперь?<span class="dot">.</span></h1>
+    <p class="lead">Первая ступень, на которую выходят с самой вершины Достигателя. Самая растерянная и самая честная.</p>
+  </div>
+</header>
+
+<article>
+
+<section>
+  <div class="container">
+    <p>У взрослого развития есть карта — лестница ступеней, по которой человек растёт всю жизнь. Целиком я разбирал её в <a class="intro-link" href="potolok.html">отдельном большом тексте</a>. Здесь беру крупным планом одну ступень — ту, на которую человек попадает, когда «успешная жизнь» вдруг перестаёт быть ответом.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Кто такой Ищущий</h2>
+    <p>Ищущий — это человек, у которого осыпались старые опоры.</p>
+    <p>Раньше он знал, чего хочет. Ставил цели, брал их, шёл дальше. А потом что-то сломалось. Не снаружи — внутри. Цели на месте, а тяги к ним нет. Достижения есть, а радости нет. И впервые приходит мысль, от которой не отмахнуться: «А мои ли это были цели вообще? Или я просто бежал по чужой дорожке?»</p>
+    <p>Это первая ступень, где человек выходит за пределы «успешного взрослого». Он увидел то, чего раньше не видел: вся его прежняя жизнь — работа, статус, гонка — была во многом задана. Средой, семьёй, временем, новостной лентой ровесников. И теперь он не знает, что из этого его, а что — наносное.</p>
+    <p>Это растерянная ступень. И при этом — самая честная. Потому что Ищущий первым перестаёт врать себе, что всё в порядке.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Ты, скорее всего, Ищущий, если</h2>
+    <ul class="checks">
+      <li>Поймал себя на «я больше не понимаю, чего хочу» — впервые в жизни.</li>
+      <li>Старые цели достигнуты или близко, но не радуют, как раньше.</li>
+      <li>Часто думаешь «с одной стороны… с другой стороны…» и не можешь выбрать.</li>
+      <li>Тянет в опыт, в тело, в практики, в путешествия, в творчество — прочь от гонки.</li>
+      <li>Замечаешь, что у тебя как будто несколько разных «я», и они спорят.</li>
+      <li>Авторитеты, которым верил, перестали быть истиной в последней инстанции.</li>
+      <li>Иногда накрывает «а есть ли вообще во всём этом смысл».</li>
+    </ul>
+    <p>Узнал три-четыре пункта? Ты здесь. И тебе, наверное, сейчас непросто.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">В чём твоя сила</h2>
+    <p>Ищущего легко принять за потерянного. Но у этой ступени есть то, чего нет ни у одной нижней.</p>
+    <p>Он <strong>честен с собой</strong>. Перестал делать вид, что цели зажигают, когда они погасли. Это требует мужества — большинство предпочитает не замечать.</p>
+    <p>Он <strong>видит относительность</strong>. Понимает, что его правда — не единственная. Что мир сложнее, чем «правильно и неправильно». Это огромный сдвиг после Достигателя с его единственно верным курсом.</p>
+    <p>Он <strong>вернулся в контакт с собой</strong>. Снова чувствует тело, опыт, настоящий момент — то, что Достигатель давно принёс в жертву результату.</p>
+    <p>Он <strong>открыт к другому</strong>. Слышит чужие точки зрения не как угрозу, а как богатство. Эмпатия, которой раньше не было.</p>
+    <p>Это не слабость. Это первые ростки следующего, более широкого взгляда.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Твоя вода — то, чего ты в себе не видишь</h2>
+    <div class="aside">
+      У каждой ступени есть своя «вода» — то, чем ты являешься, не замечая. Рыба не видит воду, пока не окажется снаружи.
+    </div>
+    <p>Вода Ищущего — <strong>сама относительность</strong>. «Всё зависит, всё не однозначно, никакая правда не лучше другой».</p>
+    <p>Это был спасительный выход из Достигателя — увидеть, что твоя единственная правда не единственная. Но теперь Ищущий живёт в этом, как в новой воде. И не замечает, что «всё относительно» — тоже позиция. Что бесконечное «с одной стороны, с другой стороны» из освобождения превратилось в ловушку.</p>
+    <p>Раньше он не мог усомниться в своих целях. Теперь не может ни на чём остановиться. Прежняя тюрьма была — слишком твёрдо. Новая — слишком жидко.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Ловушка и потолок</h2>
+    <p>Сила Ищущего — в том, что он всё поставил под вопрос. И тут же его потолок.</p>
+    <div class="cards">
+      <div class="card-item">
+        <h4>Не может выбрать</h4>
+        <p>Все варианты равноценны, ни один не лучше. Решение повисает. «И то хорошо, и это, и третье» — а жизнь стоит на паузе.</p>
+      </div>
+      <div class="card-item">
+        <h4>Уходит в относительность как в убежище</h4>
+        <p>«Всё неоднозначно» — удобная позиция, чтобы ни за что не отвечать и ничего не решать.</p>
+      </div>
+      <div class="card-item">
+        <h4>Его накрывает бессмыслицей</h4>
+        <p>Старые смыслы рухнули, новые не выросли. В этом провале легко поселиться цинизму и «всё равно ничего не имеет значения».</p>
+      </div>
+      <div class="card-item">
+        <h4>Боится, что не соберётся</h4>
+        <p>«Я просто набор разных голосов, во мне нет цельности, я не настоящий».</p>
+      </div>
+    </div>
+    <p>И главный потолок, ради которого ты, наверное, и читаешь:</p>
+    <p class="pullquote">Ты разобрал себя на части — и не можешь собрать обратно.</p>
+    <p>Старое «я» Достигателя ты перерос и отпустил. А новое, более просторное, ещё не сложилось. Ты завис между. Это не болезнь и не откат. Это и есть ступень Ищущего — самое неуютное место на всей лестнице. Дальше внутри неё хода нет: можно только собраться заново, уже осознанно.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Как это выглядит в жизни</h2>
+    <div class="cloud">
+      <div class="cloud-card">
+        <div class="cc-label">В работе</div>
+        <p>Ты, возможно, на пике — или уже отошёл от дел. И не понимаешь, зачем дальше. Бизнес, который строил годами, вдруг кажется чужим. Думаешь всё бросить и заняться «чем-то настоящим», но не знаешь чем. Тянет уйти из операционки — но страшно потерять вместе с ней себя.</p>
+      </div>
+      <div class="cloud-card">
+        <div class="cc-label">В деньгах</div>
+        <p>Денег достаточно, и они окончательно перестали быть целью. «Заработать ещё» больше не мотивирует. А что мотивирует — непонятно. Прежний драйвер выключился, новый не включился.</p>
+      </div>
+      <div class="cloud-card">
+        <div class="cc-label">В семье</div>
+        <p>Ты пересматриваешь всё — кем был как партнёр, как родитель, что вообще важно. Иногда близким с тобой тревожно: ты как будто другой человек, и сам не знаешь, какой. Это пугает и тебя, и их.</p>
+      </div>
+    </div>
+    <p>Узнаёшь хоть одну сцену — ты на ступени Ищущего.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Что с тобой под стрессом</h2>
+    <p>Помни: ты не на одной ступени, а на нескольких сразу. Под давлением Ищущий <strong>падает вниз — к Достигателю</strong>.</p>
+    <p>Когда хаос относительности становится невыносимым, ты хватаешься за старое спасательное: ставишь цель, берёшь под контроль, грузишь себя задачами. Операционка, гонка, дедлайны — вдруг становится легче, потому что понятно, что делать.</p>
+    <p>Это понятно по-человечески: лучше знакомая клетка, чем незнакомая пустота. Но это шаг назад. Заполнить вакуум смысла работой — значит сбежать от перехода, который как раз сейчас и созрел.</p>
+    <p>Замечай это: «ага, мне тревожно от неопределённости, и я снова закопался в дела, чтобы не чувствовать». Само замечание — уже работа Ищущего, а не бегство Достигателя.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Как растут с этой ступени</h2>
+    <p>Вверх с Ищущего — это переход к Стратегу. Из растерянной множественности — в осознанную цельность. Не вернуться к старым твёрдым опорам, а собрать новые, уже зная, что они твой выбор.</p>
+    <p>Что реально помогает:</p>
+    <div class="cards">
+      <div class="card-item accent">
+        <h4>Не торопить себя со сборкой</h4>
+        <p>Множественность нужно прожить, а не проскочить. Дай себе побыть в «не знаю» — это не провал, это часть пути.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Идти через тело и опыт, а не через голову</h4>
+        <p>Достигательский «придумать правильный ответ» тут не работает. Ответ приходит из проживания, а не из анализа.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Не путать относительность с безразличием</h4>
+        <p>«Все мнения равны» — тоже мнение. В какой-то момент честно спросить себя: а что для меня правда сейчас? Не навсегда — сейчас.</p>
+      </div>
+      <div class="card-item accent">
+        <h4>Собирать голоса, а не выбирать один</h4>
+        <p>Твоя цельность не в том, чтобы заглушить все «я» ради одного. А в том, чтобы найти, в какой картине им всем есть место.</p>
+      </div>
+    </div>
+    <p>Это не происходит от прочтения статьи. Для этого нужно прожить неопределённость до конца — и кто-то рядом, кто уже эту пустоту прошёл и собрался по ту сторону.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2 class="section-title">Где ты на самом деле</h2>
+    <p>Ищущий — не поломка и не кризис среднего возраста. Это ступень. Самая неуютная, но и самая важная — без неё не бывает по-настоящему своей, не заёмной жизни.</p>
+    <p>Проблема не в том, что ты потерялся. Проблема в том, чтобы не испугаться этого и не сбежать обратно в понятную гонку. Зависнуть тут можно на годы. А можно — собраться заново.</p>
+    <p>Самый честный первый шаг — увидеть свою карту. Где ты сейчас, что отпало, что нащупывается, куда идёт выход. Это то, что я разбираю с людьми на первой встрече — за полтора часа.</p>
+    <p>Не «как поставить новые правильные цели». А «где ты сейчас и из чего собрать себя дальше».</p>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>В этой пустоте лучше не сидеть одному</h3>
+      <p>Если узнал себя — приходи на Разбор. За полтора часа соберём твою карту: где ты сейчас, что отпало и из чего собрать себя дальше.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+  </div>
+</section>
+
+</article>
+
+<footer>
+  <div class="container">
+    <p>Методика · Сюзанна Кук-Гройтер (стадия Индивидуалиста) + Роберт Киган</p>
+    <p>Полная карта ступеней · <a href="potolok.html">потолок</a> · предыдущая ступень · <a href="dostigatel.html">Достигатель</a></p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+
+</body>
+</html>
