@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Дамир · сессия 4 июня 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    font-feature-settings: "kern", "calt";
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 10px 18px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    z-index: 100;
+  }
+  .print-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .header-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .header-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 24px 0;
+  }
+  .header-meta {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 4px 16px;
+    font-size: 13px;
+  }
+  .header-meta dt {
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    margin: 0;
+  }
+  .header-meta dd { margin: 0; }
+
+  .topic {
+    margin: 40px 0 48px;
+    padding: 24px;
+    border: 1px solid var(--ink);
+  }
+  .topic-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .topic-text {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .block {
+    margin: 36px 0;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+  .block:last-of-type {
+    border-bottom: none;
+  }
+  .block-num {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .block h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.01em;
+  }
+  .block p {
+    margin: 0 0 12px 0;
+  }
+  .block p:last-child {
+    margin-bottom: 0;
+  }
+  .block ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  .block ul li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 6px;
+  }
+  .block ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-soft);
+  }
+  .block strong {
+    font-weight: 600;
+  }
+
+  .insight-chain {
+    margin: 16px 0;
+    padding: 16px 20px;
+    background: var(--line-soft);
+    border-left: 2px solid var(--ink);
+  }
+  .insight-chain ul li::before {
+    content: '·';
+    font-weight: 600;
+  }
+
+  .quote {
+    margin: 24px 0 12px 0;
+    padding: 24px;
+    border: 2px solid var(--ink);
+    background: var(--accent-soft);
+  }
+  .quote-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    color: var(--ink);
+  }
+  .quote-author {
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  @media print {
+    body { padding: 24px; }
+    .print-btn { display: none; }
+    .block { page-break-inside: avoid; }
+    .topic, .quote { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">Сохранить PDF</button>
+
+<header class="header">
+  <div class="header-kicker">Тренировка 2 · подписка</div>
+  <h1 class="header-title">Дамир · сессия 4 июня 2026</h1>
+  <dl class="header-meta">
+    <dt>дата</dt><dd>4 июня 2026</dd>
+    <dt>длительность</dt><dd>~1 час</dd>
+    <dt>формат</dt><dd>живой созвон</dd>
+    <dt>ведущий</dt><dd>Алексей Шаповалов</dd>
+  </dl>
+</header>
+
+<section class="topic">
+  <div class="topic-label">тема</div>
+  <p class="topic-text">Архитектор роста отрасли. Как превратить вчерашнюю победу в позиционирование, которое за 3 месяца можно проверить делом.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">1 · контекст</div>
+  <h2>Контекст</h2>
+  <p>Ты пришёл вдохновлённым. С утра собирал эволюционную цель через фреймворк Сёмина — «штырит, колотит от нарративов». Накануне — реальная победа: прогон CRE удался, и продюсер на месте предложила вторую стратсессию для ProPrava. Это и завело.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">2 · цель</div>
+  <h2>Цель</h2>
+  <p>Сформулировать позиционирование <strong>«архитектор роста отрасли»</strong> так, чтобы за 3 месяца его можно было проверить делом — и чтобы оно вывело тебя из почасовой оплаты в партнёрство.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">3 · желаемое поведение системы</div>
+  <h2>Желаемое поведение</h2>
+  <ul>
+    <li>у тебя есть <strong>позиционирование</strong>, которое стоит на факте, а не на красивом нарративе</li>
+    <li>у тебя есть <strong>метрика валидации</strong> — по ней видно, работает оно или нет</li>
+    <li>ты <strong>доводишь один прецедент до конца</strong>, а не считаешь рынок в голове</li>
+    <li>воронка строится так, что ты остаёшься <strong>автором</strong>, а не оператором рутины</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">4 · требования к процессу</div>
+  <h2>Требования к процессу</h2>
+  <ul>
+    <li>проверять позиционирование на одном прецеденте, не строить конвейер сразу</li>
+    <li>встречи батчить в один день, чтобы не дробить подготовку к CRE</li>
+    <li>заходить в союз как research, не как продажу — это снимает риск и давление</li>
+    <li>CRE 15 июня — приоритет, всё остальное вокруг него</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">5 · три твои точки опоры в позиционировании</div>
+  <h2>Три точки опоры</h2>
+  <p>Ты собрал их сам в разговоре:</p>
+  <div class="insight-chain">
+    <ul>
+      <li><strong>факт вместо нарратива</strong> — продюсер сама перенесла твой продукт на отрасль юристов. Ценность считалась отрасле-независимой</li>
+      <li><strong>твой метод — JTBD-оффер</strong> — участники сами генерят инициативы и записываются, союзу остаётся «сгрести в контент-план». Ты уколол в ценность заказчика</li>
+      <li><strong>размер рынка</strong> — не только отрасли, но и профессиональные разрезы (юристы, CFO, CDO). Союзов могут быть сотни</li>
+    </ul>
+  </div>
+</section>
+
+<section class="block">
+  <div class="block-num">6 · ключевой инсайт</div>
+  <h2>Ключевой инсайт</h2>
+  <p>Нарратив, в котором ты сомневался («звучит прикольно, вся херня»), <strong>ты уже доказал делом.</strong> Архитектор роста отрасли — не слоган. Вчера ты сделал это руками: показал ценность так, что человек изнутри отрасли сам захотел перенести её на свою. Доказывать словами не надо — надо повторить.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">7 · принятое решение</div>
+  <h2>Принятое решение</h2>
+  <p>Проверять позиционирование не на размере рынка, а на <strong>повторяемости</strong>. Метрика:</p>
+  <div class="insight-chain">
+    <p style="margin:0;">договорённость о проведении стратсессии минимум в <strong>трёх отраслевых союзах за 3 месяца</strong></p>
+  </div>
+  <p>Это и валидирует роль, и выводит тебя к партнёрству вместо почасовой оплаты.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">8 · твоя роль</div>
+  <h2>Твоя роль</h2>
+  <p>Архитектор, не оператор. Ты строишь модель, в которой участники сами создают спрос, а союз приходит к тебе. Воронка должна масштабироваться так, чтобы ты оставался автором — именно поэтому эта попытка не сорвалась, в отличие от прошлых.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">9 · опора</div>
+  <h2>Опора</h2>
+  <ul>
+    <li>три тёплых входа уже есть: Чеботарёв (энергетика), Копьёв (ЭКСМО), Анохин (телеком). Ты не с нуля — ты в середине воронки</li>
+    <li>парадигма «первый прецедент»: систему проверяют на одном кейсе, потом масштабируют</li>
+    <li>стратсессия как research-инструмент: даже «союз мёртвый» — полезный результат, не провал</li>
+    <li>твоё собственное правило: батчить встречи, беречь фокус на CRE</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">10 · план первого шага</div>
+  <h2>План первого шага</h2>
+  <p>Следующая неделя (приедут с ПМЭФ):</p>
+  <ul>
+    <li><strong>встретиться с Чеботарёвым и Анохиным</strong> — батчем, в один день</li>
+    <li><strong>цель встречи</strong> — research: живой союз или ритуальный. Если живой — получить фамилию ЛПР по мероприятиям и «давай представлю»</li>
+    <li><strong>Копьёва</strong> — сдвинуть, если в один день не собрать</li>
+    <li><strong>отчёт</strong> — в бот «Вслух»: союз живой/ритуальный, появилось ли имя ЛПР</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">11 · критерий результата</div>
+  <h2>Критерий результата</h2>
+  <ul>
+    <li>понятно, живой союз или профанация — по обеим встречам</li>
+    <li>если живой — на бумажке фамилия/имя ЛПР + согласие представить</li>
+    <li>CRE-подготовка не просела</li>
+    <li>короткое сообщение в бот «Вслух»</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">12 · ожидаемый эффект</div>
+  <h2>Ожидаемый эффект</h2>
+  <ul>
+    <li>первый прецедент воронки доведён до проверяемой точки, а не остался идеей</li>
+    <li>ты узнаёшь, какие союзы живые, и не тратишь время на ритуальные</li>
+    <li>позиционирование «архитектор роста отрасли» начинает обрастать фактами, а не словами</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">13 · принцип реализации</div>
+  <h2>Принцип реализации</h2>
+  <p><strong>Уверенность 9/10.</strong></p>
+  <p>Идёшь не «продать стратсессию», а «узнать, живой ли союз» — это снимает страх и поднимает уверенность с 5 до 9. Риск (контакт мог выйти из союза, инфа устарела) — 1/10, принимаешь. CRE — приоритет, встречи в один день.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">14 · что забираешь с встречи</div>
+  <h2>Что забираешь</h2>
+  <div class="quote">
+    <p class="quote-text">«Спокойная уверенность. Есть ради чего проснуться. Даже, возможно, останется время на спорт. Суета была перед встречей — надо то, сё, экспертный сайт, пятое-десятое. А сейчас выдыхай: кому этот сайт нужен, проведи встречи спокойно, сделай CRE и не суетись. Разрешить себе не суетиться — а сейчас есть полное разрешение.»</p>
+    <div class="quote-author">— Дамир · 4 июня 2026</div>
+  </div>
+</section>
+
+<footer class="footer">
+  следующая Тренировка — через неделю · канал отчёта — бот «Вслух»
+</footer>
+
+</body>
+</html>
