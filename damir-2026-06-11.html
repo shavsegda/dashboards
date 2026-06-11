@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Дамир · сессия 11 июня 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    font-feature-settings: "kern", "calt";
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 10px 18px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    z-index: 100;
+  }
+  .print-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .header-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .header-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 24px 0;
+  }
+  .header-meta {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 4px 16px;
+    font-size: 13px;
+  }
+  .header-meta dt {
+    color: var(--ink-soft);
+    text-transform: lowercase;
+    margin: 0;
+  }
+  .header-meta dd { margin: 0; }
+
+  .topic {
+    margin: 40px 0 48px;
+    padding: 24px;
+    border: 1px solid var(--ink);
+  }
+  .topic-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .topic-text {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .block {
+    margin: 36px 0;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+  .block:last-of-type {
+    border-bottom: none;
+  }
+  .block-num {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .block h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.01em;
+  }
+  .block p {
+    margin: 0 0 12px 0;
+  }
+  .block p:last-child {
+    margin-bottom: 0;
+  }
+  .block ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  .block ul li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 6px;
+  }
+  .block ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ink-soft);
+  }
+  .block strong {
+    font-weight: 600;
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .steps li {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 10px;
+  }
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .insight-chain {
+    margin: 16px 0;
+    padding: 16px 20px;
+    background: var(--line-soft);
+    border-left: 2px solid var(--ink);
+  }
+  .insight-chain ul li::before {
+    content: '·';
+    font-weight: 600;
+  }
+
+  .quote {
+    margin: 24px 0 12px 0;
+    padding: 24px;
+    border: 2px solid var(--ink);
+    background: var(--accent-soft);
+  }
+  .quote-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    color: var(--ink);
+  }
+  .quote-author {
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  @media print {
+    body { padding: 24px; }
+    .print-btn { display: none; }
+    .block { page-break-inside: avoid; }
+    .topic, .quote { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">Сохранить PDF</button>
+
+<header class="header">
+  <div class="header-kicker">Тренировка 3 · подписка</div>
+  <h1 class="header-title">Дамир · сессия 11 июня 2026</h1>
+  <dl class="header-meta">
+    <dt>дата</dt><dd>11 июня 2026</dd>
+    <dt>длительность</dt><dd>~1 час</dd>
+    <dt>формат</dt><dd>живой созвон</dd>
+    <dt>ведущий</dt><dd>Алексей Шаповалов</dd>
+  </dl>
+</header>
+
+<section class="topic">
+  <div class="topic-label">тема</div>
+  <p class="topic-text">За 4 дня до CRE. Как опереться на себя, а не на докрутку — и пройти встречу с Юрой, не потеряв свою линию.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">1 · контекст</div>
+  <h2>Контекст</h2>
+  <p>Ты пришёл за 4 дня до CRE — и сам удивился: обычно перед сессией перфекционист всё докручивает, а в этот раз фокус с прошлой Тренировки держит. Подготовка идёт с «некатастрофическим отставанием». Платформу ты, по твоим словам, победил. Страшно — но интереса больше, чем страха.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">2 · цель</div>
+  <h2>Цель</h2>
+  <p>Опереться не на докрутку презентации, а на то, что реально несёт тебя на сцене. И отдельно — пройти сегодняшнюю встречу с Юрой так, чтобы не рвануть за чужой стратегией за дни до того, как докажешь свою.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">3 · желаемое поведение системы</div>
+  <h2>Желаемое поведение</h2>
+  <ul>
+    <li>ты опираешься на <strong>свою настоящую силу</strong>, а не на иллюзию контроля через слайды</li>
+    <li>у тебя есть <strong>свой заход</strong> на первые 40 минут — пока не встал на крыло</li>
+    <li>ты <strong>остаёшься автором своей стратегии</strong>, даже когда рядом сильная фигура с заманчивой идеей</li>
+    <li>размотка не уходит в CRE — ты её <strong>разряжаешь в безопасном месте</strong></li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">4 · требования к процессу</div>
+  <h2>Требования к процессу</h2>
+  <ul>
+    <li>не докручивать презентацию ради контроля — она на 20% и это твой осознанный выбор</li>
+    <li>держать свой якорь при Юре: «всё мной совершённое — совершенно»</li>
+    <li>новые идеи — не в работу до CRE, как бы ни тянуло</li>
+    <li>после встречи с Юрой — выговориться (наставник + бот), не нести в подготовку</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">5 · твоя настоящая опора</div>
+  <h2>Твоя настоящая опора</h2>
+  <p>Ты сам её назвал — это не слайды:</p>
+  <div class="insight-chain">
+    <ul>
+      <li><strong>экспромт, энергия, лёгкость, вайб</strong></li>
+      <li><strong>железобетонная уверенность</strong> на сцене — даже о том, в чём можешь не разбираться</li>
+      <li><strong>юмор</strong></li>
+      <li>ты знаешь свой механизм: <strong>на крыло встаёшь минут через 40</strong></li>
+    </ul>
+  </div>
+  <p>Презентация раньше была опорой — хотя в процессе ею никогда не была. Ты отпустил ложную опору и оперся на настоящую.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">6 · ключевой инсайт</div>
+  <h2>Ключевой инсайт</h2>
+  <p>Ты пришёл с «нет структуры, тревожно» — и за полминуты собрал свой заход сам. Не докручивая. Доверяя себе. Твоими словами:</p>
+  <div class="quote">
+    <p class="quote-text">«Спокойно и без паники делай своё дело. Ты всё знаешь — заглянул в себя, вспомнил опыт. Раз, два, три.»</p>
+    <div class="quote-author">— Дамир · 11 июня 2026</div>
+  </div>
+  <p>Когда отпускаешь докрутку и доверяешь своему механизму — структура рождается сама, а тревога уходит.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">7 · принятое решение</div>
+  <h2>Принятое решение</h2>
+  <p>Пройти встречу с Юрой сегодня, <strong>не рванув за новой стратегией</strong>. Идеи Юры — это интересно, и хотеть их нормально. Но в работу — не раньше, чем после CRE. Сначала ты доказываешь свою стратегию, потом решаешь про чужие.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">8 · твой заход на сцену</div>
+  <h2>Твой заход на сцену (первые 40 минут)</h2>
+  <p>Пока ты не встал на крыло — держит эта последовательность:</p>
+  <ol class="steps">
+    <li>объяснить, что с ними будет</li>
+    <li>сказать, что есть план</li>
+    <li>спросить: «план планом, а вам что надо?»</li>
+    <li>выслушать</li>
+    <li>кейс под их запрос → дать поиграть → дать правильный ответ</li>
+    <li>«хотите на крыло? дальше на крыло»</li>
+  </ol>
+</section>
+
+<section class="block">
+  <div class="block-num">9 · опора</div>
+  <h2>Опора</h2>
+  <ul>
+    <li>твоя сила на сцене — экспромт, уверенность, вайб. Она с тобой всегда</li>
+    <li>якорь против сомнения: «всё мной совершённое — совершенно; не входить в воду дважды»</li>
+    <li>все твои прошлые решения сработали — нет повода не доверять себе</li>
+    <li>контейнер после Юры: духовный наставник + бот «Вслух» — выгрузить, не нести в CRE</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">10 · план первого шага</div>
+  <h2>План первого шага</h2>
+  <p><strong>Сегодня в 16 — встреча с Юрой:</strong></p>
+  <ul>
+    <li>2 таблетки экстракта валерьяны перед встречей</li>
+    <li>зайти на благодарность, с трепетом к прошлому опыту</li>
+    <li>на заманчивые идеи — поблагодарить, не рвануть; вернуться к ним после CRE</li>
+    <li>после — выговориться наставнику + наговорить всё боту «Вслух»</li>
+  </ul>
+  <p><strong>К 15 июня — CRE:</strong> держать свой заход (6 шагов) и формулировку «раз-два-три, ты всё знаешь».</p>
+</section>
+
+<section class="block">
+  <div class="block-num">11 · критерий результата</div>
+  <h2>Критерий результата</h2>
+  <ul>
+    <li>из встречи с Юрой ты вышел, не перетряхнув свою стратегию до CRE</li>
+    <li>размотка выгружена наставнику и в бот, не унесена в подготовку</li>
+    <li>на CRE ты заходишь по своим 6 шагам и встаёшь на крыло</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">12 · ожидаемый эффект</div>
+  <h2>Ожидаемый эффект</h2>
+  <ul>
+    <li>ты приходишь на CRE с целой опорой, а не с сомнением, заронённым накануне</li>
+    <li>ты держишь свою линию рядом с сильной фигурой — это и есть авторство</li>
+    <li>тревога подготовки превращается в твою собственную структуру</li>
+  </ul>
+</section>
+
+<section class="block">
+  <div class="block-num">13 · принцип реализации</div>
+  <h2>Принцип реализации</h2>
+  <p>Ты не докручиваешь — ты опираешься. Опора не в слайдах и не в чужой стратегии, а в тебе: «ты всё знаешь, заглянул в себя, вспомнил опыт». Идеи Юры подождут до после CRE — это не отказ, это выбор автора.</p>
+</section>
+
+<section class="block">
+  <div class="block-num">14 · что забираешь с встречи</div>
+  <h2>Что забираешь</h2>
+  <div class="quote">
+    <p class="quote-text">«Я в каком-то другом качестве ресурса. Обычно мы рефлексируем — и я подыхаю, а сейчас у меня какое-то умиротворение.»</p>
+    <div class="quote-author">— Дамир · 11 июня 2026</div>
+  </div>
+</section>
+
+<footer class="footer">
+  следующая Тренировка — через неделю · канал отчёта — бот «Вслух»
+</footer>
+
+</body>
+</html>
