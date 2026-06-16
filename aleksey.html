@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Алексей Шаповалов · Тренерская</title>
+<meta name="description" content="Алексей Шаповалов — тренер, который систематизирует рост собственников. Меряет развитие метриками, опирается на науку. Автор книги «Потолок».">
+<meta property="og:title" content="Алексей Шаповалов — систематизирую рост собственников">
+<meta property="og:description" content="Инженер и тренер. Готовил олимпийцев, строил HR-tech, ходил на Эверест. Теперь тренирую рост собственников — метриками и наукой.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 820px;
+  --gutter: 32px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.dot { color: var(--terracotta); }
+
+/* HERO */
+.hero { padding: 64px 0 48px; border-bottom: 1px solid var(--graphite-15); }
+.hero .badge {
+  display: inline-block; padding: 6px 12px; margin-bottom: 24px;
+  border: 1px solid var(--terracotta); border-radius: 100px;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--terracotta-dark);
+}
+.hero-grid { display: flex; gap: 32px; align-items: flex-start; }
+.hero-text { flex: 1; }
+.photo {
+  width: 150px; height: 190px; flex-shrink: 0;
+  background: var(--stone); border: 1px solid var(--graphite-15); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30);
+  text-align: center; line-height: 1.4; padding: 12px;
+}
+h1 {
+  font-size: 40px; font-weight: 600; line-height: 1.1;
+  letter-spacing: -0.02em; margin: 0 0 16px;
+}
+.tagline { font-size: 22px; font-weight: 500; color: var(--terracotta-dark); margin: 0 0 12px; line-height: 1.3; }
+.sub { font-size: 17px; color: var(--graphite-75); margin: 0; }
+
+/* SECTION */
+section { padding: 48px 0; border-bottom: 1px solid var(--graphite-15); }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--graphite-50); margin-bottom: 20px;
+}
+h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 24px; }
+.story p { font-size: 17px; margin: 0 0 18px; }
+.story p:last-child { margin-bottom: 0; }
+.story .punch { font-size: 20px; font-weight: 500; color: var(--graphite); border-left: 3px solid var(--terracotta); padding-left: 16px; }
+
+/* FACTS */
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--graphite-15); border: 1px solid var(--graphite-15); border-radius: 8px; overflow: hidden; }
+.fact { background: var(--paper); padding: 20px 22px; }
+.fact .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 8px; }
+.fact .v { font-size: 15.5px; color: var(--graphite); line-height: 1.5; }
+
+/* BOOK */
+.book { background: var(--terracotta-tint); border: 1px solid var(--graphite-15); border-radius: 8px; padding: 28px; }
+.book h3 { font-size: 21px; margin: 0 0 12px; font-weight: 600; }
+.book p { margin: 0; font-size: 16.5px; color: var(--graphite-75); }
+
+/* FOOTER */
+footer { padding: 40px 0 56px; font-family: var(--font-mono); font-size: 13px; color: var(--graphite-50); }
+footer a { color: var(--terracotta-dark); }
+
+@media (max-width: 600px) {
+  :root { --gutter: 20px; }
+  .hero { padding: 40px 0 32px; }
+  .hero-grid { flex-direction: column-reverse; gap: 20px; }
+  .photo { width: 110px; height: 140px; }
+  h1 { font-size: 30px; }
+  .tagline { font-size: 18px; }
+  .facts { grid-template-columns: 1fr; }
+  section { padding: 36px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <span class="badge">Тренерская</span>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1>Алексей Шаповалов</h1>
+        <p class="tagline">Систематизирую рост собственников<span class="dot">.</span></p>
+        <p class="sub">Инженер и тренер. Меряю развитие метриками и опираю на науку — не на советы.</p>
+      </div>
+      <div class="photo">фото<br>скоро</div>
+    </div>
+  </div>
+</div>
+
+<!-- ИСТОРИЯ -->
+<section>
+  <div class="container story">
+    <div class="eyebrow">Путь</div>
+    <p>С трёх лет я в спорте. Фигурное катание, потом акробатика, потом дзюдо и самбо — почти двадцать лет на льду и татами.</p>
+    <p>В институте, на кафедре технической кибернетики, открыл первую IT-компанию. После борьбы ушёл в кроссфит — построил с партнёром зал, крупнейший в Черноземье, на деньги инвестора.</p>
+    <p>Потом в одном спорте стало тесно. Успел поставить физическую подготовку олимпийцам и чемпионам мира. Параллельно закончил спортивное образование и аспирантуру на кафедре исследования поведения человека.</p>
+    <p>Захотелось понять человека вообще. Ушёл в соло-восхождение к Эвересту и практику молчания в монастыре Тибета. Вернулся с одним вопросом: как мы устроены.</p>
+    <p>Нанял в штат психологов, отучился в Мичигане — управление человеческими ресурсами и талантами. Пока учились, пришли клиенты. Так выросла HR-tech компания по подбору топ-менеджмента: прошли акселерацию ФРИИ, я учил найму по всей России и при Правительстве.</p>
+    <p>Но найм не лечит первопричину. Я пошёл глубже — в мотивацию и теорию развития человека. HR-tech закрыл, занялся тренерской работой с ключевыми людьми бизнеса. Опора — вертикальное развитие, теория самодетерминации, глубокий психологический портрет.</p>
+    <p>Так появилась «Тренерская». Внутри — работа один на один, группы и LLM-помощник с диагностиками. Это мой новый зал. Только метрики теперь инженерные, знание — научное, а спортсмены — амбициозные собственники.</p>
+    <p>Я по-прежнему альпинист и горный ультрамарафонец. Спорт — самая простая платформа, чтобы тренировать собственный рост.</p>
+    <p class="punch">Получается, я так и остался тренером. Кем был всегда.</p>
+  </div>
+</section>
+
+<!-- ЛИСТ ЭКСПЕРТА -->
+<section>
+  <div class="container">
+    <div class="eyebrow">Чем подкреплено</div>
+    <h2>Коротко о фактах</h2>
+    <div class="facts">
+      <div class="fact"><div class="k">Спорт</div><div class="v">Тренер физподготовки олимпийцев и чемпионов мира</div></div>
+      <div class="fact"><div class="k">Бизнес</div><div class="v">Основатель IT- и HR-tech компаний, акселерация ФРИИ. Кроссфит-зал №1 в Черноземье</div></div>
+      <div class="fact"><div class="k">Образование</div><div class="v">Техническая кибернетика · аспирантура по поведению человека · Мичиган (HR и таланты)</div></div>
+      <div class="fact"><div class="k">Методология</div><div class="v">Вертикальное развитие, теория самодетерминации (SDT), психологический портрет</div></div>
+      <div class="fact"><div class="k">Преподавал</div><div class="v">Найм — по всей России и при Правительстве РФ</div></div>
+      <div class="fact"><div class="k">Горы</div><div class="v">Соло-восхождение к Эвересту, горный ультратрейл, экспедиции по материкам</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- КНИГА -->
+<section>
+  <div class="container">
+    <div class="eyebrow">Сейчас пишу</div>
+    <div class="book">
+      <h3>Книга «Потолок»</h3>
+      <p>Про то, как сильные собственники упираются в предел — не в стратегию и метрики, а в самих себя. И как этот предел пройти.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    «Тренерская» · Алексей Шаповалов · <a href="index.html">линейка работы →</a>
+  </div>
+</footer>
+
+</body>
+</html>
