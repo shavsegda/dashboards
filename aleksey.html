@@ -82,16 +82,39 @@ h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 24p
 .story p:last-child { margin-bottom: 0; }
 .story .punch { font-size: 20px; font-weight: 500; color: var(--graphite); border-left: 3px solid var(--terracotta); padding-left: 16px; }
 
+/* ПОДХОД (ядро) */
+.approach { background: var(--terracotta-tint); border: 1px solid var(--graphite-15); border-radius: 10px; padding: 36px; }
+.approach h2 { margin-bottom: 16px; }
+.approach .lead { font-size: 19px; line-height: 1.5; margin: 0 0 24px; color: var(--graphite); }
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.pillar .pk { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 6px; }
+.pillar .pv { font-size: 15px; color: var(--graphite-75); line-height: 1.5; }
+
 /* FACTS */
 .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--graphite-15); border: 1px solid var(--graphite-15); border-radius: 8px; overflow: hidden; }
 .fact { background: var(--paper); padding: 20px 22px; }
 .fact .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 8px; }
 .fact .v { font-size: 15.5px; color: var(--graphite); line-height: 1.5; }
+.aside { margin-top: 18px; font-size: 14.5px; color: var(--graphite-50); font-style: italic; }
 
 /* BOOK */
-.book { background: var(--terracotta-tint); border: 1px solid var(--graphite-15); border-radius: 8px; padding: 28px; }
+.book { background: var(--stone); border: 1px solid var(--graphite-15); border-radius: 8px; padding: 28px; }
 .book h3 { font-size: 21px; margin: 0 0 12px; font-weight: 600; }
 .book p { margin: 0; font-size: 16.5px; color: var(--graphite-75); }
+
+/* CTA */
+.cta { text-align: center; }
+.cta h2 { margin-bottom: 12px; }
+.cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 28px; }
+.btn {
+  display: inline-block; padding: 15px 32px; border-radius: 8px;
+  background: var(--terracotta); color: var(--paper); text-decoration: none;
+  font-weight: 600; font-size: 16px; transition: background 0.15s;
+}
+.btn:hover { background: var(--terracotta-dark); }
+.btn-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; align-items: center; }
+.btn-text { color: var(--terracotta-dark); text-decoration: none; font-weight: 500; font-size: 15px; }
+.btn-text:hover { text-decoration: underline; }
 
 /* FOOTER */
 footer { padding: 40px 0 56px; font-family: var(--font-mono); font-size: 13px; color: var(--graphite-50); }
@@ -104,8 +127,12 @@ footer a { color: var(--terracotta-dark); }
   .photo { width: 110px; height: 140px; }
   h1 { font-size: 30px; }
   .tagline { font-size: 18px; }
+  .approach { padding: 24px; }
+  .pillars { grid-template-columns: 1fr; gap: 18px; }
   .facts { grid-template-columns: 1fr; }
   section { padding: 36px 0; }
+  .btn-row { flex-direction: column; gap: 14px; }
+  .btn { width: 100%; }
 }
 </style>
 </head>
@@ -137,8 +164,23 @@ footer a { color: var(--terracotta-dark); }
     <p>Нанял в штат психологов, отучился в Мичигане — управление человеческими ресурсами и талантами. Пока учились, пришли клиенты. Так выросла HR-tech компания по подбору топ-менеджмента: прошли акселерацию ФРИИ, я учил найму по всей России и при Правительстве.</p>
     <p>Но найм не лечит первопричину. Я пошёл глубже — в мотивацию и теорию развития человека. HR-tech закрыл, занялся тренерской работой с ключевыми людьми бизнеса. Опора — вертикальное развитие, теория самодетерминации, глубокий психологический портрет.</p>
     <p>Так появилась «Тренерская». Внутри — работа один на один, группы и LLM-помощник с диагностиками. Это мой новый зал. Только метрики теперь инженерные, знание — научное, а спортсмены — амбициозные собственники.</p>
-    <p>Я по-прежнему альпинист и горный ультрамарафонец. Спорт — самая простая платформа, чтобы тренировать собственный рост.</p>
     <p class="punch">Получается, я так и остался тренером. Кем был всегда.</p>
+  </div>
+</section>
+
+<!-- ПОДХОД (ЯДРО) -->
+<section>
+  <div class="container">
+    <div class="approach">
+      <div class="eyebrow">Как я работаю</div>
+      <h2>Рост как система, а не озарения</h2>
+      <p class="lead">Я не даю советов. Я отношусь к развитию человека как к тренировке: ставлю метрики, измеряю, опираюсь на науку — и собственник видит свой рост в цифрах, а не на ощущениях.</p>
+      <div class="pillars">
+        <div class="pillar"><div class="pk">Метрики</div><div class="pv">Инженерный подход: рост измеряется, а не угадывается</div></div>
+        <div class="pillar"><div class="pk">Наука</div><div class="pv">Вертикальное развитие, теория самодетерминации, психологический портрет</div></div>
+        <div class="pillar"><div class="pk">Тренировка</div><div class="pv">Регулярная работа на результат, как в большом спорте</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -151,10 +193,9 @@ footer a { color: var(--terracotta-dark); }
       <div class="fact"><div class="k">Спорт</div><div class="v">Тренер физподготовки олимпийцев и чемпионов мира</div></div>
       <div class="fact"><div class="k">Бизнес</div><div class="v">Основатель IT- и HR-tech компаний, акселерация ФРИИ. Кроссфит-зал №1 в Черноземье</div></div>
       <div class="fact"><div class="k">Образование</div><div class="v">Техническая кибернетика · аспирантура по поведению человека · Мичиган (HR и таланты)</div></div>
-      <div class="fact"><div class="k">Методология</div><div class="v">Вертикальное развитие, теория самодетерминации (SDT), психологический портрет</div></div>
       <div class="fact"><div class="k">Преподавал</div><div class="v">Найм — по всей России и при Правительстве РФ</div></div>
-      <div class="fact"><div class="k">Горы</div><div class="v">Соло-восхождение к Эвересту, горный ультратрейл, экспедиции по материкам</div></div>
     </div>
+    <p class="aside">Вне работы — альпинист и горный ультрамарафонец. Соло-восхождение к Эвересту, экспедиции по материкам. Спорт для меня — самая простая платформа тренировать собственный рост.</p>
   </div>
 </section>
 
@@ -169,10 +210,22 @@ footer a { color: var(--terracotta-dark); }
   </div>
 </section>
 
+<!-- CTA -->
+<section>
+  <div class="container cta">
+    <h2>С чего начать</h2>
+    <p>Первый шаг в работе со мной — «Разбор». Встреча, на которой смотрим, где ваш потолок и что с ним делать.</p>
+    <div class="btn-row">
+      <a class="btn" href="razbor.html">Прийти на Разбор →</a>
+      <a class="btn-text" href="index.html">или посмотреть всю линейку работы</a>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    «Тренерская» · Алексей Шаповалов · <a href="index.html">линейка работы →</a>
+    «Тренерская» · Алексей Шаповалов · контакт скоро
   </div>
 </footer>
 
