@@ -71,40 +71,34 @@ h1 {
 .tagline { font-size: 22px; font-weight: 500; color: var(--terracotta-dark); margin: 0 0 12px; line-height: 1.3; }
 .sub { font-size: 17px; color: var(--graphite-75); margin: 0; }
 
-/* SECTION */
-section { padding: 48px 0; border-bottom: 1px solid var(--graphite-15); }
-.eyebrow {
-  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--graphite-50); margin-bottom: 20px;
+/* QA */
+.qa-wrap { padding: 16px 0 8px; }
+.qa { padding: 36px 0; border-bottom: 1px solid var(--graphite-15); }
+.qa:last-child { border-bottom: none; }
+.qa .q {
+  font-size: 23px; font-weight: 600; line-height: 1.25;
+  letter-spacing: -0.01em; margin: 0 0 16px;
 }
-h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 24px; }
-.story p { font-size: 17px; margin: 0 0 18px; }
-.story p:last-child { margin-bottom: 0; }
-.story .punch { font-size: 20px; font-weight: 500; color: var(--graphite); border-left: 3px solid var(--terracotta); padding-left: 16px; }
+.qa .q .dot { margin-left: 1px; }
+.qa .a { font-size: 17px; color: var(--graphite); }
+.qa .a p { margin: 0 0 16px; }
+.qa .a p:last-child { margin-bottom: 0; }
 
-/* ПОДХОД (ядро) */
-.approach { background: var(--terracotta-tint); border: 1px solid var(--graphite-15); border-radius: 10px; padding: 36px; }
-.approach h2 { margin-bottom: 16px; }
-.approach .lead { font-size: 19px; line-height: 1.5; margin: 0 0 24px; color: var(--graphite); }
-.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+/* pillars (внутри ответа) */
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 8px 0 0; }
+.pillar { background: var(--terracotta-tint); border: 1px solid var(--graphite-15); border-radius: 8px; padding: 18px; }
 .pillar .pk { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 6px; }
-.pillar .pv { font-size: 15px; color: var(--graphite-75); line-height: 1.5; }
+.pillar .pv { font-size: 14.5px; color: var(--graphite-75); line-height: 1.5; }
 
-/* FACTS */
-.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--graphite-15); border: 1px solid var(--graphite-15); border-radius: 8px; overflow: hidden; }
-.fact { background: var(--paper); padding: 20px 22px; }
-.fact .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 8px; }
-.fact .v { font-size: 15.5px; color: var(--graphite); line-height: 1.5; }
-.aside { margin-top: 18px; font-size: 14.5px; color: var(--graphite-50); font-style: italic; }
-
-/* BOOK */
-.book { background: var(--stone); border: 1px solid var(--graphite-15); border-radius: 8px; padding: 28px; }
-.book h3 { font-size: 21px; margin: 0 0 12px; font-weight: 600; }
-.book p { margin: 0; font-size: 16.5px; color: var(--graphite-75); }
+/* facts (внутри ответа) */
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--graphite-15); border: 1px solid var(--graphite-15); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+.fact { background: var(--paper); padding: 18px 20px; }
+.fact .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta-dark); margin-bottom: 6px; }
+.fact .v { font-size: 15px; color: var(--graphite); line-height: 1.5; }
 
 /* CTA */
-.cta { text-align: center; }
-.cta h2 { margin-bottom: 12px; }
+.cta { padding: 48px 0 8px; text-align: center; }
+.cta .q { font-size: 23px; font-weight: 600; margin: 0 0 12px; }
 .cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 28px; }
 .btn {
   display: inline-block; padding: 15px 32px; border-radius: 8px;
@@ -117,7 +111,7 @@ h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 24p
 .btn-text:hover { text-decoration: underline; }
 
 /* FOOTER */
-footer { padding: 40px 0 56px; font-family: var(--font-mono); font-size: 13px; color: var(--graphite-50); }
+footer { padding: 48px 0 56px; font-family: var(--font-mono); font-size: 13px; color: var(--graphite-50); border-top: 1px solid var(--graphite-15); margin-top: 24px; }
 footer a { color: var(--terracotta-dark); }
 
 @media (max-width: 600px) {
@@ -127,10 +121,9 @@ footer a { color: var(--terracotta-dark); }
   .photo { width: 110px; height: 140px; }
   h1 { font-size: 30px; }
   .tagline { font-size: 18px; }
-  .approach { padding: 24px; }
-  .pillars { grid-template-columns: 1fr; gap: 18px; }
+  .qa .q { font-size: 20px; }
+  .pillars { grid-template-columns: 1fr; gap: 12px; }
   .facts { grid-template-columns: 1fr; }
-  section { padding: 36px 0; }
   .btn-row { flex-direction: column; gap: 14px; }
   .btn { width: 100%; }
 }
@@ -153,74 +146,80 @@ footer a { color: var(--terracotta-dark); }
   </div>
 </div>
 
-<!-- ИСТОРИЯ -->
-<section>
-  <div class="container story">
-    <div class="eyebrow">Путь</div>
-    <p>С трёх лет я в спорте. Фигурное катание, потом акробатика, потом дзюдо и самбо — почти двадцать лет на льду и татами.</p>
-    <p>В институте, на кафедре технической кибернетики, открыл первую IT-компанию. После борьбы ушёл в кроссфит — построил с партнёром зал, крупнейший в Черноземье, на деньги инвестора.</p>
-    <p>Потом в одном спорте стало тесно. Успел поставить физическую подготовку олимпийцам и чемпионам мира. Параллельно закончил спортивное образование и аспирантуру на кафедре исследования поведения человека.</p>
-    <p>Захотелось понять человека вообще. Ушёл в соло-восхождение к Эвересту и практику молчания в монастыре Тибета. Вернулся с одним вопросом: как мы устроены.</p>
-    <p>Нанял в штат психологов, отучился в Мичигане — управление человеческими ресурсами и талантами. Пока учились, пришли клиенты. Так выросла HR-tech компания по подбору топ-менеджмента: прошли акселерацию ФРИИ, я учил найму по всей России и при Правительстве.</p>
-    <p>Но найм не лечит первопричину. Я пошёл глубже — в мотивацию и теорию развития человека. HR-tech закрыл, занялся тренерской работой с ключевыми людьми бизнеса. Опора — вертикальное развитие, теория самодетерминации, глубокий психологический портрет.</p>
-    <p>Так появилась «Тренерская». Внутри — работа один на один, группы и LLM-помощник с диагностиками. Это мой новый зал. Только метрики теперь инженерные, знание — научное, а спортсмены — амбициозные собственники.</p>
-    <p class="punch">Получается, я так и остался тренером. Кем был всегда.</p>
-  </div>
-</section>
-
-<!-- ПОДХОД (ЯДРО) -->
-<section>
+<!-- QA -->
+<div class="qa-wrap">
   <div class="container">
-    <div class="approach">
-      <div class="eyebrow">Как я работаю</div>
-      <h2>Рост как система, а не озарения</h2>
-      <p class="lead">Я не даю советов. К росту человека отношусь как тренер в спорте: тренировочные циклы, периодизация, метрики. И прикладываю науку — чтобы прогресс был виден в цифрах, а не на ощущениях.</p>
-      <div class="pillars">
-        <div class="pillar"><div class="pk">Тренировка</div><div class="pv">Тренировочные циклы, периодизация, измеримый прогресс — как в подготовке спортсмена</div></div>
-        <div class="pillar"><div class="pk">Наука</div><div class="pv">Вертикальное развитие и SDT-мотивация: на чём держатся зрелость и тяга расти</div></div>
-        <div class="pillar"><div class="pk">Персональный трекшн</div><div class="pv">Психологический портрет + LLM-аналитика: план роста под конкретного человека, не шаблон</div></div>
+
+    <div class="qa">
+      <h3 class="q">Кто ты и что делаешь<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Я тренер. Всю жизнь тренирую рост — сначала спортсменов, теперь людей в бизнесе.</p>
+        <p>«Тренирую» — буквально: отношусь к развитию человека как к спортивной подготовке. Циклы, периодизация, метрики. Только зал теперь другой.</p>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ЛИСТ ЭКСПЕРТА -->
-<section>
-  <div class="container">
-    <div class="eyebrow">Чем подкреплено</div>
-    <h2>Коротко о фактах</h2>
-    <div class="facts">
-      <div class="fact"><div class="k">Спорт</div><div class="v">Тренер физподготовки олимпийцев и чемпионов мира</div></div>
-      <div class="fact"><div class="k">Бизнес</div><div class="v">Основатель IT- и HR-tech компаний, акселерация ФРИИ. Кроссфит-зал №1 в Черноземье</div></div>
-      <div class="fact"><div class="k">Образование</div><div class="v">Техническая кибернетика · аспирантура по поведению человека · Мичиган (HR и таланты)</div></div>
-      <div class="fact"><div class="k">Преподавал</div><div class="v">Найм — по всей России и при Правительстве РФ</div></div>
+    <div class="qa">
+      <h3 class="q">Кому ты помогаешь — это про меня<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Тем, кто упёрся в свой потолок. Человек достиг уровня — и встал: дальше не растёт, хотя силы и амбиции есть.</p>
+        <p>Кто ты по роли — не важно. Ремесленник, топ-менеджер, владелец бизнеса. Важно, что застрял и хочешь выше. Если тебе и так всё хорошо — я не нужен.</p>
+      </div>
     </div>
-    <p class="aside">Вне работы — альпинист и горный ультрамарафонец. Соло-восхождение к Эвересту, экспедиции по материкам. Спорт для меня — самая простая платформа тренировать собственный рост.</p>
-  </div>
-</section>
 
-<!-- КНИГА -->
-<section>
-  <div class="container">
-    <div class="eyebrow">Сейчас пишу</div>
-    <div class="book">
-      <h3>Книга «Потолок»</h3>
-      <p>Про то, как сильные собственники упираются в предел — не в стратегию и метрики, а в самих себя. И как этот предел пройти.</p>
+    <div class="qa">
+      <h3 class="q">Как ты помогаешь? В чём метод<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Я не даю советов. Я строю систему роста под конкретного человека:</p>
+        <div class="pillars">
+          <div class="pillar"><div class="pk">Тренировка</div><div class="pv">Тренировочные циклы, периодизация, измеримый прогресс — как в подготовке спортсмена</div></div>
+          <div class="pillar"><div class="pk">Наука</div><div class="pv">Вертикальное развитие и SDT-мотивация: на чём держатся зрелость и тяга расти</div></div>
+          <div class="pillar"><div class="pk">Персональный трекшн</div><div class="pv">Психологический портрет + LLM-аналитика: план роста под конкретного человека, не шаблон</div></div>
+        </div>
+      </div>
     </div>
+
+    <div class="qa">
+      <h3 class="q">Почему тебе верить<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Я не из теории — сам прошёл то, о чём говорю. С трёх лет в спорте, почти двадцать лет на татами и льду. Тренировал олимпийцев и чемпионов мира. Строил компании, упирался в потолки и проходил их. Ходил в горы и в монастырь, чтобы понять человека, — а потом стал изучать его профессионально.</p>
+        <div class="facts">
+          <div class="fact"><div class="k">Спорт</div><div class="v">Тренер физподготовки олимпийцев и чемпионов мира</div></div>
+          <div class="fact"><div class="k">Бизнес</div><div class="v">Основатель IT- и HR-tech компаний, акселерация ФРИИ. Кроссфит-зал №1 в Черноземье</div></div>
+          <div class="fact"><div class="k">Образование</div><div class="v">Техническая кибернетика · аспирантура по поведению человека · Мичиган (HR и таланты)</div></div>
+          <div class="fact"><div class="k">Горы</div><div class="v">Соло-восхождение к Эвересту, практика молчания в Тибете, ультратрейл</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa">
+      <h3 class="q">Чем ты отличаешься от других коучей<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Большинство работают на мнении и мотивации. Я — на цифрах и науке.</p>
+        <p>Инженер и тренер в одном человеке: меряю то, что обычно оставляют «на ощущениях», и опираюсь на вертикальное развитие и теорию самодетерминации, а не на личный опыт и вдохновляющие цитаты.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <h3 class="q">Что за книга «Потолок»<span class="dot">?</span></h3>
+      <div class="a">
+        <p>Я пишу её сейчас. Про то, как сильные люди упираются в предел — не в стратегию и метрики, а в самих себя. И как этот предел пройти.</p>
+      </div>
+    </div>
+
   </div>
-</section>
+</div>
 
 <!-- CTA -->
-<section>
-  <div class="container cta">
-    <h2>С чего начать</h2>
-    <p>Первый шаг в работе со мной — «Разбор». Встреча, на которой смотрим, где ваш потолок и что с ним делать.</p>
+<div class="cta">
+  <div class="container">
+    <h3 class="q">Как начать работать<span class="dot">?</span></h3>
+    <p>Первый шаг — «Разбор». Встреча, на которой смотрим, где твой потолок и что с ним делать.</p>
     <div class="btn-row">
       <a class="btn" href="razbor.html">Прийти на Разбор →</a>
       <a class="btn-text" href="index.html">или посмотреть всю линейку работы</a>
     </div>
   </div>
-</section>
+</div>
 
 <!-- FOOTER -->
 <footer>
