@@ -56,6 +56,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: 
 input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border: none; border-radius: 50%; background: var(--terracotta); cursor: pointer; }
 .slider-val { font-family: var(--font-mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 56px; text-align: right; }
 
+/* Варианты с пояснением (копинг) — карточки с подписью */
+.opt-list { display: grid; gap: 8px; margin-top: 4px; }
+.opt { border: 1px solid var(--graphite-15); padding: 12px 16px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.opt:active { background: var(--terracotta-tint); }
+.opt.selected { border-color: var(--terracotta); background: var(--terracotta); }
+.opt-t { font-size: 15px; font-weight: 500; }
+.opt-d { font-size: 13px; color: var(--graphite-65); margin-top: 3px; line-height: 1.4; }
+.opt.selected .opt-t, .opt.selected .opt-d { color: var(--paper); }
+
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
 .chip { font-size: 15px; padding: 12px 16px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; user-select: none; }
 .chip:active { background: var(--terracotta-tint); }
@@ -110,7 +119,12 @@ const DRAFT_KEY = "cbt_draft_" + CLIENT_ID;
 // === Справочники ===
 const EMOTIONS = ['Тревога','Страх','Грусть','Злость','Раздражение','Обида','Стыд','Вина','Одиночество','Беспомощность','Растерянность','Зависть'];
 const BODY = ['Ком в горле','Тяжесть в груди','Сжатие в груди','Дрожь','Жар','Холодок','Пустота в животе','Напряжение в плечах','Сердце колотится','Тяжесть в теле','Слабость','Бабочки в животе'];
-const COPING = ['Избегаю', 'Сдаюсь', 'Контратакую', 'Осознанно выбираю'];
+const COPING = [
+  {w:'Избегаю', d:'Ухожу от неприятного: отвлекаюсь, тяну, глушу — телефон, еда, дела'},
+  {w:'Сдаюсь', d:'Опускаю руки, верю мысли, плыву по течению'},
+  {w:'Контратакую', d:'Давлю на это: контролирую, доказываю, делаю идеально'},
+  {w:'Осознанно выбираю', d:'Вижу, что происходит, и решаю спокойно'},
+];
 const DISTORTIONS = [
   'Чёрно-белое', 'Сверхобобщение', 'Негативный фильтр', 'Обесценивание хорошего',
   'Поспешные выводы', 'Катастрофизация', 'Эмоциональное обоснование',
@@ -188,8 +202,8 @@ function renderForm() {
     <div class="field">
       <div class="field-label">5 · Что делаю <span class="req">*</span></div>
       <div class="field-instr">Как реагирую на эту мысль прямо сейчас?</div>
-      <div class="chips" id="coping">
-        ${COPING.map(c => `<div class="chip ${f.coping === c ? 'selected' : ''}" data-coping="${c}">${c}</div>`).join('')}
+      <div class="opt-list" id="coping">
+        ${COPING.map(c => `<div class="opt ${f.coping === c.w ? 'selected' : ''}" data-coping="${c.w}"><div class="opt-t">${c.w}</div><div class="opt-d">${c.d}</div></div>`).join('')}
       </div>
     </div>
 
@@ -288,10 +302,10 @@ function bindForm() {
       saveDraft();
     });
   });
-  document.querySelectorAll('#coping .chip').forEach(ch => {
-    ch.addEventListener('click', () => {
-      f.coping = ch.dataset.coping;
-      document.querySelectorAll('#coping .chip').forEach(c => c.classList.toggle('selected', c.dataset.coping === f.coping));
+  document.querySelectorAll('#coping .opt').forEach(op => {
+    op.addEventListener('click', () => {
+      f.coping = op.dataset.coping;
+      document.querySelectorAll('#coping .opt').forEach(o => o.classList.toggle('selected', o.dataset.coping === f.coping));
       saveDraft(); validate();
     });
   });
