@@ -126,9 +126,16 @@ const COPING = [
   {w:'Осознанно выбираю', d:'Вижу, что происходит, и решаю спокойно'},
 ];
 const DISTORTIONS = [
-  'Чёрно-белое', 'Сверхобобщение', 'Негативный фильтр', 'Обесценивание хорошего',
-  'Поспешные выводы', 'Катастрофизация', 'Эмоциональное обоснование',
-  'Долженствования', 'Ярлыки', 'Самообвинение'
+  {w:'Чёрно-белое', d:'Всё или ничего: либо идеально, либо провал'},
+  {w:'Сверхобобщение', d:'Один случай → «всегда», «никогда», «вечно так»'},
+  {w:'Негативный фильтр', d:'Вижу только плохое, хорошее не замечаю'},
+  {w:'Обесценивание хорошего', d:'«Это не считается», «повезло», «любой бы смог»'},
+  {w:'Поспешные выводы', d:'Решаю за других или предсказываю плохое без фактов'},
+  {w:'Катастрофизация', d:'Раздуваю до худшего: «всё рухнет», «это конец»'},
+  {w:'Эмоциональное обоснование', d:'«Чувствую так — значит, так и есть»'},
+  {w:'Долженствования', d:'«Должен», «обязан», «нельзя» — давлю на себя и других'},
+  {w:'Ярлыки', d:'Вместо «ошибся» — «я неудачник», «он идиот»'},
+  {w:'Самообвинение', d:'Виню себя в том, что от меня не зависит'},
 ];
 
 // === Состояние формы ===
@@ -248,8 +255,8 @@ function renderForm() {
       <div class="field">
         <div class="field-label">9 · Ловушка мышления</div>
         <div class="field-instr">Узнаёшь ловушку в своей мысли? Можно несколько.</div>
-        <div class="chips" id="distortions">
-          ${DISTORTIONS.map(d => `<div class="chip ${f.distortions.includes(d) ? 'selected' : ''}" data-distortion="${d}">${d}</div>`).join('')}
+        <div class="opt-list" id="distortions">
+          ${DISTORTIONS.map(d => `<div class="opt ${f.distortions.includes(d.w) ? 'selected' : ''}" data-distortion="${d.w}"><div class="opt-t">${d.w}</div><div class="opt-d">${d.d}</div></div>`).join('')}
         </div>
       </div>
 
@@ -309,12 +316,12 @@ function bindForm() {
       saveDraft(); validate();
     });
   });
-  document.querySelectorAll('#distortions .chip').forEach(ch => {
-    ch.addEventListener('click', () => {
-      const d = ch.dataset.distortion;
+  document.querySelectorAll('#distortions .opt').forEach(op => {
+    op.addEventListener('click', () => {
+      const d = op.dataset.distortion;
       const i = f.distortions.indexOf(d);
       if (i === -1) f.distortions.push(d); else f.distortions.splice(i, 1);
-      ch.classList.toggle('selected');
+      op.classList.toggle('selected');
       saveDraft();
     });
   });
