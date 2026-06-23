@@ -109,6 +109,7 @@ const DRAFT_KEY = "cbt_draft_" + CLIENT_ID;
 
 // === Справочники ===
 const EMOTIONS = ['Тревога','Страх','Грусть','Злость','Раздражение','Обида','Стыд','Вина','Одиночество','Беспомощность','Растерянность','Зависть'];
+const BODY = ['Ком в горле','Тяжесть в груди','Сжатие в груди','Дрожь','Жар','Холодок','Пустота в животе','Напряжение в плечах','Сердце колотится','Тяжесть в теле','Слабость','Бабочки в животе'];
 const COPING = ['Избегаю', 'Сдаюсь', 'Контратакую', 'Осознанно выбираю'];
 const DISTORTIONS = [
   'Чёрно-белое', 'Сверхобобщение', 'Негативный фильтр', 'Обесценивание хорошего',
@@ -118,7 +119,7 @@ const DISTORTIONS = [
 
 // === Состояние формы ===
 const f = {
-  situation: '', emotions: [], emotion_other: '', emotion_pct: 50, body: '', hot_thought: '',
+  situation: '', emotions: [], emotion_other: '', emotion_pct: 50, body_list: [], body_other: '', hot_thought: '',
   coping: '', evidence_for: '', evidence_against: '',
   balanced_thought: '', balanced_belief_pct: 50, emotion_after_pct: 50,
   distortions: [], core_belief: ''
@@ -171,8 +172,11 @@ function renderForm() {
 
     <div class="field">
       <div class="field-label">3 · Тело <span class="req">*</span></div>
-      <div class="field-instr">Где в теле отдаётся и какое? Не чинить — заметить.</div>
-      <textarea id="body" placeholder="Ком в горле, тяжесть в груди">${f.body}</textarea>
+      <div class="field-instr">Где в теле отдаётся и какое? Выбери или впиши своё. Не чинить — заметить.</div>
+      <div class="chips" id="body_list">
+        ${BODY.map(b => `<div class="chip ${f.body_list.includes(b) ? 'selected' : ''}" data-body="${b}">${b}</div>`).join('')}
+      </div>
+      <input type="text" id="body_other" placeholder="Своё словами" value="${f.body_other}" style="margin-top:10px;">
     </div>
 
     <div class="field">
@@ -252,7 +256,7 @@ function renderForm() {
 }
 
 function bindForm() {
-  ['situation','emotion_other','body','hot_thought','evidence_for','evidence_against','balanced_thought','core_belief'].forEach(id => {
+  ['situation','emotion_other','body_other','hot_thought','evidence_for','evidence_against','balanced_thought','core_belief'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', e => { f[id] = e.target.value; saveDraft(); validate(); });
   });
@@ -262,6 +266,16 @@ function bindForm() {
       const em = ch.dataset.emotion;
       const i = f.emotions.indexOf(em);
       if (i === -1) f.emotions.push(em); else f.emotions.splice(i, 1);
+      ch.classList.toggle('selected');
+      saveDraft(); validate();
+    });
+  });
+  // Тело — мультивыбор из палитры (помогает тем, кто плохо чувствует тело)
+  document.querySelectorAll('#body_list .chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      const b = ch.dataset.body;
+      const i = f.body_list.indexOf(b);
+      if (i === -1) f.body_list.push(b); else f.body_list.splice(i, 1);
       ch.classList.toggle('selected');
       saveDraft(); validate();
     });
@@ -309,7 +323,8 @@ function setupMainButton() {
 }
 
 function validate() {
-  const ok = f.situation.trim() && (f.emotions.length || f.emotion_other.trim()) && f.body.trim()
+  const ok = f.situation.trim() && (f.emotions.length || f.emotion_other.trim())
+    && (f.body_list.length || f.body_other.trim())
     && f.hot_thought.trim() && f.coping
     && f.evidence_for.trim() && f.evidence_against.trim() && f.balanced_thought.trim();
   const btn = document.getElementById('submitBtn');
@@ -330,7 +345,8 @@ function submit() {
     situation: f.situation.trim(),
     emotion: [...f.emotions, f.emotion_other.trim()].filter(Boolean).join(', '),
     emotion_pct: f.emotion_pct,
-    body: f.body.trim(), hot_thought: f.hot_thought.trim(), coping: f.coping,
+    body: [...f.body_list, f.body_other.trim()].filter(Boolean).join(', '),
+    hot_thought: f.hot_thought.trim(), coping: f.coping,
     evidence_for: f.evidence_for.trim(), evidence_against: f.evidence_against.trim(),
     balanced_thought: f.balanced_thought.trim(), balanced_belief_pct: f.balanced_belief_pct,
     emotion_after_pct: f.emotion_after_pct, distortions: f.distortions, core_belief: f.core_belief.trim()
