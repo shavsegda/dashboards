@@ -81,6 +81,11 @@ input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border: none; b
 .deep-body.open { display: block; }
 .safety { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 22px; font-size: 14px; color: var(--graphite); }
 
+/* Пример-цепочка для нисходящей стрелки — остаётся видимой, пока пишешь свою */
+.example { border-left: 2px solid var(--terracotta); padding: 4px 0 4px 14px; margin-bottom: 14px; }
+.example .ex-line { display: block; font-size: 14px; color: var(--graphite-75); }
+.example .ex-arrow { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--terracotta); margin: 3px 0; letter-spacing: 0.02em; }
+
 button.submit { width: 100%; background: var(--graphite); color: var(--paper); padding: 16px 28px; border: none; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; margin-top: 30px; }
 button.submit:hover { background: var(--terracotta); }
 button.submit:disabled { background: var(--graphite-30); cursor: not-allowed; }
@@ -262,8 +267,17 @@ function renderForm() {
 
       <div class="field">
         <div class="field-label">10 · Что под этим</div>
-        <div class="field-instr">Спроси мысль: «Если это правда — что это значит обо мне?» Ответь. И тот же вопрос — ответу. 3–4 раза, пока не упрёшься в самое дно: «кто я, если так».</div>
-        <textarea id="core_belief" placeholder="Я никому не нужен">${f.core_belief}</textarea>
+        <div class="field-instr">Спроси мысль: «Если это правда — что это значит обо мне?» Ответь. И тот же вопрос — ответу. 3–4 раза, пока не упрёшься в дно: «кто я, если так».</div>
+        <div class="example">
+          <span class="ex-line">Я ему безразличен</span>
+          <span class="ex-arrow">↓ что это значит обо мне?</span>
+          <span class="ex-line">Меня легко бросить</span>
+          <span class="ex-arrow">↓ и что тогда?</span>
+          <span class="ex-line">Со мной что-то не так</span>
+          <span class="ex-arrow">↓ а на самом дне?</span>
+          <span class="ex-line">Я никому не нужен</span>
+        </div>
+        <textarea id="core_belief" placeholder="Пройди свою цепочку — по шагу в строке">${f.core_belief}</textarea>
       </div>
     </div>
 
