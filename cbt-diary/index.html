@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Дневник мыслей</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Дневник эмоций</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,13 +21,12 @@
   --terracotta: #B85C38;
   --terracotta-tint: rgba(184,92,56,0.08);
   --alert: #B91C1C;
-  --alert-tint: rgba(185,28,28,0.06);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-main { max-width: 640px; margin: 0 auto; padding: 36px 24px 100px; }
+main { max-width: 640px; margin: 0 auto; padding: 36px 24px 120px; }
 h1 { font-size: 32px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 12px; }
 .lead { font-size: 16px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 8px; max-width: 540px; }
 .note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
@@ -41,8 +40,9 @@ h1 { font-size: 32px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .field-label .req { color: var(--terracotta); }
 .field-instr { font-size: 13px; color: var(--graphite-65); margin-bottom: 10px; }
 
+/* font-size 16px — иначе iOS зумит экран при фокусе в поле */
 textarea, input[type=text] {
-  width: 100%; font-family: var(--font-sans); font-size: 15px; color: var(--graphite);
+  width: 100%; font-family: var(--font-sans); font-size: 16px; color: var(--graphite);
   background: transparent; border: 1px solid var(--graphite-15); padding: 12px 14px;
   resize: vertical; line-height: 1.5;
 }
@@ -50,24 +50,20 @@ textarea { min-height: 64px; }
 textarea:focus, input[type=text]:focus { outline: none; border-color: var(--terracotta); }
 textarea::placeholder, input::placeholder { color: var(--graphite-30); }
 
-/* Ползунок */
 .slider-row { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
 input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 2px; background: var(--graphite-15); outline: none; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--terracotta); cursor: pointer; }
-input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border: none; border-radius: 50%; background: var(--terracotta); cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--terracotta); cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border: none; border-radius: 50%; background: var(--terracotta); cursor: pointer; }
 .slider-val { font-family: var(--font-mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 56px; text-align: right; }
 
-/* Чипы */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.chip { font-size: 14px; padding: 10px 16px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; user-select: none; }
-.chip:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.chip { font-size: 15px; padding: 12px 16px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; user-select: none; }
+.chip:active { background: var(--terracotta-tint); }
 .chip.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
-.chip-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
 
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 520px) { .two-col { grid-template-columns: 1fr; } }
 
-/* Сворачиваемый глубокий слой */
 .deep-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 16px 0; user-select: none; border-top: 1px solid var(--graphite-08); margin-top: 30px; }
 .deep-toggle .tw { font-size: 17px; font-weight: 500; }
 .deep-toggle .arrow { font-family: var(--font-mono); color: var(--terracotta); transition: transform 0.2s; }
@@ -76,12 +72,13 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border: none; b
 .deep-body.open { display: block; }
 .safety { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 22px; font-size: 14px; color: var(--graphite); }
 
-button.submit { width: 100%; background: var(--graphite); color: var(--paper); padding: 16px 28px; border: none; font-size: 15px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; margin-top: 30px; }
+button.submit { width: 100%; background: var(--graphite); color: var(--paper); padding: 16px 28px; border: none; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; margin-top: 30px; }
 button.submit:hover { background: var(--terracotta); }
 button.submit:disabled { background: var(--graphite-30); cursor: not-allowed; }
 .req-warn { font-size: 13px; color: var(--terracotta); margin-top: 10px; text-align: center; min-height: 18px; }
+.draft-note { font-size: 12px; color: var(--graphite-50); margin-top: 10px; text-align: center; min-height: 16px; }
 
-button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 14px 27px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; width: 100%; margin-top: 12px; }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 14px 27px; font-size: 15px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; width: 100%; margin-top: 12px; }
 button.secondary:hover { color: var(--terracotta); border-color: var(--terracotta); }
 
 .done-card { border: 1px solid var(--graphite-08); padding: 4px 0; margin: 22px 0; }
@@ -108,6 +105,7 @@ function getClientId() {
   return "local_anon";
 }
 const CLIENT_ID = getClientId();
+const DRAFT_KEY = "cbt_draft_" + CLIENT_ID;
 
 // === Справочники ===
 const COPING = ['Избегаю', 'Сдаюсь', 'Контратакую', 'Осознанно выбираю'];
@@ -126,27 +124,39 @@ const f = {
 };
 let deepOpen = false;
 
+// === Черновик — не потерять запись, если прервали (звонок, свернул) ===
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(f)); } catch (e) {}
+  const n = document.getElementById('draftNote');
+  if (n) n.textContent = 'Черновик сохраняется сам';
+}
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (raw) Object.assign(f, JSON.parse(raw));
+  } catch (e) {}
+}
+function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
+
 const app = document.getElementById('app');
 
 function renderForm() {
-  const inTg = !!tg;
   app.innerHTML = `
-    <h1>Дневник мыслей</h1>
-    <p class="lead">Заполни, когда что-то зацепило — тревога, раздражение, наэлектризованность. Не анализ, а взгляд со стороны.</p>
-    <p class="note" style="margin-bottom:8px; color:${inTg ? 'var(--terracotta)' : 'var(--alert)'};">${inTg ? '✓ через бота' : '⚠ открыто вне Telegram'} · ${CLIENT_ID}</p>
+    <h1>Дневник эмоций</h1>
+    <p class="lead">Что-то зацепило — тревога, злость, дрожь в теле? Запиши. Не чтобы покопаться, а чтобы увидеть со стороны.</p>
 
-    <div class="section-label">Быстрый слой</div>
-    <p class="section-hint">Поймать момент. Минута.</p>
+    <div class="section-label">Поймать момент</div>
+    <p class="section-hint">Минута. Что происходит прямо сейчас.</p>
 
     <div class="field">
       <div class="field-label">1 · Ситуация <span class="req">*</span></div>
-      <div class="field-instr">Что случилось? Факт: где, когда, кто.</div>
-      <textarea id="situation" placeholder="Открыл рынок, увидел движение против позиции">${f.situation}</textarea>
+      <div class="field-instr">Что случилось? Только факт: где, когда, кто.</div>
+      <textarea id="situation" placeholder="Открыл рынок, движение против позиции">${f.situation}</textarea>
     </div>
 
     <div class="field">
       <div class="field-label">2 · Эмоция <span class="req">*</span></div>
-      <div class="field-instr">Назови чувство одним словом и отметь силу.</div>
+      <div class="field-instr">Назови чувство одним словом. Отметь силу.</div>
       <input type="text" id="emotion" placeholder="Тревога" value="${f.emotion}">
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.emotion_pct}" id="emotion_pct">
@@ -156,13 +166,13 @@ function renderForm() {
 
     <div class="field">
       <div class="field-label">3 · Тело <span class="req">*</span></div>
-      <div class="field-instr">Где ощущение и какое? Не чинить — отметить.</div>
-      <textarea id="body" placeholder="Наэлектризованность в руках, верх тела">${f.body}</textarea>
+      <div class="field-instr">Где в теле отдаётся и какое? Не чинить — заметить.</div>
+      <textarea id="body" placeholder="Дрожь в руках, тяжесть в груди">${f.body}</textarea>
     </div>
 
     <div class="field">
-      <div class="field-label">4 · Горячая мысль <span class="req">*</span></div>
-      <div class="field-instr">Что пронеслось в голове? Дословно.</div>
+      <div class="field-label">4 · Мысль <span class="req">*</span></div>
+      <div class="field-instr">Что мелькнуло в голове? Дословно.</div>
       <textarea id="hot_thought" placeholder="Сейчас всё посыплется">${f.hot_thought}</textarea>
     </div>
 
@@ -174,23 +184,23 @@ function renderForm() {
       </div>
     </div>
 
-    <div class="section-label">Проверка</div>
-    <p class="section-hint">Сердце метода: мысль — не факт. Проверяем фактами.</p>
+    <div class="section-label">Проверить мысль</div>
+    <p class="section-hint">Мысль — не факт. Сверим её с реальностью.</p>
 
     <div class="field">
       <div class="field-label">6 · За и против <span class="req">*</span></div>
-      <div class="field-instr">Доказательства за горячую мысль и против неё.</div>
+      <div class="field-instr">Что подтверждает мысль, что опровергает.</div>
       <div class="two-col">
         <textarea id="evidence_for" placeholder="За: рынок правда падает">${f.evidence_for}</textarea>
-        <textarea id="evidence_against" placeholder="Против: уже падал, и не раз обходилось">${f.evidence_against}</textarea>
+        <textarea id="evidence_against" placeholder="Против: падал и раньше, обходилось">${f.evidence_against}</textarea>
       </div>
     </div>
 
     <div class="field">
-      <div class="field-label">7 · Сбалансированная мысль <span class="req">*</span></div>
-      <div class="field-instr">Точнее, с учётом фактов. Не «позитив» — ближе к правде.</div>
-      <textarea id="balanced_thought" placeholder="Падение — не катастрофа, а часть работы. Я проходил это">${f.balanced_thought}</textarea>
-      <div class="field-instr" style="margin-top:10px; margin-bottom:0;">Насколько веришь в неё?</div>
+      <div class="field-label">7 · Точнее <span class="req">*</span></div>
+      <div class="field-instr">Как мысль звучит с учётом фактов? Не «позитив» — правда.</div>
+      <textarea id="balanced_thought" placeholder="Падение — часть работы. Я это проходил">${f.balanced_thought}</textarea>
+      <div class="field-instr" style="margin-top:10px; margin-bottom:0;">Насколько веришь в это?</div>
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.balanced_belief_pct}" id="balanced_belief_pct">
         <span class="slider-val" id="balanced_belief_pct_v">${f.balanced_belief_pct}%</span>
@@ -199,7 +209,7 @@ function renderForm() {
 
     <div class="field">
       <div class="field-label">8 · Эмоция сейчас <span class="req">*</span></div>
-      <div class="field-instr">Та же эмоция — какая сила сейчас?</div>
+      <div class="field-instr">Та же эмоция. Сколько силы осталось?</div>
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.emotion_after_pct}" id="emotion_after_pct">
         <span class="slider-val" id="emotion_after_pct_v">${f.emotion_after_pct}%</span>
@@ -210,70 +220,77 @@ function renderForm() {
       <span class="arrow">▶</span><span class="tw">Копнуть глубже — по желанию</span>
     </div>
     <div class="deep-body ${deepOpen ? 'open' : ''}" id="deepBody">
-      <div class="safety">Заполняй, только когда устойчив. В тревоге — пропусти, хватит быстрого слоя.</div>
+      <div class="safety">Заполняй, только когда устойчив. В тревоге — пропусти, хватит быстрого.</div>
 
       <div class="field">
-        <div class="field-label">9 · Искажение</div>
-        <div class="field-instr">Узнаёшь ловушку мышления в горячей мысли? Отметь, можно несколько.</div>
+        <div class="field-label">9 · Ловушка мышления</div>
+        <div class="field-instr">Узнаёшь ловушку в своей мысли? Можно несколько.</div>
         <div class="chips" id="distortions">
           ${DISTORTIONS.map(d => `<div class="chip ${f.distortions.includes(d) ? 'selected' : ''}" data-distortion="${d}">${d}</div>`).join('')}
         </div>
       </div>
 
       <div class="field">
-        <div class="field-label">10 · Глубинное убеждение</div>
-        <div class="field-instr">Возьми горячую мысль и спроси: «Если это правда — что это значит обо мне?» Ответь. Задай тот же вопрос ответу. 3–4 раза, пока не упрёшься в ядро — «кто я такой, если так».</div>
+        <div class="field-label">10 · Что под этим</div>
+        <div class="field-instr">Спроси мысль: «Если это правда — что это значит обо мне?» Ответь. И тот же вопрос — ответу. 3–4 раза, пока не упрёшься в самое дно: «кто я, если так».</div>
         <textarea id="core_belief" placeholder="Я ничтожество без своих достижений">${f.core_belief}</textarea>
       </div>
     </div>
 
     <button class="submit" id="submitBtn" disabled>Записать</button>
     <div class="req-warn" id="reqWarn"></div>
+    <div class="draft-note" id="draftNote"></div>
   `;
   bindForm();
+  setupMainButton();
   validate();
 }
 
 function bindForm() {
-  // Текстовые поля
   ['situation','emotion','body','hot_thought','evidence_for','evidence_against','balanced_thought','core_belief'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', e => { f[id] = e.target.value; validate(); });
+    if (el) el.addEventListener('input', e => { f[id] = e.target.value; saveDraft(); validate(); });
   });
-  // Ползунки
   ['emotion_pct','balanced_belief_pct','emotion_after_pct'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', e => {
       f[id] = parseInt(e.target.value, 10);
       document.getElementById(id + '_v').textContent = f[id] + '%';
+      saveDraft();
     });
   });
-  // Копинг — одиночный выбор
   document.querySelectorAll('#coping .chip').forEach(ch => {
     ch.addEventListener('click', () => {
       f.coping = ch.dataset.coping;
       document.querySelectorAll('#coping .chip').forEach(c => c.classList.toggle('selected', c.dataset.coping === f.coping));
-      validate();
+      saveDraft(); validate();
     });
   });
-  // Искажения — мультивыбор
   document.querySelectorAll('#distortions .chip').forEach(ch => {
     ch.addEventListener('click', () => {
       const d = ch.dataset.distortion;
       const i = f.distortions.indexOf(d);
       if (i === -1) f.distortions.push(d); else f.distortions.splice(i, 1);
       ch.classList.toggle('selected');
+      saveDraft();
     });
   });
-  // Сворачивание глубокого слоя
   const dt = document.getElementById('deepToggle');
   dt.addEventListener('click', () => {
     deepOpen = !deepOpen;
     dt.classList.toggle('open', deepOpen);
     document.getElementById('deepBody').classList.toggle('open', deepOpen);
   });
-  // Сабмит
   document.getElementById('submitBtn').addEventListener('click', submit);
+}
+
+// Нативная кнопка Telegram — висит над клавиатурой, удобнее на телефоне
+function setupMainButton() {
+  if (!tg || !tg.MainButton) return;
+  document.getElementById('submitBtn').style.display = 'none';
+  tg.MainButton.setText('Записать');
+  tg.MainButton.onClick(submit);
+  tg.MainButton.show();
 }
 
 function validate() {
@@ -282,8 +299,12 @@ function validate() {
     && f.evidence_for.trim() && f.evidence_against.trim() && f.balanced_thought.trim();
   const btn = document.getElementById('submitBtn');
   const warn = document.getElementById('reqWarn');
-  btn.disabled = !ok;
-  warn.textContent = ok ? '' : 'Заполни обязательные поля (со звёздочкой *)';
+  if (btn) btn.disabled = !ok;
+  if (warn) warn.textContent = ok ? '' : 'Заполни поля со звёздочкой *';
+  if (tg && tg.MainButton) {
+    if (ok) tg.MainButton.enable(); else tg.MainButton.disable();
+    tg.MainButton.color = ok ? '#1A1A1A' : '#9b9b9b';
+  }
   return ok;
 }
 
@@ -291,45 +312,35 @@ function submit() {
   if (!validate()) return;
   const payload = {
     completed_at: new Date().toISOString(),
-    situation: f.situation.trim(),
-    emotion: f.emotion.trim(),
-    emotion_pct: f.emotion_pct,
-    body: f.body.trim(),
-    hot_thought: f.hot_thought.trim(),
-    coping: f.coping,
-    evidence_for: f.evidence_for.trim(),
-    evidence_against: f.evidence_against.trim(),
-    balanced_thought: f.balanced_thought.trim(),
-    balanced_belief_pct: f.balanced_belief_pct,
-    emotion_after_pct: f.emotion_after_pct,
-    distortions: f.distortions,
-    core_belief: f.core_belief.trim()
+    situation: f.situation.trim(), emotion: f.emotion.trim(), emotion_pct: f.emotion_pct,
+    body: f.body.trim(), hot_thought: f.hot_thought.trim(), coping: f.coping,
+    evidence_for: f.evidence_for.trim(), evidence_against: f.evidence_against.trim(),
+    balanced_thought: f.balanced_thought.trim(), balanced_belief_pct: f.balanced_belief_pct,
+    emotion_after_pct: f.emotion_after_pct, distortions: f.distortions, core_belief: f.core_belief.trim()
   };
+  clearDraft();
   if (tg && typeof tg.sendData === 'function') {
-    try {
-      tg.sendData(JSON.stringify({ action: 'cbt_diary', payload }));
-      renderDone(payload, true);
-    } catch (e) {
-      renderDone(payload, false);
-    }
+    try { tg.sendData(JSON.stringify({ action: 'cbt_diary', payload })); renderDone(payload, true); }
+    catch (e) { renderDone(payload, false); }
   } else {
     renderDone(payload, false);
   }
 }
 
 function renderDone(p, sent) {
+  if (tg && tg.MainButton) tg.MainButton.hide();
   const delta = p.emotion_pct - p.emotion_after_pct;
-  const deltaWord = delta > 0 ? `эмоция спала на ${delta}%` : delta < 0 ? `эмоция выросла на ${-delta}%` : 'эмоция не изменилась';
+  const deltaWord = delta > 0 ? `эмоция спала на ${delta}%` : delta < 0 ? `выросла на ${-delta}%` : 'без изменений';
   app.innerHTML = `
     <h1>Записал</h1>
     <p class="lead">${sent ? 'Отправил боту — он отзовётся в чате через секунду.' : 'Открой дневник через бота, чтобы запись сохранилась.'}</p>
     <div class="done-card">
       <div class="done-row"><div class="done-k">Ситуация</div><div class="done-v">${esc(p.situation)}</div></div>
-      <div class="done-row"><div class="done-k">Эмоция</div><div class="done-v">${esc(p.emotion)} · было ${p.emotion_pct}% → стало ${p.emotion_after_pct}% (${deltaWord})</div></div>
+      <div class="done-row"><div class="done-k">Эмоция</div><div class="done-v">${esc(p.emotion)} · ${p.emotion_pct}% → ${p.emotion_after_pct}% (${deltaWord})</div></div>
       <div class="done-row"><div class="done-k">Тело</div><div class="done-v">${esc(p.body)}</div></div>
       <div class="done-row"><div class="done-k">Что делаю</div><div class="done-v">${esc(p.coping)}</div></div>
-      <div class="done-row"><div class="done-k">Сбалансированная мысль</div><div class="done-v">${esc(p.balanced_thought)} · верю ${p.balanced_belief_pct}%</div></div>
-      ${p.core_belief ? `<div class="done-row"><div class="done-k">Глубинное убеждение</div><div class="done-v">${esc(p.core_belief)}</div></div>` : ''}
+      <div class="done-row"><div class="done-k">Точнее</div><div class="done-v">${esc(p.balanced_thought)} · верю ${p.balanced_belief_pct}%</div></div>
+      ${p.core_belief ? `<div class="done-row"><div class="done-k">Что под этим</div><div class="done-v">${esc(p.core_belief)}</div></div>` : ''}
     </div>
     ${tg ? '<button class="secondary" onclick="closeApp()">Закрыть</button>' : ''}
   `;
@@ -338,7 +349,13 @@ function renderDone(p, sent) {
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function closeApp() { try { tg.close(); } catch (e) {} }
 
+// === Старт: восстановить черновик, если был ===
+loadDraft();
 renderForm();
+if (localStorage.getItem(DRAFT_KEY)) {
+  const n = document.getElementById('draftNote');
+  if (n) n.textContent = 'Вернул незаконченный черновик';
+}
 </script>
 </body>
 </html>
