@@ -151,13 +151,13 @@ function renderForm() {
     <div class="field">
       <div class="field-label">1 · Ситуация <span class="req">*</span></div>
       <div class="field-instr">Что случилось? Только факт: где, когда, кто.</div>
-      <textarea id="situation" placeholder="Открыл рынок, движение против позиции">${f.situation}</textarea>
+      <textarea id="situation" placeholder="Написал близкому важное — он не ответил весь день">${f.situation}</textarea>
     </div>
 
     <div class="field">
       <div class="field-label">2 · Эмоция <span class="req">*</span></div>
       <div class="field-instr">Назови чувство одним словом. Отметь силу.</div>
-      <input type="text" id="emotion" placeholder="Тревога" value="${f.emotion}">
+      <input type="text" id="emotion" placeholder="Обида" value="${f.emotion}">
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.emotion_pct}" id="emotion_pct">
         <span class="slider-val" id="emotion_pct_v">${f.emotion_pct}%</span>
@@ -167,13 +167,13 @@ function renderForm() {
     <div class="field">
       <div class="field-label">3 · Тело <span class="req">*</span></div>
       <div class="field-instr">Где в теле отдаётся и какое? Не чинить — заметить.</div>
-      <textarea id="body" placeholder="Дрожь в руках, тяжесть в груди">${f.body}</textarea>
+      <textarea id="body" placeholder="Ком в горле, тяжесть в груди">${f.body}</textarea>
     </div>
 
     <div class="field">
       <div class="field-label">4 · Мысль <span class="req">*</span></div>
       <div class="field-instr">Что мелькнуло в голове? Дословно.</div>
-      <textarea id="hot_thought" placeholder="Сейчас всё посыплется">${f.hot_thought}</textarea>
+      <textarea id="hot_thought" placeholder="Я ему безразличен">${f.hot_thought}</textarea>
     </div>
 
     <div class="field">
@@ -191,15 +191,15 @@ function renderForm() {
       <div class="field-label">6 · За и против <span class="req">*</span></div>
       <div class="field-instr">Что подтверждает мысль, что опровергает.</div>
       <div class="two-col">
-        <textarea id="evidence_for" placeholder="За: рынок правда падает">${f.evidence_for}</textarea>
-        <textarea id="evidence_against" placeholder="Против: падал и раньше, обходилось">${f.evidence_against}</textarea>
+        <textarea id="evidence_for" placeholder="За: молчит уже 8 часов">${f.evidence_for}</textarea>
+        <textarea id="evidence_against" placeholder="Против: раньше всегда отвечал, мог закопаться в делах">${f.evidence_against}</textarea>
       </div>
     </div>
 
     <div class="field">
       <div class="field-label">7 · Точнее <span class="req">*</span></div>
       <div class="field-instr">Как мысль звучит с учётом фактов? Не «позитив» — правда.</div>
-      <textarea id="balanced_thought" placeholder="Падение — часть работы. Я это проходил">${f.balanced_thought}</textarea>
+      <textarea id="balanced_thought" placeholder="Скорее всего, он в делах. Молчание — не про меня">${f.balanced_thought}</textarea>
       <div class="field-instr" style="margin-top:10px; margin-bottom:0;">Насколько веришь в это?</div>
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.balanced_belief_pct}" id="balanced_belief_pct">
@@ -233,7 +233,7 @@ function renderForm() {
       <div class="field">
         <div class="field-label">10 · Что под этим</div>
         <div class="field-instr">Спроси мысль: «Если это правда — что это значит обо мне?» Ответь. И тот же вопрос — ответу. 3–4 раза, пока не упрёшься в самое дно: «кто я, если так».</div>
-        <textarea id="core_belief" placeholder="Я ничтожество без своих достижений">${f.core_belief}</textarea>
+        <textarea id="core_belief" placeholder="Я никому не нужен">${f.core_belief}</textarea>
       </div>
     </div>
 
