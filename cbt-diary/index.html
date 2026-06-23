@@ -108,6 +108,7 @@ const CLIENT_ID = getClientId();
 const DRAFT_KEY = "cbt_draft_" + CLIENT_ID;
 
 // === Справочники ===
+const EMOTIONS = ['Тревога','Страх','Грусть','Злость','Раздражение','Обида','Стыд','Вина','Одиночество','Беспомощность','Растерянность','Зависть'];
 const COPING = ['Избегаю', 'Сдаюсь', 'Контратакую', 'Осознанно выбираю'];
 const DISTORTIONS = [
   'Чёрно-белое', 'Сверхобобщение', 'Негативный фильтр', 'Обесценивание хорошего',
@@ -117,7 +118,7 @@ const DISTORTIONS = [
 
 // === Состояние формы ===
 const f = {
-  situation: '', emotion: '', emotion_pct: 50, body: '', hot_thought: '',
+  situation: '', emotions: [], emotion_other: '', emotion_pct: 50, body: '', hot_thought: '',
   coping: '', evidence_for: '', evidence_against: '',
   balanced_thought: '', balanced_belief_pct: 50, emotion_after_pct: 50,
   distortions: [], core_belief: ''
@@ -156,8 +157,12 @@ function renderForm() {
 
     <div class="field">
       <div class="field-label">2 · Эмоция <span class="req">*</span></div>
-      <div class="field-instr">Назови чувство одним словом. Отметь силу.</div>
-      <input type="text" id="emotion" placeholder="Обида" value="${f.emotion}">
+      <div class="field-instr">Что почувствовал? Выбери одно или несколько. Не нашёл — впиши своё.</div>
+      <div class="chips" id="emotions">
+        ${EMOTIONS.map(e => `<div class="chip ${f.emotions.includes(e) ? 'selected' : ''}" data-emotion="${e}">${e}</div>`).join('')}
+      </div>
+      <input type="text" id="emotion_other" placeholder="Своё словами" value="${f.emotion_other}" style="margin-top:10px;">
+      <div class="field-instr" style="margin-top:14px; margin-bottom:0;">Насколько сильно накрывает — в целом?</div>
       <div class="slider-row">
         <input type="range" min="0" max="100" value="${f.emotion_pct}" id="emotion_pct">
         <span class="slider-val" id="emotion_pct_v">${f.emotion_pct}%</span>
@@ -247,9 +252,19 @@ function renderForm() {
 }
 
 function bindForm() {
-  ['situation','emotion','body','hot_thought','evidence_for','evidence_against','balanced_thought','core_belief'].forEach(id => {
+  ['situation','emotion_other','body','hot_thought','evidence_for','evidence_against','balanced_thought','core_belief'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', e => { f[id] = e.target.value; saveDraft(); validate(); });
+  });
+  // Эмоции — мультивыбор из палитры (помогает тем, кто не умеет называть чувства)
+  document.querySelectorAll('#emotions .chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      const em = ch.dataset.emotion;
+      const i = f.emotions.indexOf(em);
+      if (i === -1) f.emotions.push(em); else f.emotions.splice(i, 1);
+      ch.classList.toggle('selected');
+      saveDraft(); validate();
+    });
   });
   ['emotion_pct','balanced_belief_pct','emotion_after_pct'].forEach(id => {
     const el = document.getElementById(id);
@@ -294,7 +309,7 @@ function setupMainButton() {
 }
 
 function validate() {
-  const ok = f.situation.trim() && f.emotion.trim() && f.body.trim()
+  const ok = f.situation.trim() && (f.emotions.length || f.emotion_other.trim()) && f.body.trim()
     && f.hot_thought.trim() && f.coping
     && f.evidence_for.trim() && f.evidence_against.trim() && f.balanced_thought.trim();
   const btn = document.getElementById('submitBtn');
@@ -312,7 +327,9 @@ function submit() {
   if (!validate()) return;
   const payload = {
     completed_at: new Date().toISOString(),
-    situation: f.situation.trim(), emotion: f.emotion.trim(), emotion_pct: f.emotion_pct,
+    situation: f.situation.trim(),
+    emotion: [...f.emotions, f.emotion_other.trim()].filter(Boolean).join(', '),
+    emotion_pct: f.emotion_pct,
     body: f.body.trim(), hot_thought: f.hot_thought.trim(), coping: f.coping,
     evidence_for: f.evidence_for.trim(), evidence_against: f.evidence_against.trim(),
     balanced_thought: f.balanced_thought.trim(), balanced_belief_pct: f.balanced_belief_pct,
