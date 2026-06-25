@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Временная перспектива (ZTPI)</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: #f5f4f0; padding: 12px 0 8px; z-index: 10; border-bottom: 1px solid #e2dfd6; }
+.progress-track { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 3px; background: #e2dfd6; position: relative; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: #1a1a1a; transition: width 0.3s ease; width: 0%; }
+.progress-text { font-size: 12px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+
+main { max-width: 720px; margin: 0 auto; padding: 32px 24px 80px; }
+h1 { font-size: 26px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
+h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
+p { margin-bottom: 12px; color: #444; }
+.lead { font-size: 16px; color: #555; margin-bottom: 24px; }
+.note { font-size: 13px; color: #888; }
+
+button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
+button:hover { background: #333; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+button.secondary { background: transparent; color: #1a1a1a; border: 1px solid #d4cfc2; padding: 12px 24px; }
+button.secondary:hover { background: #ebe7dc; }
+.actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+.q-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 28px 24px; margin: 16px 0; }
+.q-block { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.q-text { font-size: 18px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+.q-instr { font-size: 14px; color: #666; margin-bottom: 16px; font-style: italic; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 14px 16px; border: 1px solid #e2dfd6; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: #fff; user-select: none; }
+.q-option:hover { border-color: #1a1a1a; background: #fafaf6; }
+.q-option.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+.result-need { padding: 16px 0; border-bottom: 1px solid #f0ede6; }
+.result-need:last-child { border-bottom: 0; }
+.result-need-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.result-need-verdict { font-size: 13px; margin-bottom: 10px; }
+.verdict-good { color: #2d6a4f; }
+.verdict-watch { color: #b45309; }
+.verdict-bad { color: #b91c1c; }
+.result-need-row { display: flex; align-items: center; gap: 12px; }
+.result-need-bar { flex: 1; height: 10px; background: #e2dfd6; border-radius: 5px; overflow: hidden; position: relative; }
+.result-need-bar-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #1a1a1a; opacity: 0.35; }
+.result-need-bar-fill { height: 100%; transition: width 0.6s ease; }
+.bar-pos { background: #2d6a4f; }
+.bar-neg { background: #b45309; }
+.result-need-val { font-size: 15px; font-weight: 600; min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: start; font-size: 14px; }
+.history-date { color: #888; }
+.history-pills { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #555; font-variant-numeric: tabular-nums; }
+
+.empty { text-align: center; padding: 40px 20px; color: #888; }
+.sync-status { font-size: 12px; color: #4a8c5e; }
+.sync-status.error { color: #b91c1c; }
+
+@media (max-width: 600px) {
+  main { padding: 24px 16px 80px; }
+  h1 { font-size: 22px; }
+  .q-card { padding: 20px 16px; }
+  .q-text { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+const TELEGRAM_USER_ID = tg?.initDataUnsafe?.user?.id;
+
+// === Идентификатор клиента ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  if (TELEGRAM_USER_ID) return "tg_" + TELEGRAM_USER_ID;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+const STORAGE_KEY = "ztpi_v1_" + CLIENT_ID;
+
+// === Supabase client ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// === Шкала ответов 1–5 ===
+const SCALE = [
+  {label: 'Совершенно неверно', value: 1},
+  {label: 'Скорее неверно', value: 2},
+  {label: 'Ни верно, ни неверно', value: 3},
+  {label: 'Скорее верно', value: 4},
+  {label: 'Совершенно верно', value: 5}
+];
+
+// === ZTPI-ru (адаптация Сырцовой и др.) — 56 пунктов, канонический порядок ===
+// Опросник временной перспективы Зимбардо. Порядок пунктов уже перемешан
+// по шкалам в самом инструменте. Группировка — только в логике подсчёта.
+const QUESTIONS = [
+  /*  1 */ 'Я считаю, что ходить вместе с друзьями на вечеринки — это одно из самых больших удовольствий в жизни.',
+  /*  2 */ 'Знакомые с детства картины, звуки, запахи часто приносят с собой поток приятных воспоминаний.',
+  /*  3 */ 'Судьба определяет многое в моей жизни.',
+  /*  4 */ 'Я часто думаю о том, что я должен был сделать в своей жизни иначе.',
+  /*  5 */ 'На мои решения в основном влияют окружающие меня люди и обстоятельства.',
+  /*  6 */ 'Я считаю, что каждое утро человек должен планировать свой день.',
+  /*  7 */ 'Мне приятно думать о своём прошлом.',
+  /*  8 */ 'Я действую импульсивно.',
+  /*  9 */ 'Если что-то не удаётся сделать вовремя, я не беспокоюсь об этом.',
+  /* 10 */ 'Если я хочу достичь чего-то, я ставлю перед собой цели и размышляю над тем, какими средствами их достичь.',
+  /* 11 */ 'Вообще говоря, в моём прошлом вспоминается гораздо больше хорошего, чем плохого.',
+  /* 12 */ 'Слушая мою любимую музыку, я часто забываю про время.',
+  /* 13 */ 'Сначала я делаю то, что должен сделать на завтра, и другую необходимую работу, и только потом предаюсь развлечениям сегодняшнего вечера.',
+  /* 14 */ 'Если то, чему суждено произойти, всё равно произойдёт, на самом деле не важно, что я делаю.',
+  /* 15 */ 'Мне нравятся рассказы о том, как же было в «старые добрые времена».',
+  /* 16 */ 'Болезненные переживания прошлого продолжают занимать мои мысли.',
+  /* 17 */ 'Я стараюсь жить полной жизнью насколько это возможно, наслаждаясь сегодняшним днём.',
+  /* 18 */ 'Меня расстраивает, когда я опаздываю на назначенные заранее встречи.',
+  /* 19 */ 'В идеале, я бы проживал каждый свой день так, как если бы он был последним.',
+  /* 20 */ 'Счастливые воспоминания о хороших временах с лёгкостью приходят в голову.',
+  /* 21 */ 'Я выполняю свои обязательства, данные друзьям и начальству, вовремя.',
+  /* 22 */ 'В прошлом я получил свою долю плохого обращения и отвержения.',
+  /* 23 */ 'Я принимаю решения под влиянием момента.',
+  /* 24 */ 'Я принимаю каждый день таким, каков он есть, не пытаясь планировать его заранее.',
+  /* 25 */ 'В прошлом слишком много неприятных воспоминаний, поэтому я предпочитаю не думать о нём.',
+  /* 26 */ 'Важно, чтобы в моей жизни были волнующие моменты.',
+  /* 27 */ 'Я совершил в прошлом ошибки, которые хотел бы исправить.',
+  /* 28 */ 'Я чувствую, что гораздо важнее получать удовольствие от того, что ты делаешь, чем выполнять работу в срок.',
+  /* 29 */ 'Я скучаю по детству.',
+  /* 30 */ 'Прежде чем принять решение, я взвешиваю, что я затрачу и что получу.',
+  /* 31 */ 'Риск помогает мне избежать скуки в жизни.',
+  /* 32 */ 'Для меня важнее получать удовольствие от самого путешествия по жизни, чем быть сосредоточенным только на цели этого путешествия.',
+  /* 33 */ 'Редко получается так, как я ожидал.',
+  /* 34 */ 'Мне трудно забыть неприятные образы из моей юности.',
+  /* 35 */ 'Процесс деятельности перестаёт приносить мне удовольствие, если нужно думать о цели, последствиях и практических результатах.',
+  /* 36 */ 'Даже когда я получаю удовольствие от настоящего, я всё равно сравниваю его с чем-то похожим из своего прошлого.',
+  /* 37 */ 'На самом деле невозможно планировать своё будущее, потому что всё слишком изменчиво.',
+  /* 38 */ 'Мой жизненный путь контролируется силами, на которые я не могу повлиять.',
+  /* 39 */ 'Нет смысла беспокоиться о будущем, так как я всё равно ничего не могу сделать.',
+  /* 40 */ 'Я выполняю план вовремя благодаря тому, что непрестанно делаю шаги вперёд.',
+  /* 41 */ 'Я замечаю, что теряю интерес, когда члены моей семьи начинают вспоминать былое.',
+  /* 42 */ 'Я рискую, чтобы придать моей жизни остроты и возбуждения.',
+  /* 43 */ 'Я составляю список того, что мне надо сделать.',
+  /* 44 */ 'Я чаще прислушиваюсь к сердцу, чем к разуму.',
+  /* 45 */ 'Я способен удержаться от соблазнов, если знаю, что меня ждёт работа, которую необходимо сделать.',
+  /* 46 */ 'Волнующие моменты часто захватывают меня.',
+  /* 47 */ 'Сегодняшняя жизнь слишком сложная, я бы предпочёл более простую жизнь, такую, как была в прошлом.',
+  /* 48 */ 'Я предпочитаю друзей, которые более спонтанны, нежели предсказуемы.',
+  /* 49 */ 'Мне нравятся семейные ритуалы и традиции, которые постоянно повторяются.',
+  /* 50 */ 'Я думаю о том плохом, что произошло со мной в прошлом.',
+  /* 51 */ 'Я продолжаю работу над трудными и неинтересными заданиями, если это помогает мне продвинуться вперёд.',
+  /* 52 */ 'Лучше потратить заработанные деньги на удовольствия сегодняшнего дня, чем сберечь их в целях обеспечения защиты завтрашнего дня.',
+  /* 53 */ 'Часто удача приносит большее вознаграждение, чем тяжёлая работа.',
+  /* 54 */ 'Я часто думаю о том хорошем, что я упустил в своей жизни.',
+  /* 55 */ 'Мне нравится, когда мои близкие отношения исполнены страсти.',
+  /* 56 */ 'Всегда есть время, чтобы успеть доделать свою работу.'
+];
+
+// Пункты с обратным подсчётом (1↔5, 2↔4)
+const REVERSE = [9, 24, 25, 41, 56];
+
+// Индексы шкал (1-based, как в опроснике)
+const SCALE_INDEX = {
+  past_negative:      [4, 5, 16, 22, 27, 33, 34, 36, 50, 54],
+  present_hedonistic: [1, 8, 12, 17, 19, 23, 26, 28, 31, 32, 42, 44, 46, 48, 55],
+  future:             [6, 9, 10, 13, 18, 21, 24, 30, 40, 43, 45, 51, 56],
+  past_positive:      [2, 7, 11, 15, 20, 25, 29, 41, 49],
+  present_fatalistic: [3, 14, 35, 37, 38, 39, 47, 52, 53]
+};
+
+// Оптимальный сбалансированный профиль (Зимбардо, гл. 11) и тип шкалы
+const SCALE_META = {
+  past_positive:      { title: 'Позитивное прошлое', kind: 'pos', target: 4.4, want: 'high',  hint: 'корни, опора' },
+  future:             { title: 'Будущее',            kind: 'pos', target: 3.8, want: 'mid',   hint: 'крылья, цели' },
+  present_hedonistic: { title: 'Гедонистическое настоящее', kind: 'pos', target: 3.6, want: 'mid', hint: 'энергия, радость' },
+  past_negative:      { title: 'Негативное прошлое', kind: 'neg', target: 2.2, want: 'low',   hint: 'тянуть вниз' },
+  present_fatalistic: { title: 'Фаталистическое настоящее', kind: 'neg', target: 2.0, want: 'low', hint: 'тянуть вниз' }
+};
+const SCALE_ORDER = ['past_positive', 'future', 'present_hedonistic', 'past_negative', 'present_fatalistic'];
+
+// === Состояние ===
+const state = {
+  screen: 'welcome',
+  questionIdx: 0,
+  answers: {},  // { q1: 4, q2: 2, ... }
+  totalQuestions: QUESTIONS.length,
+  syncStatus: '',
+  syncMessage: ''
+};
+
+let history = [];
+
+// === Supabase: история ===
+async function loadHistoryFromSupabase() {
+  try {
+    const { data, error } = await sb
+      .from("ztpi_results")
+      .select("checkin_date, completed_at, past_negative, past_positive, present_hedonistic, present_fatalistic, future")
+      .eq("client_id", CLIENT_ID)
+      .order("checkin_date", { ascending: false })
+      .limit(8);
+    if (error) { console.error("Supabase load failed:", error); return []; }
+    return data || [];
+  } catch (e) { console.error("Supabase load exception:", e); return []; }
+}
+
+// === Отправка боту ===
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') {
+    state.syncStatus = 'error';
+    state.syncMessage = 'Опросник заполнен, но открой его через бота — иначе результат не сохранится.';
+    return false;
+  }
+  try {
+    tg.sendData(JSON.stringify({ action: 'ztpi_assessment', payload: record }));
+    state.syncStatus = 'ok';
+    state.syncMessage = 'Результат отправлен боту. Ответ придёт в чат через секунду.';
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    state.syncStatus = 'error';
+    state.syncMessage = 'Не удалось отправить боту: ' + e.message;
+    return false;
+  }
+}
+
+// === Прогресс ===
+function answeredCount() { return Object.keys(state.answers).length; }
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'question') { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  const pct = (answeredCount() / state.totalQuestions) * 100;
+  fill.style.width = pct + '%';
+  text.textContent = 'Временная перспектива';
+  count.textContent = answeredCount() + ' / ' + state.totalQuestions;
+}
+
+// === Рендер ===
+const app = document.getElementById('app');
+
+function renderWelcome() {
+  const inTelegram = !!tg;
+  const tgIndicator = inTelegram
+    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
+    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
+  app.innerHTML = `
+    <h1>Временная перспектива</h1>
+    ${tgIndicator}
+    <p class="lead">Опросник Зимбардо (ZTPI): через какое время ты живёшь — прошлое, настоящее, будущее. 56 утверждений, 10–12 минут.</p>
+    <p>Не оцениваем тебя. Смотрим, какая линза сейчас ведущая и где перекос. На выходе — пять шкал и сравнение со сбалансированным профилем.</p>
+    <p class="note">Отвечай быстро, первой реакцией. Лучше перепроходить раз в квартал — увидишь динамику.</p>
+    <div class="actions">
+      <button onclick="start()">Начать</button>
+      ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderQuestion() {
+  const idx = state.questionIdx;
+  const qNum = idx + 1;
+  const q = QUESTIONS[idx];
+  const key = 'q' + qNum;
+  const selected = state.answers[key];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">Утверждение ${qNum} из ${state.totalQuestions}</div>
+      ${idx === 0 ? '<div class="q-instr">Оцени, насколько каждое утверждение верно для тебя. Отвечай быстро, первой реакцией.</div>' : ''}
+      <div class="q-text">${q}</div>
+      <div class="q-options">
+        ${SCALE.map(s => `
+          <div class="q-option ${selected === s.value ? 'selected' : ''}" onclick="answer(${s.value})">
+            <span class="q-option-text">${s.label}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${idx === 0 ? '' : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// Значение пункта с учётом обратного подсчёта
+function itemValue(i) {
+  const v = state.answers['q' + i];
+  if (v === undefined) return undefined;
+  return REVERSE.includes(i) ? (6 - v) : v;
+}
+
+function avg(indices) {
+  const vals = indices.map(itemValue).filter(v => v !== undefined);
+  if (!vals.length) return null;
+  const m = vals.reduce((a, b) => a + b, 0) / vals.length;
+  return Math.round(m * 100) / 100;
+}
+
+function computeRecord() {
+  return {
+    checkin_date: new Date().toISOString().slice(0, 10),
+    completed_at: new Date().toISOString(),
+    past_negative:      avg(SCALE_INDEX.past_negative),
+    past_positive:      avg(SCALE_INDEX.past_positive),
+    present_hedonistic: avg(SCALE_INDEX.present_hedonistic),
+    present_fatalistic: avg(SCALE_INDEX.present_fatalistic),
+    future:             avg(SCALE_INDEX.future),
+    answers: { ...state.answers },
+    questionnaire_version: 'v1'
+  };
+}
+
+// Ширина бара: значение 1.0–5.0 → 0–100%
+function barWidth(v) {
+  if (v === null || v === undefined) return 0;
+  return Math.max(0, Math.min(100, ((v - 1) / 4) * 100));
+}
+
+// Вердикт по шкале относительно целевого профиля
+function verdict(key, v) {
+  if (v === null || v === undefined) return { cls: '', text: '' };
+  const m = SCALE_META[key];
+  if (m.want === 'low') {
+    if (v <= m.target + 0.3) return { cls: 'verdict-good', text: 'в норме — низкое, как и нужно' };
+    if (v <= m.target + 1.0) return { cls: 'verdict-watch', text: 'повышено — стоит снижать' };
+    return { cls: 'verdict-bad', text: 'высокое — главная зона работы' };
+  }
+  if (m.want === 'high') {
+    if (v >= m.target - 0.4) return { cls: 'verdict-good', text: 'в опоре — сильная сторона' };
+    if (v >= m.target - 1.2) return { cls: 'verdict-watch', text: 'средне — есть куда растить' };
+    return { cls: 'verdict-bad', text: 'просело — опора слабовата' };
+  }
+  // mid
+  if (v >= m.target - 0.5 && v <= m.target + 0.7) return { cls: 'verdict-good', text: 'в балансе' };
+  if (v < m.target - 0.5) return { cls: 'verdict-watch', text: 'ниже баланса — добрать' };
+  return { cls: 'verdict-watch', text: 'выше баланса — следить за перекосом' };
+}
+
+function renderResult(record) {
+  const syncBlock = state.syncStatus
+    ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
+    : '';
+
+  const rowsHtml = SCALE_ORDER.map(key => {
+    const m = SCALE_META[key];
+    const v = record[key];
+    const ver = verdict(key, v);
+    const barCls = m.kind === 'pos' ? 'bar-pos' : 'bar-neg';
+    return `
+      <div class="result-need">
+        <div class="result-need-title">${m.title}</div>
+        <div class="result-need-verdict ${ver.cls}">${ver.text}</div>
+        <div class="result-need-row">
+          <div class="result-need-bar">
+            <div class="result-need-bar-fill ${barCls}" style="width:${barWidth(v)}%"></div>
+            <div class="result-need-bar-target" style="left:${barWidth(m.target)}%"></div>
+          </div>
+          <span class="result-need-val">${v ?? '—'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <h1>Твой профиль времени</h1>
+    <p class="lead">Запись от ${new Date(record.completed_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
+    ${syncBlock}
+    <div class="result-card">${rowsHtml}</div>
+    <p class="note">Шкала 1.0–5.0. Чёрная риска — где значение должно быть в сбалансированном профиле (Зимбардо). Зелёные шкалы тянем вверх, оранжевые — вниз. Это срез момента, а не приговор.</p>
+    ${history.length > 0 ? `
+      <h2>Прошлые замеры</h2>
+      <div>${renderHistoryList(history)}</div>
+    ` : '<p class="note">Это твой первый замер. Возвращайся раз в квартал — увидишь динамику.</p>'}
+    <div class="actions">
+      <button class="secondary" onclick="renderWelcome()">На главную</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function renderHistoryList(records) {
+  return records.slice().reverse().map(r => {
+    const d = new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', {day:'2-digit', month:'short', year:'numeric'});
+    const fmt = v => v === null || v === undefined ? '—' : Number(v).toFixed(2);
+    return `
+      <div class="history-row">
+        <div class="history-date">${d}</div>
+        <div class="history-pills">
+          <div>Поз. прошлое: ${fmt(r.past_positive)} · Будущее: ${fmt(r.future)} · Гедон.: ${fmt(r.present_hedonistic)}</div>
+          <div>Нег. прошлое: ${fmt(r.past_negative)} · Фатал.: ${fmt(r.present_fatalistic)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showHistory() {
+  app.innerHTML = `
+    <h1>История замеров</h1>
+    <p class="lead">Все твои замеры временной перспективы.</p>
+    ${history.length ? renderHistoryList(history) : '<div class="empty">Замеров пока нет.</div>'}
+    <div class="actions"><button class="secondary" onclick="renderWelcome()">На главную</button></div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+function start() {
+  state.screen = 'question';
+  state.questionIdx = 0;
+  state.answers = {};
+  state.syncStatus = '';
+  state.syncMessage = '';
+  renderQuestion();
+}
+
+function answer(value) {
+  const key = 'q' + (state.questionIdx + 1);
+  state.answers[key] = value;
+  if (state.questionIdx < QUESTIONS.length - 1) {
+    state.questionIdx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.questionIdx > 0) { state.questionIdx--; }
+  renderQuestion();
+}
+
+async function finish() {
+  state.screen = 'result';
+  const record = computeRecord();
+  try { localStorage.setItem(STORAGE_KEY + '_last', JSON.stringify(record)); } catch (e) {}
+  sendToBot(record);
+  renderResult(record);
+  loadHistoryFromSupabase().then(h => {
+    history = h;
+    if (state.screen === 'result') renderResult(record);
+  }).catch(() => {});
+}
+
+// === СТАРТ ===
+(async () => {
+  history = await loadHistoryFromSupabase();
+  renderWelcome();
+})();
+</script>
+</body>
+</html>
