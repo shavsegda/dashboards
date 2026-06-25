@@ -64,6 +64,13 @@ button.secondary:hover { background: #ebe7dc; }
 .sync-status { font-size: 12px; color: #4a8c5e; }
 .sync-status.error { color: #b91c1c; }
 
+.chart-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 20px 16px; margin-bottom: 16px; }
+.chart-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.chart-sub { font-size: 12px; color: #888; margin-bottom: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px; justify-content: center; }
+.legend-item { font-size: 12px; color: #555; display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
 @media (max-width: 600px) {
   main { padding: 24px 16px 80px; }
   h1 { font-size: 22px; }
@@ -200,7 +207,7 @@ const SCALE_META = {
   past_negative:      { title: 'Негативное прошлое', kind: 'neg', target: 2.2, want: 'low',   hint: 'тянуть вниз' },
   present_fatalistic: { title: 'Фаталистическое настоящее', kind: 'neg', target: 2.0, want: 'low', hint: 'тянуть вниз' }
 };
-const SCALE_ORDER = ['past_positive', 'future', 'present_hedonistic', 'past_negative', 'present_fatalistic'];
+const SCALE_ORDER = ['future', 'present_hedonistic', 'present_fatalistic', 'past_positive', 'past_negative'];
 
 // === Состояние ===
 const state = {
@@ -365,6 +372,90 @@ function verdict(key, v) {
   return { cls: 'verdict-watch', text: 'выше баланса — следить за перекосом' };
 }
 
+// === Визуализация ===
+// Оси радара и цвета (порядок: 3 «тянем вверх», затем 2 «тянем вниз»)
+const RADAR_AXES = [
+  { key: 'future',             label: ['Будущее'],            color: '#3b82a0' },
+  { key: 'present_hedonistic', label: ['Гедон.', 'настоящ.'], color: '#7a9e3a' },
+  { key: 'present_fatalistic', label: ['Фатал.', 'настоящ.'], color: '#b91c1c' },
+  { key: 'past_positive',      label: ['Поз.', 'прошлое'],    color: '#2d6a4f' },
+  { key: 'past_negative',      label: ['Нег.', 'прошлое'],    color: '#b45309' },
+];
+const OPTIMAL = { past_positive: 4.4, future: 3.8, present_hedonistic: 3.6, present_fatalistic: 2.0, past_negative: 2.2 };
+
+function radarPoint(i, v, cx, cy, R) {
+  const ang = (-90 + i * 72) * Math.PI / 180;
+  const r = (Math.max(0, Math.min(5, v || 0)) / 5) * R;
+  return [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+}
+function polygonPoints(vals, cx, cy, R) {
+  return vals.map((v, i) => radarPoint(i, v, cx, cy, R).map(n => n.toFixed(1)).join(',')).join(' ');
+}
+
+function renderRadarSVG(record) {
+  const size = 300, cx = size / 2, cy = size / 2 + 4, R = 100;
+  const rings = [1, 2, 3, 4, 5].map(v =>
+    `<polygon points="${polygonPoints(RADAR_AXES.map(() => v), cx, cy, R)}" fill="none" stroke="#ece9e1" stroke-width="1"/>`
+  ).join('');
+  const axes = RADAR_AXES.map((a, i) => {
+    const [x, y] = radarPoint(i, 5, cx, cy, R);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#ece9e1" stroke-width="1"/>`;
+  }).join('');
+  const labels = RADAR_AXES.map((a, i) => {
+    const [x, y] = radarPoint(i, 6.0, cx, cy, R);
+    const anchor = Math.abs(x - cx) < 10 ? 'middle' : (x < cx ? 'end' : 'start');
+    const y0 = y - (a.label.length - 1) * 6;
+    const tspans = a.label.map((l, li) => `<tspan x="${x.toFixed(1)}" dy="${li === 0 ? 0 : 12}">${l}</tspan>`).join('');
+    return `<text x="${x.toFixed(1)}" y="${y0.toFixed(1)}" font-size="11" fill="#666" text-anchor="${anchor}">${tspans}</text>`;
+  }).join('');
+  const optPts = polygonPoints(RADAR_AXES.map(a => OPTIMAL[a.key]), cx, cy, R);
+  const myPts = polygonPoints(RADAR_AXES.map(a => record[a.key]), cx, cy, R);
+  const dots = RADAR_AXES.map((a, i) => {
+    const [x, y] = radarPoint(i, record[a.key], cx, cy, R);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${a.color}"/>`;
+  }).join('');
+  return `
+    <svg viewBox="0 0 ${size} ${size}" width="100%" style="max-width:330px;display:block;margin:0 auto;">
+      ${rings}${axes}
+      <polygon points="${optPts}" fill="none" stroke="#b8541a" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <polygon points="${myPts}" fill="rgba(26,26,26,0.10)" stroke="#1a1a1a" stroke-width="2"/>
+      ${dots}${labels}
+    </svg>`;
+}
+
+function renderTrendSVG(recs) {
+  if (recs.length < 2) return '';
+  const W = 320, H = 180, padL = 20, padR = 8, padT = 10, padB = 22;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const n = recs.length;
+  const xFor = i => padL + (i / (n - 1)) * plotW;
+  const yFor = v => padT + plotH - ((Math.max(1, Math.min(5, v)) - 1) / 4) * plotH;
+  const grid = [1, 2, 3, 4, 5].map(v => {
+    const y = yFor(v).toFixed(1);
+    return `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#f0ede6" stroke-width="1"/><text x="2" y="${(yFor(v) + 3).toFixed(1)}" font-size="9" fill="#bbb">${v}</text>`;
+  }).join('');
+  const lines = RADAR_AXES.map(a => {
+    const pts = recs.map((r, i) => (r[a.key] == null ? null : `${xFor(i).toFixed(1)},${yFor(r[a.key]).toFixed(1)}`)).filter(Boolean).join(' ');
+    const dots = recs.map((r, i) => r[a.key] == null ? '' : `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(r[a.key]).toFixed(1)}" r="2.5" fill="${a.color}"/>`).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${a.color}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
+  }).join('');
+  const dlabel = r => new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+  const dates = `<text x="${padL}" y="${H - 5}" font-size="9" fill="#999">${dlabel(recs[0])}</text><text x="${W - padR}" y="${H - 5}" font-size="9" fill="#999" text-anchor="end">${dlabel(recs[n - 1])}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:360px;display:block;margin:8px auto;">${grid}${lines}${dates}</svg>`;
+}
+
+function chartLegend() {
+  return `<div class="legend">${RADAR_AXES.map(a =>
+    `<span class="legend-item"><span class="legend-dot" style="background:${a.color}"></span>${a.label.join(' ')}</span>`
+  ).join('')}</div>`;
+}
+
+// Слить текущий замер с историей из Supabase (текущий побеждает по дате), новые первыми
+function mergeHistory(record, hist) {
+  const out = [record, ...hist.filter(r => (r.checkin_date || '').slice(0, 10) !== (record.checkin_date || '').slice(0, 10))];
+  return out.sort((a, b) => (b.completed_at || b.checkin_date || '').localeCompare(a.completed_at || a.checkin_date || ''));
+}
+
 function renderResult(record) {
   const syncBlock = state.syncStatus
     ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
@@ -390,16 +481,37 @@ function renderResult(record) {
     `;
   }).join('');
 
+  const allRecords = mergeHistory(record, history);
+  const chronological = allRecords.slice().reverse();  // старые слева
+
+  const radarCard = `
+    <div class="chart-card">
+      <div class="chart-title">Профиль времени</div>
+      <div class="chart-sub">Сплошная линия — ты. Оранжевый пунктир — сбалансированный профиль (Зимбардо).</div>
+      ${renderRadarSVG(record)}
+      ${chartLegend()}
+    </div>`;
+
+  const trendCard = chronological.length >= 2 ? `
+    <div class="chart-card">
+      <div class="chart-title">Динамика по замерам</div>
+      <div class="chart-sub">Как менялись пять шкал от замера к замеру.</div>
+      ${renderTrendSVG(chronological)}
+      ${chartLegend()}
+    </div>` : '';
+
   app.innerHTML = `
     <h1>Твой профиль времени</h1>
     <p class="lead">Запись от ${new Date(record.completed_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
     ${syncBlock}
+    ${radarCard}
     <div class="result-card">${rowsHtml}</div>
     <p class="note">Шкала 1.0–5.0. Чёрная риска — где значение должно быть в сбалансированном профиле (Зимбардо). Зелёные шкалы тянем вверх, оранжевые — вниз. Это срез момента, а не приговор.</p>
-    ${history.length > 0 ? `
-      <h2>Прошлые замеры</h2>
-      <div>${renderHistoryList(history)}</div>
-    ` : '<p class="note">Это твой первый замер. Возвращайся раз в квартал — увидишь динамику.</p>'}
+    ${trendCard}
+    ${allRecords.length > 1 ? `
+      <h2>Все замеры</h2>
+      <div>${renderHistoryList(allRecords)}</div>
+    ` : '<p class="note">Это твой первый замер. Возвращайся раз в квартал — увидишь динамику в графике выше.</p>'}
     <div class="actions">
       <button class="secondary" onclick="renderWelcome()">На главную</button>
       ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
@@ -409,15 +521,15 @@ function renderResult(record) {
 }
 
 function renderHistoryList(records) {
-  return records.slice().reverse().map(r => {
+  return records.map(r => {
     const d = new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', {day:'2-digit', month:'short', year:'numeric'});
     const fmt = v => v === null || v === undefined ? '—' : Number(v).toFixed(2);
     return `
       <div class="history-row">
         <div class="history-date">${d}</div>
         <div class="history-pills">
-          <div>Поз. прошлое: ${fmt(r.past_positive)} · Будущее: ${fmt(r.future)} · Гедон.: ${fmt(r.present_hedonistic)}</div>
-          <div>Нег. прошлое: ${fmt(r.past_negative)} · Фатал.: ${fmt(r.present_fatalistic)}</div>
+          <div>Будущее: ${fmt(r.future)} · Гедон.: ${fmt(r.present_hedonistic)} · Фатал.: ${fmt(r.present_fatalistic)}</div>
+          <div>Поз. прошлое: ${fmt(r.past_positive)} · Нег. прошлое: ${fmt(r.past_negative)}</div>
         </div>
       </div>
     `;
