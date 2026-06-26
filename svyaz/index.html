@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Связаться — Алексей Шаповалов</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --graphite-75:rgba(26,26,26,0.75); --graphite-65:rgba(26,26,26,0.65);
+  --graphite-50:rgba(26,26,26,0.5); --graphite-30:rgba(26,26,26,0.3);
+  --graphite-15:rgba(26,26,26,0.15); --graphite-08:rgba(26,26,26,0.08);
+  --terracotta:#B85C38; --terracotta-dark:#8F4528; --terracotta-tint:rgba(184,92,56,0.08);
+  --green:#5A7D52;
+  --font-sans:'Inter',system-ui,sans-serif; --font-mono:'JetBrains Mono',Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--graphite);font-family:var(--font-sans);line-height:1.55;padding:0 22px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:48px 0 80px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--graphite-50);margin-bottom:14px}
+.eyebrow .dot{color:var(--terracotta)}
+h1{font-size:26px;font-weight:600;line-height:1.18;letter-spacing:-.01em;margin-bottom:12px}
+.lead{font-size:15.5px;color:var(--graphite-75);margin-bottom:8px}
+.lead b{color:var(--graphite)}
+.note{font-family:var(--font-mono);font-size:12px;color:var(--graphite-50);margin:6px 0 26px}
+.label{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--graphite-65);margin:22px 0 10px}
+/* intent buttons */
+.intents{display:flex;flex-direction:column;gap:9px}
+.intent{display:block;width:100%;text-align:left;background:var(--stone);border:1.5px solid transparent;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:var(--font-sans);transition:border-color .15s,background .15s}
+.intent:hover{border-color:var(--graphite-15)}
+.intent.on{border-color:var(--terracotta);background:var(--terracotta-tint)}
+.intent .t{font-size:15px;font-weight:600;display:block;margin-bottom:2px}
+.intent .d{font-size:13px;color:var(--graphite-65)}
+/* fields */
+.field{margin-top:18px;display:none}
+.field.show{display:block}
+.field label{display:block;font-size:13.5px;color:var(--graphite-65);margin-bottom:6px}
+input,textarea{width:100%;background:#fff;border:1.5px solid var(--graphite-15);border-radius:10px;padding:12px 14px;font-family:var(--font-sans);font-size:15px;color:var(--graphite);resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--terracotta)}
+textarea{min-height:120px}
+.btn{display:block;width:100%;background:var(--graphite);color:var(--paper);border:0;font-family:var(--font-sans);font-size:16px;font-weight:500;padding:15px;border-radius:11px;cursor:pointer;margin-top:26px;transition:opacity .15s}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.45;cursor:default}
+.err{color:var(--terracotta-dark);font-size:13.5px;margin-top:12px;display:none}
+.err.show{display:block}
+.privacy{font-family:var(--font-mono);font-size:11.5px;color:var(--graphite-50);margin-top:16px;line-height:1.5}
+/* success */
+.done{display:none;text-align:center;padding:30px 0}
+.done.show{display:block}
+.done .mark{font-size:34px;color:var(--green);margin-bottom:14px}
+.done h2{font-size:21px;font-weight:600;margin-bottom:8px}
+.done p{font-size:15px;color:var(--graphite-75)}
+.foot{font-family:var(--font-mono);font-size:11px;color:var(--graphite-30);margin-top:40px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="form">
+    <div class="eyebrow">Алексей Шаповалов <span class="dot">·</span> связаться</div>
+    <h1>Напиши, что у тебя</h1>
+    <p class="lead">Я изучаю, как сильные люди проходят свой потолок. <b>Это research, не продажа.</b></p>
+    <p class="note">Можно анонимно. Можно с ответом. Можно позвать на разговор. Выбери, что ближе.</p>
+
+    <div class="label">Зачем пишешь</div>
+    <div class="intents">
+      <button type="button" class="intent" data-type="anon_question">
+        <span class="t">Спросить анонимно</span>
+        <span class="d">Без имени и контактов. Просто задать вопрос.</span>
+      </button>
+      <button type="button" class="intent" data-type="question">
+        <span class="t">Спросить и получить ответ</span>
+        <span class="d">Оставь контакт — отвечу лично.</span>
+      </button>
+      <button type="button" class="intent" data-type="contact_request">
+        <span class="t">Позвать на разговор</span>
+        <span class="d">30 минут, без продаж. Взгляд со стороны.</span>
+      </button>
+    </div>
+
+    <div class="field" id="f-name">
+      <label>Как тебя зовут</label>
+      <input type="text" id="name" autocomplete="name" placeholder="Имя">
+    </div>
+
+    <div class="field" id="f-role">
+      <label>Чем рулишь — пара слов</label>
+      <input type="text" id="role" placeholder="Например: основатель, 40 человек в команде">
+    </div>
+
+    <div class="field" id="f-message">
+      <label id="message-label">Твой вопрос</label>
+      <textarea id="message" placeholder="Пиши как есть"></textarea>
+    </div>
+
+    <div class="field" id="f-contact">
+      <label>Контакт для связи</label>
+      <input type="text" id="contact" placeholder="@telegram или почта">
+    </div>
+
+    <button class="btn" id="submit" disabled>Сначала выбери, зачем пишешь</button>
+    <div class="err" id="err"></div>
+
+    <p class="privacy" id="privacy"></p>
+  </div>
+
+  <div class="done" id="done">
+    <div class="mark">✓</div>
+    <h2 id="done-title">Получил</h2>
+    <p id="done-text">Спасибо. Прочитаю лично.</p>
+  </div>
+
+  <div class="foot">shapovalov-aleksey.ru</div>
+</div>
+
+<script>
+// Публичный ключ — только запись (INSERT). Прочитать чужие сообщения им нельзя.
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let intent = null;
+
+// Какие поля показывать под каждое намерение
+const FIELDS = {
+  anon_question:   { show:["f-message"],                       msgLabel:"Твой вопрос (анонимно)", btn:"Отправить анонимно", privacy:"Анонимно — имя, контакты и любые твои данные не собираются. Я вижу только текст вопроса." },
+  question:        { show:["f-message","f-contact"],           msgLabel:"Твой вопрос",            btn:"Отправить вопрос",   privacy:"Контакт нужен только чтобы ответить тебе лично. Никому не передаю." },
+  contact_request: { show:["f-name","f-role","f-message","f-contact"], msgLabel:"Пара слов — о чём хочешь поговорить", btn:"Отправить заявку на разговор", privacy:"Напишу тебе сам, чтобы согласовать время. Данные никому не передаю." }
+};
+
+function selectIntent(type){
+  intent = type;
+  document.querySelectorAll(".intent").forEach(b=>b.classList.toggle("on", b.dataset.type===type));
+  // спрятать все поля
+  document.querySelectorAll(".field").forEach(f=>f.classList.remove("show"));
+  const cfg = FIELDS[type];
+  cfg.show.forEach(id=>document.getElementById(id).classList.add("show"));
+  document.getElementById("message-label").textContent = cfg.msgLabel;
+  const btn = document.getElementById("submit");
+  btn.textContent = cfg.btn;
+  btn.disabled = false;
+  document.getElementById("privacy").textContent = cfg.privacy;
+  document.getElementById("err").classList.remove("show");
+}
+
+document.querySelectorAll(".intent").forEach(b=>{
+  b.addEventListener("click", ()=>selectIntent(b.dataset.type));
+});
+
+function showErr(t){ const e=document.getElementById("err"); e.textContent=t; e.classList.add("show"); }
+
+document.getElementById("submit").addEventListener("click", async ()=>{
+  if(!intent) return;
+  const val = id => (document.getElementById(id).value || "").trim();
+  const message = val("message"), contact = val("contact"), name = val("name"), role = val("role");
+
+  // Простая валидация под намерение
+  if(!message){ showErr("Напиши пару слов в поле выше."); return; }
+  if((intent==="question"||intent==="contact_request") && !contact){ showErr("Оставь контакт, иначе не смогу ответить."); return; }
+  if(intent==="contact_request" && !name){ showErr("Подскажи, как тебя зовут."); return; }
+
+  const payload = {
+    type: intent,
+    message,
+    contact: intent==="anon_question" ? null : (contact||null),
+    name: intent==="anon_question" ? null : (name||null),
+    role: role||null
+  };
+
+  const btn = document.getElementById("submit");
+  btn.disabled = true; btn.textContent = "Отправляю…";
+  const { error } = await sb.from("inbox").insert(payload);
+  if(error){
+    btn.disabled=false; selectIntent(intent);
+    showErr("Не отправилось. Попробуй ещё раз или напиши в телеграм @shapovalov_vsegda.");
+    return;
+  }
+  // успех
+  document.getElementById("form").style.display="none";
+  const done = document.getElementById("done");
+  if(intent==="anon_question"){ document.getElementById("done-title").textContent="Вопрос ушёл анонимно"; document.getElementById("done-text").textContent="Спасибо. Прочитаю и, если тема общая, отвечу в канале."; }
+  else if(intent==="question"){ document.getElementById("done-text").textContent="Спасибо. Отвечу тебе лично."; }
+  else { document.getElementById("done-text").textContent="Спасибо. Напишу сам, чтобы согласовать время."; }
+  done.classList.add("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+</script>
+</body>
+</html>
