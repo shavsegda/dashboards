@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Стрела времени — Кирилл Миленький — 29.06.2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --graphite-75:rgba(26,26,26,0.75); --graphite-65:rgba(26,26,26,0.65);
+  --graphite-50:rgba(26,26,26,0.5); --graphite-30:rgba(26,26,26,0.3);
+  --graphite-15:rgba(26,26,26,0.15); --graphite-08:rgba(26,26,26,0.08);
+  --terracotta:#B85C38; --terracotta-dark:#8F4528; --terracotta-tint:rgba(184,92,56,0.08);
+  --green:#5A7D52; --green-tint:rgba(90,125,82,.13);
+  --font-sans:'Inter',system-ui,sans-serif; --font-mono:'JetBrains Mono',Menlo,monospace;
+  --max:820px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--graphite);font-family:var(--font-sans);line-height:1.55;padding:0 24px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--max);margin:0 auto;padding:52px 0 100px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--graphite-50);margin-bottom:14px}
+.eyebrow .dot{color:var(--terracotta)}
+.eyebrow-num{font-family:var(--font-mono);color:var(--terracotta)}
+h1{font-size:30px;font-weight:600;line-height:1.15;letter-spacing:-.01em;margin-bottom:10px}
+h2{font-size:21px;font-weight:600;margin:14px 0 10px}
+h3{font-size:15px;font-weight:600;margin:0 0 4px}
+.lead{font-size:16px;color:var(--graphite-75);margin-bottom:8px}
+.sci{font-size:13px;color:var(--graphite-50);font-style:italic;border-left:2px solid var(--terracotta);padding-left:12px;margin:10px 0}
+hr{border:0;border-top:1px solid var(--graphite-15);margin:40px 0}
+.section{margin-top:8px}
+
+.role-box{background:var(--stone);border-radius:12px;padding:20px 22px;margin:16px 0}
+.role-box .quote{font-size:15px;color:var(--graphite-75);font-style:italic;margin-top:8px}
+.ratio{display:flex;gap:10px;margin:14px 0 4px;font-family:var(--font-mono);font-size:13px}
+.ratio .r{flex:1;text-align:center;background:#fff;border:1px solid var(--graphite-15);border-radius:8px;padding:10px}
+.ratio .r b{display:block;font-size:22px;font-weight:600}
+.ratio .r.now{border-color:var(--green);background:var(--green-tint)}
+.ratio .r.goal{border-color:var(--terracotta);background:var(--terracotta-tint)}
+
+.horizon{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:start;padding:13px 0;border-bottom:1px solid var(--graphite-08)}
+.h-mark{font-family:var(--font-mono);font-size:13px;font-weight:500;padding-top:2px}
+.h-mark.future{color:var(--terracotta)}
+.h-mark.past{color:var(--graphite-50)}
+.h-mark.now{color:var(--green);font-weight:600}
+.h-mark.maяk{color:var(--terracotta-dark);font-weight:600}
+.h-body{font-size:14.5px;color:var(--graphite-75)}
+.h-body .pct{font-family:var(--font-mono);font-size:12px;color:var(--graphite-50)}
+
+.cap{padding:16px 0;border-bottom:1px solid var(--graphite-08)}
+.cap-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.cap-name{font-size:16px;font-weight:600}
+.cap-score{font-family:var(--font-mono);font-size:13px;font-weight:500;margin-left:auto}
+.badge{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px}
+.badge.num{background:var(--green-tint);color:var(--green)}
+.badge.eye{background:var(--terracotta-tint);color:var(--terracotta)}
+.cap-def{font-size:13.5px;color:var(--graphite-65)}
+.bar{height:8px;background:var(--graphite-08);border-radius:6px;margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--graphite);border-radius:6px}
+.bar i.low{background:var(--terracotta)}
+.bar i.mid{background:var(--terracotta-dark)}
+.split{display:flex;gap:18px;font-size:12.5px;color:var(--graphite-50);margin-top:6px;font-family:var(--font-mono)}
+
+.warn{background:var(--terracotta-tint);border-radius:12px;padding:18px 22px;margin:20px 0}
+.warn strong{color:var(--terracotta-dark)}
+.goal-box{background:var(--graphite);color:var(--paper);border-radius:14px;padding:22px 24px;margin:18px 0}
+.goal-box h3{color:#fff}
+.goal-box .big{font-size:20px;font-weight:600;margin:4px 0 10px;line-height:1.3}
+.goal-box .row{font-size:14px;color:rgba(244,242,236,.78);margin-top:8px}
+.goal-box .row b{color:#fff}
+.lead-ind{background:var(--stone);border-radius:12px;padding:16px 20px;margin:14px 0}
+.action{background:var(--green-tint);border:1px solid rgba(90,125,82,.3);border-radius:12px;padding:16px 20px;margin:14px 0}
+.action h3{color:var(--green)}
+table.dyn{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}
+table.dyn th,table.dyn td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--graphite-08)}
+table.dyn th{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--graphite-50);font-weight:500}
+table.dyn td.mono{font-family:var(--font-mono)}
+.foot{font-size:12.5px;color:var(--graphite-50);margin-top:24px;line-height:1.7}
+.foot a{color:var(--terracotta)}
+@media(max-width:560px){.horizon{grid-template-columns:1fr}.ratio{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Стрела времени <span class="dot">·</span> первый разбор <span class="dot">·</span> 29.06.2026</div>
+  <h1>Кирилл Миленький</h1>
+  <p class="lead">Активная роль — <strong>«Гэндальф, играющий тренер»</strong>: руководитель и владелец компании.</p>
+  <p class="sci">Метод авторский. Каждый блок стоит на валидизированной модели: возможное Я (Маркус, Нуриус), обратный ход из будущего (Кристенсен, Хёршфилд), PsyCap-HERO (Лютанс), формы капитала (Бурдьё), КВЦ (Макчесни), SDT (Деси, Райан). Замеры — спидометр, не приговор.</p>
+
+  <hr>
+
+  <!-- РОЛЬ -->
+  <div class="section">
+    <div class="eyebrow"><span class="eyebrow-num">01</span> · Роль</div>
+    <h2>Гэндальф, играющий тренер</h2>
+    <div class="role-box">
+      <div class="quote">«Организация деятельности персонажей, которые без меня подвержены скитаниям и разброду, а в нужный момент могу и жахнуть».</div>
+      <div class="ratio">
+        <div class="r now">сейчас<b>30%</b>веду</div>
+        <div class="r">+1 год<b>50%</b>веду</div>
+        <div class="r goal">+3 года<b>80%</b>веду</div>
+      </div>
+      <p style="font-size:13px;color:var(--graphite-50);text-align:center;font-family:var(--font-mono)">разворот: с «машу руками» на «веду людей»</p>
+    </div>
+  </div>
+
+  <!-- СТРЕЛА -->
+  <div class="section">
+    <div class="eyebrow"><span class="eyebrow-num">02</span> · Стрела времени</div>
+    <h2>От корней к маяку</h2>
+    <p class="sci">Будущее построено обратным ходом — из маяка назад к сегодня. Путь назад субъективно короче и рождает реальные шаги, а не мечту.</p>
+
+    <div class="horizon"><div class="h-mark past">корни</div><div class="h-body">До старшей школы — «меня берут на первые роли, я молодец». В старшей школе проснулся организатор: школьный совет, проекты, дискотеки. <span class="pct">Дар собирать людей — лет 30.</span></div></div>
+    <div class="horizon"><div class="h-mark now">сегодня</div><div class="h-body">70% машу руками (эксперт) / 30% организую. <span class="pct">нулевая отметка</span></div></div>
+    <div class="horizon"><div class="h-mark future">+6 мес</div><div class="h-body">Закрыт вопрос понятного продукта и канала продаж. Тестирую человека на администрирование сделок, выпускаю администрирование из рук.</div></div>
+    <div class="horizon"><div class="h-mark future">+1 год</div><div class="h-body">Все трое наняты (исполнительный/производство, HR-партнёр, финдир, тень в коммерции) — вопрос их самостоятельности. Отдал администрирование и найм. <span class="pct">рукль ~50%</span></div></div>
+    <div class="horizon"><div class="h-mark future">+2 года</div><div class="h-body">Каркас построен и проверен: продуктовая матрица, каналы продаж, процессы производства, HR-политика.</div></div>
+    <div class="horizon"><div class="h-mark maяk" style="color:var(--terracotta-dark);font-weight:600">+3 года ★</div><div class="h-body"><b>Маяк.</b> 80% веду — работа с топами, взращивание команды. 20% эксперт — имиджевые выступления, говорящая голова. <span class="pct">экспертиза = редкий козырь</span></div></div>
+  </div>
+
+  <!-- КАПИТАЛЫ -->
+  <div class="section">
+    <div class="eyebrow"><span class="eyebrow-num">03</span> · Пять капиталов</div>
+    <h2>Точка отсчёта — 29.06.2026</h2>
+
+    <div class="cap">
+      <div class="cap-head"><span class="cap-name">Психологический</span><span class="badge num">цифрой · HERO</span><span class="cap-score">8.25 / 10</span></div>
+      <div class="cap-def">Надежда 8 · вера в силы 10 · устойчивость 6 · оптимизм 9. Слабое звено — устойчивость к ударам.</div>
+      <div class="bar"><i style="width:82%"></i></div>
+    </div>
+
+    <div class="cap">
+      <div class="cap-head"><span class="cap-name">Материальный</span><span class="badge num">цифрой</span><span class="cap-score">2 / 10</span></div>
+      <div class="cap-def">Доход нестабильный, подушка 0 месяцев, долги давят — но справляется.</div>
+      <div class="bar"><i class="low" style="width:20%"></i></div>
+      <div class="split"><span>запас: в минусе</span><span>поток: управляем</span></div>
+    </div>
+
+    <div class="cap">
+      <div class="cap-head"><span class="cap-name">Социальный</span><span class="badge eye">расщеплён</span><span class="cap-score">8 / 2</span></div>
+      <div class="cap-def">Репутация огромная: 100–300 человек поручатся как за спеца. Конверсия в контракты — пока неясна.</div>
+      <div class="bar"><i style="width:80%"></i></div>
+      <div class="split"><span>репутация: ~8</span><span>в деньги: ~2</span></div>
+    </div>
+
+    <div class="cap">
+      <div class="cap-head"><span class="cap-name">Человеческий</span><span class="badge eye">на глаз</span><span class="cap-score">8 / 10</span></div>
+      <div class="cap-def">Здоровье 8. Экспертиза — уверенный профи для сложных задач, грейд профессионалов.</div>
+      <div class="bar"><i style="width:80%"></i></div>
+    </div>
+
+    <div class="cap">
+      <div class="cap-head"><span class="cap-name">Смысловой</span><span class="badge num">цифрой</span><span class="cap-score">5 / 10</span></div>
+      <div class="cap-def">Путеводная звезда наполовину в тумане.</div>
+      <div class="bar"><i class="mid" style="width:50%"></i></div>
+    </div>
+
+    <div class="warn">
+      <h3>Сквозной узор</h3>
+      <p style="font-size:14.5px;color:var(--graphite-75);margin-top:4px">Мягкие активы мощные — <strong>экспертиза, имя, психика, команда строится</strong>. Но они не оформлены в систему, которая даёт деньги. Гэндальф силён в магии, но структуру ещё не построил. Цель квартала бьёт ровно сюда — активировать тёплую базу из 300 человек.</p>
+    </div>
+  </div>
+
+  <!-- ЦЕЛЬ -->
+  <div class="section">
+    <div class="eyebrow"><span class="eyebrow-num">04</span> · Цель на квартал</div>
+    <div class="goal-box">
+      <h3>Критически важная цель · 29.06 → конец сентября 2026</h3>
+      <div class="big">3 месяца подряд личная выручка в карман 500к–1 млн</div>
+      <div class="row">Главное — <b>удержание, не скачок</b>.</div>
+      <div class="row">Двигатель: <b>1–2 новых контракта в месяц</b>.</div>
+    </div>
+    <div class="lead-ind">
+      <h3>Ведущий показатель (еженедельно)</h3>
+      <p style="font-size:14.5px;color:var(--graphite-75);margin-top:4px"><b>1–2 исходящих касания в неделю</b> с потенциальными партнёрами или клиентами — по тёплой базе из ~300 человек, которые поручатся за него.</p>
+    </div>
+    <div class="action">
+      <h3>Действие этой недели</h3>
+      <p style="font-size:14.5px;color:var(--graphite-75);margin-top:4px">Сделать КП + провести завтрашнее обучение-конвертер — проверить гипотезу: что продавать и через какой канал. Прислать результат.</p>
+    </div>
+    <p class="sci">SDT: цель не только про деньги — за ней выход из «машу руками» в Гэндальфа = автономия и мастерство. «Удержание, не скачок» бережёт устойчивость (слабое звено) и не разгоняет гонку.</p>
+  </div>
+
+  <!-- ДИНАМИКА -->
+  <div class="section">
+    <div class="eyebrow"><span class="eyebrow-num">05</span> · Динамика</div>
+    <h2>Накопление по сверкам</h2>
+    <p class="sci">Капитал — это запас. Движение видно только от повторных замеров. Здесь копится история.</p>
+    <table class="dyn">
+      <tr><th>Дата</th><th>Веду %</th><th>Психол.</th><th>Матер.</th><th>Соц.</th><th>Челов.</th><th>Смысл</th><th>Выручка</th></tr>
+      <tr><td class="mono">29.06.26</td><td class="mono">30%</td><td class="mono">8.25</td><td class="mono">2</td><td class="mono">8/2</td><td class="mono">8</td><td class="mono">5</td><td class="mono">—</td></tr>
+    </table>
+  </div>
+
+  <p class="foot">
+    Сверки раз в неделю-две, ~1 час. Роль сопровождения — партнёр по ритму, не контролёр.<br>
+    Стрела времени · метод Алексея Шаповалова · <a href="https://shapovalov-aleksey.ru">shapovalov-aleksey.ru</a>
+  </p>
+
+</div>
+</body>
+</html>
