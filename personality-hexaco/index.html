@@ -69,7 +69,8 @@ const tg = window.Telegram?.WebApp;
 tg?.ready(); tg?.expand();
 const UID = tg?.initDataUnsafe?.user?.id || null;
 const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
-const STORE_KEY = 'hexaco_'+CLIENT_ID;
+const STORE_KEY = 'hexaco_'+CLIENT_ID;        // прогресс (сбрасывается на финише)
+const RESULT_KEY = 'hexaco_result_'+CLIENT_ID; // готовый результат (persist)
 
 // ---- Supabase ----
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -133,24 +134,8 @@ function score(){
   return {factors,facets};
 }
 
-async function renderFinish(){
-  const {factors,facets}=score();
-  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
-  const record={
-    user_id: UID, block:'personality', instrument:'IPIP-HEXACO',
-    scores:{factors,facets}, answers, completed_at:new Date().toISOString()
-  };
-  // 1) в Supabase (passport)
-  let dbOk=false;
-  try{ const {error}=await sb.from('passport').insert(record); dbOk=!error; }catch(e){}
-  // 2) боту (sendData) — компактно
-  let botOk=false;
-  if(tg&&typeof tg.sendData==='function'){
-    try{ tg.sendData(JSON.stringify({type:'personality',instrument:'IPIP-HEXACO',factors,facets})); botOk=true; }catch(e){}
-  }
-  localStorage.removeItem(STORE_KEY);
-  // экран результата
-  const rows=Object.keys(FACTORS).map(f=>{
+function resultRows(factors,facets){
+  return Object.keys(FACTORS).map(f=>{
     const val=factors[f]; if(val==null) return '';
     const pct=Math.round((val-1)/4*100);
     const fac=Object.keys(facets).filter(k=>k.startsWith(f+'·'))
@@ -159,15 +144,58 @@ async function renderFinish(){
       <div class="res-bar"><i style="width:${pct}%"></i></div>
       <div class="res-facets">${fac}</div></div>`;
   }).join('');
-  app.innerHTML=`
-    <h1>Твоя личность</h1>
-    <p class="sub">HEXACO · 1–5 по каждому фактору</p>
-    ${rows}
-    <p class="sub" style="margin-top:20px">${botOk?'<span class="ok">Результат отправлен — вернись в чат.</span>':(dbOk?'<span class="ok">Сохранено.</span>':'<span class="err">Открой тест через бота, чтобы сохранить.</span>')}</p>
-    ${botOk?'<button class="btn prim" onclick="Telegram.WebApp.close()">Вернуться в чат</button>':''}`;
 }
 
-render();
+function retake(){
+  if(confirm('Перепройти тест заново? Текущие результаты заменятся новыми.')){
+    localStorage.removeItem(RESULT_KEY); localStorage.removeItem(STORE_KEY);
+    answers={}; idx=0; window.scrollTo(0,0); render();
+  }
+}
+
+// Экран текущих результатов + «Перепройти»
+function renderResultView(res, justFinished){
+  const {factors,facets}=res;
+  const when = res.completed_at ? ' · пройден '+res.completed_at.slice(0,10) : '';
+  app.innerHTML=`
+    <h1>Твоя личность</h1>
+    <p class="sub">HEXACO · 1–5 по каждому фактору${when}</p>
+    ${resultRows(factors,facets)}
+    ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
+    <div class="nav" style="margin-top:20px">
+      <button class="btn ghost" id="retake">🔁 Перепройти</button>
+      ${justFinished?'<button class="btn prim" onclick="Telegram.WebApp.close()">В чат</button>':''}
+    </div>`;
+  document.getElementById('retake').onclick=retake;
+}
+
+async function renderFinish(){
+  const {factors,facets}=score();
+  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
+  const completed_at=new Date().toISOString();
+  const record={user_id:UID, block:'personality', instrument:'IPIP-HEXACO',
+    scores:{factors,facets}, answers, completed_at};
+  // 1) в Supabase (passport)
+  try{ await sb.from('passport').insert(record); }catch(e){}
+  // 2) боту (sendData)
+  if(tg&&typeof tg.sendData==='function'){
+    try{ tg.sendData(JSON.stringify({type:'personality',instrument:'IPIP-HEXACO',factors,facets})); }catch(e){}
+  }
+  // 3) сохранить результат локально (persist) + очистить прогресс
+  const res={factors,facets,completed_at};
+  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
+  localStorage.removeItem(STORE_KEY);
+  renderResultView(res, true);
+}
+
+// Вход: есть готовый результат и нет незавершённого прохода → показать результаты.
+let savedResult=null;
+try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
+if(savedResult && Object.keys(answers).length===0){
+  renderResultView(savedResult, false);
+} else {
+  render();
+}
 </script>
 </body>
 </html>
