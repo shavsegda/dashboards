@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Семейная планёрка / 2026-07-29</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #6b6b6b;
+    --ink-faint: #a3a3a3;
+    --line: #e5e5e5;
+    --line-soft: #f0f0f0;
+    --accent: #0057d9;
+    --accent-soft: #f0f5ff;
+    --calm: #4a5568;
+    --calm-soft: #f7f8f9;
+    --warm: #8b6914;
+    --warm-soft: #fdf6e3;
+    --ok: #0a7d3e;
+    --ok-soft: #f0f9f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    font-feature-settings: "kern", "calt";
+    font-variant-numeric: tabular-nums;
+  }
+  .header { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
+  .header-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-soft); margin-bottom: 16px; }
+  .header-title { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 16px 0; }
+  .header-sub { font-size: 13px; color: var(--ink-soft); }
+  .mission { margin: 20px 0 0; padding: 14px 16px; border: 1px solid var(--line); background: var(--calm-soft); font-size: 12px; }
+  .mission b { color: var(--ink-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; display: block; margin-bottom: 2px; }
+  section { margin: 48px 0; }
+  section > h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 20px 0; line-height: 1.25; }
+  .sec-note { font-size: 12px; color: var(--ink-faint); margin-top: -12px; margin-bottom: 20px; font-style: italic; }
+  .kids-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kid-card { border: 1px solid var(--line); padding: 20px; background: var(--calm-soft); }
+  .kid-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .kid-age { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 14px; }
+  .kid-row { font-size: 12px; margin-bottom: 8px; }
+  .kid-row b { color: var(--ink-soft); font-weight: 500; display: block; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); font-weight: 500; border-bottom: 1px solid var(--line); }
+  td.faint { color: var(--ink-soft); }
+  .status { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border: 1px solid var(--line); display: inline-block; white-space: nowrap; }
+  .status.open { color: var(--ink-soft); }
+  .status.work { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .status.urgent { color: var(--warm); border-color: var(--warm); background: var(--warm-soft); }
+  .status.done { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+  .hangs { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+  .hangs.long { color: var(--warm); font-weight: 600; }
+  .filled { border: 1px solid var(--line); padding: 18px 20px; background: var(--calm-soft); }
+  .filled ul { margin: 0; padding-left: 20px; }
+  .filled li { margin-bottom: 8px; }
+  .filled p { margin: 0 0 8px; }
+  .filled p:last-child { margin-bottom: 0; }
+  .schedule { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; }
+  .schedule-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line-soft); gap: 16px; }
+  .schedule-row:last-child { border: none; }
+  .schedule-when { color: var(--accent); font-weight: 500; min-width: 130px; flex-shrink: 0; }
+  .schedule-what { color: var(--ink); flex: 1; }
+  .schedule-who { color: var(--ink-soft); font-size: 11px; min-width: 80px; text-align: right; flex-shrink: 0; }
+  .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .project-card { border: 1px solid var(--line); padding: 16px 18px; background: var(--bg); }
+  .project-card.highlight { border: 2px solid var(--accent); background: var(--accent-soft); }
+  .project-name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .project-where { font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+  .project-next { font-size: 12px; color: var(--ink); border-top: 1px solid var(--line-soft); padding-top: 8px; margin-top: 8px; }
+  .project-next b { color: var(--ink-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; display: block; margin-bottom: 2px; }
+  .gap-note { margin: 20px 0; padding: 16px 18px; border: 2px solid var(--warm); background: var(--warm-soft); font-size: 13px; }
+  .gap-note b { display: block; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; color: var(--warm); margin-bottom: 6px; }
+  .visits { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .visit { border: 1px solid var(--line); padding: 12px 14px; font-size: 12px; }
+  .visit b { display: block; font-size: 13px; margin-bottom: 4px; }
+  .visit.fixed { border-color: var(--accent); background: var(--accent-soft); }
+  .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-faint); display: flex; justify-content: space-between; }
+  @media print { body { padding: 24px; } }
+  #gate { position: fixed; inset: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: -apple-system, sans-serif; }
+  #gate .box { background: #2a2a2a; padding: 32px 40px; border-radius: 12px; text-align: center; max-width: 320px; }
+  #gate h2 { color: #fff; margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
+  #gate p { color: #888; margin: 0 0 20px 0; font-size: 13px; }
+  #gate input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 6px; background: #1a1a1a; color: #fff; font-size: 16px; text-align: center; letter-spacing: 4px; }
+  #gate input:focus { outline: none; border-color: #f39c12; }
+  #gate button { width: 100%; margin-top: 12px; padding: 12px; background: #f39c12; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #gate button:hover { background: #e67e22; }
+  #gate .err { color: #e74c3c; font-size: 12px; margin-top: 12px; height: 16px; }
+  body.locked { overflow: hidden; }
+  #content { display: none; }
+  #content.unlocked { display: block; }
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="box">
+    <h2>🔒 Защищено</h2>
+    <p>Введи пароль, чтобы посмотреть дашборд</p>
+    <input type="password" id="pwd" autofocus inputmode="numeric" autocomplete="off">
+    <button id="unlock-btn">Открыть</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="content">
+
+<div class="header">
+  <div class="header-kicker">Семья · Семейная планёрка</div>
+  <h1 class="header-title">Среда, 29 июля 2026</h1>
+  <div class="header-sub">
+    Встреча №6 · Алексей и Настя · ≈ 60 минут<br>
+    Предыдущая семейная среда — 15 июля (22.07 пропущена). Между ними: пара #7 (27.07), финансовая #4 (26.07).<br>
+    Чек-ин: оба — нормально. Закрытие: «стало в голове больше порядка и поспокойнее».
+  </div>
+  <div class="mission">
+    <b>Стадия семьи</b>
+    Двойной переход — дошкольник Василиса + младенец Святослав. Старые правила пересобираем без вины.
+  </div>
+</div>
+
+<section>
+  <h2>Главное этой встречи</h2>
+  <div class="gap-note">
+    <b>Москва — узел развязан</b>
+    Вылет всей семьёй <b>суббота 01.08, 13:00</b>. Лёша в Москве десять дней, обратно <b>не позже вторника 11.08</b> — дальше пиковая неделя ACHISHKHO (тренировки с чт 13.08, железобетонная горная пт 14.08). Семья остаётся ещё 2–3 недели, обратные билеты не куплены.
+  </div>
+</section>
+
+<section>
+  <h2>Что работает</h2>
+  <div class="filled">
+    <p>Ресурсный блок проговорили на паре 27.07 — здесь не дублировали.</p>
+    <p>Оттуда: тяжёлую неделю с болезнями детей прожили вместе достойно. В больнице играли всей семьёй в карты. Тёплая точка обоих — болтовня перед сном.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Дети</h2>
+  <div class="kids-grid">
+    <div class="kid-card">
+      <div class="kid-name">Василиса</div>
+      <div class="kid-age">5 лет 3 мес</div>
+      <div class="kid-row"><b>после больницы</b>Восстановилась <b>не полностью</b>. Быстро устаёт, часто говорит «устала» — раньше такого не было. Потеряла 4 кг.</div>
+      <div class="kid-row"><b>контроль</b>Питание и микробиом. Остальное в порядке.</div>
+      <div class="kid-row"><b>режим</b>С понедельника вышла в сад, с сегодня оставили дома — сама попросила. Занятия на неделе все пропускаем, сама пока не хочет.</div>
+      <div class="kid-row"><b>перелёт</b>Летит как есть, восстанавливается в Москве. Спецконтроля не нужно, только забрать вещи из сада.</div>
+      <div class="kid-row"><b>ограничение</b>Больше одного визита в день сейчас не тянет — учитываем при сборке недели.</div>
+    </div>
+    <div class="kid-card">
+      <div class="kid-name">Святослав</div>
+      <div class="kid-age">6 мес ровно 01.08</div>
+      <div class="kid-row"><b>состояние</b>Восстановился, в порядке.</div>
+      <div class="kid-row"><b>педиатр</b>Настя думала сводить до отъезда (вес, рост, развитие). Решили не фиксировать — пойдёт, запишет сама.</div>
+      <div class="kid-row"><b>весы — проверено</b>У Garmin Index S2 режима «взвесить ребёнка на руках» нет (есть у Withings Body Smart). Обходной путь: встать без ребёнка и с ним, вычесть — покажет динамику, не точную цифру.</div>
+      <div class="kid-row"><b>профиль Василисы</b>Имеет смысл только по весу: состав тела весы у детей корректно не меряют. После минус 4 кг вес отслеживать полезно.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Ближайшие дни · 29 июля – 1 августа</h2>
+  <div class="schedule">
+    <div class="schedule-row">
+      <div class="schedule-when">ср 29.07 утро</div>
+      <div class="schedule-what">Семейная планёрка #6. Василиса дома, не в саду.</div>
+      <div class="schedule-who">оба</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">чт 30.07 день</div>
+      <div class="schedule-what">Утром Лёша отвозит Василису в сад. Весь день — рабочие встречи.</div>
+      <div class="schedule-who">Лёша</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">чт 30.07 ночь</div>
+      <div class="schedule-what">Красная Поляна, ночной горный кросс с Ромой примерно до 1–2 ночи. Ночевать там или ехать домой — <b>по самочувствию на месте</b>. После тренировки Лёша пишет Насте, какой вариант выбрал.</div>
+      <div class="schedule-who">Лёша</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">пт 31.07</div>
+      <div class="schedule-what">Сборка вещей, включая беговую экипировку на десять дней. Встреч с утра нет специально.</div>
+      <div class="schedule-who">оба</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">пт 31.07 вечер</div>
+      <div class="schedule-what"><b>Финансовая планёрка</b> — перенос с чт 30.07 (четверг забит). Свежая выгрузка Zen заранее.</div>
+      <div class="schedule-who">оба</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">сб 01.08 13:00</div>
+      <div class="schedule-what">Вылет всей семьёй в Москву. В ручную кладь — <b>тёплые вещи</b>: аэропорт Сочи могут закрыть, есть риск ночевать там.</div>
+      <div class="schedule-who">семья</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Неделя в Москве · 1–11 августа</h2>
+  <div class="sec-note">Восстановительная целиком. План собирается из чужих окон — сначала разослать, потом ставить в календарь.</div>
+  <div class="schedule">
+    <div class="schedule-row">
+      <div class="schedule-when">вс 02 или пн 03.08</div>
+      <div class="schedule-what">Встреча семьями с клиентом Алексеем — в среду они улетают дальше, окно узкое.</div>
+      <div class="schedule-who">семьи</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">пн 03.08 18:00</div>
+      <div class="schedule-what">Пара #8 (слой 2, Джонсон). Планировалась онлайн — теперь можно вживую.</div>
+      <div class="schedule-who">оба</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">вт 04.08 до обеда</div>
+      <div class="schedule-what">Офлайн-встреча Лёши с клиентом Алексеем.</div>
+      <div class="schedule-who">Лёша</div>
+    </div>
+    <div class="schedule-row">
+      <div class="schedule-when">вт 11.08</div>
+      <div class="schedule-what">Крайний срок вылета Лёши обратно в Сочи. Дальше — пиковая неделя.</div>
+      <div class="schedule-who">Лёша</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:14px; margin-top:32px;">Визиты — кому пишем</h2>
+  <div class="visits">
+    <div class="visit fixed"><b>Глеб и Танюша</b>Созвон был: готовы подстроиться под любой день. Ставим последними, под остатки.</div>
+    <div class="visit fixed"><b>Форум-группа</b>Идея Глеба: Лёша, Глеб, Дима, Ярослав — отдельный вечер. Не встречались много месяцев.</div>
+    <div class="visit"><b>Надя</b>В гости. Пишет Настя.</div>
+    <div class="visit"><b>Лена</b>В гости. Пишет Настя.</div>
+    <div class="visit"><b>Ярослав</b>Если форум-группа не сложится — Лёша один, без Насти (состояние Ярослава). Пишет Лёша.</div>
+    <div class="visit"><b>Клиент Алексей + семья</b>Пишет Лёша. Окно до среды.</div>
+  </div>
+  <div class="gap-note" style="margin-top:20px;">
+    <b>Форум-группа решает вопрос с Ярославом</b>
+    Лёша не хотел, чтобы Настя соприкасалась с Ярославом в его нынешнем состоянии, и был готов «принять удар на себя» встречей один на один. Мужской вечер снимает и это, и неловкость от того, что были у Глеба и не были у него.
+  </div>
+</section>
+
+<section>
+  <h2>Решения этой встречи</h2>
+  <div class="sec-note">Формат: что — кто — до какой даты.</div>
+  <div class="filled">
+    <ul>
+      <li><b>Собрать окна визитов:</b> Лёша — Ярослав, клиент Алексей, форум-группа. Настя — Лена, Надя. До пт 31.07.</li>
+      <li><b>Время вдвоём:</b> Настя договаривается с родителями, чтобы посидели с детьми. Минимум один выход на несколько часов, два — если сложится.</li>
+      <li><b>Повар:</b> Настя узнаёт — готова ли готовить порционно на Лёшу, цена в неделю, где забирать. До пт 31.07.</li>
+      <li><b>Обратный билет Лёши:</b> вылет из Москвы не позже вт 11.08. Купить, не тянуть.</li>
+      <li><b>Сигнал после ночного кросса:</b> Лёша пишет Насте, едет домой или остаётся в КП. Чт 30.07 ночью.</li>
+      <li><b>Финпланёрка:</b> перенесена на пт 31.07, вечер. Выгрузка Zen заранее (оба).</li>
+    </ul>
+    <p style="margin-top:12px; color:var(--ink-soft); font-size:12px;">Мелким: тёплые вещи в ручную кладь · забрать вещи Василисы из сада · педиатр Святославу — на усмотрение Насти, без срока.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Открытые задачи</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Задача</th>
+        <th>Ответственный</th>
+        <th>До какой даты</th>
+        <th>Статус</th>
+        <th>Висит с</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Москва</b> — даты и разведка. Развязано: вылет 01.08, Лёша обратно до 11.08.</td>
+        <td>Лёша</td>
+        <td>—</td>
+        <td><span class="status done">закрыто</span></td>
+        <td class="hangs">15.07</td>
+      </tr>
+      <tr>
+        <td><b>Озон</b> ~150к — написать человеку в поддержку. На встрече признано: не сделано. Лёша написал сегодня.</td>
+        <td>Лёша</td>
+        <td>29.07 — сделано</td>
+        <td><span class="status work">ждём ответ</span></td>
+        <td class="hangs long">🔁 с 29.04 — 3 мес</td>
+      </tr>
+      <tr>
+        <td><b>Сон Василисы</b> — Лёша ложится с ней, пока не уснёт.</td>
+        <td>Лёша</td>
+        <td>ежедневно</td>
+        <td><span class="status work">идёт</span></td>
+        <td class="hangs">15.07</td>
+      </tr>
+      <tr>
+        <td><b>Обратные билеты семьи</b> из Москвы — дата не определена, ориентир 2–3 недели.</td>
+        <td>оба</td>
+        <td>—</td>
+        <td><span class="status open">открыт</span></td>
+        <td class="hangs">29.07</td>
+      </tr>
+      <tr>
+        <td><b>Fair Play</b> — отдельная встреча 60–90 мин. Не поднимали: встреча плотная, впереди отъезд.</td>
+        <td>оба</td>
+        <td>—</td>
+        <td><span class="status open">отложено</span></td>
+        <td class="hangs long">🔁 с 03.06 — 2 мес</td>
+      </tr>
+      <tr>
+        <td><b>Физика Насти</b> — сон 4,5 ч, спина, мама не разгружает.</td>
+        <td>оба</td>
+        <td>—</td>
+        <td><span class="status open">открыт</span></td>
+        <td class="hangs long">🔁 с 13.05 — 2,5 мес</td>
+      </tr>
+      <tr>
+        <td><b>Лёша — ночное перехватывание дыхания</b> на грудной клетке.</td>
+        <td>Лёша</td>
+        <td>—</td>
+        <td><span class="status open">открыт</span></td>
+        <td class="hangs long">🔁 с 13.05 — 2,5 мес</td>
+      </tr>
+      <tr>
+        <td><b>Прикорм Святослава</b> — наблюдаем.</td>
+        <td>Настя</td>
+        <td>—</td>
+        <td><span class="status open">наблюдаем</span></td>
+        <td class="hangs">03.06</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Совместные проекты</h2>
+  <div class="projects-grid">
+    <div class="project-card highlight">
+      <div class="project-name">Питание Лёши в разлуке</div>
+      <div class="project-where">Решено в пользу повара. Изначально склонялся к столовым и признал, что ужинать будет «ничем». Перевесил аргумент: с 13.08 пиковая неделя ACHISHKHO — недоедание бьёт по восстановлению.</div>
+      <div class="project-next"><b>Ближайший шаг</b>Настя узнаёт: порционно на одного, цена в неделю, где забирать. До 31.07.</div>
+    </div>
+    <div class="project-card highlight">
+      <div class="project-name">Мы как пара</div>
+      <div class="project-where">27.07 — встреча #7, старт слоя 2 (Джонсон). Назвали свой цикл: режим «страдануть». Безопасность 10/10.</div>
+      <div class="project-next"><b>Ближайший шаг</b>Пн 03.08, вживую в Москве. Тема: связь на расстоянии в разлуку 2–3 недели.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">СДВГ Василисы</div>
+      <div class="project-where">Диагноз есть, лекарства ближе к школе. Сейчас на первом плане не СДВГ, а физическое восстановление после больницы.</div>
+      <div class="project-next"><b>Ближайший шаг</b>Наблюдаем.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Распределение → Fair Play</div>
+      <div class="project-where">85 карточек, метод CPE. Откладывается с 10.06.</div>
+      <div class="project-next"><b>Ближайший шаг</b>Вернуться после Москвы.</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">HR-проект с Настей</div>
+      <div class="project-where">Пауза на декрет. Возвращаемся осенью.</div>
+      <div class="project-next"><b>Ближайший шаг</b>—</div>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Суд Насти по 80% доле</div>
+      <div class="project-where">Отдельный трек, исход влияет на всё.</div>
+      <div class="project-next"><b>Ближайший шаг</b>Следить через юриста.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Открытые вопросы (на О_нас.md)</h2>
+  <div class="filled">
+    <p><b>Новое:</b></p>
+    <ul>
+      <li><b>Отпуск вдвоём</b> — Настя назвала: хочется вообще в отпуск вдвоём. Не про эту поездку, но зафиксировано, чтобы не потерялось.</li>
+      <li>Обратные билеты семьи из Москвы — дата не определена.</li>
+      <li>Разлука 2–3 недели, как держать связь — уже стоит в запросах на пару #8.</li>
+    </ul>
+    <p><b>Висят:</b></p>
+    <ul>
+      <li>Fair Play — отложен с 03.06.</li>
+      <li>Физика Насти (сон 4,5 ч, спина) — с 13.05.</li>
+      <li>Лёша — ночное перехватывание дыхания — с 13.05.</li>
+      <li>Прикорм Святослава — наблюдаем.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Журнал</h2>
+  <div class="filled">
+    <p>Сработало правило смотреть соседние контуры: Настя отправила к парной планёрке, оттуда взят ресурсный блок — не дублировали. Правило добавлено в скилл: перед семейной средой читать парную (понедельник) и финансовую (четверг/пятница).</p>
+    <p>Запрос Лёши: куда складывать темы для финпланёрки между встречами. Сделано — заведён <code>Финансы/Планёрки/повестка.md</code>, в скилл финансов добавлено правило читать его в начале встречи.</p>
+    <p>Ощущение на выходе: «стало в голове больше порядка и поспокойнее — появился план на неделю в Москве, с кем встретиться».</p>
+    <p><b>На следующую среду:</b> Озон — ответили ли · Москва — что из визитов сложилось · повар — работает ли схема.</p>
+  </div>
+</section>
+
+<div class="footer">
+  <div>Семейный контур · среда · #6</div>
+  <div>Финансы — пятница 31.07 вечер. Бизнес — не сюда.</div>
+</div>
+
+</div>
+
+<script>
+  const PWD_HASH = "651f3931aac1c27183fcae71c7321f597f82dc8cbbb1a55bf9a1fa845ae1f3dc";
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function unlock() {
+    const val = document.getElementById("pwd").value;
+    const h = await sha256(val);
+    if (h === PWD_HASH) {
+      sessionStorage.setItem("family-unlocked", "1");
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("content").classList.add("unlocked");
+      document.body.classList.remove("locked");
+    } else {
+      const err = document.getElementById("err");
+      err.textContent = "Неверный пароль";
+      setTimeout(() => err.textContent = "", 2000);
+      document.getElementById("pwd").value = "";
+    }
+  }
+  if (sessionStorage.getItem("family-unlocked") === "1") {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("content").classList.add("unlocked");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("unlock-btn").addEventListener("click", unlock);
+  document.getElementById("pwd").addEventListener("keydown", e => {
+    if (e.key === "Enter") unlock();
+  });
+</script>
+
+</body>
+</html>
