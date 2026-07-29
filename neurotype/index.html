@@ -181,29 +181,31 @@ async function finish(){
     return;
   }
   app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
-  const scores={}, bands={};
-  TESTS.forEach(t=>{ const r=t.score(answers[t.key]); scores[t.key]={...r.data, nums:r.nums}; bands[t.key]=r.band.t; });
+  // Всё складываем внутрь scores (JSON) — таблица passport не меняется под каждый блок.
+  const scores={};
+  TESTS.forEach(t=>{ const r=t.score(answers[t.key]);
+    scores[t.key]={...r.data, nums:r.nums, band:r.band.t, band_c:r.band.c}; });
   const completed_at=new Date().toISOString();
   const record={user_id:UID, block:'neurotype', instrument:'ASRS-v1.1',
-    scores, bands, answers, completed_at};
+    scores, answers, completed_at};
   try{ await sb.from('passport').insert(record); }catch(e){}
   if(tg&&typeof tg.sendData==='function'){
-    try{ tg.sendData(JSON.stringify({type:'neurotype',scores,bands})); }catch(e){}
+    try{ tg.sendData(JSON.stringify({type:'neurotype',scores})); }catch(e){}
   }
-  const res={scores,bands,completed_at};
+  const res={scores,completed_at};
   try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
   localStorage.removeItem(STORE_KEY);
   renderResult(res, true);
 }
 
 function renderResult(res, justFinished){
-  const {scores,bands}=res;
+  const {scores}=res;
   const when=res.completed_at?' · '+res.completed_at.slice(0,10):'';
   const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
-    const band=t.score? null:null;
-    const c = (bands[t.key]||'').includes('положительн')?'hi':'lo';
+    const s=scores[t.key];
+    const c = s.band_c || ((s.band||'').includes('положительн')?'hi':'lo');
     return `<div class="res-row"><span class="rn">${t.title}</span>
-      <span class="rv"><b class="${c}">${bands[t.key]||'—'}</b><small>${scores[t.key].nums||''}</small></span></div>`;
+      <span class="rv"><b class="${c}">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
   }).join('');
   app.innerHTML=`
     <h1>Твой нейротип</h1>
