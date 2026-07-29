@@ -188,10 +188,16 @@ async function renderFinish(){
   renderResultView(res, true);
 }
 
-// Вход: есть готовый результат и нет незавершённого прохода → показать результаты.
+// Вход. Приоритет: результат из URL (передал бот) → localStorage → тест.
+let urlResult=null;
+try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
 let savedResult=null;
 try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
-if(savedResult && Object.keys(answers).length===0){
+const inProgress = Object.keys(answers).length>0;
+if(urlResult && urlResult.factors && !inProgress){
+  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(urlResult)); }catch(e){}
+  renderResultView(urlResult, false);
+} else if(savedResult && !inProgress){
   renderResultView(savedResult, false);
 } else {
   render();
