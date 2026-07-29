@@ -19,6 +19,25 @@
   .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
   .prog{position:sticky;top:0;background:var(--paper);padding:9px 0;margin-bottom:8px;
     font-size:13px;font-weight:600;color:var(--terra);z-index:5;border-bottom:1px solid var(--rule);}
+  /* Одно-вопросный экран */
+  .qbar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:4px 0 8px;}
+  .qbar>i{display:block;height:100%;background:var(--terra);transition:width .25s;}
+  .qmeta{color:var(--muted);font-size:12.5px;margin-bottom:18px;}
+  .qbox{background:var(--card);border:1px solid var(--rule);border-radius:14px;
+    padding:22px 18px;margin-bottom:14px;}
+  .qtext{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:20px;}
+  .opts{display:flex;flex-direction:column;gap:9px;}
+  .orow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:14px 15px;border:1.5px solid var(--rule);border-radius:11px;background:#fff;
+    font-family:inherit;font-size:15.5px;color:var(--graphite);cursor:pointer;transition:.12s;}
+  .orow:active{transform:scale(.99);}
+  .orow.sel{border-color:var(--terra);background:#FBEEE7;}
+  .orow .onum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--rule);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);}
+  .orow.sel .onum{border-color:var(--terra);background:var(--terra);color:#fff;}
+  .orow .olbl{flex:1;}
+  .qnav{margin-top:6px;}
+  .qnav .btn{width:auto;padding:11px 18px;}
   .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:12px;padding:13px 15px;
     font-size:13.5px;margin-bottom:20px;color:#8A4527;line-height:1.45;}
   .tsec{margin-bottom:10px;}
@@ -486,87 +505,67 @@ const TESTS = [
 ];
 
 const app = document.getElementById('app');
-let answers = {};  // {testKey:{itemIdx:0..4}}
-try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); if(s.answers) answers=s.answers; }catch(e){}
-function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers}));}catch(e){} }
+const PART_LABEL={A:'Часть A — скрин',B:'Часть B — дополнительные симптомы',
+  EQ:'Эмпатия (EQ)', SQ:'Систематизация (SQ-R)'};
 
-function renderForm(){
-  const partLabel={A:'Часть A — скрин',B:'Часть B — дополнительные симптомы',
-    EQ:'Эмпатия (EQ) — 60 пунктов', SQ:'Систематизация (SQ-R) — 75 пунктов'};
-  let html = `
-    <h1>Нейротип</h1>
-    <p class="sub">Проводка мозга · опросники · это скрины, не диагноз</p>
-    <div class="prog" id="prog"></div>
-    <div class="refer">Высокий балл — <b>повод сходить к специалисту</b>, а не ярлык.
-      Диагноз ставит только врач. Отвечай по последним 6 месяцам.</div>`;
+// Разворачиваем все тесты в один линейный список вопросов
+const FLAT=[];
+TESTS.forEach(t=>t.items.forEach((it,i)=>FLAT.push({t,i,it})));
 
-  TESTS.forEach(t=>{
-    answers[t.key]=answers[t.key]||{};
-    const numbered = t.numbered!==false;
-    const vert = !!t.vertical;
-    const legend = t.scale
-      ? `<div class="legend">${t.scale.filter(o=>o.l).map(o=>numbered?(o.v+' — '+o.l):o.l).join(' · ')}</div>`
-      : '';
-    html += `<div class="tsec">
-      <div class="thead">${t.title}</div>
-      <div class="twhat">${t.what}</div>
-      ${legend}`;
-    let curPart='', dispNum=0;
-    t.items.forEach((it,i)=>{
-      const ip = it.p||'';
-      if(ip!==curPart){ curPart=ip; if(t.resetNumPerPart) dispNum=0;
-        if(curPart) html+=`<div class="part">${partLabel[curPart]||curPart}</div>`; }
-      dispNum++;
-      const cur=answers[t.key][i];
-      const opts = it.opts || t.scale;   // MEQ: у каждого пункта свои варианты
-      html += `<div class="item"><div class="itext">${dispNum}. ${it.t}</div>
-        <div class="scale ${vert?'vert':''}">${opts.map(o=>`
-          <div class="opt ${cur===o.v?'sel':''}" data-t="${t.key}" data-i="${i}" data-v="${o.v}">
-            ${numbered?`<span class="n">${o.v}</span><span class="l">${o.l}</span>`
-                     :`<span class="n" style="font-size:${vert?'14px':'12.5px'};line-height:1.2">${o.l}</span>`}
-          </div>`).join('')}
-        </div></div>`;
-    });
-    html += `<div class="src">${t.src}</div></div>`;
-  });
+let answers={};   // {testKey:{itemIdx:значение}}
+let pos=0;        // текущий вопрос в общем списке
+try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
+  if(s.answers) answers=s.answers; if(typeof s.pos==='number') pos=s.pos; }catch(e){}
+function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,pos}));}catch(e){} }
 
-  html += `<div class="warn" id="warn"></div>
-    <button class="btn" id="save">Сохранить результат</button>`;
-  app.innerHTML=html;
+function answeredCount(){
+  return FLAT.filter(f=> answers[f.t.key] && answers[f.t.key][f.i]!=null).length;
+}
 
-  app.querySelectorAll('.opt').forEach(el=>el.onclick=()=>{
-    const tk=el.dataset.t, i=+el.dataset.i, v=+el.dataset.v;
-    answers[tk][i]=v; save();
-    // подсветить выбранное в этой строке
-    el.parentElement.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+function optRow(o, numbered, selected){
+  const inner = numbered
+    ? `<span class="onum">${o.v}</span><span class="olbl">${o.l||''}</span>`
+    : `<span class="olbl">${o.l}</span>`;
+  return `<button class="orow ${selected?'sel':''}" data-v="${o.v}">${inner}</button>`;
+}
+
+// Один вопрос на экран. Тап по ответу → сразу следующий.
+function renderQuestion(){
+  const total=FLAT.length;
+  if(pos<0) pos=0;
+  if(pos>=total){ return finish(); }
+  const {t,i,it}=FLAT[pos];
+  answers[t.key]=answers[t.key]||{};
+  const numbered = t.numbered!==false;
+  const opts = it.opts || t.scale;
+  const cur = answers[t.key][i];
+  const done = answeredCount();
+  const part = it.p ? (PART_LABEL[it.p]||it.p) : '';
+  app.innerHTML=`
+    <div class="qbar"><i style="width:${Math.round(done/total*100)}%"></i></div>
+    <div class="qmeta">${t.title}${part?' · '+part:''} · вопрос ${pos+1} из ${total}</div>
+    <div class="qbox">
+      <div class="qtext">${it.t}</div>
+      <div class="opts">${opts.map(o=>optRow(o,numbered,cur===o.v)).join('')}</div>
+    </div>
+    <div class="qnav"><button class="btn ghost" id="back" ${pos===0?'disabled':''}>← Назад</button></div>`;
+  let locked=false;
+  app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
+    if(locked) return; locked=true;
+    answers[t.key][i]=+el.dataset.v; save();
+    app.querySelectorAll('.orow').forEach(o=>o.classList.remove('sel'));
     el.classList.add('sel');
-    document.getElementById('warn').textContent='';
-    updateProg();
+    setTimeout(()=>{ pos++; save(); renderQuestion(); }, 160);
   });
-  document.getElementById('save').onclick=finish;
-  updateProg();
+  const b=document.getElementById('back');
+  if(b) b.onclick=()=>{ pos=Math.max(0,pos-1); save(); renderQuestion(); };
+  window.scrollTo(0,0);
 }
-
-function updateProg(){
-  const el=document.getElementById('prog'); if(!el) return;
-  let total=0, done=0;
-  TESTS.forEach(t=>{ total+=t.items.length;
-    done+=t.items.filter((_,i)=>answers[t.key] && answers[t.key][i]!=null).length; });
-  el.textContent=`Отвечено ${done} из ${total}`;
-}
-
-function allAnswered(t){ return t.items.every((_,i)=>answers[t.key][i]!=null); }
 
 async function finish(){
-  // требуем ответы на все пункты для чистого скрина
-  const missing = TESTS.find(t=>!allAnswered(t));
-  if(missing){
-    const first = missing.items.findIndex((_,i)=>answers[missing.key][i]==null);
-    document.getElementById('warn').textContent=`Ответь на все пункты (не хватает №${first+1}).`;
-    const nodes=app.querySelectorAll('.item');
-    if(nodes[first]) nodes[first].scrollIntoView({behavior:'smooth',block:'center'});
-    return;
-  }
+  // если где-то пропущен ответ — прыгаем на первый пропущенный вопрос
+  const gap = FLAT.findIndex(f=> !(answers[f.t.key] && answers[f.t.key][f.i]!=null));
+  if(gap!==-1){ pos=gap; save(); renderQuestion(); return; }
   app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
   // Всё складываем внутрь scores (JSON) — таблица passport не меняется под каждый блок.
   const scores={};
@@ -606,8 +605,8 @@ function renderResult(res, justFinished){
     </div>`;
   document.getElementById('retake').onclick=()=>{
     if(confirm('Пройти заново? Текущие ответы заменятся.')){
-      answers={}; try{localStorage.removeItem(RESULT_KEY);localStorage.removeItem(STORE_KEY);}catch(e){}
-      renderForm();
+      answers={}; pos=0; try{localStorage.removeItem(RESULT_KEY);localStorage.removeItem(STORE_KEY);}catch(e){}
+      renderQuestion();
     }
   };
 }
@@ -624,7 +623,7 @@ if(urlResult&&urlResult.scores&&!inProgress){
 }else if(savedResult&&savedResult.scores&&!inProgress){
   renderResult(savedResult,false);
 }else{
-  renderForm();
+  renderQuestion();
 }
 </script>
 </body>
