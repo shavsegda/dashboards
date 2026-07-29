@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Нейротип</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --paper:#F4F2EC; --graphite:#1A1A1A; --terra:#B85C38;
@@ -98,7 +97,17 @@ const RESULT_KEY = 'neurotype_result_'+CLIENT_ID;
 // ---- Supabase ----
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Пишем в Supabase прямым fetch — надёжнее, чем supabase-js (тот не принимал новый ключ).
+async function pushToSupabase(record){
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/passport', {
+      method:'POST',
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(record)
+    });
+  }catch(e){}
+}
 
 // 5-балльная шкала частоты (0..4)
 const FREQ = [
@@ -580,7 +589,8 @@ async function finish(){
   const completed_at=new Date().toISOString();
   const record={user_id:UID, block:'neurotype', instrument:'ASRS-v1.1',
     scores, answers, completed_at};
-  try{ await sb.from('passport').insert(record); }catch(e){}
+  await pushToSupabase(record);
+  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
   if(tg&&typeof tg.sendData==='function'){
     try{ tg.sendData(JSON.stringify({type:'neurotype',scores})); }catch(e){}
   }
@@ -627,6 +637,13 @@ if(urlResult&&urlResult.scores&&!inProgress){
   try{ localStorage.setItem(RESULT_KEY,JSON.stringify(urlResult)); }catch(e){}
   renderResult(urlResult,false);
 }else if(savedResult&&savedResult.scores&&!inProgress){
+  // Досыл: если результат есть локально, но в базу не улетел — отправить при открытии.
+  const pk=RESULT_KEY+'_pushed';
+  if(localStorage.getItem(pk)!==(savedResult.completed_at||'')){
+    pushToSupabase({user_id:UID, block:'neurotype', instrument:'ASRS-v1.1',
+      scores:savedResult.scores, completed_at:savedResult.completed_at});
+    try{ localStorage.setItem(pk, savedResult.completed_at||''); }catch(e){}
+  }
   renderResult(savedResult,false);
 }else{
   renderQuestion();
