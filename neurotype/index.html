@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Нейротип</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper:#F4F2EC; --graphite:#1A1A1A; --terra:#B85C38;
+    --muted:#7A756B; --rule:#E2DED4; --card:#FBFAF7;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--paper);color:var(--graphite);
+    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
+  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
+  .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:12px;padding:13px 15px;
+    font-size:13.5px;margin-bottom:20px;color:#8A4527;line-height:1.45;}
+  .tsec{margin-bottom:10px;}
+  .thead{font-size:19px;font-weight:700;margin:26px 0 3px;}
+  .twhat{color:var(--muted);font-size:14px;margin:0 0 12px;}
+  .legend{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+    padding:9px 12px;font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+  .part{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.04em;margin:16px 0 8px;}
+  .item{background:var(--card);border:1px solid var(--rule);border-radius:12px;
+    padding:14px 14px 12px;margin-bottom:10px;}
+  .itext{font-size:15.5px;font-weight:500;margin-bottom:11px;line-height:1.35;}
+  .scale{display:flex;gap:6px;}
+  .opt{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:9px 2px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;
+    background:#fff;transition:.1s;}
+  .opt:active{transform:scale(.97);}
+  .opt.sel{border-color:var(--terra);background:#FBEEE7;}
+  .opt .n{font-size:15px;font-weight:700;}
+  .opt.sel .n{color:var(--terra);}
+  .opt .l{font-size:10px;color:var(--muted);text-align:center;line-height:1.1;}
+  .src{color:var(--muted);font-size:12px;margin:14px 0 4px;}
+  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:var(--terra);color:#fff;margin-top:20px;}
+  .btn:disabled{opacity:.4;pointer-events:none;}
+  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
+  .center{text-align:center;padding:40px 0;}
+  .res-row{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--rule);}
+  .res-row .rn{font-weight:600;flex:0 0 auto;}
+  .res-row .rv{text-align:right;}
+  .res-row .rv b{display:block;}
+  .res-row .rv small{color:var(--muted);font-weight:400;font-size:12.5px;}
+  .hi{color:#B85C38;} .lo{color:#2E7D32;} .neu{color:var(--muted);}
+  .ok{color:#2E7D32;font-weight:600;}
+  .nav{display:flex;gap:10px;margin-top:20px;}
+  .nav .btn{margin-top:0;}
+  .warn{color:#B85C38;font-size:13px;margin-top:10px;min-height:18px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---- Telegram ----
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+const UID = tg?.initDataUnsafe?.user?.id || null;
+const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
+const STORE_KEY = 'neurotype_'+CLIENT_ID;
+const RESULT_KEY = 'neurotype_result_'+CLIENT_ID;
+
+// ---- Supabase ----
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 5-балльная шкала частоты (0..4)
+const FREQ = [
+  {v:0,l:'Никогда'},{v:1,l:'Редко'},{v:2,l:'Иногда'},{v:3,l:'Часто'},{v:4,l:'Очень часто'}
+];
+
+// ---- Скрины. Встроенные пункты — рабочий перевод, не сертифицированный. ----
+const TESTS = [
+  {
+    key:'adhd', title:'СДВГ', what:'внимание, импульсивность, гиперактивность',
+    src:'ASRS-v1.1 · ВОЗ · рабочий перевод, скрин не диагноз',
+    scale:FREQ,
+    items:[
+      {p:'A', t:'Как часто вам трудно завершить последние детали проекта, когда самое сложное уже позади?'},
+      {p:'A', t:'Как часто вам трудно привести дела в порядок, когда задача требует организованности?'},
+      {p:'A', t:'Как часто у вас бывают проблемы с тем, чтобы вспомнить о встречах или обязательствах?'},
+      {p:'A', t:'Когда задача требует серьёзных раздумий, как часто вы избегаете или откладываете начало?'},
+      {p:'A', t:'Как часто вы ёрзаете руками или ногами, когда приходится долго сидеть?'},
+      {p:'A', t:'Как часто вы чувствуете избыток активности, будто вас «гонит мотор»?'},
+      {p:'B', t:'Как часто вы допускаете небрежные ошибки в скучной или трудной работе?'},
+      {p:'B', t:'Как часто вам трудно удерживать внимание на скучной или однообразной работе?'},
+      {p:'B', t:'Как часто вам трудно сосредоточиться на словах собеседника, даже когда он обращается прямо к вам?'},
+      {p:'B', t:'Как часто вы теряете вещи или с трудом находите их дома или на работе?'},
+      {p:'B', t:'Как часто вас отвлекает движение или шум вокруг?'},
+      {p:'B', t:'Как часто вы встаёте с места на встречах или там, где положено сидеть?'},
+      {p:'B', t:'Как часто вы чувствуете беспокойство или неусидчивость?'},
+      {p:'B', t:'Как часто вам трудно расслабиться и отдохнуть, когда есть свободное время?'},
+      {p:'B', t:'Как часто вы замечаете, что слишком много говорите в общении?'},
+      {p:'B', t:'Как часто в разговоре вы заканчиваете фразы за других, не дав им договорить?'},
+      {p:'B', t:'Как часто вам трудно дождаться своей очереди там, где это нужно?'},
+      {p:'B', t:'Как часто вы перебиваете других, когда они заняты?'}
+    ],
+    // Скоринг ASRS-v1.1. Часть A (пункты 0..5) — скрин.
+    // Пункты 1–3 (idx 0,1,2) в зоне при «Иногда+» (>=2); пункты 4–6 (idx 3,4,5) при «Часто+» (>=3).
+    score:(ans)=>{
+      let hitsA=0;
+      [0,1,2].forEach(i=>{ if(ans[i]!=null && ans[i]>=2) hitsA++; });
+      [3,4,5].forEach(i=>{ if(ans[i]!=null && ans[i]>=3) hitsA++; });
+      const positive = hitsA>=4;
+      let load=0; for(let i=0;i<18;i++){ if(ans[i]!=null && ans[i]>=3) load++; }
+      const band = positive
+        ? {t:'Скрин положительный — симптомы, совместимые с СДВГ у взрослых → к специалисту', c:'hi'}
+        : {t:'Скрин отрицательный по Части A', c:'lo'};
+      return {band, nums:`Часть A: ${hitsA}/6 в зоне скрина · часто/очень часто: ${load}/18`,
+        data:{partA_hits:hitsA, positive, symptom_load:load}};
+    }
+  }
+];
+
+const app = document.getElementById('app');
+let answers = {};  // {testKey:{itemIdx:0..4}}
+try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); if(s.answers) answers=s.answers; }catch(e){}
+function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers}));}catch(e){} }
+
+function renderForm(){
+  const partLabel={A:'Часть A — скрин',B:'Часть B — дополнительные симптомы'};
+  let html = `
+    <h1>Нейротип</h1>
+    <p class="sub">Проводка мозга · опросники · это скрины, не диагноз</p>
+    <div class="refer">Высокий балл — <b>повод сходить к специалисту</b>, а не ярлык.
+      Диагноз ставит только врач. Отвечай по последним 6 месяцам.</div>`;
+
+  TESTS.forEach(t=>{
+    answers[t.key]=answers[t.key]||{};
+    html += `<div class="tsec">
+      <div class="thead">${t.title}</div>
+      <div class="twhat">${t.what}</div>
+      <div class="legend">${t.scale.map(o=>o.v+' — '+o.l).join(' · ')}</div>`;
+    let curPart='';
+    t.items.forEach((it,i)=>{
+      if(it.p!==curPart){ curPart=it.p; html+=`<div class="part">${partLabel[it.p]||''}</div>`; }
+      const cur=answers[t.key][i];
+      html += `<div class="item"><div class="itext">${i+1}. ${it.t}</div>
+        <div class="scale">${t.scale.map(o=>`
+          <div class="opt ${cur===o.v?'sel':''}" data-t="${t.key}" data-i="${i}" data-v="${o.v}">
+            <span class="n">${o.v}</span><span class="l">${o.l}</span></div>`).join('')}
+        </div></div>`;
+    });
+    html += `<div class="src">${t.src}</div></div>`;
+  });
+
+  html += `<div class="warn" id="warn"></div>
+    <button class="btn" id="save">Сохранить результат</button>`;
+  app.innerHTML=html;
+
+  app.querySelectorAll('.opt').forEach(el=>el.onclick=()=>{
+    const tk=el.dataset.t, i=+el.dataset.i, v=+el.dataset.v;
+    answers[tk][i]=v; save();
+    // подсветить выбранное в этой строке
+    el.parentElement.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById('warn').textContent='';
+  });
+  document.getElementById('save').onclick=finish;
+}
+
+function allAnswered(t){ return t.items.every((_,i)=>answers[t.key][i]!=null); }
+
+async function finish(){
+  // требуем ответы на все пункты для чистого скрина
+  const missing = TESTS.find(t=>!allAnswered(t));
+  if(missing){
+    const first = missing.items.findIndex((_,i)=>answers[missing.key][i]==null);
+    document.getElementById('warn').textContent=`Ответь на все пункты (не хватает №${first+1}).`;
+    const nodes=app.querySelectorAll('.item');
+    if(nodes[first]) nodes[first].scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
+  const scores={}, bands={};
+  TESTS.forEach(t=>{ const r=t.score(answers[t.key]); scores[t.key]={...r.data, nums:r.nums}; bands[t.key]=r.band.t; });
+  const completed_at=new Date().toISOString();
+  const record={user_id:UID, block:'neurotype', instrument:'ASRS-v1.1',
+    scores, bands, answers, completed_at};
+  try{ await sb.from('passport').insert(record); }catch(e){}
+  if(tg&&typeof tg.sendData==='function'){
+    try{ tg.sendData(JSON.stringify({type:'neurotype',scores,bands})); }catch(e){}
+  }
+  const res={scores,bands,completed_at};
+  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
+  localStorage.removeItem(STORE_KEY);
+  renderResult(res, true);
+}
+
+function renderResult(res, justFinished){
+  const {scores,bands}=res;
+  const when=res.completed_at?' · '+res.completed_at.slice(0,10):'';
+  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
+    const band=t.score? null:null;
+    const c = (bands[t.key]||'').includes('положительн')?'hi':'lo';
+    return `<div class="res-row"><span class="rn">${t.title}</span>
+      <span class="rv"><b class="${c}">${bands[t.key]||'—'}</b><small>${scores[t.key].nums||''}</small></span></div>`;
+  }).join('');
+  app.innerHTML=`
+    <h1>Твой нейротип</h1>
+    <p class="sub">Скрины${when}</p>
+    <div class="refer">Это скрины, не диагноз. Высокий балл — к специалисту.</div>
+    ${rows}
+    ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
+    <div class="nav">
+      <button class="btn ghost" id="retake">🔁 Пройти заново</button>
+      ${justFinished?'<button class="btn" onclick="Telegram.WebApp.close()">В чат</button>':''}
+    </div>`;
+  document.getElementById('retake').onclick=()=>{
+    if(confirm('Пройти заново? Текущие ответы заменятся.')){
+      answers={}; try{localStorage.removeItem(RESULT_KEY);localStorage.removeItem(STORE_KEY);}catch(e){}
+      renderForm();
+    }
+  };
+}
+
+// Вход. Приоритет: результат из URL (передал бот) → localStorage → форма.
+let urlResult=null;
+try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
+let savedResult=null;
+try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
+const inProgress=TESTS.some(t=>answers[t.key]&&Object.keys(answers[t.key]).length>0);
+if(urlResult&&urlResult.scores&&!inProgress){
+  try{ localStorage.setItem(RESULT_KEY,JSON.stringify(urlResult)); }catch(e){}
+  renderResult(urlResult,false);
+}else if(savedResult&&savedResult.scores&&!inProgress){
+  renderResult(savedResult,false);
+}else{
+  renderForm();
+}
+</script>
+</body>
+</html>
