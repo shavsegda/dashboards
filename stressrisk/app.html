@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Стресс и риск</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--paper:#F4F2EC;--graphite:#1A1A1A;--terra:#B85C38;--muted:#7A756B;--rule:#E2DED4;--card:#FBFAF7;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--paper);color:var(--graphite);
+    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
+  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
+  .qbar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:4px 0 8px;}
+  .qbar>i{display:block;height:100%;background:var(--terra);transition:width .25s;}
+  .qmeta{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
+  .qintro{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:10px 13px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:11px 14px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .qbox{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 18px;margin-bottom:14px;}
+  .qtext{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:20px;}
+  .opts{display:flex;flex-direction:column;gap:9px;}
+  .orow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:14px 15px;border:1.5px solid var(--rule);border-radius:11px;background:#fff;
+    font-family:inherit;font-size:15.5px;color:var(--graphite);cursor:pointer;transition:.12s;}
+  .orow:active{transform:scale(.99);}
+  .orow.sel{border-color:var(--terra);background:#FBEEE7;}
+  .orow .onum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--rule);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);}
+  .orow.sel .onum{border-color:var(--terra);background:var(--terra);color:#fff;}
+  .orow .olbl{flex:1;}
+  .qnav{margin-top:6px;}
+  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:var(--terra);color:#fff;margin-top:8px;}
+  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
+  .qnav .btn{width:auto;padding:11px 18px;margin-top:0;}
+  .center{text-align:center;padding:40px 0;}
+  .res-row{padding:14px 0;border-bottom:1px solid var(--rule);}
+  .res-row .rn{font-weight:700;display:block;margin-bottom:4px;}
+  .res-row .rv{display:block;}
+  .res-row .rv b{display:block;font-weight:600;line-height:1.35;}
+  .res-row .rv small{display:block;color:var(--muted);font-weight:400;font-size:12.5px;margin-top:2px;}
+  .neu{color:var(--muted);}
+  .ok{color:#2E7D32;font-weight:600;}
+  .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
+  .qctx{background:var(--card);border:1px solid var(--rule);border-radius:12px;
+    padding:14px 15px;font-size:15.5px;line-height:1.45;margin-bottom:12px;}
+  .hublist{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .hubrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 16px;
+    border:1.5px solid var(--rule);border-radius:12px;background:#fff;font-family:inherit;cursor:pointer;transition:.12s;}
+  .hubrow:active{transform:scale(.99);}
+  .hb-l{flex:1;display:flex;flex-direction:column;gap:3px;}
+  .hb-l b{font-size:16px;color:var(--graphite);}
+  .hb-s{font-size:12.5px;color:var(--muted);}
+  .hb-b{flex:0 0 auto;font-size:18px;color:var(--terra);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---- Telegram ----
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+function uidFromUrl(){try{const u=new URLSearchParams(location.search).get('u');if(u&&u.indexOf('tg_')===0){const n=parseInt(u.slice(3),10);if(!isNaN(n))return n;}}catch(e){}return null;}
+const UID = (tg?.initDataUnsafe?.user?.id) || uidFromUrl() || null;
+const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
+const STORE_KEY = 'stressrisk_'+CLIENT_ID;
+const RESULT_KEY = 'stressrisk_result_'+CLIENT_ID;
+
+// ---- Supabase (прямой fetch — надёжно) ----
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+async function pushToSupabase(record){
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/passport', {
+      method:'POST',
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(record)
+    });
+  }catch(e){}
+}
+
+// ---- Шкалы ответов ----
+// Частота 1..4 — для Brief COPE
+const DO4 = [
+  {v:1,l:'Совсем так не делаю'},{v:2,l:'Делаю немного'},
+  {v:3,l:'Делаю средне'},{v:4,l:'Делаю много'}
+];
+// Вероятность 1..7 — для DOSPERT
+const LIKELY7 = [
+  {v:1,l:'Крайне маловероятно'},{v:2,l:'Довольно маловероятно'},{v:3,l:'Скорее маловероятно'},
+  {v:4,l:'Не уверен'},{v:5,l:'Скорее вероятно'},{v:6,l:'Довольно вероятно'},{v:7,l:'Крайне вероятно'}
+];
+// «Про меня» 1..5 — для IUS-12
+const ME5 = [
+  {v:1,l:'Совсем не про меня'},{v:2,l:'Немного про меня'},{v:3,l:'Отчасти про меня'},
+  {v:4,l:'Во многом про меня'},{v:5,l:'Полностью про меня'}
+];
+
+// ================= ТЕСТ 1. Brief COPE — совладание со стрессом =================
+// 28 пунктов, 14 подшкал по 2. Порядок = оригинальная нумерация Карвера (1997).
+const COPE_ITEMS = [
+  'Ухожу в работу или другие дела, чтобы не думать о проблеме.',        // 1  самоотвлечение
+  'Собираюсь и делаю что-то с самой ситуацией.',                        // 2  активное совладание
+  'Говорю себе: «Это не по-настоящему».',                               // 3  отрицание
+  'Пью или принимаю что-то, чтобы стало легче.',                        // 4  вещества
+  'Прошу близких поддержать меня.',                                     // 5  эмоц. поддержка
+  'Бросаю попытки справиться.',                                         // 6  поведенческий отказ
+  'Действую, чтобы улучшить положение.',                                // 7  активное совладание
+  'Отказываюсь верить, что это случилось.',                             // 8  отрицание
+  'Выговариваюсь, чтобы выпустить тяжёлые чувства.',                    // 9  разрядка чувств
+  'Прошу у людей помощи и совета.',                                     // 10 инструм. поддержка
+  'Пью или принимаю что-то, чтобы это пережить.',                       // 11 вещества
+  'Пробую взглянуть на это иначе, найти светлую сторону.',              // 12 позитивная переоценка
+  'Ругаю себя.',                                                        // 13 самообвинение
+  'Придумываю стратегию: что делать.',                                  // 14 планирование
+  'Иду к тому, кто утешит и поймёт.',                                   // 15 эмоц. поддержка
+  'Перестаю даже пытаться.',                                            // 16 поведенческий отказ
+  'Ищу в происходящем что-то хорошее.',                                 // 17 позитивная переоценка
+  'Шучу про это.',                                                      // 18 юмор
+  'Отвлекаюсь: кино, сериалы, книги, сон, покупки.',                    // 19 самоотвлечение
+  'Принимаю, что это случилось, и это факт.',                           // 20 принятие
+  'Не держу в себе — показываю, что мне плохо.',                        // 21 разрядка чувств
+  'Ищу опору в вере или в духовном.',                                   // 22 религия
+  'Спрашиваю у людей, что мне делать.',                                 // 23 инструм. поддержка
+  'Учусь с этим жить.',                                                 // 24 принятие
+  'Крепко думаю, какие шаги предпринять.',                              // 25 планирование
+  'Виню себя в том, что произошло.',                                    // 26 самообвинение
+  'Молюсь или медитирую.',                                              // 27 религия
+  'Высмеиваю ситуацию.'                                                 // 28 юмор
+];
+
+// ================= ТЕСТ 2. DOSPERT — готовность рисковать =================
+// 30 пунктов, 5 доменов по 6. Порядок = оригинальный (Blais & Weber, 2006).
+const DOSPERT_ITEMS = [
+  'Признаться другу, что у нас разные вкусы.',                          // 1  социальное
+  'Поехать с палаткой в дикие места.',                                  // 2  отдых
+  'Поставить дневной доход на скачках.',                                // 3  деньги
+  'Вложить 10% годового дохода в спокойный паевой фонд.',               // 4  деньги
+  'Крепко выпить на вечеринке.',                                        // 5  здоровье
+  'Указать в налоговой декларации сомнительные вычеты.',                // 6  этика
+  'Публично не согласиться с начальником по важному вопросу.',          // 7  социальное
+  'Поставить дневной доход в покере с высокими ставками.',              // 8  деньги
+  'Завести роман с женатым человеком.',                                 // 9  этика
+  'Выдать чужую работу за свою.',                                       // 10 этика
+  'Съехать по трассе, которая мне не по уровню.',                       // 11 отдых
+  'Вложить 5% годового дохода в очень рискованные акции.',              // 12 деньги
+  'Пойти на рафтинг по большой весенней воде.',                         // 13 отдых
+  'Поставить дневной доход на исход матча.',                            // 14 деньги
+  'Заняться сексом без защиты.',                                        // 15 здоровье
+  'Рассказать кому-то чужой секрет.',                                   // 16 этика
+  'Сесть за руль без ремня.',                                           // 17 здоровье
+  'Вложить 10% годового дохода в новый бизнес.',                        // 18 деньги
+  'Пойти на курс прыжков с парашютом.',                                 // 19 отдых
+  'Проехать на мотоцикле без шлема.',                                   // 20 здоровье
+  'Выбрать работу по душе вместо более престижной.',                    // 21 социальное
+  'Высказать на работе непопулярное мнение.',                           // 22 социальное
+  'Загорать без крема от солнца.',                                      // 23 здоровье
+  'Прыгнуть с моста на тарзанке.',                                      // 24 отдых
+  'Сесть за штурвал лёгкого самолёта.',                                 // 25 отдых
+  'Идти домой одному ночью через небезопасный район.',                  // 26 здоровье
+  'Переехать в город далеко от родных.',                                // 27 социальное
+  'Начать новую карьеру в тридцать пять.',                              // 28 социальное
+  'Оставить маленьких детей дома одних, пока бегаешь по делам.',        // 29 этика
+  'Не вернуть найденный кошелёк с деньгами.'                            // 30 этика
+];
+
+// ================= ТЕСТ 3. IUS-12 — переносимость неизвестности =================
+// 12 пунктов. Тревога о будущем: 1,2,4,5,8,9,11. Паралич в неясности: 3,6,7,10,12.
+const IUS_ITEMS = [
+  'Неожиданные события сильно выбивают меня из колеи.',                 // 1  будущее
+  'Меня бесит, когда у меня нет всей нужной информации.',               // 2  будущее
+  'Из-за неопределённости я живу не в полную силу.',                    // 3  паралич
+  'Надо всегда смотреть вперёд, чтобы не было сюрпризов.',              // 4  будущее
+  'Один непредвиденный пустяк может всё испортить, даже если продумано.', // 5 будущее
+  'Когда пора действовать, неопределённость меня парализует.',          // 6  паралич
+  'Когда я не уверен, я плохо соображаю и плохо работаю.',              // 7  паралич
+  'Я всегда хочу знать, что меня ждёт впереди.',                        // 8  будущее
+  'Терпеть не могу, когда меня застают врасплох.',                      // 9  будущее
+  'Малейшее сомнение может меня остановить.',                           // 10 паралич
+  'Я должен уметь всё организовать заранее.',                           // 11 будущее
+  'Мне надо уйти из любой ситуации, где нет ясности.'                   // 12 паралич
+];
+
+const TESTS = [
+  {
+    key:'cope', title:'Совладание со стрессом',
+    what:'что ты делаешь, когда прижало',
+    note:'вспомни трудные периоды и отвечай, как было на самом деле',
+    src:'Brief COPE · Карвер, 1997 · рабочий перевод',
+    scale:DO4,
+    items:COPE_ITEMS.map(t=>({t})),
+    score:(ans)=>{
+      // подшкала = среднее по двум пунктам (0-индексация: номер пункта минус 1)
+      const m=(a,b)=>{const v=[ans[a],ans[b]].filter(x=>x!=null);
+        return v.length? v.reduce((s,x)=>s+x,0)/v.length : 0;};
+      const sub={
+        active:m(1,6), planning:m(13,24), instrumental:m(9,22), reframing:m(11,16),
+        emotional:m(4,14), acceptance:m(19,23), humor:m(17,27), religion:m(21,26), venting:m(8,20),
+        denial:m(2,7), substance:m(3,10), selfblame:m(12,25), distraction:m(0,18), disengagement:m(5,15)
+      };
+      const avg=(a)=>a.reduce((s,x)=>s+x,0)/a.length;
+      const solve = avg([sub.active,sub.planning,sub.instrumental,sub.reframing]);
+      const emo   = avg([sub.emotional,sub.acceptance,sub.humor,sub.religion,sub.venting]);
+      const avoid = avg([sub.denial,sub.substance,sub.selfblame,sub.distraction,sub.disengagement]);
+      const styles=[['решающий',solve],['эмоциональный',emo],['избегающий',avoid]];
+      const sorted=styles.slice().sort((x,y)=>y[1]-x[1]);
+      const top=sorted[0];
+      // избегание заметно выше двух других — отдельное предупреждение
+      const warn = (avoid - Math.max(solve,emo)) >= 0.4;
+      // если разрыв между стилями меньше 0.2 — ведущего стиля нет
+      const flat = (sorted[0][1]-sorted[2][1]) < 0.2;
+      let t = flat ? 'Ведущего стиля нет: все три работают примерно поровну'
+                   : 'Ведущий стиль — '+top[0]+' ('+top[1].toFixed(1)+' из 4)';
+      if(warn) t+='. Избегание перевешивает: часть сил уходит на то, чтобы не смотреть на проблему';
+      return {band:{t, c: warn?'neu':'ok'},
+        nums:`Решающий ${solve.toFixed(1)} · эмоциональный ${emo.toFixed(1)} · избегающий ${avoid.toFixed(1)} (шкала 1–4)`,
+        data:{
+          style_solve:+solve.toFixed(2), style_emotion:+emo.toFixed(2), style_avoid:+avoid.toFixed(2),
+          active:+sub.active.toFixed(2), planning:+sub.planning.toFixed(2),
+          instrumental_support:+sub.instrumental.toFixed(2), positive_reframing:+sub.reframing.toFixed(2),
+          emotional_support:+sub.emotional.toFixed(2), acceptance:+sub.acceptance.toFixed(2),
+          humor:+sub.humor.toFixed(2), religion:+sub.religion.toFixed(2), venting:+sub.venting.toFixed(2),
+          denial:+sub.denial.toFixed(2), substance_use:+sub.substance.toFixed(2),
+          self_blame:+sub.selfblame.toFixed(2), self_distraction:+sub.distraction.toFixed(2),
+          behavioral_disengagement:+sub.disengagement.toFixed(2)
+        }};
+    }
+  },
+  {
+    key:'dospert', title:'Готовность рисковать',
+    what:'на что ты готов ставить — и в какой области',
+    note:'насколько вероятно, что ты так поступишь',
+    src:'DOSPERT · Блэ и Вебер, 2006 · рабочий перевод',
+    scale:LIKELY7,
+    items:DOSPERT_ITEMS.map(t=>({t})),
+    score:(ans)=>{
+      // домены (0-индексация пунктов)
+      const DOM=[
+        ['деньги',      [2,3,7,11,13,17]],
+        ['здоровье',    [4,14,16,19,22,25]],
+        ['этика',       [5,8,9,15,28,29]],
+        ['социальное',  [0,6,20,21,26,27]],
+        ['отдых',       [1,10,12,18,23,24]]
+      ];
+      const mean=(arr)=>{let s=0,n=0;arr.forEach(i=>{if(ans[i]!=null){s+=ans[i];n++;}});return n?s/n:0;};
+      const res=DOM.map(d=>[d[0],mean(d[1])]);
+      const sorted=res.slice().sort((x,y)=>y[1]-x[1]);
+      const hi=sorted[0], lo=sorted[sorted.length-1];
+      // если разброс между доменами меньше 0.3 — говорить о «сильнее/осторожнее» нечестно
+      const flat = (hi[1]-lo[1]) < 0.3;
+      const t = flat
+        ? 'Ровный профиль: во всех областях примерно одинаково ('+hi[1].toFixed(1)+' из 7)'
+        : 'Сильнее всего рискуешь тут: '+hi[0]+' ('+hi[1].toFixed(1)+' из 7). Осторожнее всего: '+lo[0]+' ('+lo[1].toFixed(1)+')';
+      return {band:{t, c:'neu'},
+        nums:res.map(r=>r[0][0].toUpperCase()+r[0].slice(1)+' '+r[1].toFixed(1)).join(' · ')+' (шкала 1–7)',
+        data:{money:+res[0][1].toFixed(2), health:+res[1][1].toFixed(2), ethics:+res[2][1].toFixed(2),
+          social:+res[3][1].toFixed(2), recreation:+res[4][1].toFixed(2)}};
+    }
+  },
+  {
+    key:'ius', title:'Переносимость неизвестности',
+    what:'как тебе, когда исход непонятен',
+    note:'отвечай про то, как обычно бывает',
+    src:'IUS-12 · Карлтон и др., 2007 · рабочий перевод',
+    scale:ME5,
+    items:IUS_ITEMS.map(t=>({t})),
+    score:(ans)=>{
+      const PROSP=[0,1,3,4,7,8,10];   // тревога о будущем, 7 пунктов
+      const INHIB=[2,5,6,9,11];       // паралич в неясности, 5 пунктов
+      const sum=(arr)=>arr.reduce((n,i)=>n+(ans[i]!=null?ans[i]:0),0);
+      const p=sum(PROSP), i=sum(INHIB), total=p+i;
+      let band;
+      if(total<=24) band={t:'Неизвестность даётся легко: без ясности ты всё равно двигаешься',c:'ok'};
+      else if(total<=39) band={t:'Неизвестность напрягает, но ты в ней работаешь',c:'neu'};
+      else band={t:'Неизвестность даётся тяжело: пока нет ясности, трудно сдвинуться',c:'neu'};
+      return {band,
+        nums:`Общий ${total} из 60 · тревога о будущем ${p} из 35 · паралич в неясности ${i} из 25`,
+        data:{total, prospective:p, inhibitory:i}};
+    }
+  }
+];
+
+const app = document.getElementById('app');
+
+let answers={};        // {testKey:{i:v}}
+let priorScores={};    // прошлые результаты (галочки + слияние)
+let cur=null;          // {ti,pos} или null (список)
+try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
+  if(s.answers) answers=s.answers; if(s.priorScores) priorScores=s.priorScores; if(s.cur) cur=s.cur; }catch(e){}
+function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,priorScores,cur}));}catch(e){} }
+
+function testFullyAnswered(t){ const a=answers[t.key]||{}; return t.items.every((_,i)=>a[i]!=null); }
+function testAnsweredCount(t){ const a=answers[t.key]||{}; return t.items.filter((_,i)=>a[i]!=null).length; }
+
+function combinedScores(){
+  const out={};
+  TESTS.forEach(t=>{
+    if(testFullyAnswered(t)){ const r=t.score(answers[t.key]); out[t.key]={...r.data, nums:r.nums, band:r.band.t, band_c:r.band.c}; }
+    else if(priorScores[t.key]){ out[t.key]=priorScores[t.key]; }
+  });
+  return out;
+}
+
+async function pushCombined(){
+  const scores=combinedScores();
+  priorScores=scores;
+  const completed_at=new Date().toISOString();
+  const record={user_id:UID, block:'stressrisk', instrument:'Brief COPE + DOSPERT + IUS-12', scores, answers, completed_at};
+  await pushToSupabase(record);
+  try{ localStorage.setItem(RESULT_KEY, JSON.stringify({scores,answers,completed_at})); }catch(e){}
+  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
+  if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'stressrisk',scores})); }catch(e){} }
+  save();
+}
+
+function optRow(o, selected){
+  return `<button class="orow ${selected?'sel':''}" data-v="${o.v}">
+    <span class="onum">${o.v}</span><span class="olbl">${o.l||''}</span></button>`;
+}
+
+function renderHub(msg){
+  cur=null; save();
+  const rows=TESTS.map((t,idx)=>{
+    let status, badge='→', cls='';
+    if(testFullyAnswered(t)){ const s=t.score(answers[t.key]); status=s.band.t; badge='✓'; cls=s.band.c||''; }
+    else if(priorScores[t.key]){ status=priorScores[t.key].band||'готово'; badge='✓'; cls=priorScores[t.key].band_c||''; }
+    else { const c=testAnsweredCount(t); status = c>0 ? ('в процессе · '+c+' из '+t.items.length) : ('не пройден · '+t.items.length+' вопр.'); }
+    return `<button class="hubrow" data-ti="${idx}">
+      <span class="hb-l"><b>${t.title}</b><span class="hb-s ${cls}">${status}</span></span>
+      <span class="hb-b">${badge}</span></button>`;
+  }).join('');
+  app.innerHTML=`
+    <h1>Стресс и риск</h1>
+    <p class="sub">Как справляешься и на что ставишь</p>
+    ${msg?`<div class="refer"><span class="ok">${msg}</span></div>`:''}
+    <div class="refer">Это про стиль, а не про правильность. Осторожность и риск одинаково полезны — вопрос, где именно.</div>
+    <div class="qintro">Три коротких опросника. Проходи по одному — можно бросить и вернуться, каждый пересдаётся отдельно.</div>
+    <div class="hublist">${rows}</div>
+    ${Object.keys(combinedScores()).length ? '<button class="btn" id="showres" style="margin-top:16px">📊 Показать результаты</button>' : ''}`;
+  const sr=document.getElementById('showres'); if(sr) sr.onclick=()=>renderResults();
+  app.querySelectorAll('.hubrow').forEach(el=>el.onclick=()=>{
+    const idx=+el.dataset.ti, t=TESTS[idx];
+    if(testFullyAnswered(t)||priorScores[t.key]){
+      if(!confirm('«'+t.title+'» уже пройден. Пройти заново? Прошлый результат этого теста заменится, остальные не тронутся.')) return;
+      answers[t.key]={};
+    }
+    let p=0; const a=answers[t.key]||{};
+    for(let i=0;i<t.items.length;i++){ if(a[i]==null){ p=i; break; } p=i; }
+    cur={ti:idx,pos:p}; save(); renderQuestion();
+  });
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(){
+  if(!cur){ return renderHub(); }
+  const t=TESTS[cur.ti];
+  answers[t.key]=answers[t.key]||{};
+  if(cur.pos<0) cur.pos=0;
+  if(cur.pos>=t.items.length){ return finishTest(t); }
+  const it=t.items[cur.pos];
+  const opts=it.opts||t.scale;
+  const val=answers[t.key][cur.pos];
+  const intro=(cur.pos===0)?`<div class="qintro">${t.what}${t.note?' · '+t.note:''}</div>`:'';
+  const prevCtx = cur.pos>0 ? (t.items[cur.pos-1].ctx||'') : '';
+  const ctx = (it.ctx && it.ctx!==prevCtx) ? `<div class="qctx">${it.ctx}</div>` : '';
+  app.innerHTML=`
+    <div class="qbar"><i style="width:${Math.round(cur.pos/t.items.length*100)}%"></i></div>
+    <div class="qmeta">${t.title} · вопрос ${cur.pos+1} из ${t.items.length}</div>
+    ${intro}${ctx}
+    <div class="qbox"><div class="qtext">${it.t}</div>
+      <div class="opts">${opts.map(o=>optRow(o,val===o.v)).join('')}</div></div>
+    <div class="qnav"><button class="btn ghost" id="back">← ${cur.pos===0?'К списку':'Назад'}</button></div>`;
+  let locked=false;
+  app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
+    if(locked) return; locked=true;
+    answers[t.key][cur.pos]=+el.dataset.v; save();
+    app.querySelectorAll('.orow').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    setTimeout(()=>{ cur.pos++; save(); renderQuestion(); }, 160);
+  });
+  document.getElementById('back').onclick=()=>{
+    if(cur.pos===0){ renderHub(); } else { cur.pos--; save(); renderQuestion(); }
+  };
+  window.scrollTo(0,0);
+}
+
+async function finishTest(t){
+  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
+  await pushCombined();
+  renderHub('«'+t.title+'» засчитан и отправлен боту.');
+}
+
+function renderResults(){
+  const scores=combinedScores();
+  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
+    const s=scores[t.key];
+    return `<div class="res-row"><span class="rn">${t.title}</span>
+      <span class="rv"><b class="${s.band_c||'neu'}">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
+  }).join('');
+  app.innerHTML=`
+    <h1>Стресс и риск</h1>
+    <p class="sub">Как справляешься и на что ставишь</p>
+    ${rows||'<p class="sub">Пока ничего не пройдено.</p>'}
+    <div class="refer">Это про стиль, а не про правильность. Осторожность и риск одинаково полезны — вопрос, где именно.</div>
+    <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>`;
+  document.getElementById('tolist').onclick=()=>renderHub();
+  window.scrollTo(0,0);
+}
+
+// ---- Вход ----
+let urlResult=null;
+try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
+let savedResult=null;
+try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
+if(!savedResult||!savedResult.scores){
+  try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
+    if(a&&a.scores) savedResult=a; }catch(e){}
+}
+if(Object.keys(priorScores).length===0){
+  if(urlResult&&urlResult.scores) priorScores={...urlResult.scores};
+  else if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
+  if(savedResult&&savedResult.answers && Object.keys(answers).length===0) answers={...savedResult.answers};
+  save();
+}
+if(cur && typeof cur.ti==='number'){ renderQuestion(); } else { renderHub(); }
+</script>
+</body>
+</html>
