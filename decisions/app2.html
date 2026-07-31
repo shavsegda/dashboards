@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Решения и конфликт</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--paper:#F4F2EC;--graphite:#1A1A1A;--terra:#B85C38;--muted:#7A756B;--rule:#E2DED4;--card:#FBFAF7;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--paper);color:var(--graphite);
+    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
+  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
+  .qbar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:4px 0 8px;}
+  .qbar>i{display:block;height:100%;background:var(--terra);transition:width .25s;}
+  .qmeta{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
+  .qintro{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:10px 13px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:11px 14px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .qbox{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 18px;margin-bottom:14px;}
+  .qtext{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:20px;}
+  .opts{display:flex;flex-direction:column;gap:9px;}
+  .orow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:14px 15px;border:1.5px solid var(--rule);border-radius:11px;background:#fff;
+    font-family:inherit;font-size:15.5px;color:var(--graphite);cursor:pointer;transition:.12s;}
+  .orow:active{transform:scale(.99);}
+  .orow.sel{border-color:var(--terra);background:#FBEEE7;}
+  .orow .onum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--rule);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);}
+  .orow.sel .onum{border-color:var(--terra);background:var(--terra);color:#fff;}
+  .orow .olbl{flex:1;}
+  .qnav{margin-top:6px;}
+  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:var(--terra);color:#fff;margin-top:8px;}
+  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
+  .qnav .btn{width:auto;padding:11px 18px;margin-top:0;}
+  .center{text-align:center;padding:40px 0;}
+  .res-row{padding:14px 0;border-bottom:1px solid var(--rule);}
+  .res-row .rn{font-weight:700;display:block;margin-bottom:4px;}
+  .res-row .rv{display:block;}
+  .res-row .rv b{display:block;font-weight:600;line-height:1.35;}
+  .res-row .rv small{display:block;color:var(--muted);font-weight:400;font-size:12.5px;margin-top:2px;}
+  .neu{color:var(--muted);}
+  .ok{color:#2E7D32;font-weight:600;}
+  .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
+  .qctx{background:var(--card);border:1px solid var(--rule);border-radius:12px;
+    padding:14px 15px;font-size:15.5px;line-height:1.45;margin-bottom:12px;}
+  .hublist{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .hubrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 16px;
+    border:1.5px solid var(--rule);border-radius:12px;background:#fff;font-family:inherit;cursor:pointer;transition:.12s;}
+  .hubrow:active{transform:scale(.99);}
+  .hb-l{flex:1;display:flex;flex-direction:column;gap:3px;}
+  .hb-l b{font-size:16px;color:var(--graphite);}
+  .hb-s{font-size:12.5px;color:var(--muted);}
+  .hb-b{flex:0 0 auto;font-size:18px;color:var(--terra);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---- Telegram ----
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+function uidFromUrl(){try{const u=new URLSearchParams(location.search).get('u');if(u&&u.indexOf('tg_')===0){const n=parseInt(u.slice(3),10);if(!isNaN(n))return n;}}catch(e){}return null;}
+const UID = (tg?.initDataUnsafe?.user?.id) || uidFromUrl() || null;
+const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
+const STORE_KEY = 'decisions_'+CLIENT_ID;
+const RESULT_KEY = 'decisions_result_'+CLIENT_ID;
+// Ключ облака Telegram (общий на весь бот, поэтому уникальный для блока)
+const CLOUD_KEY = 'res_decisions';
+
+// ---- Supabase (прямой fetch — надёжно) ----
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+async function pushToSupabase(record){
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/passport', {
+      method:'POST',
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(record)
+    });
+  }catch(e){}
+}
+
+// ---- Шкалы ответов ----
+// «Про меня» 1..5 — для REI (в оригинале «definitely not true of myself» → «definitely true of myself»)
+const ME5 = [
+  {v:1,l:'Совсем не про меня'},{v:2,l:'Скорее не про меня'},{v:3,l:'И да и нет'},
+  {v:4,l:'Скорее про меня'},{v:5,l:'Точно про меня'}
+];
+// Согласие 1..5 — для AOT
+const AGREE5 = [
+  {v:1,l:'Совсем не согласен'},{v:2,l:'Скорее не согласен'},{v:3,l:'Нейтрально'},
+  {v:4,l:'Скорее согласен'},{v:5,l:'Полностью согласен'}
+];
+// «Насколько так» 1..5 — для DUTCH (в оригинале «not at all» → «very much»)
+const DEG5 = [
+  {v:1,l:'Совсем не так'},{v:2,l:'Редко так'},{v:3,l:'Иногда'},
+  {v:4,l:'Часто'},{v:5,l:'Именно так'}
+];
+
+// ================= ТЕСТ 1. REI-40 — как ты решаешь =================
+// 40 пунктов: 20 рациональность (r) + 20 интуитивность (e). rev:1 — обратный пункт.
+// Порядок и ключ реверсов — как у Пачини и Эпстайна (1999).
+const REI_ITEMS = [
+  // --- Рациональность (20) ---
+  {t:'Стараюсь избегать ситуаций, где надо о чём-то глубоко думать.', s:'r', rev:1},
+  {t:'Со сложными задачами я справляюсь так себе.', s:'r', rev:1},
+  {t:'Мне нравятся умственные вызовы.', s:'r'},
+  {t:'Задачи, где нужен тщательный логический разбор, даются мне плохо.', s:'r', rev:1},
+  {t:'Не люблю, когда приходится много думать.', s:'r', rev:1},
+  {t:'Мне нравится решать задачи, где надо крепко подумать.', s:'r'},
+  {t:'Думать — не то, что я назвал бы приятным занятием.', s:'r', rev:1},
+  {t:'Я не очень аналитичный человек.', s:'r', rev:1},
+  {t:'Тщательно всё продумывать — не мой конёк.', s:'r', rev:1},
+  {t:'Сложные задачи мне интереснее простых.', s:'r'},
+  {t:'Долго и напряжённо думать о чём-то — радости мало.', s:'r', rev:1},
+  {t:'Под давлением я плохо соображаю.', s:'r', rev:1},
+  {t:'Разбираться логически у меня получается лучше, чем у большинства.', s:'r'},
+  {t:'У меня логичный ум.', s:'r'},
+  {t:'Мне нравится думать абстрактно.', s:'r'},
+  {t:'Мне легко всё внимательно продумать.', s:'r'},
+  {t:'Логика обычно хорошо помогает мне разбираться с задачами в жизни.', s:'r'},
+  {t:'Мне достаточно знать ответ — понимать, откуда он взялся, необязательно.', s:'r', rev:1},
+  {t:'У моих решений обычно есть внятные причины, которые я могу объяснить.', s:'r'},
+  {t:'Мне было бы интересно освоить новые способы думать.', s:'r'},
+  // --- Интуитивность (20) ---
+  {t:'Люблю опираться на свои первые ощущения.', s:'e'},
+  {t:'Интуиция у меня так себе.', s:'e', rev:1},
+  {t:'Чутьё обычно хорошо помогает мне разбираться с задачами в жизни.', s:'e'},
+  {t:'Я считаю, что своим догадкам стоит доверять.', s:'e'},
+  {t:'Интуиция может быть очень полезным способом решать задачи.', s:'e'},
+  {t:'Решая, что делать, я часто иду за внутренним чутьём.', s:'e'},
+  {t:'Доверяю первому ощущению от человека.', s:'e'},
+  {t:'Кому можно доверять, я обычно чувствую нутром.', s:'e'},
+  {t:'Если бы я полагался на чутьё, я бы часто ошибался.', s:'e', rev:1},
+  {t:'Не люблю ситуации, где приходится полагаться на интуицию.', s:'e', rev:1},
+  {t:'Бывают моменты, когда на интуицию стоит положиться.', s:'e'},
+  {t:'Принимать важные решения на основе чувств — глупо.', s:'e', rev:1},
+  {t:'В важных решениях полагаться на интуицию — плохая идея.', s:'e', rev:1},
+  {t:'Обычно я не опираюсь на чувства, когда принимаю решения.', s:'e', rev:1},
+  {t:'Когда слушаю самое глубокое чутьё, почти не ошибаюсь.', s:'e'},
+  {t:'Я не хотел бы зависеть от человека, который называет себя интуитивным.', s:'e', rev:1},
+  {t:'Мои мгновенные суждения, наверное, хуже, чем у большинства.', s:'e', rev:1},
+  {t:'В поступках я обычно иду за сердцем.', s:'e'},
+  {t:'Обычно я чувствую, прав человек или нет, даже если не могу объяснить откуда.', s:'e'},
+  {t:'Подозреваю, что мои догадки ошибаются не реже, чем попадают.', s:'e', rev:1}
+];
+
+// ================= ТЕСТ 2. AOT-11 — открытость к пересмотру =================
+// 11 пунктов, шкала согласия 1..5. Обратные: 3, 5, 7, 8, 11 (нумерация с единицы).
+const AOT_ITEMS = [
+  {t:'Настоящие эксперты, которым стоит доверять, готовы признать перед собой и другими, что чего-то не понимают.'},
+  {t:'Стоит принимать во внимание доводы против тех выводов, которые тебе нравятся.'},
+  {t:'Если человек не определился и сомневается — значит, у него каша в голове.', rev:1},
+  {t:'Стоит менять свои выводы, когда появляется важная новая информация.'},
+  {t:'Менять мнение — признак слабости.', rev:1},
+  {t:'Стоит специально искать причины, по которым ты можешь быть неправ.'},
+  {t:'Нормально не замечать факты, которые противоречат твоим убеждениям.', rev:1},
+  {t:'Важно хранить верность своим убеждениям, даже когда против них приводят доводы.', rev:1},
+  {t:'Нет ничего плохого в том, чтобы во многих вопросах не иметь окончательного мнения.'},
+  {t:'Столкнувшись с непростым вопросом, стоит рассмотреть несколько возможных ответов, прежде чем делать вывод.'},
+  {t:'Лучше держаться за свой вывод уверенно, даже если есть веские причины его оспорить.', rev:1}
+];
+
+// ================= ТЕСТ 3. DUTCH — стиль в конфликте =================
+// 20 пунктов, 5 стилей по 4. Ключ Де Дрё и др. (2001):
+// уступчивость 1,6,11,16 · компромисс 2,7,12,17 · напор 3,8,13,18 · решение 4,9,14,19 · избегание 5,10,15,20
+const DUTCH_ITEMS = [
+  {t:'Уступаю тому, чего хочет другая сторона.', s:'yield'},
+  {t:'Ищу решение где-то посередине.', s:'comp'},
+  {t:'Продавливаю свою точку зрения.', s:'force'},
+  {t:'Разбираю вопрос, пока не найду решение, которое устроит и меня, и другого.', s:'solve'},
+  {t:'Ухожу от выяснения отношений по поводу наших разногласий.', s:'avoid'},
+  {t:'Соглашаюсь с другой стороной.', s:'yield'},
+  {t:'Настаиваю, что нам нужно найти компромисс.', s:'comp'},
+  {t:'Ищу, что я на этом выиграю.', s:'force'},
+  {t:'Отстаиваю и свои цели и интересы, и цели другого.', s:'solve'},
+  {t:'Стараюсь по возможности избегать разногласий.', s:'avoid'},
+  {t:'Стараюсь пойти навстречу другой стороне.', s:'yield'},
+  {t:'Настаиваю, чтобы обе стороны немного уступили.', s:'comp'},
+  {t:'Бьюсь за хороший результат для себя.', s:'force'},
+  {t:'Смотрю на доводы обеих сторон, чтобы найти лучшее общее решение.', s:'solve'},
+  {t:'Стараюсь сгладить разногласия, чтобы они выглядели мельче.', s:'avoid'},
+  {t:'Подстраиваюсь под цели и интересы другой стороны.', s:'yield'},
+  {t:'По возможности стремлюсь к компромиссу пятьдесят на пятьдесят.', s:'comp'},
+  {t:'Делаю всё, чтобы выиграть.', s:'force'},
+  {t:'Ищу решение, которое как можно полнее учтёт и мои интересы, и чужие.', s:'solve'},
+  {t:'Стараюсь не доводить до открытого столкновения с другой стороной.', s:'avoid'}
+];
+
+// Средний балл по набору пунктов с учётом реверсов (шкала 1..5 → реверс 6−v)
+function meanItems(items, ans, filter){
+  let s=0,n=0;
+  items.forEach((it,i)=>{
+    if(filter && !filter(it)) return;
+    const v=ans[i];
+    if(v==null) return;
+    s += it.rev ? (6-v) : v; n++;
+  });
+  return n ? s/n : 0;
+}
+
+const TESTS = [
+  {
+    key:'rei', title:'Как ты решаешь',
+    what:'на что опираешься — на анализ или на чутьё',
+    note:'обе опоры нормальны, вопрос в пропорции',
+    src:'REI-40 · Пачини и Эпстайн, 1999 · рабочий перевод',
+    scale:ME5,
+    items:REI_ITEMS,
+    score:(ans)=>{
+      const rat=meanItems(REI_ITEMS,ans,it=>it.s==='r');
+      const exp=meanItems(REI_ITEMS,ans,it=>it.s==='e');
+      const d=rat-exp;
+      let band;
+      if(d>0.5)       band={t:'Перевес в сторону анализа: чаще разбираешь, чем слушаешь чутьё',c:'neu'};
+      else if(d<-0.5) band={t:'Перевес в сторону чутья: чаще идёшь за ощущением, чем за разбором',c:'neu'};
+      else if(rat>=3.5&&exp>=3.5) band={t:'Обе опоры сильные: и разбираешь, и слышишь чутьё',c:'ok'};
+      else if(rat<=2.5&&exp<=2.5) band={t:'Обе опоры слабые: решения даются тяжело — не на что опереться',c:'neu'};
+      else            band={t:'Анализ и чутьё примерно вровень',c:'neu'};
+      return {band,
+        nums:`Анализ ${rat.toFixed(1)} · чутьё ${exp.toFixed(1)} (шкала 1–5)`,
+        data:{rational:+rat.toFixed(2), experiential:+exp.toFixed(2)}};
+    }
+  },
+  {
+    key:'aot', title:'Открытость к пересмотру',
+    what:'легко ли ты меняешь мнение под весомым аргументом',
+    note:'отвечай честно, а не как правильно',
+    src:'AOT-11 · Барон и др. · рабочий перевод',
+    scale:AGREE5,
+    items:AOT_ITEMS,
+    score:(ans)=>{
+      const m=meanItems(AOT_ITEMS,ans);
+      let band;
+      if(m>=4)      band={t:'Легко пересматриваешь позицию: весомый аргумент тебя двигает',c:'ok'};
+      else if(m>=3) band={t:'Среднее: мнение меняешь, но не сразу и не всякому',c:'neu'};
+      else          band={t:'Держишься за своё: аргументам трудно тебя сдвинуть',c:'neu'};
+      return {band,
+        nums:`Открытость ${m.toFixed(1)} (шкала 1–5)`,
+        data:{aot:+m.toFixed(2)}};
+    }
+  },
+  {
+    key:'dutch', title:'Стиль в конфликте',
+    what:'что ты делаешь, когда интересы столкнулись',
+    note:'вспомни реальные столкновения, а не идеальное поведение',
+    src:'DUTCH · Де Дрё и др., 2001 · рабочий перевод',
+    scale:DEG5,
+    items:DUTCH_ITEMS,
+    score:(ans)=>{
+      const m=(code)=>meanItems(DUTCH_ITEMS,ans,it=>it.s===code);
+      const yieldv=m('yield'), comp=m('comp'), force=m('force'), solve=m('solve'), avoid=m('avoid');
+      // человеческие названия стилей
+      const parts=[['уступаешь',yieldv],['ищешь середину',comp],['продавливаешь своё',force],
+                   ['ищешь решение под обоих',solve],['уходишь от столкновения',avoid]];
+      const sorted=parts.slice().sort((x,y)=>y[1]-x[1]);
+      const band={t:'Чаще всего ты '+sorted[0][0]+', следом — '+sorted[1][0],c:'neu'};
+      return {band,
+        nums:`Уступаю ${yieldv.toFixed(1)} · середина ${comp.toFixed(1)} · напор ${force.toFixed(1)} · решение под обоих ${solve.toFixed(1)} · уход ${avoid.toFixed(1)} (шкала 1–5)`,
+        data:{yielding:+yieldv.toFixed(2), compromising:+comp.toFixed(2), forcing:+force.toFixed(2),
+              problem_solving:+solve.toFixed(2), avoiding:+avoid.toFixed(2)}};
+    }
+  }
+];
+
+const app = document.getElementById('app');
+
+let answers={};        // {testKey:{i:v}}
+let priorScores={};    // прошлые результаты (галочки + слияние)
+let cur=null;          // {ti,pos} или null (список)
+try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
+  if(s.answers) answers=s.answers; if(s.priorScores) priorScores=s.priorScores; if(s.cur) cur=s.cur; }catch(e){}
+function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,priorScores,cur}));}catch(e){} }
+
+function testFullyAnswered(t){ const a=answers[t.key]||{}; return t.items.every((_,i)=>a[i]!=null); }
+function testAnsweredCount(t){ const a=answers[t.key]||{}; return t.items.filter((_,i)=>a[i]!=null).length; }
+
+function combinedScores(){
+  const out={};
+  TESTS.forEach(t=>{
+    if(testFullyAnswered(t)){ const r=t.score(answers[t.key]); out[t.key]={...r.data, nums:r.nums, band:r.band.t, band_c:r.band.c}; }
+    else if(priorScores[t.key]){ out[t.key]=priorScores[t.key]; }
+  });
+  return out;
+}
+
+async function pushCombined(){
+  const scores=combinedScores();
+  priorScores=scores;
+  const completed_at=new Date().toISOString();
+  const record={user_id:UID, block:'decisions', instrument:'REI + AOT + DUTCH', scores, answers, completed_at};
+  await pushToSupabase(record);
+  try{ localStorage.setItem(RESULT_KEY, JSON.stringify({scores,answers,completed_at})); }catch(e){}
+  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
+  // Облако Telegram: результаты переживают очистку памяти телефона
+  // и подтягиваются при заходе с другого устройства.
+  try{
+    tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{});
+  }catch(e){}
+  if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'decisions',scores})); }catch(e){} }
+  save();
+}
+
+function optRow(o, selected){
+  return `<button class="orow ${selected?'sel':''}" data-v="${o.v}">
+    <span class="onum">${o.v}</span><span class="olbl">${o.l||''}</span></button>`;
+}
+
+function renderHub(msg){
+  cur=null; save();
+  const rows=TESTS.map((t,idx)=>{
+    let status, badge='→', cls='';
+    if(testFullyAnswered(t)){ const s=t.score(answers[t.key]); status=s.band.t; badge='✓'; cls=s.band.c||''; }
+    else if(priorScores[t.key]){ status=priorScores[t.key].band||'готово'; badge='✓'; cls=priorScores[t.key].band_c||''; }
+    else { const c=testAnsweredCount(t); status = c>0 ? ('в процессе · '+c+' из '+t.items.length) : ('не пройден · '+t.items.length+' вопр.'); }
+    return `<button class="hubrow" data-ti="${idx}">
+      <span class="hb-l"><b>${t.title}</b><span class="hb-s ${cls}">${status}</span></span>
+      <span class="hb-b">${badge}</span></button>`;
+  }).join('');
+  app.innerHTML=`
+    <h1>Решения и конфликт</h1>
+    <p class="sub">Как ты решаешь и как ведёшь себя в столкновении</p>
+    ${msg?`<div class="refer"><span class="ok">${msg}</span></div>`:''}
+    <div class="refer">Нет правильного стиля. Каждый выигрывает в одних ситуациях и проигрывает в других.</div>
+    <div class="qintro">Три коротких опросника. Проходи по одному — можно бросить и вернуться, каждый пересдаётся отдельно.</div>
+    <div class="hublist">${rows}</div>
+    ${Object.keys(combinedScores()).length ? '<button class="btn" id="showres" style="margin-top:16px">📊 Показать результаты</button>' : ''}`;
+  const sr=document.getElementById('showres'); if(sr) sr.onclick=()=>renderResults();
+  app.querySelectorAll('.hubrow').forEach(el=>el.onclick=()=>{
+    const idx=+el.dataset.ti, t=TESTS[idx];
+    if(testFullyAnswered(t)||priorScores[t.key]){
+      if(!confirm('«'+t.title+'» уже пройден. Пройти заново? Прошлый результат этого теста заменится, остальные не тронутся.')) return;
+      answers[t.key]={};
+    }
+    let p=0; const a=answers[t.key]||{};
+    for(let i=0;i<t.items.length;i++){ if(a[i]==null){ p=i; break; } p=i; }
+    cur={ti:idx,pos:p}; save(); renderQuestion();
+  });
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(){
+  if(!cur){ return renderHub(); }
+  const t=TESTS[cur.ti];
+  answers[t.key]=answers[t.key]||{};
+  if(cur.pos<0) cur.pos=0;
+  if(cur.pos>=t.items.length){ return finishTest(t); }
+  const it=t.items[cur.pos];
+  const opts=it.opts||t.scale;
+  const val=answers[t.key][cur.pos];
+  const intro=(cur.pos===0)?`<div class="qintro">${t.what}${t.note?' · '+t.note:''}</div>`:'';
+  const prevCtx = cur.pos>0 ? (t.items[cur.pos-1].ctx||'') : '';
+  const ctx = (it.ctx && it.ctx!==prevCtx) ? `<div class="qctx">${it.ctx}</div>` : '';
+  app.innerHTML=`
+    <div class="qbar"><i style="width:${Math.round(cur.pos/t.items.length*100)}%"></i></div>
+    <div class="qmeta">${t.title} · вопрос ${cur.pos+1} из ${t.items.length}</div>
+    ${intro}${ctx}
+    <div class="qbox"><div class="qtext">${it.t}</div>
+      <div class="opts">${opts.map(o=>optRow(o,val===o.v)).join('')}</div></div>
+    <div class="qnav"><button class="btn ghost" id="back">← ${cur.pos===0?'К списку':'Назад'}</button></div>`;
+  let locked=false;
+  app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
+    if(locked) return; locked=true;
+    answers[t.key][cur.pos]=+el.dataset.v; save();
+    app.querySelectorAll('.orow').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    setTimeout(()=>{ cur.pos++; save(); renderQuestion(); }, 160);
+  });
+  document.getElementById('back').onclick=()=>{
+    if(cur.pos===0){ renderHub(); } else { cur.pos--; save(); renderQuestion(); }
+  };
+  window.scrollTo(0,0);
+}
+
+async function finishTest(t){
+  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
+  await pushCombined();
+  renderHub('«'+t.title+'» засчитан и отправлен боту.');
+}
+
+function renderResults(){
+  const scores=combinedScores();
+  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
+    const s=scores[t.key];
+    return `<div class="res-row"><span class="rn">${t.title}</span>
+      <span class="rv"><b class="${s.band_c||'neu'}">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
+  }).join('');
+  app.innerHTML=`
+    <h1>Твои решения и конфликт</h1>
+    <p class="sub">На что опираешься и что делаешь в столкновении</p>
+    ${rows||'<p class="sub">Пока ничего не пройдено.</p>'}
+    <div class="refer">Нет правильного стиля. Каждый выигрывает в одних ситуациях и проигрывает в других.</div>
+    <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>`;
+  document.getElementById('tolist').onclick=()=>renderHub();
+  window.scrollTo(0,0);
+}
+
+// ---- Вход ----
+let urlResult=null;
+try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
+let savedResult=null;
+try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
+if(!savedResult||!savedResult.scores){
+  try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
+    if(a&&a.scores) savedResult=a; }catch(e){}
+}
+if(Object.keys(priorScores).length===0){
+  if(urlResult&&urlResult.scores) priorScores={...urlResult.scores};
+  else if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
+  if(savedResult&&savedResult.answers && Object.keys(answers).length===0) answers={...savedResult.answers};
+  save();
+}
+// Если локально пусто — пробуем поднять из облака Telegram.
+try{
+  if(Object.keys(priorScores).length===0 && tg?.CloudStorage?.getItem){
+    tg.CloudStorage.getItem(CLOUD_KEY, function(err, val){
+      if(err || !val) return;
+      try{
+        const o = JSON.parse(val);
+        if(o && o.scores && Object.keys(o.scores).length && Object.keys(priorScores).length===0){
+          priorScores = {...o.scores};
+          save();
+          if(!cur) renderHub('Результаты подтянулись из облака Telegram.');
+        }
+      }catch(e){}
+    });
+  }
+}catch(e){}
+
+if(cur && typeof cur.ti==='number'){ renderQuestion(); } else { renderHub(); }
+</script>
+</body>
+</html>
