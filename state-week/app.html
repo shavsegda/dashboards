@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Неделя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
+
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 24px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 22px; }
+
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Плашка «это погода, а не характер» — повторяется в списке и в результатах */
+.weather { border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin: 22px 0; font-size: 14px; line-height: 1.5; color: var(--graphite-75); }
+
+.hub-item { border: 1px solid var(--graphite-15); padding: 20px; margin-bottom: 12px; }
+.hub-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.hub-title { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.hub-when { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); white-space: nowrap; }
+.hub-what { font-size: 14px; color: var(--graphite-75); margin-bottom: 4px; }
+.hub-note { font-size: 13px; color: var(--graphite-50); margin-bottom: 14px; }
+.hub-src { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--graphite-30); margin-bottom: 14px; }
+.hub-item button { padding: 11px 20px; font-size: 13px; }
+
+.q-card { margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; line-height: 1.5; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; background: transparent; user-select: none; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { border: 1px solid var(--graphite-08); margin-bottom: 20px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); gap: 12px; }
+.result-row:last-child { border-bottom: 0; }
+.result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
+.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
+.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+.band { font-size: 16px; line-height: 1.45; margin-bottom: 18px; }
+.band.warn { color: var(--alert); }
+
+.soft-card { border: 1px solid var(--graphite-30); padding: 18px 20px; margin-bottom: 22px; }
+.soft-card p { margin-bottom: 0; color: var(--graphite-75); font-size: 14px; line-height: 1.55; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 14px; }
+.sync-status.error { color: var(--alert); }
+
+@media (max-width: 600px) {
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 19px; }
+  .result-row { padding: 16px; }
+  .result-val { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+// === Идентификатор клиента: сначала ?u= из URL (его подставляет бот), потом Telegram, потом локальный ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  const tgId = tg?.initDataUnsafe?.user?.id;
+  if (tgId) return "tg_" + tgId;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+// В базе user_id — число, поэтому из «tg_123» достаём сам номер.
+// Со строкой запись падала бы с ошибкой типа.
+const UID = (function () {
+  const m = /^tg_(\d+)$/.exec(CLIENT_ID);
+  return m ? parseInt(m[1], 10) : null;
+})();
+
+// === Ключи хранения ===
+const STORE_KEY = 'state_week_' + CLIENT_ID;          // незаконченный проход
+const RESULT_KEY = 'state_week_result_' + CLIENT_ID;  // последние результаты по каждому тесту
+const CLOUD_KEY = 'res_state_week';                   // облачная копия результатов (Telegram CloudStorage)
+
+// === Supabase (пишем прямым fetch, без библиотеки) ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const SUPABASE_TABLE = "passport";
+const BLOCK = 'state_week';
+const INSTRUMENT = 'PANAS-SF + Vitality + PHQ-2/GAD-2 + поток';
+
+// Плашка-напоминание: один замер ничего не значит, смысл появляется на линии
+const WEATHER_TEXT = 'Это погода, а не характер. Один замер ничего не значит — смысл появляется на линии из нескольких недель.';
+
+// === Шкалы ответов ===
+// ШПАНА (официальная русская адаптация PANAS, Осин 2012) — её же якоря
+const SCALE_PANAS = [
+  {v: 1, l: 'Почти или совсем нет'},
+  {v: 2, l: 'Немного'},
+  {v: 3, l: 'Умеренно'},
+  {v: 4, l: 'Значительно'},
+  {v: 5, l: 'Очень сильно'}
+];
+const SCALE_VITALITY = [
+  {v: 1, l: 'Совсем не так'},
+  {v: 2, l: 'Почти не так'},
+  {v: 3, l: 'Скорее не так'},
+  {v: 4, l: 'Отчасти'},
+  {v: 5, l: 'Скорее так'},
+  {v: 6, l: 'Почти точно так'},
+  {v: 7, l: 'Точно так'}
+];
+// Единая шкала PHQ-2 / GAD-2 — формулировки из официальных русских версий
+const SCALE_GATE = [
+  {v: 0, l: 'Ни разу'},
+  {v: 1, l: 'Несколько дней'},
+  {v: 2, l: 'Больше половины дней'},
+  {v: 3, l: 'Почти каждый день'}
+];
+const SCALE_FLOW = [
+  {v: 0, l: 'Ни разу'},
+  {v: 1, l: 'Один раз'},
+  {v: 2, l: 'Два-три раза'},
+  {v: 3, l: 'Почти каждый день'}
+];
+
+// === Четыре теста замера ===
+const TESTS = [
+  {
+    key: 'panas',
+    title: 'Аффект',
+    what: 'какие состояния преобладали последние 7 дней',
+    note: 'про неделю в целом, а не про сейчас',
+    src: 'I-PANAS-SF (Thompson, 2007) · формулировки ШПАНА (Осин, 2012)',
+    instruction: 'Отметь, в какой мере ты чувствовал себя так в течение прошедшей недели.',
+    scale: SCALE_PANAS,
+    // pa — позитивный аффект, na — негативный. Порядок предъявления как у Томпсона.
+    items: [
+      {t: 'расстроенный',     s: 'na'},
+      {t: 'злой',             s: 'na'},
+      {t: 'сосредоточенный',  s: 'pa'},
+      {t: 'стыдящийся',       s: 'na'},
+      {t: 'вдохновленный',    s: 'pa'},
+      {t: 'нервный',          s: 'na'},
+      {t: 'решительный',      s: 'pa'},
+      {t: 'внимательный',     s: 'pa'},
+      {t: 'тревожный',        s: 'na'},
+      {t: 'бодрый',           s: 'pa'}
+    ]
+  },
+  {
+    key: 'vitality',
+    title: 'Витальность',
+    what: 'сколько в тебе живой энергии — не бодрости от кофе, а изнутри',
+    note: 'про последнюю неделю',
+    src: 'Subjective Vitality Scale (Ryan & Frederick, 1997) · рабочий перевод',
+    instruction: 'Насколько каждое утверждение было верным для тебя на прошедшей неделе?',
+    scale: SCALE_VITALITY,
+    // rev: true — обратный пункт, считается как 8 минус ответ
+    items: [
+      {t: 'Я чувствую себя живым и полным сил.'},
+      {t: 'Я не чувствую особой энергии.', rev: true},
+      {t: 'Иногда я чувствую себя настолько живым, что готов взорваться.'},
+      {t: 'Во мне есть энергия и задор.'},
+      {t: 'Я с нетерпением жду каждый новый день.'},
+      {t: 'Почти всегда я чувствую себя бодрым и включённым.'},
+      {t: 'Я чувствую прилив энергии.'}
+    ]
+  },
+  {
+    key: 'gate',
+    title: 'Датчик',
+    what: 'два вопроса про настроение и два про тревогу',
+    note: 'это скрин, а не диагноз',
+    src: 'PHQ-2 и GAD-2 · официальные русские версии · окно 2 недели',
+    instruction: 'Как часто за последние 2 недели тебя беспокоили следующие проблемы?',
+    scale: SCALE_GATE,
+    // g: 'phq' — датчик настроения, 'gad' — датчик тревоги
+    items: [
+      {t: 'У Вас был снижен интерес или удовольствие от выполнения ежедневных дел', g: 'phq'},
+      {t: 'У Вас было плохое настроение, Вы были подавлены или испытывали чувство безысходности', g: 'phq'},
+      {t: 'Чувство нервозности, тревоги или напряжения', g: 'gad'},
+      {t: 'Неспособность остановить или контролировать беспокойство', g: 'gad'}
+    ]
+  },
+  {
+    key: 'flow',
+    title: 'Поток',
+    what: 'сколько раз за неделю работа несла сама',
+    note: 'когда время исчезало и делалось само',
+    src: 'собственный пункт',
+    instruction: '',
+    scale: SCALE_FLOW,
+    items: [
+      {t: 'Сколько раз за последние 7 дней работа несла тебя сама — время исчезало, и делалось само?'}
+    ]
+  }
+];
+
+function getTest(key) { return TESTS.find(t => t.key === key); }
+
+// === Скоринг ===
+// Каждая функция возвращает {nums, band, c, data}
+function scorePanas(ans) {
+  const t = getTest('panas');
+  let pa = 0, na = 0;
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    if (it.s === 'pa') pa += v; else na += v;
+  });
+  const diff = pa - na;
+  let band;
+  if (diff >= 8) band = 'Плюс заметно перевешивал минус — неделя шла на подъёме.';
+  else if (diff >= 3) band = 'Плюс перевешивал минус, но не с большим отрывом.';
+  else if (diff > -3) band = 'Плюс и минус шли вровень — неделя смешанная.';
+  else if (diff > -8) band = 'Минус перевешивал плюс — неделя давалась тяжелее обычного.';
+  else band = 'Минус заметно перевешивал плюс — неделя была тяжёлой.';
+  return {
+    nums: [
+      {l: 'Позитивный аффект', v: pa, range: '5–25'},
+      {l: 'Негативный аффект', v: na, range: '5–25'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {pa: pa, na: na}
+  };
+}
+
+function scoreVitality(ans) {
+  const t = getTest('vitality');
+  let sum = 0;
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    // Обратный пункт: 8 минус ответ
+    sum += it.rev ? (8 - v) : v;
+  });
+  const mean = Math.round((sum / t.items.length) * 10) / 10;
+  let band;
+  if (mean >= 5) band = 'Энергии много — и она изнутри, а не на морально-волевых.';
+  else if (mean >= 3.5) band = 'Энергии средне — на обязательное хватает, на большее уже не очень.';
+  else band = 'Энергии мало — бак почти пустой, неделя вытягивала силы.';
+  return {
+    nums: [{l: 'Витальность', v: mean, range: '1–7'}],
+    band: band,
+    c: 'ok',
+    data: {mean: mean}
+  };
+}
+
+function scoreGate(ans) {
+  const t = getTest('gate');
+  let phq = 0, gad = 0;
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    if (it.g === 'phq') phq += v; else gad += v;
+  });
+  // Порог 3 по каждому датчику — стандартный отсекающий балл PHQ-2 и GAD-2
+  const alert = phq >= 3 || gad >= 3;
+  return {
+    nums: [
+      {l: 'Настроение · PHQ-2', v: phq, range: '0–6'},
+      {l: 'Тревога · GAD-2', v: gad, range: '0–6'}
+    ],
+    band: alert ? 'Датчик сработал: стоит пройти полную версию.' : 'Датчик спокоен.',
+    c: alert ? 'warn' : 'ok',
+    data: {phq: phq, gad: gad, alert: alert}
+  };
+}
+
+function scoreFlow(ans) {
+  const v = ans[0] || 0;
+  const bands = [
+    'За неделю работа ни разу не понесла сама.',
+    'Один раз за неделю работа понесла сама.',
+    'Два-три раза за неделю работа несла сама.',
+    'Почти каждый день работа несла сама.'
+  ];
+  return {
+    nums: [{l: 'Поток', v: v, range: '0–3'}],
+    band: bands[v],
+    c: 'ok',
+    data: {value: v}
+  };
+}
+
+const SCORERS = {panas: scorePanas, vitality: scoreVitality, gate: scoreGate, flow: scoreFlow};
+
+// === Хранение результатов ===
+let results = {};       // {panas: {...}, vitality: {...}, gate: {...}, flow: {...}}
+let cloudRestored = false;
+
+function loadResultsLocal() {
+  try {
+    const s = localStorage.getItem(RESULT_KEY);
+    if (s) results = JSON.parse(s) || {};
+  } catch (e) { results = {}; }
+}
+
+function saveResultsLocal() {
+  try { localStorage.setItem(RESULT_KEY, JSON.stringify(results)); } catch (e) {}
+}
+
+// Облачное восстановление: если на этом устройстве пусто, поднимаем историю из Telegram CloudStorage
+function restoreFromCloud() {
+  return new Promise(resolve => {
+    if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.getItem !== 'function') { resolve(false); return; }
+    try {
+      tg.CloudStorage.getItem(CLOUD_KEY, (err, value) => {
+        if (err || !value) { resolve(false); return; }
+        try {
+          const cloud = JSON.parse(value) || {};
+          // Берём из облака только то, что свежее локального
+          Object.keys(cloud).forEach(k => {
+            const local = results[k];
+            if (!local || new Date(cloud[k].completed_at) > new Date(local.completed_at)) results[k] = cloud[k];
+          });
+          saveResultsLocal();
+          resolve(true);
+        } catch (e) { resolve(false); }
+      });
+    } catch (e) { resolve(false); }
+  });
+}
+
+function saveToCloud() {
+  if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.setItem !== 'function') return;
+  try { tg.CloudStorage.setItem(CLOUD_KEY, JSON.stringify(results), () => {}); } catch (e) {}
+}
+
+// === Прогресс прохождения (черновик незаконченного теста) ===
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({key: state.key, idx: state.idx, answers: state.answers})); } catch (e) {}
+}
+function clearProgress() {
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+
+// === Отправка результата ===
+function buildScores() {
+  // В scores складываем всё, что уже снято, плюс метку источника
+  const scores = {source: 'manual'};
+  Object.keys(results).forEach(k => { scores[k] = results[k].data; });
+  return scores;
+}
+
+function buildAnswers() {
+  const answers = {};
+  Object.keys(results).forEach(k => { answers[k] = results[k].answers; });
+  return answers;
+}
+
+async function pushToSupabase(record) {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(record)
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Supabase push failed:', e);
+    return false;
+  }
+}
+
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') return false;
+  try {
+    tg.sendData(JSON.stringify({type: 'state_week', payload: record}));
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    return false;
+  }
+}
+
+// === Состояние экрана ===
+const state = {screen: 'hub', key: null, idx: 0, answers: {}, sync: '', syncMsg: ''};
+const app = document.getElementById('app');
+
+// === Прогресс-бар ===
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'test') { bar.style.display = 'none'; return; }
+  const t = getTest(state.key);
+  const done = Object.keys(state.answers).length;
+  bar.style.display = 'block';
+  fill.style.width = ((done / t.items.length) * 100) + '%';
+  text.textContent = t.title;
+  count.textContent = done + ' / ' + t.items.length;
+}
+
+// === Сколько дней назад был замер ===
+function pluralDays(n) {
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return 'день';
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return 'дня';
+  return 'дней';
+}
+function lastSeen(key) {
+  const r = results[key];
+  if (!r || !r.completed_at) return 'замеров ещё не было';
+  const days = Math.floor((Date.now() - new Date(r.completed_at).getTime()) / 86400000);
+  if (days <= 0) return 'последний замер сегодня';
+  return 'последний замер ' + days + ' ' + pluralDays(days) + ' назад';
+}
+
+// === Экран списка (хаб) ===
+function renderHub() {
+  state.screen = 'hub';
+  const items = TESTS.map(t => `
+    <div class="hub-item">
+      <div class="hub-head">
+        <div class="hub-title">${t.title}</div>
+        <div class="hub-when">${lastSeen(t.key)}</div>
+      </div>
+      <div class="hub-what">${t.what}</div>
+      <div class="hub-note">${t.note}</div>
+      <div class="hub-src">${t.src}</div>
+      <button onclick="startTest('${t.key}')">Снять новый замер</button>
+    </div>
+  `).join('');
+  app.innerHTML = `
+    <h1>Неделя</h1>
+    <div class="sub">Замер за последние 7 дней</div>
+    <div class="weather">${WEATHER_TEXT}</div>
+    ${items}
+    ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
+  `;
+  updateProgress();
+}
+
+// === Экран вопроса ===
+function renderQuestion() {
+  const t = getTest(state.key);
+  const item = t.items[state.idx];
+  const selected = state.answers[state.idx];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">${t.title}</div>
+      ${(state.idx === 0 && t.instruction) ? `<div class="q-instr">${t.instruction}</div>` : ''}
+      <div class="q-text">${item.t}</div>
+      <div class="q-options">
+        ${t.scale.map(s => `
+          <div class="q-option ${selected === s.v ? 'selected' : ''}" onclick="answer(${s.v})">
+            <span class="q-option-text">${s.l}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${state.idx === 0
+        ? '<button class="secondary" onclick="renderHub()">К списку</button>'
+        : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран результата одного теста ===
+function renderResult(key) {
+  state.screen = 'result';
+  const t = getTest(key);
+  const r = results[key];
+  const gateAlert = results.gate && results.gate.data && results.gate.data.alert;
+  const rows = r.nums.map(n => `
+    <div class="result-row">
+      <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+      <div><span class="result-val">${n.v}</span></div>
+    </div>
+  `).join('');
+  const syncBlock = state.sync
+    ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
+    : '';
+  app.innerHTML = `
+    <h1>${t.title}</h1>
+    <div class="sub">Замер записан. Следующий — через неделю.</div>
+    <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+    <div class="result-card">${rows}</div>
+    ${gateAlert ? `
+      <div class="soft-card">
+        <p>Это скрин, а не диагноз. Он говорит только одно: стоит посмотреть внимательнее. Бот предложит полную версию.</p>
+      </div>` : ''}
+    <div class="weather">${WEATHER_TEXT}</div>
+    ${syncBlock}
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран «все последние результаты» ===
+function renderAllResults() {
+  state.screen = 'result';
+  const gateAlert = results.gate && results.gate.data && results.gate.data.alert;
+  const blocks = TESTS.filter(t => results[t.key]).map(t => {
+    const r = results[t.key];
+    const rows = r.nums.map(n => `
+      <div class="result-row">
+        <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+        <div><span class="result-val">${n.v}</span></div>
+      </div>
+    `).join('');
+    return `
+      <h2>${t.title}</h2>
+      <div class="hub-when" style="margin-bottom:10px;">${lastSeen(t.key)}</div>
+      <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+      <div class="result-card">${rows}</div>
+    `;
+  }).join('');
+  app.innerHTML = `
+    <h1>Неделя</h1>
+    <div class="sub">Последние результаты</div>
+    ${gateAlert ? `
+      <div class="soft-card">
+        <p>Это скрин, а не диагноз. Он говорит только одно: стоит посмотреть внимательнее. Бот предложит полную версию.</p>
+      </div>` : ''}
+    ${blocks}
+    <div class="weather">${WEATHER_TEXT}</div>
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+// Повторный замер — это норма, никаких переспрашиваний перед стартом
+function startTest(key) {
+  state.screen = 'test';
+  state.key = key;
+  state.idx = 0;
+  state.answers = {};
+  state.sync = '';
+  state.syncMsg = '';
+  renderQuestion();
+}
+
+function answer(v) {
+  const t = getTest(state.key);
+  state.answers[state.idx] = v;
+  saveProgress();
+  if (state.idx < t.items.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.idx > 0) { state.idx--; renderQuestion(); }
+}
+
+async function finish() {
+  const key = state.key;
+  const scored = SCORERS[key](state.answers);
+  results[key] = {
+    nums: scored.nums,
+    band: scored.band,
+    c: scored.c,
+    data: scored.data,
+    answers: {...state.answers},
+    completed_at: new Date().toISOString()
+  };
+  saveResultsLocal();
+  saveToCloud();
+  clearProgress();
+
+  const record = {
+    user_id: UID,
+    block: BLOCK,
+    instrument: INSTRUMENT,
+    scores: buildScores(),
+    answers: buildAnswers(),
+    completed_at: results[key].completed_at
+  };
+
+  const sent = sendToBot(record);
+  state.sync = sent ? 'ok' : 'error';
+  state.syncMsg = sent ? 'Отправлено боту.' : 'Открой замер через бота, чтобы результат дошёл.';
+  renderResult(key);
+
+  const ok = await pushToSupabase(record);
+  if (!ok && !sent) {
+    state.sync = 'error';
+    state.syncMsg = 'Не удалось сохранить — открой замер через бота.';
+    if (state.screen === 'result') renderResult(key);
+  }
+}
+
+// === Старт ===
+(async () => {
+  loadResultsLocal();
+  cloudRestored = await restoreFromCloud();
+  renderHub();
+})();
+</script>
+</body>
+</html>
