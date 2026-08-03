@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Свою жизнь живёшь?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
+
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 24px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 22px; }
+
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Плашка рамки — повторяется на входе и в результатах */
+.weather { border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin: 22px 0; font-size: 14px; line-height: 1.5; color: var(--graphite-75); }
+
+.hub-item { border: 1px solid var(--graphite-15); padding: 20px; margin-bottom: 12px; }
+.hub-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.hub-title { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.hub-when { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); white-space: nowrap; }
+.hub-what { font-size: 14px; color: var(--graphite-75); margin-bottom: 4px; }
+.hub-note { font-size: 13px; color: var(--graphite-50); margin-bottom: 14px; }
+.hub-src { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--graphite-30); margin-bottom: 14px; }
+.hub-item button { padding: 11px 20px; font-size: 13px; }
+
+/* Метка «рабочий перевод» — рядом с названием теста, где нет официальной русской версии */
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terracotta); border: 1px solid var(--terracotta); padding: 2px 6px; margin-left: 8px; vertical-align: middle; white-space: nowrap; }
+
+.q-card { margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; line-height: 1.5; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; background: transparent; user-select: none; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { border: 1px solid var(--graphite-08); margin-bottom: 20px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); gap: 12px; }
+.result-row:last-child { border-bottom: 0; }
+.result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
+.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
+.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+.band { font-size: 16px; line-height: 1.45; margin-bottom: 18px; }
+.band.warn { color: var(--alert); }
+
+.soft-card { border: 1px solid var(--graphite-30); padding: 18px 20px; margin-bottom: 22px; }
+.soft-card p { margin-bottom: 0; color: var(--graphite-75); font-size: 14px; line-height: 1.55; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 14px; }
+.sync-status.error { color: var(--alert); }
+
+@media (max-width: 600px) {
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 19px; }
+  .result-row { padding: 16px; }
+  .result-val { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+// === Идентификатор клиента: сначала ?u= из URL (его подставляет бот), потом Telegram, потом локальный ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  const tgId = tg?.initDataUnsafe?.user?.id;
+  if (tgId) return "tg_" + tgId;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+// В базе user_id — число, поэтому из «tg_123» достаём сам номер.
+// Со строкой запись падала бы с ошибкой типа.
+const UID = (function () {
+  const m = /^tg_(\d+)$/.exec(CLIENT_ID);
+  return m ? parseInt(m[1], 10) : null;
+})();
+
+// === Ключи хранения ===
+const STORE_KEY = 'selfhood_' + CLIENT_ID;          // незаконченный проход
+const RESULT_KEY = 'selfhood_result_' + CLIENT_ID;  // последние результаты по каждому тесту
+const CLOUD_KEY = 'res_selfhood';                   // облачная копия результатов (Telegram CloudStorage)
+
+// === Supabase (пишем прямым fetch, без библиотеки) ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const SUPABASE_TABLE = "passport";
+const BLOCK = 'selfhood';
+const INSTRUMENT = 'SCCS + Authenticity Scale + DIDS + DSI-R (I-position)';
+
+// Рамка замера: показываем на входе и в результатах
+const FRAME_TEXT = 'Это не про правильность жизни. Это про то, твоя ли она — и держится ли под тобой опора, когда штормит.';
+
+// === Шкалы ответов ===
+// SCCS — якоря русскоязычной версии (Вдовенко, Щебетенко, Старовойтенко, 2021), дословно
+const SCALE_SCCS = [
+  {v: 1, l: 'Совсем не согласен'},
+  {v: 2, l: 'Не согласен'},
+  {v: 3, l: 'Частично согласен, частично не согласен'},
+  {v: 4, l: 'Согласен'},
+  {v: 5, l: 'Полностью согласен'}
+];
+// Authenticity Scale — в источнике подписаны только края шкалы 1 и 7,
+// они взяты дословно. Промежуточные подписи 2–6 добавлены для интерфейса:
+// без них человеку не по чему выбирать на телефоне.
+const SCALE_AUTH = [
+  {v: 1, l: 'Не относится ко мне вообще'},
+  {v: 2, l: 'Почти не относится'},
+  {v: 3, l: 'Скорее не относится'},
+  {v: 4, l: 'Отчасти да, отчасти нет'},
+  {v: 5, l: 'Скорее относится'},
+  {v: 6, l: 'В основном относится'},
+  {v: 7, l: 'Полностью относится ко мне'}
+];
+// DIDS — якоря русской версии (Борисенко, 2020), дословно по бланку
+const SCALE_DIDS = [
+  {v: 1, l: 'Абсолютно не согласен'},
+  {v: 2, l: 'Скорее не согласен'},
+  {v: 3, l: 'Нечто среднее'},
+  {v: 4, l: 'Скорее согласен'},
+  {v: 5, l: 'Абсолютно согласен'}
+];
+// DSI-R — шесть градаций оригинала (not at all true of me … very true of me),
+// рабочий перевод: официальной русской версии DSI-R не существует
+const SCALE_DSI = [
+  {v: 1, l: 'Совсем не про меня'},
+  {v: 2, l: 'Чуть-чуть про меня'},
+  {v: 3, l: 'Отчасти про меня'},
+  {v: 4, l: 'В общем про меня'},
+  {v: 5, l: 'В основном про меня'},
+  {v: 6, l: 'Точно про меня'}
+];
+
+// === Четыре теста замера опоры в себе ===
+// rev: true — обратный пункт. s — подшкала.
+const TESTS = [
+  {
+    key: 'clarity',
+    title: 'Ясность',
+    what: 'насколько ты сам себе понятен — кто ты и чего хочешь',
+    note: 'в целом про себя, не про эту неделю',
+    src: 'SCCS (Campbell et al., 1996) · рус. версия Вдовенко, Щебетенко, Старовойтенко, 2021',
+    translated: false,
+    instruction: 'Перед тобой 12 утверждений. Определи, насколько ты с ними согласен.',
+    scale: SCALE_SCCS,
+    // Ключ источника: 6 и 11 — прямые, остальные десять обратные.
+    items: [
+      {t: 'Мои представления о себе часто противоречат друг другу.', rev: true},
+      {t: 'Сегодня у меня может быть одно мнение о себе, а завтра другое.', rev: true},
+      {t: 'Я часто думаю о том, что я собой представляю на самом деле.', rev: true},
+      {t: 'Иногда я чувствую, что на самом деле я не тот человек, каким кажусь.', rev: true},
+      {t: 'Я не уверен в том, каким человеком я был в прошлом, когда думаю об этом.', rev: true},
+      {t: 'Я редко испытываю конфликт между различными сторонами своей личности.'},
+      {t: 'Иногда я думаю, что я знаю других людей лучше, чем самого себя.', rev: true},
+      {t: 'Кажется, мои представления о себе изменяются очень часто.', rev: true},
+      {t: 'Если бы меня просили описывать свою личность, я бы каждый раз описывал себя по-другому.', rev: true},
+      {t: 'Даже если бы я захотел, я вряд ли смог бы рассказать, какой я на самом деле.', rev: true},
+      {t: 'У меня есть чёткое представление, кто я и какой я.'},
+      {t: 'Мне часто бывает трудно решиться на что-то, так как я не знаю, чего я хочу на самом деле.', rev: true}
+    ]
+  },
+  {
+    key: 'authenticity',
+    title: 'Своё или чужое',
+    what: 'живёшь ли ты по-своему — или по чужому сценарию',
+    note: 'про свои привычки и поведение в целом',
+    src: 'Authenticity Scale (Wood et al., 2008) · рус. версия Нартова-Бочавер, Резниченко, Малтби, 2021',
+    translated: false,
+    instruction: 'Прочитай утверждения и оцени, насколько они описывают твои привычки и поведение.',
+    scale: SCALE_AUTH,
+    // Русская версия короче оригинала: пункт 4 исключён при валидации, осталось 11.
+    // s: 'live' — аутентичная жизнь, 'alien' — самоотчуждение, 'infl' — принятие внешнего влияния.
+    // Пункты аутентичной жизни в русской версии переформулированы «наоборот»,
+    // поэтому внутри своей подшкалы они обратные.
+    items: [
+      {t: 'Для меня важнее понравиться другим, чем «оставаться самим собой».', s: 'infl'},
+      {t: 'Я не знаю, что я чувствую на самом деле.', s: 'alien'},
+      {t: 'Мои поступки и взгляды меняются в зависимости от мнения других.', s: 'infl'},
+      {t: 'Я считаю, что должен делать то, чего от меня ждут другие.', s: 'infl'},
+      {t: 'Окружающие очень сильно влияют на меня.', s: 'infl'},
+      {t: 'Мне кажется, что я не знаю себя достаточно хорошо.', s: 'alien'},
+      {t: 'Мне не всегда удаётся отстоять то, во что я верю.', s: 'live', rev: true},
+      {t: 'Не могу сказать, что я всегда бываю верен себе.', s: 'live', rev: true},
+      {t: 'Я чувствую, что я не в контакте с «истинным Я».', s: 'alien'},
+      // В публикации здесь опечатка — «ценностями убеждениями», без союза. Вернули «и».
+      {t: 'Мне трудно жить в соответствии с моими ценностями и убеждениями.', s: 'live', rev: true},
+      {t: 'Я кажусь незнакомцем самому себе.', s: 'alien'}
+    ]
+  },
+  {
+    key: 'identity',
+    title: 'Выбор',
+    what: 'сделан ли выбор про свою жизнь — или ты всё ещё перебираешь',
+    note: 'про то, куда идёт твоя жизнь сейчас',
+    src: 'DIDS (Luyckx et al., 2008) · рус. версия Борисенко, 2020',
+    translated: false,
+    instruction: 'Оцени, насколько ты согласен с каждым утверждением про свою жизнь.',
+    scale: SCALE_DIDS,
+    // s: 'cm' решение, 'eb' поиск вширь, 're' руминативный поиск,
+    // 'ic' идентификация с решением, 'ed' поиск вглубь. По 5 пунктов, обратных нет.
+    // Пункты руминативного поиска звучат «негативно», но считаются прямо.
+    items: [
+      {t: 'Я определился с направлением, которому я буду следовать в своей жизни.', s: 'cm'},
+      {t: 'У меня есть планы на будущее.', s: 'cm'},
+      {t: 'Я знаю, в каком направлении я буду строить свою жизнь.', s: 'cm'},
+      {t: 'У меня есть представление о том, что я собираюсь сделать в будущем.', s: 'cm'},
+      {t: 'Я сделал выбор в отношении того, что я собираюсь делать со своей жизнью.', s: 'cm'},
+      {t: 'Я активно думаю о разных направлениях, которые я мог бы выбрать в своей жизни.', s: 'eb'},
+      {t: 'Я думаю о разных вещах, которые я мог бы сделать в будущем.', s: 'eb'},
+      {t: 'Я рассматриваю ряд различных стилей жизни, которые могут мне подойти.', s: 'eb'},
+      {t: 'Я думаю о разных целях, которым могу следовать.', s: 'eb'},
+      {t: 'Я думаю о разных стилях жизни, которые могут быть хороши для меня.', s: 'eb'},
+      {t: 'Я полон сомнений относительно того, чего я действительно хочу достичь в жизни.', s: 're'},
+      {t: 'Я беспокоюсь о том, что я хочу делать со своим будущим.', s: 're'},
+      {t: 'Я продолжаю искать направление, которое хотел бы выбрать в своей жизни.', s: 're'},
+      {t: 'Мне постоянно интересно, в каком направлении должна идти моя жизнь.', s: 're'},
+      {t: 'Мне трудно перестать думать о направлении, которое я хочу выбрать в своей жизни.', s: 're'},
+      {t: 'Мои планы на будущее совпадают с моими истинными интересами и ценностями.', s: 'ic'},
+      {t: 'Мои планы на будущее дают мне уверенность в себе.', s: 'ic'},
+      {t: 'Благодаря моим планам на будущее я уверен в себе.', s: 'ic'},
+      {t: 'Я чувствую, что направление, которое я хочу выбрать в своей жизни, действительно мне подходит.', s: 'ic'},
+      {t: 'Я уверен, что мои планы на будущее являются самыми подходящими для меня.', s: 'ic'},
+      {t: 'Я думаю о планах на будущее, которые я уже выработал.', s: 'ed'},
+      {t: 'Я говорю с другими людьми о своих планах на будущее.', s: 'ed'},
+      {t: 'Я думаю о том, действительно ли цели, которые я ставлю перед собой, подходят мне.', s: 'ed'},
+      {t: 'Я пытаюсь выяснить, что другие люди думают о том направлении, которое я решил выбрать в своей жизни.', s: 'ed'},
+      {t: 'Я думаю о том, соответствуют ли мои планы на будущее тому, чего я действительно хочу.', s: 'ed'}
+    ]
+  },
+  {
+    key: 'iposition',
+    title: 'Опора под давлением',
+    what: 'удаётся ли остаться собой рядом с сильным человеком',
+    note: 'про себя в отношениях с другими',
+    src: 'DSI-R, подшкала I-position (Skowron & Schmitt, 2003) · официальной русской версии нет',
+    translated: true,
+    translatedLabel: 'рабочий перевод',
+    instruction: 'Это утверждения про твои мысли и чувства о себе и об отношениях с другими. Реши, насколько каждое из них про тебя.',
+    scale: SCALE_DSI,
+    // Номера по бланку DSI-R: 4, 7, 11, 15, 19, 23, 27, 31, 35, 41, 43.
+    // По ключу источника обратный только пункт 35.
+    items: [
+      {t: 'Под давлением я обычно остаюсь довольно спокойным.'},
+      {t: 'Что бы ни случилось в моей жизни, я знаю: я не потеряю ощущение того, кто я такой.'},
+      {t: 'Обычно я не меняю своё поведение просто чтобы кому-то угодить.'},
+      {t: 'Когда я с кем-то спорю, я могу отделить своё мнение по вопросу от своих чувств к этому человеку.'},
+      {t: 'Нет смысла расстраиваться из-за того, что я не могу изменить.'},
+      {t: 'Я вполне принимаю себя таким, какой я есть.'},
+      {t: 'Я могу сказать другим «нет» даже когда чувствую их давление.'},
+      {t: 'Мне важнее делать то, что я считаю правильным, чем получить одобрение других.'},
+      {t: 'Моя самооценка сильно зависит от того, что обо мне думают другие.', rev: true},
+      {t: 'Обычно я делаю то, что считаю правильным, независимо от того, что говорят другие.'},
+      {t: 'Под нагрузкой я обычно чувствую себя достаточно устойчиво.'}
+    ]
+  }
+];
+
+function getTest(key) { return TESTS.find(t => t.key === key); }
+
+// Обратный пункт: максимум плюс минимум минус ответ.
+// Для шкалы 1–7 это 8−X, для 1–6 — 7−X, для 1–5 — 6−X.
+function flip(test, v) {
+  const s = test.scale;
+  return s[0].v + s[s.length - 1].v - v;
+}
+
+// Значение пункта с учётом реверса
+function val(test, ans, i) {
+  const v = ans[i] || 0;
+  return test.items[i].rev ? flip(test, v) : v;
+}
+
+function round1(x) { return Math.round(x * 10) / 10; }
+
+// === Скоринг ===
+// Каждая функция возвращает {nums, band, c, data}
+
+// SCCS: 12 пунктов, десять обратных. Авторы русской версии считают среднее.
+// Показываем и среднее 1–5, и сумму 12–60. Выше — яснее себе.
+function scoreClarity(ans) {
+  const t = getTest('clarity');
+  let sum = 0;
+  t.items.forEach((it, i) => { sum += val(t, ans, i); });
+  const mean = round1(sum / t.items.length);
+  let band;
+  if (mean >= 4.0) band = 'Себе ясен — понимаешь, кто ты и чего хочешь. Картина себя держится и не рассыпается от настроения.';
+  else if (mean >= 3.2) band = 'Себя в общем знаешь, но местами картинка плывёт: в одни дни ты себе понятен, в другие меньше.';
+  else if (mean >= 2.4) band = 'Про себя много неясного: представления о себе спорят друг с другом и меняются от дня ко дню.';
+  else band = 'Себе сейчас непонятен — трудно сказать, кто ты и чего на самом деле хочешь.';
+  return {
+    nums: [
+      {l: 'Ясность себе', v: mean, range: '1–5'},
+      {l: 'Сумма', v: sum, range: '12–60'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {mean: mean, sum: sum}
+  };
+}
+
+// Authenticity Scale (рус. версия): три подшкалы. Считаются РАЗДЕЛЬНО и не складываются.
+// Аутентичная жизнь — 3 пункта (все обратные), самоотчуждение — 4, внешнее влияние — 4.
+function scoreAuthenticity(ans) {
+  const t = getTest('authenticity');
+  let live = 0, alien = 0, infl = 0;
+  t.items.forEach((it, i) => {
+    const v = val(t, ans, i);
+    if (it.s === 'live') live += v;
+    else if (it.s === 'alien') alien += v;
+    else infl += v;
+  });
+  // Живёшь по-своему: 3–21, выше — больше своего
+  function lLive(x) {
+    if (x >= 16) return 'живёшь по-своему';
+    if (x >= 11) return 'по-своему получается наполовину';
+    return 'своё почти не отстаиваешь';
+  }
+  // Самоотчуждение: 4–28, выше — хуже слышишь себя
+  function lAlien(x) {
+    if (x >= 19) return 'себя почти не слышишь';
+    if (x >= 12) return 'себя слышишь через раз';
+    return 'себя слышишь хорошо';
+  }
+  // Внешнее влияние: 4–28, выше — больше чужого сценария
+  function lInfl(x) {
+    if (x >= 19) return 'живёшь скорее по чужому сценарию';
+    if (x >= 12) return 'чужое весит примерно столько же, сколько своё';
+    return 'чужое мнение тебя почти не разворачивает';
+  }
+  const warn = (infl >= 19 || alien >= 19);
+  return {
+    nums: [
+      {l: 'Живёшь по-своему', v: live, range: '3–21'},
+      {l: 'Не слышишь себя', v: alien, range: '4–28'},
+      {l: 'Идёшь за чужим', v: infl, range: '4–28'}
+    ],
+    band: 'Своё: ' + lLive(live) + '. Себя слышишь: ' + lAlien(alien) + '. Чужое: ' + lInfl(infl) + '. Это три разные величины, они не складываются в одну оценку.',
+    c: warn ? 'warn' : 'ok',
+    data: {authentic_living: live, self_alienation: alien, external_influence: infl}
+  };
+}
+
+// DIDS: пять подшкал по 5 пунктов, обратных нет. Считаются РАЗДЕЛЬНО.
+// Руминативный поиск — ключевой: это застревание в переборе.
+function scoreIdentity(ans) {
+  const t = getTest('identity');
+  const sub = {cm: 0, eb: 0, re: 0, ic: 0, ed: 0};
+  t.items.forEach((it, i) => { sub[it.s] += val(t, ans, i); });
+  // Все подшкалы в диапазоне 5–25
+  function lCm(x) {
+    if (x >= 19) return 'выбор про свою жизнь сделан';
+    if (x >= 13) return 'выбор наполовину сделан';
+    return 'выбор ещё не сделан';
+  }
+  function lIc(x) {
+    if (x >= 19) return 'выбранное ощущается своим';
+    if (x >= 13) return 'выбранное своё не до конца';
+    return 'выбранное своим не ощущается';
+  }
+  function lRe(x) {
+    if (x >= 19) return 'застрял в переборе: ищешь, но не выбираешь';
+    if (x >= 13) return 'перебор иногда затягивает';
+    return 'перебор тебя не держит';
+  }
+  function lEb(x) {
+    if (x >= 19) return 'смотришь широко';
+    if (x >= 13) return 'смотришь по сторонам умеренно';
+    return 'по сторонам почти не смотришь';
+  }
+  function lEd(x) {
+    if (x >= 19) return 'проверяешь выбранное на прочность';
+    if (x >= 13) return 'проверяешь выбранное иногда';
+    return 'выбранное почти не проверяешь';
+  }
+  return {
+    nums: [
+      {l: 'Решение принято', v: sub.cm, range: '5–25'},
+      {l: 'Решение своё', v: sub.ic, range: '5–25'},
+      {l: 'Застреваешь в переборе', v: sub.re, range: '5–25'},
+      {l: 'Смотришь вширь', v: sub.eb, range: '5–25'},
+      {l: 'Проверяешь вглубь', v: sub.ed, range: '5–25'}
+    ],
+    band: 'Решение: ' + lCm(sub.cm) + '. Своё ли оно: ' + lIc(sub.ic) + '. Перебор: ' + lRe(sub.re) + '. Вширь: ' + lEb(sub.eb) + '. Вглубь: ' + lEd(sub.ed) + '. Пять разных величин — они не складываются, и высокие сразу несколько тоже бывает.',
+    c: sub.re >= 19 ? 'warn' : 'ok',
+    data: {
+      commitment: sub.cm,
+      identification: sub.ic,
+      rumination: sub.re,
+      exploration_breadth: sub.eb,
+      exploration_depth: sub.ed
+    }
+  };
+}
+
+// I-position (DSI-R): среднее по 11 пунктам, обратный один — про зависимость самооценки.
+// Выше — устойчивее держишь себя рядом с другим.
+function scoreIposition(ans) {
+  const t = getTest('iposition');
+  let sum = 0;
+  t.items.forEach((it, i) => { sum += val(t, ans, i); });
+  const mean = round1(sum / t.items.length);
+  let band;
+  if (mean >= 4.6) band = 'Рядом с сильным человеком себя не теряешь — держишь своё и под давлением.';
+  else if (mean >= 3.7) band = 'В основном себя держишь, но под сильным напором своё иногда сдаёшь.';
+  else if (mean >= 2.8) band = 'Под давлением своё часто уходит: легче согласиться, чем остаться при своём.';
+  else band = 'Рядом с чужой силой себя почти не слышно — своё сдаёшь почти сразу.';
+  return {
+    nums: [
+      {l: 'Держишь себя', v: mean, range: '1–6'},
+      {l: 'Сумма', v: sum, range: '11–66'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {mean: mean, sum: sum}
+  };
+}
+
+const SCORERS = {clarity: scoreClarity, authenticity: scoreAuthenticity, identity: scoreIdentity, iposition: scoreIposition};
+
+// === Хранение результатов ===
+let results = {};       // {clarity: {...}, authenticity: {...}, ...}
+let cloudRestored = false;
+
+function loadResultsLocal() {
+  try {
+    const s = localStorage.getItem(RESULT_KEY);
+    if (s) results = JSON.parse(s) || {};
+  } catch (e) { results = {}; }
+}
+
+function saveResultsLocal() {
+  try { localStorage.setItem(RESULT_KEY, JSON.stringify(results)); } catch (e) {}
+}
+
+// Облачное восстановление: если на этом устройстве пусто, поднимаем историю из Telegram CloudStorage
+function restoreFromCloud() {
+  return new Promise(resolve => {
+    if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.getItem !== 'function') { resolve(false); return; }
+    try {
+      tg.CloudStorage.getItem(CLOUD_KEY, (err, value) => {
+        if (err || !value) { resolve(false); return; }
+        try {
+          const cloud = JSON.parse(value) || {};
+          // Берём из облака только то, что свежее локального
+          Object.keys(cloud).forEach(k => {
+            const local = results[k];
+            if (!local || new Date(cloud[k].completed_at) > new Date(local.completed_at)) results[k] = cloud[k];
+          });
+          saveResultsLocal();
+          resolve(true);
+        } catch (e) { resolve(false); }
+      });
+    } catch (e) { resolve(false); }
+  });
+}
+
+function saveToCloud() {
+  if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.setItem !== 'function') return;
+  try { tg.CloudStorage.setItem(CLOUD_KEY, JSON.stringify(results), () => {}); } catch (e) {}
+}
+
+// === Прогресс прохождения (черновик незаконченного теста) ===
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({key: state.key, idx: state.idx, answers: state.answers})); } catch (e) {}
+}
+function clearProgress() {
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+
+// === Отправка результата ===
+function buildScores() {
+  // В scores складываем всё, что уже снято, плюс метку источника
+  const scores = {source: 'manual'};
+  Object.keys(results).forEach(k => {
+    // Кладём и цифры, и человеческую формулировку: по band бот показывает
+    // результат в разговоре и в панели, без него замер выглядит пустым.
+    scores[k] = Object.assign({}, results[k].data, {
+      band: results[k].band,
+      nums: results[k].nums
+    });
+  });
+  return scores;
+}
+
+function buildAnswers() {
+  const answers = {};
+  Object.keys(results).forEach(k => { answers[k] = results[k].answers; });
+  return answers;
+}
+
+async function pushToSupabase(record) {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(record)
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Supabase push failed:', e);
+    return false;
+  }
+}
+
+// Оставлена намеренно неиспользуемой: tg.sendData мгновенно закрывает мини-апп,
+// и запись в базу не успевает уйти. На финише её не зовём.
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') return false;
+  try {
+    tg.sendData(JSON.stringify({type: 'selfhood', payload: record}));
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    return false;
+  }
+}
+
+// === Состояние экрана ===
+const state = {screen: 'hub', key: null, idx: 0, answers: {}, sync: '', syncMsg: ''};
+const app = document.getElementById('app');
+
+// === Прогресс-бар ===
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'test') { bar.style.display = 'none'; return; }
+  const t = getTest(state.key);
+  const done = Object.keys(state.answers).length;
+  bar.style.display = 'block';
+  fill.style.width = ((done / t.items.length) * 100) + '%';
+  text.textContent = t.title;
+  count.textContent = done + ' / ' + t.items.length;
+}
+
+// === Сколько дней назад был замер ===
+function pluralDays(n) {
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return 'день';
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return 'дня';
+  return 'дней';
+}
+function lastSeen(key) {
+  const r = results[key];
+  if (!r || !r.completed_at) return 'замеров ещё не было';
+  const days = Math.floor((Date.now() - new Date(r.completed_at).getTime()) / 86400000);
+  if (days <= 0) return 'последний замер сегодня';
+  return 'последний замер ' + days + ' ' + pluralDays(days) + ' назад';
+}
+
+// Метка «рабочий перевод» рядом с названием теста
+function tagFor(t) {
+  return t.translated ? `<span class="tag">${t.translatedLabel}</span>` : '';
+}
+
+// === Экран списка (хаб) ===
+function renderHub() {
+  state.screen = 'hub';
+  const items = TESTS.map(t => `
+    <div class="hub-item">
+      <div class="hub-head">
+        <div class="hub-title">${t.title}${tagFor(t)}</div>
+        <div class="hub-when">${lastSeen(t.key)}</div>
+      </div>
+      <div class="hub-what">${t.what}</div>
+      <div class="hub-note">${t.note}</div>
+      <div class="hub-src">${t.src}</div>
+      <button onclick="startTest('${t.key}')">Снять новый замер</button>
+    </div>
+  `).join('');
+  app.innerHTML = `
+    <h1>Свою жизнь живёшь?</h1>
+    <div class="sub">Есть ли под тобой опора</div>
+    <div class="weather">${FRAME_TEXT}</div>
+    ${items}
+    ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
+  `;
+  updateProgress();
+}
+
+// === Экран вопроса ===
+function renderQuestion() {
+  const t = getTest(state.key);
+  const item = t.items[state.idx];
+  const selected = state.answers[state.idx];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">${t.title}${tagFor(t)}</div>
+      ${(state.idx === 0 && t.instruction) ? `<div class="q-instr">${t.instruction}</div>` : ''}
+      <div class="q-text">${item.t}</div>
+      <div class="q-options">
+        ${t.scale.map(s => `
+          <div class="q-option ${selected === s.v ? 'selected' : ''}" onclick="answer(${s.v})">
+            <span class="q-option-text">${s.l}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${state.idx === 0
+        ? '<button class="secondary" onclick="renderHub()">К списку</button>'
+        : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран результата одного теста ===
+function renderResult(key) {
+  state.screen = 'result';
+  const t = getTest(key);
+  const r = results[key];
+  const rows = r.nums.map(n => `
+    <div class="result-row">
+      <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+      <div><span class="result-val">${n.v}</span></div>
+    </div>
+  `).join('');
+  const syncBlock = state.sync
+    ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
+    : '';
+  app.innerHTML = `
+    <h1>${t.title}</h1>
+    <div class="sub">Замер записан</div>
+    <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+    <div class="result-card">${rows}</div>
+    <div class="weather">${FRAME_TEXT}</div>
+    ${syncBlock}
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран «все последние результаты» ===
+function renderAllResults() {
+  state.screen = 'result';
+  const blocks = TESTS.filter(t => results[t.key]).map(t => {
+    const r = results[t.key];
+    const rows = r.nums.map(n => `
+      <div class="result-row">
+        <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+        <div><span class="result-val">${n.v}</span></div>
+      </div>
+    `).join('');
+    return `
+      <h2>${t.title}${tagFor(t)}</h2>
+      <div class="hub-when" style="margin-bottom:10px;">${lastSeen(t.key)}</div>
+      <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+      <div class="result-card">${rows}</div>
+    `;
+  }).join('');
+  app.innerHTML = `
+    <h1>Свою жизнь живёшь?</h1>
+    <div class="sub">Последние результаты</div>
+    ${blocks}
+    <div class="weather">${FRAME_TEXT}</div>
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+// Повторный замер — это норма, никаких переспрашиваний перед стартом
+function startTest(key) {
+  state.screen = 'test';
+  state.key = key;
+  state.idx = 0;
+  state.answers = {};
+  state.sync = '';
+  state.syncMsg = '';
+  renderQuestion();
+}
+
+function answer(v) {
+  const t = getTest(state.key);
+  state.answers[state.idx] = v;
+  saveProgress();
+  if (state.idx < t.items.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.idx > 0) { state.idx--; renderQuestion(); }
+}
+
+async function finish() {
+  const key = state.key;
+  const scored = SCORERS[key](state.answers);
+  results[key] = {
+    nums: scored.nums,
+    band: scored.band,
+    c: scored.c,
+    data: scored.data,
+    answers: {...state.answers},
+    completed_at: new Date().toISOString()
+  };
+  saveResultsLocal();
+  saveToCloud();
+  clearProgress();
+
+  const record = {
+    user_id: UID,
+    block: BLOCK,
+    instrument: INSTRUMENT,
+    scores: buildScores(),
+    answers: buildAnswers(),
+    completed_at: results[key].completed_at
+  };
+
+  // sendData НЕ вызываем: он мгновенно закрывает мини-апп, и запись в базу
+  // просто не успевает уйти — замер теряется целиком. Пишем напрямую.
+  state.sync = 'saving';
+  state.syncMsg = 'Сохраняю…';
+  renderResult(key);
+
+  const ok = await pushToSupabase(record);
+  state.sync = ok ? 'ok' : 'error';
+  state.syncMsg = ok
+    ? 'Замер записан. Можно вернуться к списку и пройти остальное.'
+    : 'Не удалось сохранить — открой замер через бота и попробуй ещё раз.';
+  if (state.screen === 'result') renderResult(key);
+}
+
+// === Старт ===
+(async () => {
+  loadResultsLocal();
+  cloudRestored = await restoreFromCloud();
+  renderHub();
+})();
+</script>
+</body>
+</html>
