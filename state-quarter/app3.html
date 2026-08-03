@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квартал</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
+
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 24px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 22px; }
+
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Плашка «это медленные величины» — повторяется в списке и в результатах */
+.weather { border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin: 22px 0; font-size: 14px; line-height: 1.5; color: var(--graphite-75); }
+
+.hub-item { border: 1px solid var(--graphite-15); padding: 20px; margin-bottom: 12px; }
+.hub-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.hub-title { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.hub-when { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); white-space: nowrap; }
+.hub-what { font-size: 14px; color: var(--graphite-75); margin-bottom: 4px; }
+.hub-note { font-size: 13px; color: var(--graphite-50); margin-bottom: 14px; }
+.hub-src { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--graphite-30); margin-bottom: 14px; }
+.hub-item button { padding: 11px 20px; font-size: 13px; }
+
+/* Метка «рабочий перевод» — рядом с названием теста, где нет официальной русской версии */
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terracotta); border: 1px solid var(--terracotta); padding: 2px 6px; margin-left: 8px; vertical-align: middle; white-space: nowrap; }
+
+.q-card { margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; line-height: 1.5; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; background: transparent; user-select: none; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { border: 1px solid var(--graphite-08); margin-bottom: 20px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); gap: 12px; }
+.result-row:last-child { border-bottom: 0; }
+.result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
+.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
+.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+.band { font-size: 16px; line-height: 1.45; margin-bottom: 18px; }
+.band.warn { color: var(--alert); }
+
+.soft-card { border: 1px solid var(--graphite-30); padding: 18px 20px; margin-bottom: 22px; }
+.soft-card p { margin-bottom: 0; color: var(--graphite-75); font-size: 14px; line-height: 1.55; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 14px; }
+.sync-status.error { color: var(--alert); }
+
+@media (max-width: 600px) {
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 19px; }
+  .result-row { padding: 16px; }
+  .result-val { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+// === Идентификатор клиента: сначала ?u= из URL (его подставляет бот), потом Telegram, потом локальный ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  const tgId = tg?.initDataUnsafe?.user?.id;
+  if (tgId) return "tg_" + tgId;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+// В базе user_id — число, поэтому из «tg_123» достаём сам номер.
+// Со строкой запись падала бы с ошибкой типа.
+const UID = (function () {
+  const m = /^tg_(\d+)$/.exec(CLIENT_ID);
+  return m ? parseInt(m[1], 10) : null;
+})();
+
+// === Ключи хранения ===
+const STORE_KEY = 'state_quarter_' + CLIENT_ID;          // незаконченный проход
+const RESULT_KEY = 'state_quarter_result_' + CLIENT_ID;  // последние результаты по каждому тесту
+const CLOUD_KEY = 'res_state_quarter';                   // облачная копия результатов (Telegram CloudStorage)
+
+// === Supabase (пишем прямым fetch, без библиотеки) ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const SUPABASE_TABLE = "passport";
+const BLOCK = 'state_quarter';
+const INSTRUMENT = 'SWLS + MLQ + FFMQ-15 + RSES + OLBI + MSPSS';
+
+// Плашка-напоминание: эти величины медленные, смысл появляется в сравнении кварталов
+const SLOW_TEXT = 'Это медленные величины — они двигаются месяцами. Смысл в сравнении с прошлым кварталом, а не в одной цифре.';
+
+// === Шкалы ответов ===
+// SWLS — якоря из русской адаптации Д. А. Леонтьева и Е. Н. Осина
+const SCALE_SWLS = [
+  {v: 1, l: 'Полностью не согласен'},
+  {v: 2, l: 'Не согласен'},
+  {v: 3, l: 'Скорее не согласен'},
+  {v: 4, l: 'Нечто среднее'},
+  {v: 5, l: 'Скорее согласен'},
+  {v: 6, l: 'Согласен'},
+  {v: 7, l: 'Полностью согласен'}
+];
+// MLQ — якоря из русской версии Елшанского и др. (2015)
+const SCALE_MLQ = [
+  {v: 1, l: 'Абсолютно неверно'},
+  {v: 2, l: 'В основном неверно'},
+  {v: 3, l: 'До определённой степени неверно'},
+  {v: 4, l: 'Не могу сказать, верно или нет'},
+  {v: 5, l: 'До определённой степени верно'},
+  {v: 6, l: 'В основном верно'},
+  {v: 7, l: 'Абсолютно верно'}
+];
+// FFMQ — якоря частотной шкалы 1–5
+const SCALE_FFMQ = [
+  {v: 1, l: 'Никогда или очень редко'},
+  {v: 2, l: 'Редко'},
+  {v: 3, l: 'Иногда'},
+  {v: 4, l: 'Часто'},
+  {v: 5, l: 'Очень часто или всегда'}
+];
+// RSES — якоря из русского бланка Розенберга
+const SCALE_RSES = [
+  {v: 1, l: 'Абсолютно не согласен'},
+  {v: 2, l: 'Не согласен'},
+  {v: 3, l: 'Согласен'},
+  {v: 4, l: 'Полностью согласен'}
+];
+// OLBI — четыре градации согласия, как в оригинале Демерути
+// Формулировки из русской адаптации Смирновой (2017). Направление шкалы
+// обратно её бланку (там 1 = согласен), зато совпадает с главой самих авторов
+// инструмента 2007 года — и под него же выстроен набор обратных пунктов.
+// На результат это не влияет: смысл сохранён, подсчёт согласован.
+const SCALE_OLBI = [
+  {v: 1, l: 'Совершенно не согласен'},
+  {v: 2, l: 'Не согласен'},
+  {v: 3, l: 'Согласен'},
+  {v: 4, l: 'Совершенно согласен'}
+];
+// MSPSS — якоря русскоязычного бланка шкалы, 1–7
+const SCALE_MSPSS = [
+  {v: 1, l: 'Совершенно не согласен'},
+  {v: 2, l: 'Не согласен'},
+  {v: 3, l: 'Скорее не согласен'},
+  {v: 4, l: 'Что-то среднее'},
+  {v: 5, l: 'Скорее согласен'},
+  {v: 6, l: 'Согласен'},
+  {v: 7, l: 'Полностью согласен'}
+];
+
+// === Пять тестов квартального замера ===
+// rev: true — обратный пункт. s — подшкала или грань.
+const TESTS = [
+  {
+    key: 'swls',
+    title: 'Удовлетворённость',
+    what: 'насколько жизнь в целом устраивает тебя такой, какая она есть',
+    note: 'в целом, сейчас в жизни — не про эту неделю',
+    src: 'SWLS (Diener, Emmons et al., 1985) · рус. адаптация Леонтьев, Осин',
+    translated: false,
+    instruction: 'Ниже даны утверждения, с которыми ты можешь согласиться или не согласиться. Отвечай в целом про свою жизнь сейчас.',
+    scale: SCALE_SWLS,
+    items: [
+      {t: 'В основном моя жизнь близка к идеалу.'},
+      {t: 'Обстоятельства моей жизни исключительно благоприятны.'},
+      {t: 'Я полностью удовлетворён моей жизнью.'},
+      {t: 'У меня есть в жизни то, что мне по-настоящему нужно.'},
+      {t: 'Если бы мне пришлось жить ещё раз, я бы оставил всё как есть.'}
+    ]
+  },
+  {
+    key: 'mlq',
+    title: 'Смысл',
+    what: 'насколько смысл жизни уже найден и насколько ты его ищешь',
+    note: 'в целом, сейчас в жизни',
+    src: 'MLQ (Steger et al., 2006) · рус. версия Елшанский и др., 2015',
+    translated: false,
+    instruction: 'Удели немного времени тому, чтобы подумать, что делает твою жизнь важной и значащей. Отвечай настолько честно и точно, насколько можешь: правильных и неправильных ответов здесь нет.',
+    scale: SCALE_MLQ,
+    // s: 'pres' — наличие смысла, 'search' — поиск смысла. Пункт 9 обратный.
+    items: [
+      {t: 'Я понимаю смысл моей жизни.', s: 'pres'},
+      {t: 'Я всегда стараюсь найти в жизни что-то, что заставит меня почувствовать, что моя жизнь наполнена смыслом.', s: 'search'},
+      {t: 'Я всегда стремлюсь найти цель в жизни.', s: 'search'},
+      {t: 'В моей жизни есть чёткое понимание цели.', s: 'pres'},
+      {t: 'У меня есть чёткое понимание того, что наполняет мою жизнь смыслом.', s: 'pres'},
+      {t: 'Я уже нашёл удовлетворяющую меня цель жизни.', s: 'pres'},
+      {t: 'Я всегда ищу чего-то, что заставит меня почувствовать значимость моей жизни.', s: 'search'},
+      {t: 'Я ищу цель или миссию в жизни.', s: 'search'},
+      {t: 'У меня нет чёткой цели в жизни.', s: 'pres', rev: true},
+      {t: 'Я ищу смысл моей жизни.', s: 'search'}
+    ]
+  },
+  {
+    key: 'ffmq',
+    title: 'Осознанность',
+    what: 'насколько ты замечаешь, что происходит внутри и вокруг, — и как реагируешь',
+    note: 'как обычно, а не про конкретный день',
+    src: 'FFMQ-15 (Baer et al., 2012; Gu et al., 2016) · пункты из рус. FFMQ-39 (Голубев, Дорошева, 2018)',
+    translated: true,
+    translatedLabel: 'рабочая сборка',
+    instruction: 'Отметь, насколько верно каждое утверждение описывает то, как обычно бывает у тебя.',
+    scale: SCALE_FFMQ,
+    // s — грань: obs наблюдение, des описание, act осознанные действия, njg безоценочность, nrx нереактивность
+    items: [
+      {t: 'Когда я принимаю душ или ванну, я внимательно прислушиваюсь к ощущениям воды на моём теле.', s: 'obs'},
+      {t: 'Я умею находить слова, чтобы описать свои чувства.', s: 'des'},
+      {t: 'Я не сосредоточиваюсь на том, что делаю, потому что мечтаю или переживаю о чём-то либо отвлекаюсь каким-то ещё образом.', s: 'act', rev: true},
+      {t: 'Я считаю, что некоторые мои мысли бывают неправильными или плохими, и мне не следует думать таким образом.', s: 'njg', rev: true},
+      {t: 'Когда появляются мысли или образы, внушающие беспокойство, я отстраняюсь от них и мысленно отмечаю их присутствие, не позволяя им овладеть мною.', s: 'nrx'},
+      {t: 'Я замечаю, как еда и напитки влияют на мои мысли, эмоции, телесные ощущения.', s: 'obs'},
+      {t: 'Мне трудно подобрать правильные слова, чтобы выразить свои чувства к тому, что меня окружает.', s: 'des', rev: true},
+      {t: 'Я выполняю работу или задания автоматически, не задумываясь о том, что делаю.', s: 'act', rev: true},
+      {t: 'Я думаю, что некоторые мои эмоции плохие или неуместные и я не должен их испытывать.', s: 'njg', rev: true},
+      {t: 'Когда у меня возникают расстраивающие меня мысли или образы, я в состоянии осознать их, не реагируя на них.', s: 'nrx'},
+      {t: 'Я обращаю внимание на свои ощущения, такие как ветер в моих волосах или солнце на моём лице.', s: 'obs'},
+      {t: 'Даже если я очень сильно расстроен, я могу выразить словами своё состояние.', s: 'des'},
+      {t: 'Я ловлю себя на том, что занимаюсь делами не сосредоточенно.', s: 'act', rev: true},
+      {t: 'Я говорю себе, что не должен испытывать чувства так, как испытываю сейчас.', s: 'njg', rev: true},
+      {t: 'Когда у меня возникают расстраивающие меня мысли или образы, я отмечаю их присутствие и позволяю им уйти.', s: 'nrx'}
+    ]
+  },
+  {
+    key: 'rses',
+    title: 'Самооценка',
+    what: 'как ты сейчас относишься к себе',
+    note: 'в целом, сейчас в жизни',
+    src: 'RSES (Rosenberg, 1965) · классическая рус. версия',
+    translated: false,
+    instruction: 'Определи, насколько ты согласен или не согласен с каждым утверждением.',
+    scale: SCALE_RSES,
+    // Нумерация оригинала Розенберга. Обратные: 2, 5, 6, 8, 9.
+    items: [
+      {t: 'В целом я удовлетворён собой.'},
+      {t: 'Иногда я думаю, что я во всём нехорош.', rev: true},
+      {t: 'Мне кажется, у меня есть ряд хороших качеств.'},
+      {t: 'Я способен кое-что делать не хуже, чем большинство.'},
+      {t: 'Мне кажется, что мне особенно нечем гордиться.', rev: true},
+      {t: 'Иногда я ясно чувствую свою бесполезность.', rev: true},
+      {t: 'Я чувствую, что я достойный человек, по крайней мере, не менее чем другие.'},
+      {t: 'Мне бы хотелось больше уважать себя.', rev: true},
+      {t: 'Я всегда склонен чувствовать себя неудачником.', rev: true},
+      {t: 'Я к себе хорошо отношусь.'}
+    ]
+  },
+  {
+    key: 'olbi',
+    title: 'Работа',
+    what: 'сколько сил забирает работа и насколько ты от неё отдалился',
+    note: 'за последние месяцы в работе',
+    src: 'OLBI (Demerouti et al., 2003) · рус. адаптация А. Ю. Смирновой, 2017',
+    translated: false,
+    instruction: 'Отвечай про свою работу за последние месяцы — не про один тяжёлый день.',
+    scale: SCALE_OLBI,
+    // s: 'exh' — истощение, 'dis' — отстранение от работы. По 8 пунктов, в каждой по 4 обратных.
+    items: [
+      {t: 'Я всегда нахожу новые и интересные аспекты в своей работе.', s: 'dis', rev: true},
+      {t: 'Бывает, я чувствую себя усталым ещё до того, как приеду на работу.', s: 'exh'},
+      {t: 'Я всё чаще говорю о своей работе в негативном ключе.', s: 'dis'},
+      {t: 'После работы мне требуется больше, чем раньше, времени, чтобы отдохнуть и «прийти в себя».', s: 'exh'},
+      {t: 'Я очень хорошо справляюсь с давлением, которое оказывает на меня моя работа.', s: 'exh', rev: true},
+      {t: 'В последнее время я меньше думаю о своей работе и выполняю её механически.', s: 'dis'},
+      {t: 'Я считаю свою работу сложной, но интересной.', s: 'dis', rev: true},
+      {t: 'На протяжении рабочего дня я часто чувствую эмоциональное истощение.', s: 'exh'},
+      {t: 'Со временем работа, подобная моей, может привести к отчуждённости.', s: 'dis'},
+      {t: 'После работы у меня остаётся достаточно энергии для досуга.', s: 'exh', rev: true},
+      {t: 'Иногда я чувствую отвращение к моей работе.', s: 'dis'},
+      {t: 'После работы я, как правило, чувствую себя изношенным и утомлённым.', s: 'exh'},
+      {t: 'Только такую работу я и могу для себя представить.', s: 'dis', rev: true},
+      {t: 'Как правило, я очень хорошо справляюсь с объёмом своей работы.', s: 'exh', rev: true},
+      {t: 'Моя работа всё больше и больше меня увлекает.', s: 'dis', rev: true},
+      {t: 'Во время работы я, как правило, чувствую себя энергичным.', s: 'exh', rev: true}
+    ]
+  },
+  {
+    key: 'support',
+    title: 'Поддержка',
+    what: 'откуда сейчас идёт поддержка — от близкого человека, от семьи, от друзей',
+    note: 'в целом, сейчас в жизни',
+    src: 'MSPSS (Zimet и соавт., 1988) · русскоязычный бланк шкалы; адаптации: Сирота, Ялтонский, 1994; Чистопольская и соавт., 2020',
+    translated: false,
+    instruction: 'Прочитай каждое утверждение и отметь, насколько ты с ним согласен.',
+    scale: SCALE_MSPSS,
+    // s — подшкала: so значимый другой (1, 2, 5, 10), fam семья (3, 4, 8, 11), fri друзья (6, 7, 9, 12).
+    // Обратных пунктов в MSPSS нет.
+    items: [
+      {t: 'Есть особый человек, который находится рядом, когда требуется.', s: 'so'},
+      {t: 'Есть особый человек, с кем я могу поделиться радостями и горестями.', s: 'so'},
+      {t: 'Моя семья по-настоящему пытается мне помочь.', s: 'fam'},
+      {t: 'Я получаю необходимую мне помощь и поддержку от моей семьи.', s: 'fam'},
+      {t: 'У меня есть особый человек, который является для меня настоящим источником утешения и отрады.', s: 'so'},
+      {t: 'Мои друзья действительно пытаются мне помочь.', s: 'fri'},
+      {t: 'Я могу рассчитывать на моих друзей, когда всё идёт не так как надо.', s: 'fri'},
+      {t: 'Я могу говорить о моих проблемах с моей семьёй.', s: 'fam'},
+      {t: 'У меня есть друзья, с которыми я могу поделиться радостями и горестями.', s: 'fri'},
+      {t: 'Есть особый человек, которому важны мои чувства и переживания.', s: 'so'},
+      {t: 'Моя семья готова помочь мне в принятии решений.', s: 'fam'},
+      {t: 'Я могу говорить о моих проблемах с моими друзьями.', s: 'fri'}
+    ]
+  }
+];
+
+function getTest(key) { return TESTS.find(t => t.key === key); }
+
+// Обратный пункт: максимум плюс минимум минус ответ.
+// Для шкалы 1–7 это 8−X, для 1–5 — 6−X, для 1–4 — 5−X.
+function flip(test, v) {
+  const s = test.scale;
+  return s[0].v + s[s.length - 1].v - v;
+}
+
+// Значение пункта с учётом реверса
+function val(test, ans, i) {
+  const v = ans[i] || 0;
+  return test.items[i].rev ? flip(test, v) : v;
+}
+
+function round1(x) { return Math.round(x * 10) / 10; }
+
+// === Скоринг ===
+// Каждая функция возвращает {nums, band, c, data}
+
+// SWLS: простая сумма 5 пунктов, обратных нет. Полосы — по Динеру.
+function scoreSwls(ans) {
+  const t = getTest('swls');
+  let sum = 0;
+  t.items.forEach((it, i) => { sum += val(t, ans, i); });
+  let band;
+  if (sum <= 9) band = 'Жизнь сейчас почти не устраивает тебя такой, какая она есть.';
+  else if (sum <= 14) band = 'Жизнь сейчас в основном не устраивает тебя.';
+  else if (sum <= 19) band = 'Жизнь устраивает чуть меньше, чем в среднем у людей.';
+  else if (sum === 20) band = 'Ровно посередине: и не устраивает, и не не устраивает.';
+  else if (sum <= 25) band = 'Жизнь скорее устраивает тебя.';
+  else if (sum <= 30) band = 'Жизнь устраивает тебя.';
+  else band = 'Жизнь устраивает тебя почти полностью.';
+  return {
+    nums: [{l: 'Удовлетворённость жизнью', v: sum, range: '5–35'}],
+    band: band,
+    c: 'ok',
+    data: {sum: sum}
+  };
+}
+
+// MLQ: две подшкалы по 5 пунктов. Считаются РАЗДЕЛЬНО и не складываются.
+function scoreMlq(ans) {
+  const t = getTest('mlq');
+  let pres = 0, search = 0;
+  t.items.forEach((it, i) => {
+    const v = val(t, ans, i);
+    if (it.s === 'pres') pres += v; else search += v;
+  });
+  function levelPres(x) {
+    if (x >= 27) return 'смысл ощущается ясно';
+    if (x >= 21) return 'смысл в целом есть, местами размыт';
+    if (x >= 15) return 'смысл ощущается неотчётливо';
+    return 'ясного ощущения смысла сейчас мало';
+  }
+  function levelSearch(x) {
+    if (x >= 27) return 'поиск активный';
+    if (x >= 21) return 'поиск идёт ровно';
+    if (x >= 15) return 'поиск фоновый';
+    return 'поиск сейчас почти не идёт';
+  }
+  return {
+    nums: [
+      {l: 'Наличие смысла', v: pres, range: '5–35'},
+      {l: 'Поиск смысла', v: search, range: '5–35'}
+    ],
+    band: 'Наличие: ' + levelPres(pres) + '. Поиск: ' + levelSearch(search) + '. Это две независимые величины — они не складываются, и высокие обе сразу тоже бывают.',
+    c: 'ok',
+    data: {presence: pres, search: search}
+  };
+}
+
+// FFMQ-15: 5 граней по 3 пункта. Сумма грани 3–15, общий средний по 15 пунктам 1–5.
+function scoreFfmq(ans) {
+  const t = getTest('ffmq');
+  const facets = {obs: 0, des: 0, act: 0, njg: 0, nrx: 0};
+  let total = 0;
+  t.items.forEach((it, i) => {
+    const v = val(t, ans, i);
+    facets[it.s] += v;
+    total += v;
+  });
+  const mean = round1(total / t.items.length);
+  let band;
+  if (mean >= 3.8) band = 'Ты часто замечаешь, что происходит внутри и вокруг, и реже уносишься на автопилоте.';
+  else if (mean >= 3.0) band = 'Внимание держится наполовину: часть дня замечаешь, часть проходит автоматически.';
+  else band = 'Большая часть дня проходит на автопилоте — внимание редко возвращается к тому, что есть сейчас.';
+  return {
+    nums: [
+      {l: 'Общий уровень', v: mean, range: '1–5'},
+      {l: 'Наблюдение', v: facets.obs, range: '3–15'},
+      {l: 'Описание', v: facets.des, range: '3–15'},
+      {l: 'Осознанные действия', v: facets.act, range: '3–15'},
+      {l: 'Безоценочность', v: facets.njg, range: '3–15'},
+      {l: 'Нереактивность', v: facets.nrx, range: '3–15'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {mean: mean, observe: facets.obs, describe: facets.des, act_aware: facets.act, nonjudge: facets.njg, nonreact: facets.nrx}
+  };
+}
+
+// RSES: сумма 10 пунктов, обратные 2, 5, 6, 8, 9. Диапазон 10–40.
+function scoreRses(ans) {
+  const t = getTest('rses');
+  let sum = 0;
+  t.items.forEach((it, i) => { sum += val(t, ans, i); });
+  let band;
+  if (sum < 25) band = 'Отношение к себе сейчас скорее критичное — себе достаётся больше упрёков, чем поддержки.';
+  else if (sum <= 35) band = 'Отношение к себе в обычном диапазоне — есть и опора, и сомнения.';
+  else band = 'Отношение к себе устойчиво тёплое — опоры в себе много.';
+  return {
+    nums: [{l: 'Самоуважение', v: sum, range: '10–40'}],
+    band: band,
+    c: 'ok',
+    data: {sum: sum}
+  };
+}
+
+// OLBI: две подшкалы по 8 пунктов. Считаются РАЗДЕЛЬНО и не складываются.
+// Показываем средний балл 1–4 по каждой — так принято сравнивать с порогами.
+function scoreOlbi(ans) {
+  const t = getTest('olbi');
+  let exh = 0, dis = 0, nExh = 0, nDis = 0;
+  t.items.forEach((it, i) => {
+    const v = val(t, ans, i);
+    if (it.s === 'exh') { exh += v; nExh++; } else { dis += v; nDis++; }
+  });
+  const exhMean = round1(exh / nExh);
+  const disMean = round1(dis / nDis);
+  // Пороги оригинала: истощение 2,25 · отстранение 2,10
+  function level(x, cut) {
+    if (x >= cut + 0.75) return 'заметное';
+    if (x >= cut) return 'среднее';
+    return 'низкое';
+  }
+  const lExh = level(exhMean, 2.25);
+  const lDis = level(disMean, 2.10);
+  return {
+    nums: [
+      {l: 'Истощение', v: exhMean, range: '1–4'},
+      {l: 'Отстранение от работы', v: disMean, range: '1–4'}
+    ],
+    band: 'Истощение ' + lExh + ', отстранение ' + lDis + '. Две разные величины: силы и интерес садятся не всегда вместе.',
+    c: 'ok',
+    data: {exhaustion: exhMean, disengagement: disMean, exhaustion_sum: exh, disengagement_sum: dis}
+  };
+}
+
+// MSPSS: три подшкалы по 4 пункта. Считаются РАЗДЕЛЬНО, общей суммы намеренно нет —
+// весь смысл инструмента в том, откуда поддержки больше, а откуда меньше.
+function scoreSupport(ans) {
+  const t = getTest('support');
+  const sums = {so: 0, fam: 0, fri: 0};
+  const counts = {so: 0, fam: 0, fri: 0};
+  t.items.forEach((it, i) => {
+    sums[it.s] += val(t, ans, i);
+    counts[it.s] += 1;
+  });
+  const m = {};
+  Object.keys(sums).forEach(k => { m[k] = counts[k] ? round1(sums[k] / counts[k]) : 0; });
+  // Уровни MSPSS: 1–2,9 низкий · 3–5 средний · 5,1–7 высокий
+  function level(x) {
+    if (x >= 5.1) return 'много';
+    if (x >= 3) return 'средне';
+    return 'мало';
+  }
+  const names = {so: 'от близкого человека', fam: 'от семьи', fri: 'от друзей'};
+  const keys = ['so', 'fam', 'fri'];
+  let best = 'so', worst = 'so';
+  keys.forEach(k => {
+    if (m[k] > m[best]) best = k;
+    if (m[k] < m[worst]) worst = k;
+  });
+  const band = (m[best] === m[worst])
+    ? 'Поддержки отовсюду примерно поровну: от близкого человека, от семьи и от друзей — ' + level(m.so) + '.'
+    : 'Больше всего поддержки ' + names[best] + ' (' + level(m[best]) + '), меньше всего — ' + names[worst] + ' (' + level(m[worst]) + '). Это три разных источника, они не складываются в один балл.';
+  return {
+    nums: [
+      {l: 'Близкий человек', v: m.so, range: '1–7'},
+      {l: 'Семья', v: m.fam, range: '1–7'},
+      {l: 'Друзья', v: m.fri, range: '1–7'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {significant_other: m.so, family: m.fam, friends: m.fri}
+  };
+}
+
+const SCORERS = {swls: scoreSwls, mlq: scoreMlq, ffmq: scoreFfmq, rses: scoreRses, olbi: scoreOlbi, support: scoreSupport};
+
+// === Хранение результатов ===
+let results = {};       // {swls: {...}, mlq: {...}, ...}
+let cloudRestored = false;
+
+function loadResultsLocal() {
+  try {
+    const s = localStorage.getItem(RESULT_KEY);
+    if (s) results = JSON.parse(s) || {};
+  } catch (e) { results = {}; }
+}
+
+function saveResultsLocal() {
+  try { localStorage.setItem(RESULT_KEY, JSON.stringify(results)); } catch (e) {}
+}
+
+// Облачное восстановление: если на этом устройстве пусто, поднимаем историю из Telegram CloudStorage
+function restoreFromCloud() {
+  return new Promise(resolve => {
+    if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.getItem !== 'function') { resolve(false); return; }
+    try {
+      tg.CloudStorage.getItem(CLOUD_KEY, (err, value) => {
+        if (err || !value) { resolve(false); return; }
+        try {
+          const cloud = JSON.parse(value) || {};
+          // Берём из облака только то, что свежее локального
+          Object.keys(cloud).forEach(k => {
+            const local = results[k];
+            if (!local || new Date(cloud[k].completed_at) > new Date(local.completed_at)) results[k] = cloud[k];
+          });
+          saveResultsLocal();
+          resolve(true);
+        } catch (e) { resolve(false); }
+      });
+    } catch (e) { resolve(false); }
+  });
+}
+
+function saveToCloud() {
+  if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.setItem !== 'function') return;
+  try { tg.CloudStorage.setItem(CLOUD_KEY, JSON.stringify(results), () => {}); } catch (e) {}
+}
+
+// === Прогресс прохождения (черновик незаконченного теста) ===
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({key: state.key, idx: state.idx, answers: state.answers})); } catch (e) {}
+}
+function clearProgress() {
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+
+// === Отправка результата ===
+function buildScores() {
+  // В scores складываем всё, что уже снято, плюс метку источника
+  const scores = {source: 'manual'};
+  Object.keys(results).forEach(k => {
+    // Кладём и цифры, и человеческую формулировку: по band бот показывает
+    // результат в разговоре и в панели, без него замер выглядит пустым.
+    scores[k] = Object.assign({}, results[k].data, {
+      band: results[k].band,
+      nums: results[k].nums
+    });
+  });
+  return scores;
+}
+
+function buildAnswers() {
+  const answers = {};
+  Object.keys(results).forEach(k => { answers[k] = results[k].answers; });
+  return answers;
+}
+
+async function pushToSupabase(record) {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(record)
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Supabase push failed:', e);
+    return false;
+  }
+}
+
+// Оставлена намеренно неиспользуемой: tg.sendData мгновенно закрывает мини-апп,
+// и запись в базу не успевает уйти. На финише её не зовём.
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') return false;
+  try {
+    tg.sendData(JSON.stringify({type: 'state_quarter', payload: record}));
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    return false;
+  }
+}
+
+// === Состояние экрана ===
+const state = {screen: 'hub', key: null, idx: 0, answers: {}, sync: '', syncMsg: ''};
+const app = document.getElementById('app');
+
+// === Прогресс-бар ===
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'test') { bar.style.display = 'none'; return; }
+  const t = getTest(state.key);
+  const done = Object.keys(state.answers).length;
+  bar.style.display = 'block';
+  fill.style.width = ((done / t.items.length) * 100) + '%';
+  text.textContent = t.title;
+  count.textContent = done + ' / ' + t.items.length;
+}
+
+// === Сколько дней назад был замер ===
+function pluralDays(n) {
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return 'день';
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return 'дня';
+  return 'дней';
+}
+function lastSeen(key) {
+  const r = results[key];
+  if (!r || !r.completed_at) return 'замеров ещё не было';
+  const days = Math.floor((Date.now() - new Date(r.completed_at).getTime()) / 86400000);
+  if (days <= 0) return 'последний замер сегодня';
+  return 'последний замер ' + days + ' ' + pluralDays(days) + ' назад';
+}
+
+// Метка «рабочий перевод» рядом с названием теста
+function tagFor(t) {
+  return t.translated ? `<span class="tag">${t.translatedLabel}</span>` : '';
+}
+
+// === Экран списка (хаб) ===
+function renderHub() {
+  state.screen = 'hub';
+  const items = TESTS.map(t => `
+    <div class="hub-item">
+      <div class="hub-head">
+        <div class="hub-title">${t.title}${tagFor(t)}</div>
+        <div class="hub-when">${lastSeen(t.key)}</div>
+      </div>
+      <div class="hub-what">${t.what}</div>
+      <div class="hub-note">${t.note}</div>
+      <div class="hub-src">${t.src}</div>
+      <button onclick="startTest('${t.key}')">Снять новый замер</button>
+    </div>
+  `).join('');
+  app.innerHTML = `
+    <h1>Квартал</h1>
+    <div class="sub">Замер раз в три месяца</div>
+    <div class="weather">${SLOW_TEXT}</div>
+    ${items}
+    ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
+  `;
+  updateProgress();
+}
+
+// === Экран вопроса ===
+function renderQuestion() {
+  const t = getTest(state.key);
+  const item = t.items[state.idx];
+  const selected = state.answers[state.idx];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">${t.title}${tagFor(t)}</div>
+      ${(state.idx === 0 && t.instruction) ? `<div class="q-instr">${t.instruction}</div>` : ''}
+      <div class="q-text">${item.t}</div>
+      <div class="q-options">
+        ${t.scale.map(s => `
+          <div class="q-option ${selected === s.v ? 'selected' : ''}" onclick="answer(${s.v})">
+            <span class="q-option-text">${s.l}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${state.idx === 0
+        ? '<button class="secondary" onclick="renderHub()">К списку</button>'
+        : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран результата одного теста ===
+function renderResult(key) {
+  state.screen = 'result';
+  const t = getTest(key);
+  const r = results[key];
+  const rows = r.nums.map(n => `
+    <div class="result-row">
+      <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+      <div><span class="result-val">${n.v}</span></div>
+    </div>
+  `).join('');
+  const syncBlock = state.sync
+    ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
+    : '';
+  app.innerHTML = `
+    <h1>${t.title}</h1>
+    <div class="sub">Замер записан. Следующий — через квартал.</div>
+    <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+    <div class="result-card">${rows}</div>
+    <div class="weather">${SLOW_TEXT}</div>
+    ${syncBlock}
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран «все последние результаты» ===
+function renderAllResults() {
+  state.screen = 'result';
+  const blocks = TESTS.filter(t => results[t.key]).map(t => {
+    const r = results[t.key];
+    const rows = r.nums.map(n => `
+      <div class="result-row">
+        <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+        <div><span class="result-val">${n.v}</span></div>
+      </div>
+    `).join('');
+    return `
+      <h2>${t.title}${tagFor(t)}</h2>
+      <div class="hub-when" style="margin-bottom:10px;">${lastSeen(t.key)}</div>
+      <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+      <div class="result-card">${rows}</div>
+    `;
+  }).join('');
+  app.innerHTML = `
+    <h1>Квартал</h1>
+    <div class="sub">Последние результаты</div>
+    ${blocks}
+    <div class="weather">${SLOW_TEXT}</div>
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+// Повторный замер — это норма, никаких переспрашиваний перед стартом
+function startTest(key) {
+  state.screen = 'test';
+  state.key = key;
+  state.idx = 0;
+  state.answers = {};
+  state.sync = '';
+  state.syncMsg = '';
+  renderQuestion();
+}
+
+function answer(v) {
+  const t = getTest(state.key);
+  state.answers[state.idx] = v;
+  saveProgress();
+  if (state.idx < t.items.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.idx > 0) { state.idx--; renderQuestion(); }
+}
+
+async function finish() {
+  const key = state.key;
+  const scored = SCORERS[key](state.answers);
+  results[key] = {
+    nums: scored.nums,
+    band: scored.band,
+    c: scored.c,
+    data: scored.data,
+    answers: {...state.answers},
+    completed_at: new Date().toISOString()
+  };
+  saveResultsLocal();
+  saveToCloud();
+  clearProgress();
+
+  const record = {
+    user_id: UID,
+    block: BLOCK,
+    instrument: INSTRUMENT,
+    scores: buildScores(),
+    answers: buildAnswers(),
+    completed_at: results[key].completed_at
+  };
+
+  // sendData НЕ вызываем: он мгновенно закрывает мини-апп, и запись в базу
+  // просто не успевает уйти — замер теряется целиком. Пишем напрямую.
+  state.sync = 'saving';
+  state.syncMsg = 'Сохраняю…';
+  renderResult(key);
+
+  const ok = await pushToSupabase(record);
+  state.sync = ok ? 'ok' : 'error';
+  state.syncMsg = ok
+    ? 'Замер записан. Можно вернуться к списку и пройти остальное.'
+    : 'Не удалось сохранить — открой замер через бота и попробуй ещё раз.';
+  if (state.screen === 'result') renderResult(key);
+}
+
+// === Старт ===
+(async () => {
+  loadResultsLocal();
+  cloudRestored = await restoreFromCloud();
+  renderHub();
+})();
+</script>
+</body>
+</html>
