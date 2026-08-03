@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Месяц</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
+
+main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 24px; max-width: 540px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 22px; }
+
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; transition: background 0.2s; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+.actions { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Плашка «это погода, а не характер» — повторяется в списке и в результатах */
+.weather { border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin: 22px 0; font-size: 14px; line-height: 1.5; color: var(--graphite-75); }
+
+.hub-item { border: 1px solid var(--graphite-15); padding: 20px; margin-bottom: 12px; }
+.hub-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.hub-title { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.hub-when { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); white-space: nowrap; }
+.hub-what { font-size: 14px; color: var(--graphite-75); margin-bottom: 4px; }
+.hub-note { font-size: 13px; color: var(--graphite-50); margin-bottom: 14px; }
+.hub-src { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--graphite-30); margin-bottom: 14px; }
+.hub-item button { padding: 11px 20px; font-size: 13px; }
+
+/* Метка «рабочий перевод» — рядом с названием теста, где нет официальной русской версии */
+.tag-wt { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); border: 1px solid var(--terracotta); padding: 2px 6px; margin-left: 8px; white-space: nowrap; vertical-align: middle; }
+
+.q-card { margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 6px; }
+/* Окно наблюдения показываем на каждом экране — иначе человек съезжает на «вообще по жизни» */
+.q-window { font-family: var(--font-mono); font-size: 11px; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.q-instr { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; line-height: 1.5; }
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; transition: all 0.15s; background: transparent; user-select: none; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.q-option-text { font-size: 15px; flex: 1; }
+
+.result-card { border: 1px solid var(--graphite-08); margin-bottom: 20px; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); gap: 12px; }
+.result-row:last-child { border-bottom: 0; }
+.result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
+.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
+.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+.band { font-size: 16px; line-height: 1.45; margin-bottom: 18px; }
+.band.warn { color: var(--alert); }
+
+.soft-card { border: 1px solid var(--graphite-30); padding: 18px 20px; margin-bottom: 22px; }
+.soft-card p { margin-bottom: 0; color: var(--graphite-75); font-size: 14px; line-height: 1.55; }
+.soft-card.hard { border-color: var(--alert); background: var(--alert-tint); }
+.soft-card p + p { margin-top: 10px; }
+.sync-status { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); margin-top: 14px; }
+.sync-status.error { color: var(--alert); }
+
+@media (max-width: 600px) {
+  main { padding: 28px 20px 80px; }
+  h1 { font-size: 28px; }
+  .q-text { font-size: 19px; }
+  .result-row { padding: 16px; }
+  .result-val { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// === Telegram WebApp ===
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+// === Идентификатор клиента: сначала ?u= из URL (его подставляет бот), потом Telegram, потом локальный ===
+function getOrCreateLocalUid() {
+  let id = localStorage.getItem("local_uid");
+  if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
+  return id;
+}
+function getClientId() {
+  const params = new URLSearchParams(window.location.search);
+  const u = params.get('u');
+  if (u) return u;
+  const tgId = tg?.initDataUnsafe?.user?.id;
+  if (tgId) return "tg_" + tgId;
+  return "local_" + getOrCreateLocalUid();
+}
+const CLIENT_ID = getClientId();
+// В базе user_id — число, поэтому из «tg_123» достаём сам номер.
+// Со строкой запись падала бы с ошибкой типа.
+const UID = (function () {
+  const m = /^tg_(\d+)$/.exec(CLIENT_ID);
+  return m ? parseInt(m[1], 10) : null;
+})();
+
+// === Ключи хранения ===
+const STORE_KEY = 'state_month_' + CLIENT_ID;          // незаконченный проход
+const RESULT_KEY = 'state_month_result_' + CLIENT_ID;  // последние результаты по каждому тесту
+const CLOUD_KEY = 'res_state_month';                   // облачная копия результатов (Telegram CloudStorage)
+
+// === Supabase (пишем прямым fetch, без библиотеки) ===
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const SUPABASE_TABLE = "passport";
+const BLOCK = 'state_month';
+const INSTRUMENT = 'PSS-10 + ISI + PHQ-9 + GAD-7 + AUDIT-C + ASRM + BPNSFS + EQ-децентрация';
+
+// Плашка-напоминание: один замер ничего не значит, смысл появляется на линии
+const WEATHER_TEXT = 'Это погода, а не характер. Один замер ничего не значит — смысл появляется на линии из нескольких месяцев.';
+// Мягкая плашка, когда сработал хоть один порог
+const ALERT_TEXT = 'Это скрин, а не диагноз. Он говорит одно: стоит посмотреть внимательнее вместе со специалистом.';
+
+// === Шкалы ответов ===
+// PSS-10 — якоря русскоязычной адаптации ШВС-10 (Абабков и соавт., 2016).
+// Значения 0–4: считаем по оригинальному ключу Коэна, чтобы сумма шла в диапазон 0–40.
+const SCALE_PSS = [
+  {v: 0, l: 'Никогда'},
+  {v: 1, l: 'Почти никогда'},
+  {v: 2, l: 'Иногда'},
+  {v: 3, l: 'Довольно часто'},
+  {v: 4, l: 'Часто'}
+];
+// Единая шкала PHQ-9 / GAD-7 — подписи из официальных русских бланков Pfizer
+const SCALE_PHQ = [
+  {v: 0, l: 'Ни разу'},
+  {v: 1, l: 'Несколько дней'},
+  {v: 2, l: 'Более недели'},
+  {v: 3, l: 'Почти каждый день'}
+];
+// ISI: у каждого пункта свои подписи, поэтому шкалы отдельные.
+// Формулировки — Приложение Г20 клинрекомендаций Минздрава РФ.
+const SCALE_ISI_SEV = [
+  {v: 0, l: 'Нет'},
+  {v: 1, l: 'Лёгкие'},
+  {v: 2, l: 'Умеренные'},
+  {v: 3, l: 'Тяжёлые'},
+  {v: 4, l: 'Очень тяжёлые'}
+];
+// В тексте клинрекомендаций у этого пункта варианты 1 и 2 переставлены местами
+// («Удовлетворён относительно» стоит выше «Удовлетворён»). Порядок восстановлен по оригиналу ISI.
+const SCALE_ISI_SAT = [
+  {v: 0, l: 'Очень удовлетворён'},
+  {v: 1, l: 'Удовлетворён'},
+  {v: 2, l: 'Удовлетворён относительно'},
+  {v: 3, l: 'Не удовлетворён'},
+  {v: 4, l: 'Крайне не удовлетворён'}
+];
+const SCALE_ISI_NOTICE = [
+  {v: 0, l: 'Совсем незаметны'},
+  {v: 1, l: 'Чуть'},
+  {v: 2, l: 'Немного'},
+  {v: 3, l: 'Сильно'},
+  {v: 4, l: 'Очень сильно заметны'}
+];
+const SCALE_ISI_WORRY = [
+  {v: 0, l: 'Совсем не беспокоят'},
+  {v: 1, l: 'Чуть'},
+  {v: 2, l: 'Немного'},
+  {v: 3, l: 'Сильно'},
+  {v: 4, l: 'Очень сильно беспокоят'}
+];
+const SCALE_ISI_INTERF = [
+  {v: 0, l: 'Совсем не мешают'},
+  {v: 1, l: 'Чуть'},
+  {v: 2, l: 'Немного'},
+  {v: 3, l: 'Сильно'},
+  {v: 4, l: 'Очень сильно мешают'}
+];
+// BPNSFS — согласие с утверждением
+const SCALE_BPNSFS = [
+  {v: 1, l: 'Совсем не верно'},
+  {v: 2, l: 'Скорее не верно'},
+  {v: 3, l: 'Отчасти верно'},
+  {v: 4, l: 'Скорее верно'},
+  {v: 5, l: 'Полностью верно'}
+];
+// EQ — частота
+const SCALE_EQ = [
+  {v: 1, l: 'Никогда'},
+  {v: 2, l: 'Редко'},
+  {v: 3, l: 'Иногда'},
+  {v: 4, l: 'Часто'},
+  {v: 5, l: 'Всё время'}
+];
+
+// === Восемь тестов замера ===
+// wt: true — официальной русской версии нет, используется рабочий перевод
+const TESTS = [
+  {
+    key: 'pss',
+    title: 'Напряжение',
+    what: 'насколько месяц ощущался неуправляемым',
+    note: 'не про события, а про то, как они ощущались',
+    window: 'Окно: последний месяц',
+    src: 'PSS-10 (Cohen, 1983) · формулировки ШВС-10, русскоязычная адаптация Абабкова и соавт., 2016',
+    instruction: 'Вопросы про твои чувства и мысли за последний месяц. По каждому отметь, как часто ты чувствовал или думал так.',
+    scale: SCALE_PSS,
+    // rev: true — обратный пункт (4, 5, 7, 8), считается как 4 минус ответ
+    items: [
+      {t: 'Как часто за последний месяц Вы испытывали беспокойство из-за непредвиденных событий?'},
+      {t: 'Как часто за последний месяц Вам казалось сложным контролировать важные события Вашей жизни?'},
+      {t: 'Как часто за последний месяц Вы испытывали нервное напряжение или стресс?'},
+      {t: 'Как часто за последний месяц Вы чувствовали уверенность в том, что справитесь с решением Ваших личных проблем?', rev: true},
+      {t: 'Как часто за последний месяц Вы чувствовали, что всё идёт так, как Вы этого хотели?', rev: true},
+      {t: 'Как часто за последний месяц Вы думали, что не можете справиться с тем, что Вам нужно сделать?'},
+      {t: 'Как часто за последний месяц Вы были в состоянии справиться с Вашей раздражительностью?', rev: true},
+      {t: 'Как часто за последний месяц Вы чувствовали, что владеете ситуацией?', rev: true},
+      {t: 'Как часто за последний месяц Вы чувствовали раздражение из-за того, что происходящие события выходили из-под Вашего контроля?'},
+      {t: 'Как часто за последний месяц Вам казалось, что накопившиеся трудности достигли такого предела, что Вы не могли их контролировать?'}
+    ]
+  },
+  {
+    key: 'isi',
+    title: 'Сон',
+    what: 'насколько сон сбоит и сколько это стоит днём',
+    note: 'это скрин, а не диагноз',
+    window: 'Окно: последние 2 недели',
+    src: 'ISI (Bastien, Vallières, Morin, 2001) · русская версия из клинрекомендаций Минздрава РФ, приложение Г20',
+    instruction: 'Оцени свои текущие — то есть за прошедшие 2 недели — проблемы со сном.',
+    scale: SCALE_ISI_SEV,
+    items: [
+      {t: 'Проблема с засыпанием', scale: SCALE_ISI_SEV},
+      {t: 'Проблема прерывистого сна', scale: SCALE_ISI_SEV},
+      {t: 'Проблема слишком раннего пробуждения', scale: SCALE_ISI_SEV},
+      {t: 'Насколько Вы удовлетворены (или не удовлетворены) процессом своего сна?', scale: SCALE_ISI_SAT},
+      {t: 'Насколько, как Вам кажется, окружающим заметны Ваши проблемы со сном в плане нарушения качества Вашей жизни?', scale: SCALE_ISI_NOTICE},
+      {t: 'В какой степени Вас беспокоят текущие проблемы со сном?', scale: SCALE_ISI_WORRY},
+      {t: 'В какой степени, по-Вашему, Ваши проблемы со сном мешают Вашему повседневному функционированию — дневная усталость, рабочие и ежедневные обязанности, концентрация внимания, память, настроение?', scale: SCALE_ISI_INTERF}
+    ]
+  },
+  {
+    key: 'phq',
+    title: 'Настроение',
+    what: 'девять признаков просевшего настроения',
+    note: 'это скрин, а не диагноз',
+    window: 'Окно: последние 2 недели',
+    src: 'PHQ-9 (Kroenke, Spitzer, Williams, 1999) · официальная русская версия Pfizer, phqscreeners.com',
+    instruction: 'Как часто за последние 2 недели Вас беспокоили следующие проблемы?',
+    scale: SCALE_PHQ,
+    items: [
+      {t: 'Вам не хотелось ничего делать'},
+      {t: 'У Вас было плохое настроение, Вы были подавлены или испытывали чувство безысходности'},
+      {t: 'Вам было трудно заснуть, у Вас был прерывистый сон, или Вы слишком много спали'},
+      {t: 'Вы были утомлены, или у Вас было мало сил'},
+      {t: 'У Вас был плохой аппетит, или Вы переедали'},
+      {t: 'Вы плохо о себе думали: считали себя неудачником (неудачницей), или были в себе разочарованы, или считали, что подвели свою семью'},
+      {t: 'Вам было трудно сосредоточиться (например, на чтении газеты или на просмотре телепередач)'},
+      {t: 'Вы двигались или говорили настолько медленно, что окружающие это замечали? Или, наоборот, Вы были настолько суетливы или взбудоражены, что двигались гораздо больше обычного'},
+      {t: 'Вас посещали мысли о том, что Вам лучше было бы умереть, или о том, чтобы причинить себе какой-нибудь вред'}
+    ]
+  },
+  {
+    key: 'gad',
+    title: 'Тревога',
+    what: 'семь признаков фонового беспокойства',
+    note: 'это скрин, а не диагноз',
+    window: 'Окно: последние 2 недели',
+    src: 'GAD-7 (Spitzer, Kroenke, Williams, Löwe, 2006) · официальная русская версия Pfizer, phqscreeners.com',
+    instruction: 'Как часто Вас за последние 14 дней беспокоили следующие проблемы?',
+    scale: SCALE_PHQ,
+    items: [
+      {t: 'Вы нервничали, тревожились или испытывали сильный стресс'},
+      {t: 'Вы были неспособны успокоиться или контролировать своё волнение'},
+      {t: 'Вы слишком сильно волновались по различным поводам'},
+      {t: 'Вам было трудно расслабиться'},
+      {t: 'Вы были настолько суетливы, что Вам было тяжело усидеть на месте'},
+      {t: 'Вы легко злились или раздражались'},
+      {t: 'Вы испытывали страх, словно должно произойти нечто ужасное'}
+    ]
+  },
+  {
+    key: 'audit',
+    title: 'Алкоголь',
+    what: 'три вопроса про количество и частоту',
+    note: 'это скрин, а не диагноз',
+    window: 'Окно: последний год',
+    src: 'AUDIT-C · первые три вопроса RUS-AUDIT, версия ВОЗ, валидированная для России',
+    instruction: 'Одна стандартная порция — 10 г чистого спирта: 100 мл вина или шампанского 12–13%, 250 мл пива 4,5–5%, 60 мл крепленого вина 16–22% или 30 мл крепкого алкоголя 40%. Если в день пьёшь разное — сложи порции.',
+    scale: null,
+    items: [
+      {t: 'Как часто Вы употребляете алкогольные напитки?', scale: [
+        {v: 0, l: 'Никогда'},
+        {v: 1, l: 'Раз в месяц или реже'},
+        {v: 2, l: '2–4 раза в месяц'},
+        {v: 3, l: '2–3 раза в неделю'},
+        {v: 4, l: '4 раза в неделю и чаще'}
+      ]},
+      {t: 'Сколько алкогольных напитков — стандартных порций — Вы употребляете в типичный день, когда выпиваете?', scale: [
+        {v: 0, l: '1–2 порции'},
+        {v: 1, l: '3–4 порции'},
+        {v: 2, l: '5–6 порций'},
+        {v: 3, l: '7–9 порций'},
+        {v: 4, l: '10 порций и больше'}
+      ]},
+      {t: 'Как часто Вы употребляете как минимум полтора литра пива, или как минимум 180 мл крепкого алкоголя, или как минимум бутылку вина или шампанского (750 мл) в течение 24 часов?', scale: [
+        {v: 0, l: 'Никогда'},
+        {v: 1, l: 'Реже одного раза в месяц'},
+        {v: 2, l: 'Ежемесячно'},
+        {v: 3, l: 'Еженедельно'},
+        {v: 4, l: 'Ежедневно или почти ежедневно'}
+      ]}
+    ]
+  },
+  {
+    key: 'asrm',
+    title: 'Разгон',
+    what: 'пять признаков разгона: подъём, мало сна, много активности',
+    note: 'это скрин, а не диагноз',
+    window: 'Окно: последняя неделя',
+    wt: true,
+    src: 'ASRM (Altman и соавт., 1997) · рабочий перевод с оригинала',
+    instruction: 'В каждом блоке выбери одно утверждение, которое лучше всего описывает тебя за последнюю неделю. «Изредка» — один-два раза, «часто» — несколько раз и больше, «почти всё время» — большую часть времени.',
+    scale: null,
+    items: [
+      {t: 'Настроение', scale: [
+        {v: 0, l: 'Я не чувствую себя более радостным или приподнятым, чем обычно.'},
+        {v: 1, l: 'Изредка я чувствую себя более радостным или приподнятым, чем обычно.'},
+        {v: 2, l: 'Часто я чувствую себя более радостным или приподнятым, чем обычно.'},
+        {v: 3, l: 'Бо́льшую часть времени я чувствую себя более радостным или приподнятым, чем обычно.'},
+        {v: 4, l: 'Я всё время чувствую себя более радостным или приподнятым, чем обычно.'}
+      ]},
+      {t: 'Уверенность в себе', scale: [
+        {v: 0, l: 'Я не чувствую себя более уверенным в себе, чем обычно.'},
+        {v: 1, l: 'Изредка я чувствую себя более уверенным в себе, чем обычно.'},
+        {v: 2, l: 'Часто я чувствую себя более уверенным в себе, чем обычно.'},
+        {v: 3, l: 'Я чувствую себя более уверенным в себе, чем обычно (почти всё время).'},
+        {v: 4, l: 'Я всё время чувствую себя предельно уверенным в себе.'}
+      ]},
+      {t: 'Потребность во сне', scale: [
+        {v: 0, l: 'Мне не нужно меньше сна, чем обычно.'},
+        {v: 1, l: 'Изредка мне нужно меньше сна, чем обычно.'},
+        {v: 2, l: 'Часто мне нужно меньше сна, чем обычно.'},
+        {v: 3, l: 'Мне почти всё время нужно меньше сна, чем обычно.'},
+        {v: 4, l: 'Я могу провести весь день и всю ночь без сна и всё равно не чувствовать усталости.'}
+      ]},
+      {t: 'Разговорчивость', scale: [
+        {v: 0, l: 'Я говорю не больше обычного.'},
+        {v: 1, l: 'Изредка я говорю больше обычного.'},
+        {v: 2, l: 'Часто я говорю больше обычного.'},
+        {v: 3, l: 'Я почти всё время говорю больше обычного.'},
+        {v: 4, l: 'Я говорю без остановки, и меня невозможно прервать.'}
+      ]},
+      {t: 'Активность', scale: [
+        {v: 0, l: 'Я не был более активен, чем обычно, — ни в общении, ни в сексе, ни на работе, ни дома, ни в учёбе.'},
+        {v: 1, l: 'Изредка я был более активен, чем обычно.'},
+        {v: 2, l: 'Часто я был более активен, чем обычно.'},
+        {v: 3, l: 'Я почти всё время был более активен, чем обычно.'},
+        {v: 4, l: 'Я постоянно активен и всё время на ходу.'}
+      ]}
+    ]
+  },
+  {
+    key: 'bpnsfs',
+    title: 'Потребности',
+    what: 'сколько за месяц было свободы, силы и близости — и сколько их не хватало',
+    note: 'строго про последний месяц, а не про жизнь вообще',
+    window: 'Окно: строго последний месяц',
+    wt: true,
+    src: 'BPNSFS (Chen, Vansteenkiste и соавт., 2015) · рабочий перевод',
+    instruction: 'Отвечай строго про последний месяц: как было именно эти четыре недели, а не вообще по жизни. Если ответить «вообще» — получится характер, а не состояние, и линия будет плоской.',
+    scale: SCALE_BPNSFS,
+    // s — подшкала: as/af — автономия удовл./фрустр., cs/cf — компетентность, rs/rf — связанность
+    items: [
+      {t: 'В последний месяц я чувствовал свободу и возможность выбора в том, за что берусь.', s: 'as'},
+      {t: 'В последний месяц бо́льшая часть моих дел ощущалась как «я должен».', s: 'af'},
+      {t: 'В последний месяц я чувствовал, что людям, которые дороги мне, я тоже дорог.', s: 'rs'},
+      {t: 'В последний месяц я чувствовал себя исключённым из круга, к которому хочу принадлежать.', s: 'rf'},
+      {t: 'В последний месяц я был уверен, что могу делать дела хорошо.', s: 'cs'},
+      {t: 'В последний месяц я всерьёз сомневался, что могу делать дела хорошо.', s: 'cf'},
+      {t: 'В последний месяц я чувствовал, что мои решения отражают то, чего я действительно хочу.', s: 'as'},
+      {t: 'В последний месяц я чувствовал себя вынужденным делать много такого, что сам бы не выбрал.', s: 'af'},
+      {t: 'В последний месяц я чувствовал связь с людьми, которым я небезразличен и которые небезразличны мне.', s: 'rs'},
+      {t: 'В последний месяц я чувствовал, что важные для меня люди холодны и отстранены со мной.', s: 'rf'},
+      {t: 'В последний месяц я чувствовал себя способным в том, что делаю.', s: 'cs'},
+      {t: 'В последний месяц я был разочарован тем, как справлялся с делами.', s: 'cf'},
+      {t: 'В последний месяц я чувствовал, что мой выбор выражает то, кто я есть.', s: 'as'},
+      {t: 'В последний месяц я чувствовал давление: слишком много всего нужно успеть.', s: 'af'},
+      {t: 'В последний месяц я чувствовал близость и связь с важными для меня людьми.', s: 'rs'},
+      {t: 'В последний месяц у меня было ощущение, что люди, с которыми я провожу время, меня не любят.', s: 'rf'},
+      {t: 'В последний месяц я чувствовал себя достаточно компетентным, чтобы достигать своих целей.', s: 'cs'},
+      {t: 'В последний месяц я чувствовал неуверенность в своих способностях.', s: 'cf'},
+      {t: 'В последний месяц я чувствовал, что занимаюсь тем, что мне по-настоящему интересно.', s: 'as'},
+      {t: 'В последний месяц мои повседневные дела ощущались как цепочка обязанностей.', s: 'af'},
+      {t: 'В последний месяц я испытывал тепло рядом с людьми, с которыми провожу время.', s: 'rs'},
+      {t: 'В последний месяц я чувствовал, что мои отношения поверхностны.', s: 'rf'},
+      {t: 'В последний месяц я чувствовал, что могу успешно справляться с трудными задачами.', s: 'cs'},
+      {t: 'В последний месяц я чувствовал себя неудачником из-за своих ошибок.', s: 'cf'}
+    ]
+  },
+  {
+    key: 'eq',
+    title: 'Дистанция',
+    what: 'получается ли смотреть на свои мысли со стороны, а не быть ими',
+    note: 'про последний месяц',
+    window: 'Окно: последний месяц',
+    wt: true,
+    src: 'Experiences Questionnaire, подшкала децентрации (Fresco и соавт., 2007) · 9 из 11 пунктов · рабочий перевод',
+    instruction: 'Отметь, как часто за последний месяц это было верно для тебя.',
+    scale: SCALE_EQ,
+    // Оригинальная нумерация Fresco в скобках. Пункты 6 и 16 в открытых источниках
+    // дословно не публикуются, поэтому их здесь нет — придумывать формулировки нельзя.
+    // Обратных пунктов в подшкале децентрации нет, механика rev оставлена на будущее.
+    items: [
+      {t: 'Я лучше принимаю себя таким, какой я есть.'},                              // 3
+      {t: 'Меня не так легко уносит моими мыслями и чувствами.'},                     // 8
+      {t: 'Я могу отделить себя от своих мыслей и чувств.'},                          // 10
+      {t: 'Я могу взять время, прежде чем ответить на трудность.'},                   // 12
+      {t: 'Я могу отнестись к себе по-доброму.'},                                     // 14
+      {t: 'Я могу наблюдать неприятные чувства, не втягиваясь в них.'},               // 15
+      {t: 'Я действительно вижу, что я — это не мои мысли.'},                         // 17
+      {t: 'Я осознанно ощущаю своё тело как целое.'},                                 // 18
+      {t: 'Я смотрю на вещи с более широкой перспективы.'}                            // 20
+    ]
+  }
+];
+
+function getTest(key) { return TESTS.find(t => t.key === key); }
+// Шкала конкретного пункта: своя, если задана, иначе общая шкала теста
+function itemScale(t, item) { return item.scale || t.scale; }
+
+// === Скоринг ===
+// Каждая функция возвращает {nums, band, c, data}
+
+// PSS-10: 4 обратных пункта (4, 5, 7, 8), сумма 0–40
+function scorePss(ans) {
+  const t = getTest('pss');
+  let total = 0;
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    total += it.rev ? (4 - v) : v;
+  });
+  let band;
+  if (total <= 13) band = 'Напряжение низкое — месяц ощущался управляемым.';
+  else if (total <= 26) band = 'Напряжение среднее — обычный уровень для загруженного месяца.';
+  else band = 'Напряжение высокое — месяц ощущался почти неуправляемым.';
+  return {
+    nums: [{l: 'Воспринимаемое напряжение', v: total, range: '0–40'}],
+    band: band,
+    c: 'ok',
+    data: {total: total}
+  };
+}
+
+// ISI: сумма 0–28
+function scoreIsi(ans) {
+  const t = getTest('isi');
+  let total = 0;
+  t.items.forEach((it, i) => { total += ans[i] || 0; });
+  const alert = total >= 15;
+  let band;
+  if (total <= 7) band = 'Сон в порядке.';
+  else if (total <= 14) band = 'Сон подтормаживает — сбои есть, но лёгкие.';
+  else if (total <= 21) band = 'Сон нарушен умеренно — стоит показать это врачу.';
+  else band = 'Сон нарушен сильно — стоит показать это врачу.';
+  return {
+    nums: [{l: 'Тяжесть нарушений сна', v: total, range: '0–28'}],
+    band: band,
+    c: alert ? 'warn' : 'ok',
+    data: {total: total, alert: alert}
+  };
+}
+
+// PHQ-9: сумма 0–27. Пункт 9 (мысли о смерти) — отдельный флаг
+function scorePhq(ans) {
+  const t = getTest('phq');
+  let total = 0;
+  t.items.forEach((it, i) => { total += ans[i] || 0; });
+  const item9 = ans[8] || 0;
+  const alert = total >= 10 || item9 > 0;
+  let band;
+  if (total <= 4) band = 'Настроение ровное.';
+  else if (total <= 9) band = 'Настроение слегка просело — в пределах обычных колебаний.';
+  else if (total <= 14) band = 'Настроение просело заметно — стоит показать это врачу.';
+  else if (total <= 19) band = 'Настроение просело сильно — стоит показать это врачу.';
+  else band = 'Настроение просело очень сильно — стоит обратиться к врачу в ближайшее время.';
+  return {
+    nums: [
+      {l: 'Настроение', v: total, range: '0–27'},
+      {l: 'Пункт про мысли о смерти', v: item9, range: '0–3'}
+    ],
+    band: band,
+    c: alert ? 'warn' : 'ok',
+    data: {total: total, item9: item9, item9_flag: item9 > 0, alert: alert}
+  };
+}
+
+// GAD-7: сумма 0–21
+function scoreGad(ans) {
+  const t = getTest('gad');
+  let total = 0;
+  t.items.forEach((it, i) => { total += ans[i] || 0; });
+  const alert = total >= 10;
+  let band;
+  if (total <= 4) band = 'Беспокойство низкое.';
+  else if (total <= 9) band = 'Беспокойство заметное, но в рабочем диапазоне.';
+  else if (total <= 14) band = 'Беспокойство высокое — стоит показать это врачу.';
+  else band = 'Беспокойство очень высокое — стоит обратиться к врачу в ближайшее время.';
+  return {
+    nums: [{l: 'Беспокойство', v: total, range: '0–21'}],
+    band: band,
+    c: alert ? 'warn' : 'ok',
+    data: {total: total, alert: alert}
+  };
+}
+
+// AUDIT-C: сумма 0–12. Пол не спрашиваем, берём мужской порог 4
+function scoreAudit(ans) {
+  const t = getTest('audit');
+  let total = 0;
+  t.items.forEach((it, i) => { total += ans[i] || 0; });
+  const alert = total >= 4;
+  const band = alert
+    ? 'Есть признаки рискованного употребления — стоит обсудить это со специалистом.'
+    : 'Настораживающих признаков нет.';
+  return {
+    nums: [{l: 'Употребление алкоголя', v: total, range: '0–12'}],
+    band: band,
+    c: alert ? 'warn' : 'ok',
+    data: {total: total, alert: alert, threshold: 4, sex_asked: false}
+  };
+}
+
+// ASRM: сумма 0–20, порог 6
+function scoreAsrm(ans) {
+  const t = getTest('asrm');
+  let total = 0;
+  t.items.forEach((it, i) => { total += ans[i] || 0; });
+  const alert = total >= 6;
+  const band = alert
+    ? 'Отмечен разгон: подъём, мало сна, много активности. Стоит показать это врачу.'
+    : 'Признаков разгона нет.';
+  return {
+    nums: [{l: 'Разгон', v: total, range: '0–20'}],
+    band: band,
+    c: alert ? 'warn' : 'ok',
+    data: {total: total, alert: alert}
+  };
+}
+
+// BPNSFS: 6 подшкал по 4 пункта, средние по удовлетворению и по фрустрации
+function scoreBpnsfs(ans) {
+  const t = getTest('bpnsfs');
+  const sums = {as: 0, af: 0, cs: 0, cf: 0, rs: 0, rf: 0};
+  const counts = {as: 0, af: 0, cs: 0, cf: 0, rs: 0, rf: 0};
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    sums[it.s] += v;
+    counts[it.s] += 1;
+  });
+  const m = {};
+  Object.keys(sums).forEach(k => { m[k] = counts[k] ? Math.round((sums[k] / counts[k]) * 100) / 100 : 0; });
+  const sat = Math.round(((m.as + m.cs + m.rs) / 3) * 100) / 100;
+  const frust = Math.round(((m.af + m.cf + m.rf) / 3) * 100) / 100;
+  // Самая горячая фрустрация — про что именно месяц давил
+  const frustNames = {af: 'свободы', cf: 'опоры на себя', rf: 'близости'};
+  let worst = 'af';
+  ['cf', 'rf'].forEach(k => { if (m[k] > m[worst]) worst = k; });
+  let band;
+  if (frust >= 3.5) band = 'Месяц чаще давил, чем питал. Сильнее всего не хватало ' + frustNames[worst] + '.';
+  else if (frust >= 2.5) band = 'Месяц шёл вперемешку: что-то питало, что-то давило. Заметнее всего не хватало ' + frustNames[worst] + '.';
+  else if (sat >= 3.5) band = 'Месяц скорее питал: свобода, опора на себя и близость были.';
+  else band = 'Месяц шёл ровно: не давил, но и не особо питал.';
+  return {
+    nums: [
+      {l: 'Автономия · есть', v: m.as, range: '1–5'},
+      {l: 'Автономия · не хватает', v: m.af, range: '1–5'},
+      {l: 'Компетентность · есть', v: m.cs, range: '1–5'},
+      {l: 'Компетентность · не хватает', v: m.cf, range: '1–5'},
+      {l: 'Связанность · есть', v: m.rs, range: '1–5'},
+      {l: 'Связанность · не хватает', v: m.rf, range: '1–5'},
+      {l: 'Удовлетворение · среднее', v: sat, range: '1–5'},
+      {l: 'Фрустрация · среднее', v: frust, range: '1–5'}
+    ],
+    band: band,
+    c: 'ok',
+    data: {
+      autonomy_satisfaction: m.as, autonomy_frustration: m.af,
+      competence_satisfaction: m.cs, competence_frustration: m.cf,
+      relatedness_satisfaction: m.rs, relatedness_frustration: m.rf,
+      satisfaction: sat, frustration: frust
+    }
+  };
+}
+
+// EQ (децентрация): среднее 1–5 с учётом реверсов
+function scoreEq(ans) {
+  const t = getTest('eq');
+  let sum = 0;
+  t.items.forEach((it, i) => {
+    const v = ans[i] || 0;
+    // Обратный пункт: 6 минус ответ
+    sum += it.rev ? (6 - v) : v;
+  });
+  const mean = Math.round((sum / t.items.length) * 100) / 100;
+  let band;
+  if (mean >= 4) band = 'Дистанция большая: мысли и чувства видно со стороны, они не захватывают целиком.';
+  else if (mean >= 3) band = 'Дистанция средняя: иногда получается смотреть со стороны, иногда затягивает.';
+  else band = 'Дистанции мало: мысли и чувства сейчас захватывают почти целиком.';
+  return {
+    nums: [{l: 'Децентрация', v: mean, range: '1–5'}],
+    band: band,
+    c: 'ok',
+    data: {mean: mean}
+  };
+}
+
+const SCORERS = {
+  pss: scorePss, isi: scoreIsi, phq: scorePhq, gad: scoreGad,
+  audit: scoreAudit, asrm: scoreAsrm, bpnsfs: scoreBpnsfs, eq: scoreEq
+};
+
+// === Хранение результатов ===
+let results = {};       // {pss: {...}, isi: {...}, ...}
+let cloudRestored = false;
+
+function loadResultsLocal() {
+  try {
+    const s = localStorage.getItem(RESULT_KEY);
+    if (s) results = JSON.parse(s) || {};
+  } catch (e) { results = {}; }
+}
+
+function saveResultsLocal() {
+  try { localStorage.setItem(RESULT_KEY, JSON.stringify(results)); } catch (e) {}
+}
+
+// Облачное восстановление: если на этом устройстве пусто, поднимаем историю из Telegram CloudStorage
+function restoreFromCloud() {
+  return new Promise(resolve => {
+    if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.getItem !== 'function') { resolve(false); return; }
+    try {
+      tg.CloudStorage.getItem(CLOUD_KEY, (err, value) => {
+        if (err || !value) { resolve(false); return; }
+        try {
+          const cloud = JSON.parse(value) || {};
+          // Берём из облака только то, что свежее локального
+          Object.keys(cloud).forEach(k => {
+            const local = results[k];
+            if (!local || new Date(cloud[k].completed_at) > new Date(local.completed_at)) results[k] = cloud[k];
+          });
+          saveResultsLocal();
+          resolve(true);
+        } catch (e) { resolve(false); }
+      });
+    } catch (e) { resolve(false); }
+  });
+}
+
+function saveToCloud() {
+  if (!tg || !tg.CloudStorage || typeof tg.CloudStorage.setItem !== 'function') return;
+  try { tg.CloudStorage.setItem(CLOUD_KEY, JSON.stringify(results), () => {}); } catch (e) {}
+}
+
+// === Прогресс прохождения (черновик незаконченного теста) ===
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({key: state.key, idx: state.idx, answers: state.answers})); } catch (e) {}
+}
+function clearProgress() {
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+
+// === Общий флаг тревоги по всем снятым тестам ===
+// Поднимается, если сработало любое из шести условий
+function anyAlert() {
+  return TESTS.some(t => {
+    const r = results[t.key];
+    return !!(r && r.data && r.data.alert === true);
+  });
+}
+
+// === Отправка результата ===
+function buildScores() {
+  // В scores складываем всё, что уже снято, плюс метку источника и общий флаг
+  const scores = {source: 'manual'};
+  Object.keys(results).forEach(k => { scores[k] = results[k].data; });
+  scores.alert = anyAlert();
+  return scores;
+}
+
+function buildAnswers() {
+  const answers = {};
+  Object.keys(results).forEach(k => { answers[k] = results[k].answers; });
+  return answers;
+}
+
+async function pushToSupabase(record) {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(record)
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Supabase push failed:', e);
+    return false;
+  }
+}
+
+function sendToBot(record) {
+  if (!tg || typeof tg.sendData !== 'function') return false;
+  try {
+    tg.sendData(JSON.stringify({type: 'state_month', payload: record}));
+    return true;
+  } catch (e) {
+    console.error('sendData failed:', e);
+    return false;
+  }
+}
+
+// === Состояние экрана ===
+const state = {screen: 'hub', key: null, idx: 0, answers: {}, sync: '', syncMsg: ''};
+const app = document.getElementById('app');
+
+// === Прогресс-бар ===
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const count = document.getElementById('progressCount');
+  if (state.screen !== 'test') { bar.style.display = 'none'; return; }
+  const t = getTest(state.key);
+  const done = Object.keys(state.answers).length;
+  bar.style.display = 'block';
+  fill.style.width = ((done / t.items.length) * 100) + '%';
+  text.textContent = t.title;
+  count.textContent = done + ' / ' + t.items.length;
+}
+
+// === Сколько дней назад был замер ===
+function pluralDays(n) {
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return 'день';
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return 'дня';
+  return 'дней';
+}
+function lastSeen(key) {
+  const r = results[key];
+  if (!r || !r.completed_at) return 'замеров ещё не было';
+  const days = Math.floor((Date.now() - new Date(r.completed_at).getTime()) / 86400000);
+  if (days <= 0) return 'последний замер сегодня';
+  return 'последний замер ' + days + ' ' + pluralDays(days) + ' назад';
+}
+
+// Метка «рабочий перевод» рядом с названием теста
+function wtTag(t) { return t.wt ? '<span class="tag-wt">рабочий перевод</span>' : ''; }
+
+// Мягкая плашка при сработавшем пороге
+function alertCard() {
+  if (!anyAlert()) return '';
+  const phqFlag = results.phq && results.phq.data && results.phq.data.item9_flag;
+  const extra = phqFlag
+    ? '<p>Отдельно: отмечен пункт про мысли о смерти или о вреде себе. Это причина поговорить со специалистом в ближайшее время. Круглосуточная линия психологической помощи МЧС: 8 (495) 989-50-50.</p>'
+    : '';
+  return '<div class="soft-card hard"><p>' + ALERT_TEXT + '</p>' + extra + '</div>';
+}
+
+// === Экран списка (хаб) ===
+function renderHub() {
+  state.screen = 'hub';
+  const items = TESTS.map(t => `
+    <div class="hub-item">
+      <div class="hub-head">
+        <div class="hub-title">${t.title}${wtTag(t)}</div>
+        <div class="hub-when">${lastSeen(t.key)}</div>
+      </div>
+      <div class="hub-what">${t.what}</div>
+      <div class="hub-note">${t.note}</div>
+      <div class="hub-src">${t.src}</div>
+      <button onclick="startTest('${t.key}')">Снять новый замер</button>
+    </div>
+  `).join('');
+  app.innerHTML = `
+    <h1>Месяц</h1>
+    <div class="sub">Месячный замер состояния</div>
+    <div class="weather">${WEATHER_TEXT}</div>
+    ${alertCard()}
+    ${items}
+    ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
+  `;
+  updateProgress();
+}
+
+// === Экран вопроса ===
+function renderQuestion() {
+  const t = getTest(state.key);
+  const item = t.items[state.idx];
+  const scale = itemScale(t, item);
+  const selected = state.answers[state.idx];
+  app.innerHTML = `
+    <div class="q-card">
+      <div class="q-block">${t.title}${wtTag(t)}</div>
+      <div class="q-window">${t.window}</div>
+      ${(state.idx === 0 && t.instruction) ? `<div class="q-instr">${t.instruction}</div>` : ''}
+      <div class="q-text">${item.t}</div>
+      <div class="q-options">
+        ${scale.map(s => `
+          <div class="q-option ${selected === s.v ? 'selected' : ''}" onclick="answer(${s.v})">
+            <span class="q-option-text">${s.l}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      ${state.idx === 0
+        ? '<button class="secondary" onclick="renderHub()">К списку</button>'
+        : '<button class="secondary" onclick="prev()">Назад</button>'}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран результата одного теста ===
+function renderResult(key) {
+  state.screen = 'result';
+  const t = getTest(key);
+  const r = results[key];
+  const rows = r.nums.map(n => `
+    <div class="result-row">
+      <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+      <div><span class="result-val">${n.v}</span></div>
+    </div>
+  `).join('');
+  // У AUDIT-C пол не спрашиваем — честно проговариваем, какой порог взят
+  const auditNote = key === 'audit'
+    ? '<div class="soft-card"><p>Пол не спрашивали, поэтому взят мужской порог — 4 балла. Для женщин порог ниже: 3 балла.</p></div>'
+    : '';
+  const syncBlock = state.sync
+    ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
+    : '';
+  app.innerHTML = `
+    <h1>${t.title}</h1>
+    <div class="sub">Замер записан. Следующий — через месяц.</div>
+    <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+    <div class="result-card">${rows}</div>
+    ${auditNote}
+    ${alertCard()}
+    <div class="weather">${WEATHER_TEXT}</div>
+    ${syncBlock}
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+// === Экран «все последние результаты» ===
+function renderAllResults() {
+  state.screen = 'result';
+  const blocks = TESTS.filter(t => results[t.key]).map(t => {
+    const r = results[t.key];
+    const rows = r.nums.map(n => `
+      <div class="result-row">
+        <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
+        <div><span class="result-val">${n.v}</span></div>
+      </div>
+    `).join('');
+    return `
+      <h2>${t.title}</h2>
+      <div class="hub-when" style="margin-bottom:10px;">${lastSeen(t.key)}</div>
+      <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+      <div class="result-card">${rows}</div>
+    `;
+  }).join('');
+  app.innerHTML = `
+    <h1>Месяц</h1>
+    <div class="sub">Последние результаты</div>
+    ${alertCard()}
+    ${blocks}
+    <div class="weather">${WEATHER_TEXT}</div>
+    <div class="actions">
+      <button class="secondary" onclick="renderHub()">К списку</button>
+      ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
+    </div>
+  `;
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// === Действия ===
+// Повторный замер — это норма, никаких переспрашиваний перед стартом
+function startTest(key) {
+  state.screen = 'test';
+  state.key = key;
+  state.idx = 0;
+  state.answers = {};
+  state.sync = '';
+  state.syncMsg = '';
+  renderQuestion();
+}
+
+function answer(v) {
+  const t = getTest(state.key);
+  state.answers[state.idx] = v;
+  saveProgress();
+  if (state.idx < t.items.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    finish();
+  }
+}
+
+function prev() {
+  if (state.idx > 0) { state.idx--; renderQuestion(); }
+}
+
+async function finish() {
+  const key = state.key;
+  const scored = SCORERS[key](state.answers);
+  results[key] = {
+    nums: scored.nums,
+    band: scored.band,
+    c: scored.c,
+    data: scored.data,
+    answers: {...state.answers},
+    completed_at: new Date().toISOString()
+  };
+  saveResultsLocal();
+  saveToCloud();
+  clearProgress();
+
+  const record = {
+    user_id: UID,
+    block: BLOCK,
+    instrument: INSTRUMENT,
+    scores: buildScores(),
+    answers: buildAnswers(),
+    completed_at: results[key].completed_at
+  };
+
+  // sendData НЕ вызываем: он мгновенно закрывает мини-апп, и запись в базу
+  // просто не успевает уйти — замер теряется целиком. Пишем напрямую.
+  state.sync = 'saving';
+  state.syncMsg = 'Сохраняю…';
+  renderResult(key);
+
+  const ok = await pushToSupabase(record);
+  state.sync = ok ? 'ok' : 'error';
+  state.syncMsg = ok
+    ? 'Замер записан. Можно вернуться к списку и пройти остальное.'
+    : 'Не удалось сохранить — открой замер через бота и попробуй ещё раз.';
+  if (state.screen === 'result') renderResult(key);
+}
+
+// === Старт ===
+(async () => {
+  loadResultsLocal();
+  cloudRestored = await restoreFromCloud();
+  renderHub();
+})();
+</script>
+</body>
+</html>
