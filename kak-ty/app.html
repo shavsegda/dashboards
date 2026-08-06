@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Как ты?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+main { max-width: 560px; margin: 0 auto; padding: 28px 20px 44px; }
+h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 8px; }
+.lead { font-size: 15px; color: var(--graphite-65); margin-bottom: 20px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
+
+/* Заголовок раздела: моно + капс, как во всей дизайн-системе */
+.sec { margin-top: 30px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
+.sec-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
+.sec-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
+.sec-empty { padding: 14px 0; font-size: 14px; color: var(--graphite-50); }
+
+/* Первый экран — то, что пора. Рамка терракотой: видно, не заходя в раздел */
+.sec.urgent .sec-head { border-bottom-color: var(--terracotta); }
+.sec.urgent .sec-name { color: var(--terracotta); }
+
+/* Карточка замера */
+.card { padding: 15px 0; border-bottom: 1px solid var(--graphite-08); }
+.card-open { display: block; text-decoration: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.card-name { font-size: 16px; font-weight: 500; }
+.card-open:hover .card-name { color: var(--terracotta); }
+.card-sub { font-size: 13px; color: var(--graphite-65); margin-top: 3px; }
+.card-when { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); margin-top: 6px; }
+.card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 9px; }
+.card-size { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); margin-left: auto; }
+
+/* Метка свежести */
+.badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 8px; white-space: nowrap; border: 1px solid var(--graphite-15); color: var(--graphite-50); }
+.badge.due { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.badge.never { border-color: var(--graphite-30); color: var(--graphite-75); }
+.badge.fresh { border-color: var(--graphite-15); color: var(--graphite-50); }
+.badge.unknown { border-style: dashed; color: var(--graphite-30); }
+
+/* Метка контейнера жизни — она же кнопка фильтра */
+.tag { font-family: var(--font-mono); font-size: 11px; padding: 4px 9px; border: 1px solid var(--graphite-15); background: transparent; color: var(--graphite-65); cursor: pointer; font-family: var(--font-mono); -webkit-tap-highlight-color: transparent; }
+.tag:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.tag.on { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+
+/* Панель фильтра */
+.filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.filter .tag.zero { color: var(--graphite-30); border-style: dashed; }
+.filter-note { font-size: 12px; color: var(--graphite-50); margin-bottom: 4px; }
+
+.banner { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 20px; font-size: 14px; }
+.banner strong { font-weight: 500; }
+.calm { border: 1px solid var(--graphite-15); padding: 16px; margin-bottom: 20px; font-size: 15px; }
+
+/* Замер, который проходится в разговоре с ботом, а не в мини-аппе */
+.chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; display: none; }
+.chat.open { display: block; }
+.chat-phrase { font-family: var(--font-mono); font-size: 14px; padding: 9px 11px; background: var(--stone); word-break: break-word; }
+.chat-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.chat-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
+button.act { background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
+button.act:hover { background: var(--terracotta); }
+button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 10px 16px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); }
+button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); }
+
+.foot { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--graphite-08); font-size: 13px; color: var(--graphite-50); }
+
+@media (max-width: 380px) {
+  h1 { font-size: 26px; }
+  .card-name { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* ==== ЧИСТАЯ ЛОГИКА: НАЧАЛО ====
+   Всё внутри этих границ не трогает DOM и не ходит в сеть.
+   Скрипт проверок вырезает этот блок и прогоняет функции на выдуманных данных.
+   Менять только вместе с проверками. */
+
+// ---- Контейнеры жизни ----
+// Закрытый список из семи, перенос из bot.py (LIFE_CONTAINERS) один в один.
+// Порядок тот же: он же порядок чипов фильтра.
+var LIFE_CONTAINERS = ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"];
+
+// ---- Ритмы ----
+// Пять разделов, требование FR-002e. Пятый — «Реже»: медленное состояние
+// никуда не денется, анализы и «свою жизнь живёшь» идут раз в полгода.
+//
+// Граница между «Как ты?» и «Узнать себя лучше» идёт НЕ по скорости, а по
+// тому, что замер спрашивает. Здесь состояние: «как мне это сейчас». Там
+// структура: «из чего я устроен». Смешивать состояния и структуры — главная
+// ошибка в измерении человека (FR-002a, FR-002b, FR-002f).
+var RHYTHMS = [
+  { id: "day",     name: "День",    sub: "каждый день" },
+  { id: "week",    name: "Неделя",  sub: "раз в неделю" },
+  { id: "month",   name: "Месяц",   sub: "раз в месяц" },
+  { id: "quarter", name: "Квартал", sub: "раз в квартал" },
+  { id: "rare",    name: "Реже",    sub: "раз в полгода" }
+];
+
+// Разовое живёт отдельной строкой, не внутри ритма: пересдавать нечего.
+var ONCE_SECTION = { id: "once", name: "Один раз", sub: "пока не заполнено" };
+
+// ---- Реестр замеров ----
+// Перенос из bot.py, COVERAGE_MAP: замеры состояния, список из FR-002a.
+// Поля key / label / days взяты БУКВАЛЬНО из COVERAGE_MAP — их сверяет
+// отдельная проверка. Каталог ничего не добавляет от себя: новых замеров нет,
+// новых вопросов нет, сводных баллов нет (конституция, принцип IV).
+//
+// Чего здесь СОЗНАТЕЛЬНО нет: level, ztpi, stressrisk и все блоки паспорта.
+// Это замеры структуры — стиль совладания, риск-профиль, временная
+// перспектива, черты. Они спрашивают «какой я», а не «как мне сейчас», и
+// живут за кнопкой «🪞 Узнать себя лучше» (FR-002b, FR-002f).
+//
+//   key        — ключ блока в таблице passport
+//   label      — название, как его видит человек в боте
+//   what       — на какой вопрос отвечает (пятое поле COVERAGE_MAP)
+//   group      — группа из COVERAGE_MAP: Состояние / Пара / Группа
+//   days       — срок годности в днях, null — разовый
+//   section    — в каком из четырёх разделов стоит карточка
+//   containers — метка контейнера жизни, одна или две (FR-020, FR-021)
+//   size       — сколько вопросов; посчитано по самим замерам, не придумано
+//   url        — адрес мини-аппа; перенос из констант *_MINI_APP_URL в bot.py
+//   phrase     — точный текст кнопки бота, если замер проходится в разговоре
+//   once       — разовый: заполнен — карточка уходит (FR-010)
+var REGISTRY = [
+  {
+    key: "state_day", label: "Сутки", group: "Состояние", days: 1, section: "day",
+    what: "тонус, сон и настроение день за днём",
+    containers: ["Я сам", "Тело"],
+    size: "6 полей · 20 секунд",
+    url: "https://shapovalov-aleksey.ru/state-day/app.html"
+  },
+  {
+    key: "state_week", label: "Неделя", group: "Состояние", days: 7, section: "week",
+    what: "аффект, силы и поток за неделю",
+    containers: ["Я сам"],
+    size: "28 вопросов · 2,5 минуты",
+    url: "https://shapovalov-aleksey.ru/state-week/app4.html"
+  },
+  {
+    key: "pair_state", label: "Как я в наших отношениях", group: "Пара", days: 7, section: "week",
+    what: "насколько сейчас хорошо вам двоим и что повторяется",
+    containers: ["Семья"],
+    size: "7 вопросов",
+    phrase: "🫂 Как я в наших отношениях"
+  },
+  {
+    key: "pair_detector", label: "Детектор взрыва", group: "Пара", days: 7, section: "week",
+    what: "сколько маркеров напряжения набралось за неделю",
+    containers: ["Семья"],
+    size: "24 маркера · минута",
+    phrase: "🌡 Детектор взрыва"
+  },
+  {
+    key: "forum_scales", label: "Цифры группы", group: "Группа", days: 7, section: "week",
+    what: "ясность, энергия, продвижение и напряжение по шкале от 0 до 10",
+    containers: ["Круг"],
+    size: "4 шкалы",
+    phrase: "👥 Встреча форум-группы"
+  },
+  {
+    // Разовый: стоит отдельной строкой и уходит, как только заполнен (FR-010).
+    key: "pair_context", label: "Про нас", group: "Пара", days: null, section: "once",
+    what: "сколько вы вместе, дети, быт и что давит снаружи",
+    containers: ["Семья"],
+    size: "5 вопросов · один раз",
+    phrase: "👨‍👩‍👧 Про нас",
+    once: true
+  },
+  {
+    key: "state_month", label: "Месяц", group: "Состояние", days: 30, section: "month",
+    what: "стресс, сон, клинический датчик, закрыты ли потребности",
+    containers: ["Я сам", "Тело"],
+    size: "81 вопрос · 8 минут",
+    url: "https://shapovalov-aleksey.ru/state-month/app3.html"
+  },
+  {
+    key: "pair_are", label: "Тест ОНИ", group: "Пара", days: 30, section: "month",
+    what: "насколько связь надёжна: отзывчивость, неравнодушие, искренность",
+    containers: ["Семья"],
+    size: "15 утверждений",
+    phrase: "🧭 Тест ОНИ"
+  },
+  {
+    key: "pair_load", label: "Нагрузка по дому", group: "Пара", days: 30, section: "month",
+    what: "кто сколько несёт по дому и насколько это устраивает",
+    containers: ["Семья"],
+    size: "3 вопроса",
+    phrase: "⚖️ Нагрузка"
+  },
+  {
+    key: "state_quarter", label: "Квартал", group: "Состояние", days: 91, section: "quarter",
+    what: "удовлетворённость жизнью, смысл, осознанность, выгорание",
+    containers: ["Я сам"],
+    size: "68 вопросов · 7 минут",
+    url: "https://shapovalov-aleksey.ru/state-quarter/app3.html"
+  },
+  {
+    key: "body_form", label: "Физическая форма", group: "Состояние", days: 91, section: "quarter",
+    what: "сила, выносливость, состав тела по нормам возраста",
+    containers: ["Тело"],
+    size: "7 вопросов",
+    // Своей кнопки нет: физформа запускается сразу после квартального замера.
+    after: "state_quarter"
+  },
+  {
+    key: "labs", label: "Анализы крови", group: "Состояние", days: 180, section: "rare",
+    what: "дефициты и биомаркеры — частая причина упадка сил",
+    containers: ["Тело"],
+    size: "PDF анализов, вопросов нет",
+    phrase: "🩸 Анализы"
+  },
+  {
+    key: "selfhood", label: "Свою жизнь живёшь", group: "Опора", days: 180, section: "rare",
+    what: "своя ли это жизнь и держится ли под тобой опора",
+    containers: ["Я сам"],
+    size: "59 вопросов",
+    url: "https://shapovalov-aleksey.ru/selfhood/app.html"
+  }
+];
+
+// Замеры структуры: спрашивают «какой я», а не «как мне». Живут за кнопкой
+// «Узнать себя лучше». Список нужен проверке — она следит, чтобы пересечение
+// множеств двух кнопок было пустым (FR-002f).
+var NOT_HERE = ["level", "ztpi", "stressrisk"];
+
+// ---- Свежесть ----
+// Считается по СУТКАМ, а не по часам: разница часовых поясов не важна
+// (пограничный случай в спеке). Сутки берём по UTC — так же, как бот
+// группирует точки в базе.
+function utcMidnight(iso) {
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+function daysBetween(fromISO, nowISO) {
+  var a = utcMidnight(fromISO), b = utcMidnight(nowISO);
+  if (a === null || b === null) return null;
+  return Math.round((b - a) / 86400000);
+}
+
+/**
+ * Метка свежести одного замера.
+ *
+ * Четыре состояния, а не три: «неизвестно» — это когда даты не приехали вовсе.
+ * Смешивать «неизвестно» с «не проходил» нельзя: получится врать человеку
+ * в минус (конституция, «три состояния там, где данных может не быть»).
+ *
+ * @param lastISO  дата последнего замера или null
+ * @param ttlDays  срок годности в днях, null — разовый замер
+ * @param nowISO   сейчас
+ * @param known    приехали ли данные о свежести вообще
+ */
+function freshness(lastISO, ttlDays, nowISO, known) {
+  if (known === false) return { state: "unknown", daysAgo: null, overdue: null };
+  if (lastISO === null || lastISO === undefined || lastISO === "") {
+    return { state: "never", daysAgo: null, overdue: null };
+  }
+  var d = daysBetween(lastISO, nowISO);
+  if (d === null) return { state: "unknown", daysAgo: null, overdue: null };
+  if (d < 0) d = 0;                       // дата из будущего — считаем «сегодня»
+  // Разовый замер: прошёл один раз — и хватит, пересдавать нечего.
+  if (ttlDays === null || ttlDays === undefined) {
+    return { state: "fresh", daysAgo: d, overdue: null };
+  }
+  // Граница ровно как у бота: `days >= shelf` — уже пора.
+  return { state: d >= ttlDays ? "due" : "fresh", daysAgo: d, overdue: d - ttlDays };
+}
+
+var BADGE_TEXT = { never: "не проходил", fresh: "свежее", due: "пора", unknown: "неизвестно" };
+
+function badgeText(state) { return BADGE_TEXT[state] || BADGE_TEXT.unknown; }
+
+/** «сегодня» · «9 дн. назад» · «3 мес назад» — словами бота, чтобы совпадало. */
+function agoText(daysAgo) {
+  if (daysAgo === null || daysAgo === undefined) return "";
+  if (daysAgo < 1) return "сегодня";
+  if (daysAgo < 60) return daysAgo + " дн. назад";
+  return Math.max(1, Math.floor(daysAgo / 30)) + " мес назад";
+}
+
+/**
+ * Какие карточки вообще показывать.
+ * Парные и групповые прячутся, только если бот прямо сказал «пары нет».
+ * Молчание — не признак: у большинства парная работа есть, и спрятать
+ * замеры по умолчанию значило бы потерять их снова (FR-012).
+ */
+function visibleCards(registry, opts) {
+  var o = opts || {};
+  return registry.filter(function (r) {
+    if (r.group === "Пара" && o.hasPair === false) return false;
+    if (r.group === "Группа" && o.hasForum === false) return false;
+    return true;
+  });
+}
+
+/**
+ * Собрать карточки со свежестью. lastDates — {ключ: ISO-дата}.
+ * Разовая карточка, которую уже заполнили, из списка уходит: спрашивать нечего
+ * (FR-010). Пока свежесть неизвестна — остаётся, иначе мы бы её прятали зря.
+ */
+function buildCards(registry, lastDates, nowISO, known) {
+  var d = lastDates || {};
+  return registry.map(function (r) {
+    var f = freshness(d[r.key] === undefined ? null : d[r.key], r.days, nowISO, known);
+    return {
+      key: r.key, label: r.label, what: r.what, group: r.group, days: r.days,
+      section: r.section, containers: r.containers, size: r.size,
+      url: r.url, phrase: r.phrase, after: r.after, once: r.once,
+      state: f.state, daysAgo: f.daysAgo, overdue: f.overdue
+    };
+  }).filter(function (c) {
+    return !(c.once && c.state === "fresh");
+  });
+}
+
+/**
+ * Фильтр по контейнеру жизни. null — фильтра нет, список полный (FR-023).
+ * Отдаёт только свои карточки: двухметочный замер попадает в оба контейнера.
+ */
+function filterByContainer(cards, container) {
+  if (!container) return cards.slice();
+  return cards.filter(function (c) {
+    return (c.containers || []).indexOf(container) >= 0;
+  });
+}
+
+/** Сколько замеров в каждом контейнере. Ноль — тоже ответ (FR-024). */
+function containerCounts(cards) {
+  var out = {};
+  LIFE_CONTAINERS.forEach(function (c) { out[c] = 0; });
+  cards.forEach(function (card) {
+    (card.containers || []).forEach(function (c) {
+      if (out[c] !== undefined) out[c] += 1;
+    });
+  });
+  return out;
+}
+
+/** Контейнеры, в которых замеров нет вовсе. Показываются честно, а не молчат. */
+function emptyContainers(cards) {
+  var counts = containerCounts(cards);
+  return LIFE_CONTAINERS.filter(function (c) { return counts[c] === 0; });
+}
+
+/**
+ * Первый экран: всё, что пора, сверху самое старое (FR-004).
+ * Сначала просроченное — по величине просрочки. Потом «не проходил» — по
+ * частоте: чем чаще замер, тем выше. Разовое в конце.
+ */
+function needsAttention(cards) {
+  var due = cards.filter(function (c) { return c.state === "due"; })
+    .sort(function (a, b) { return (b.overdue - a.overdue) || (b.daysAgo - a.daysAgo); });
+  var never = cards.filter(function (c) { return c.state === "never"; })
+    .sort(function (a, b) {
+      var ad = a.days === null ? Infinity : a.days;
+      var bd = b.days === null ? Infinity : b.days;
+      return ad - bd;
+    });
+  return due.concat(never);
+}
+
+/** Всё свежее — так и говорим прямо (FR-006). «Неизвестно» за свежесть не сходит. */
+function allFresh(cards) {
+  if (!cards.length) return false;
+  return cards.every(function (c) { return c.state === "fresh"; });
+}
+
+/**
+ * Разложить карточки по разделам: пять ритмов и отдельная строка разового.
+ * Пустой ритм остаётся в списке, а разовая строка исчезает целиком — раздел
+ * «Один раз» без карточки не значит ничего.
+ */
+function bySection(cards) {
+  var out = RHYTHMS.map(function (r) {
+    return {
+      id: r.id, name: r.name, sub: r.sub,
+      cards: cards.filter(function (c) { return c.section === r.id; })
+    };
+  });
+  var once = cards.filter(function (c) { return c.section === "once"; });
+  if (once.length) {
+    out.push({ id: ONCE_SECTION.id, name: ONCE_SECTION.name, sub: ONCE_SECTION.sub, cards: once });
+  }
+  return out;
+}
+
+/** Разобрать «tg_121202001» в число. Мусор — null, свежесть читать нечем. */
+function parseUserId(u) {
+  var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
+  return m ? m[1] : null;
+}
+
+/**
+ * Разобрать параметр свежести от бота: «state_day:2026-08-06,state_week:2026-07-28».
+ * Бот читает базу сервисным ключом и знает даты, которых мини-апп не видит.
+ * Ключа в строке нет — значит замер не проходили ни разу.
+ */
+function parseFreshParam(s) {
+  var raw = String(s == null ? "" : s).trim();
+  if (!raw) return null;
+  var out = {};
+  raw.split(",").forEach(function (part) {
+    var m = /^([a-z_]+)[:=](\d{4}-\d{2}-\d{2}(?:[T ][^,]*)?)$/.exec(part.trim());
+    if (!m) return;
+    out[m[1]] = m[2];
+  });
+  return out;
+}
+
+/** Самая свежая дата по каждому блоку из строк passport. */
+function lastDatesFromRows(rows) {
+  var out = {};
+  (rows || []).forEach(function (r) {
+    var b = r && r.block, c = r && r.completed_at;
+    if (!b || !c) return;
+    if (!out[b] || String(c) > String(out[b])) out[b] = c;
+  });
+  return out;
+}
+
+/* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
+
+// ---- Telegram ----
+var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+// tg.sendData здесь не вызывается сознательно: он закрывает мини-апп. Каталог
+// ничего не пишет в базу — он только читает и открывает замеры.
+
+var params = new URLSearchParams(window.location.search);
+var USER_ID = parseUserId(params.get("u")) ||
+  parseUserId(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
+
+// Флаги от бота:
+//   f=…  — даты последних замеров: «ключ:ГГГГ-ММ-ДД» через запятую
+//   p=0  — парной работы нет → парные карточки не показываем (FR-012)
+//   fm=0 — форум-группы нет → «Цифры группы» не показываем
+var FRESH_PARAM = parseFreshParam(params.get("f"));
+var HAS_PAIR = params.get("p") === "0" ? false : true;
+var HAS_FORUM = params.get("fm") === "0" ? false : true;
+
+// ---- Supabase ----
+var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+
+function sbHeaders() {
+  return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY };
+}
+
+/**
+ * Даты из таблицы passport. Работает, только если у публичного ключа есть
+ * право читать: сейчас его нет, база отдаёт пустой список. Поэтому это
+ * ДОПОЛНЕНИЕ к параметру f от бота, а не замена ему.
+ */
+async function fetchPassportDates() {
+  if (!USER_ID) return null;
+  try {
+    var url = SUPABASE_URL + "/rest/v1/passport?user_id=eq." + encodeURIComponent(USER_ID) +
+      "&select=block,completed_at&order=completed_at.desc&limit=500";
+    var r = await fetch(url, { headers: sbHeaders() });
+    if (r.status >= 300) return null;
+    var rows = await r.json();
+    if (!rows || !rows.length) return null;
+    return lastDatesFromRows(rows);
+  } catch (e) { return null; }
+}
+
+// ---- Состояние экрана ----
+var lastDates = {};
+var dataKnown = false;
+var activeContainer = null;
+var app = document.getElementById("app");
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+/** Адрес замера с подставленным человеком: без него запись некуда положить. */
+function cardHref(card) {
+  if (!card.url) return null;
+  var sep = card.url.indexOf("?") >= 0 ? "&" : "?";
+  return card.url + sep + "v=1&u=tg_" + USER_ID;
+}
+
+function badgeHtml(card) {
+  return '<div class="badge ' + card.state + '">' + esc(badgeText(card.state)) + "</div>";
+}
+
+function whenHtml(card) {
+  if (card.state === "unknown") return '<div class="card-when">когда проходил — не знаю, открой из бота</div>';
+  if (card.state === "never") return "";
+  var ago = agoText(card.daysAgo);
+  if (card.days === null) return '<div class="card-when">заполнено ' + esc(ago) + "</div>";
+  var tail = card.state === "due" ? " · просрочено на " + card.overdue + " дн." : "";
+  return '<div class="card-when">последний замер ' + esc(ago) + esc(tail) + "</div>";
+}
+
+function tagsHtml(card) {
+  return (card.containers || []).map(function (c) {
+    return '<button class="tag' + (activeContainer === c ? " on" : "") + '" data-tag="' + esc(c) + '">' + esc(c) + "</button>";
+  }).join("");
+}
+
+function cardHtml(card) {
+  var href = cardHref(card);
+  var head =
+    '<div class="card-top"><div class="card-name">' + esc(card.label) + "</div>" + badgeHtml(card) + "</div>" +
+    '<div class="card-sub">' + esc(card.what) + "</div>" +
+    whenHtml(card);
+
+  var openable;
+  if (href) {
+    openable = '<a class="card-open" href="' + esc(href) + '">' + head + "</a>";
+  } else if (card.phrase) {
+    openable = '<div class="card-open" data-chat="' + esc(card.key) + '">' + head + "</div>";
+  } else {
+    openable = "<div>" + head + "</div>";
+  }
+
+  var chat = "";
+  if (!href && card.phrase) {
+    chat =
+      '<div class="chat" id="chat-' + esc(card.key) + '">' +
+        '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
+        '<div class="chat-acts">' +
+          '<button class="act" data-copy="' + esc(card.phrase) + '">Скопировать</button>' +
+          (tg ? '<button class="ghost" data-close="1">В разговор</button>' : "") +
+        "</div>" +
+        '<div class="chat-hint">Этот замер идёт разговором, не формой. Скопируй фразу, вернись в чат и отправь её — бот начнёт.</div>' +
+      "</div>";
+  }
+  if (!href && !card.phrase && card.after) {
+    chat = '<div class="chat open"><div class="chat-hint">Своей кнопки нет: идёт следом за квартальным замером, сразу после него.</div></div>';
+  }
+
+  return '<div class="card">' + openable +
+    '<div class="card-meta">' + tagsHtml(card) + '<div class="card-size">' + esc(card.size) + "</div></div>" +
+    chat + "</div>";
+}
+
+function sectionHtml(sec, shown) {
+  var body = shown.length
+    ? shown.map(cardHtml).join("")
+    : '<div class="sec-empty">' + (activeContainer
+        ? "В этом ритме про «" + esc(activeContainer) + "» замеров нет."
+        : "Здесь пока пусто.") + "</div>";
+  return '<div class="sec">' +
+    '<div class="sec-head"><div class="sec-name">' + esc(sec.name) + " · " + esc(sec.sub) + "</div>" +
+    '<div class="sec-count">' + shown.length + "</div></div>" +
+    body + "</div>";
+}
+
+function filterHtml(all) {
+  var counts = containerCounts(all);
+  var chips = '<button class="tag' + (activeContainer === null ? " on" : "") + '" data-tag="">Все</button>';
+  chips += LIFE_CONTAINERS.map(function (c) {
+    var zero = counts[c] === 0 ? " zero" : "";
+    var on = activeContainer === c ? " on" : "";
+    return '<button class="tag' + zero + on + '" data-tag="' + esc(c) + '">' + esc(c) + " " + counts[c] + "</button>";
+  }).join("");
+
+  var empties = emptyContainers(all);
+  var note = empties.length
+    ? '<div class="filter-note">Пусто: ' + empties.map(esc).join(" · ") +
+      ". Замеров про эти области жизни нет вовсе — не спрятаны, а не сделаны.</div>"
+    : "";
+  return note + '<div class="filter">' + chips + "</div>";
+}
+
+function render() {
+  var all = buildCards(visibleCards(REGISTRY, { hasPair: HAS_PAIR, hasForum: HAS_FORUM }),
+                       lastDates, new Date().toISOString(), dataKnown);
+  var shown = filterByContainer(all, activeContainer);
+
+  var top = "";
+  if (!dataKnown) {
+    top = '<div class="banner"><strong>Не знаю, что ты когда проходил.</strong> ' +
+      'Свежесть считает бот — открой каталог кнопкой «🌤 Как ты?», и метки встанут на место. ' +
+      'Список замеров ниже верный.</div>';
+  } else if (allFresh(all)) {
+    top = '<div class="calm"><strong>Сейчас ничего не нужно.</strong> Все замеры свежие. ' +
+      'Это хороший ответ: возвращайся, когда что-то подойдёт по сроку.</div>';
+  }
+
+  var urgent = needsAttention(shown);
+  var urgentHtml = "";
+  if (dataKnown && urgent.length) {
+    urgentHtml = '<div class="sec urgent">' +
+      '<div class="sec-head"><div class="sec-name">Пора · сверху самое старое</div>' +
+      '<div class="sec-count">' + urgent.length + "</div></div>" +
+      urgent.map(cardHtml).join("") + "</div>";
+  }
+
+  var emptyFilter = (activeContainer && shown.length === 0)
+    ? '<div class="calm">Про «' + esc(activeContainer) + '» замеров нет ни одного. ' +
+      'Это пустой контейнер, а не пропавший раздел: такую область жизни пока нечем мерить.</div>'
+    : "";
+
+  var sections = emptyFilter ? "" : bySection(shown).map(function (sec) {
+    return sectionHtml(sec, sec.cards);
+  }).join("");
+
+  app.innerHTML =
+    "<h1>Как ты?</h1>" +
+    '<p class="lead">Подвижный слой: сон, силы, отношения, тело. Здесь не спрашивают — здесь видно, ' +
+    "что подошло по сроку. Каждый замер копится точками, смысл появляется на линии.</p>" +
+    top +
+    filterHtml(all) +
+    urgentHtml +
+    sections +
+    '<div class="foot">Замеров всего ' + all.length + ". Одного балла на всё нет и не будет: разные шкалы " +
+    "мерят разное, складывать их — терять то, ради чего мерили." +
+    "<br><br>Здесь только состояние: как тебе сейчас. Из чего ты устроен — личность, нейротип, " +
+    "ценности, уровень мышления, ощущение времени, стресс и риск — за кнопкой " +
+    "«🪞 Узнать себя лучше». Один замер не бывает за двумя дверями.</div>";
+
+  bind();
+}
+
+function bind() {
+  app.querySelectorAll("[data-tag]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      var v = el.getAttribute("data-tag");
+      activeContainer = (!v || v === activeContainer) ? null : v;
+      render();
+      window.scrollTo(0, 0);
+    });
+  });
+
+  app.querySelectorAll("[data-chat]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var box = document.getElementById("chat-" + el.getAttribute("data-chat"));
+      if (box) box.classList.toggle("open");
+    });
+  });
+
+  app.querySelectorAll("[data-copy]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var text = el.getAttribute("data-copy");
+      var done = function () { el.textContent = "Скопировано"; };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+        } else { fallbackCopy(text, done); }
+      } catch (e) { fallbackCopy(text, done); }
+    });
+  });
+
+  app.querySelectorAll("[data-close]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      try { tg.close(); } catch (e) {}
+    });
+  });
+}
+
+function fallbackCopy(text, done) {
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    done();
+  } catch (e) {}
+}
+
+// ---- Старт ----
+async function start() {
+  // Сначала показываем список — он верен и без сети. Свежесть догоняет.
+  if (FRESH_PARAM) { lastDates = FRESH_PARAM; dataKnown = true; }
+  render();
+
+  var fromDb = await fetchPassportDates();
+  if (fromDb) {
+    Object.keys(fromDb).forEach(function (k) { lastDates[k] = fromDb[k]; });
+    dataKnown = true;
+    render();
+  }
+}
+
+if (!USER_ID) {
+  app.innerHTML =
+    "<h1>Как ты?</h1>" +
+    '<p class="lead">Каталог открывается из бота — по кнопке «🌤 Как ты?». Так он знает, чьи это замеры ' +
+    "и что из них подошло по сроку.</p>" +
+    '<p class="note">Если открыл ссылку из браузера, вернись в Телеграм.</p>';
+} else {
+  start();
+}
+</script>
+</body>
+</html>
