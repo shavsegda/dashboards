@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Сутки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --alert: #B91C1C;
+  --alert-tint: rgba(185,28,28,0.06);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100vh; }
+
+main { max-width: 560px; margin: 0 auto; padding: 28px 20px 40px; }
+h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 8px; }
+p { color: var(--graphite-75); }
+.lead { font-size: 15px; color: var(--graphite-65); margin-bottom: 22px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+
+/* Один экран: поля идут плотным списком, без карточек и рамок вокруг каждого */
+.field { padding: 14px 0; }
+/* Разделитель только между полями: над первым линия не нужна */
+.field ~ .field { border-top: 1px solid var(--graphite-08); }
+.field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.field-name { font-size: 15px; font-weight: 500; }
+.field-hint { font-size: 12px; color: var(--graphite-50); }
+.field-val { font-family: var(--font-mono); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--terracotta); }
+.field-val.empty { color: var(--graphite-30); }
+
+/* Ряд «от 0 до 10» — одно касание вместо перетаскивания. На телефоне надёжнее ползунка */
+.scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 3px; }
+.scale-btn { font-family: var(--font-mono); font-size: 13px; padding: 11px 0; text-align: center; border: 1px solid var(--graphite-15); background: transparent; color: var(--graphite-75); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.scale-btn.on { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--font-mono); font-size: 13px; padding: 10px 14px; border: 1px solid var(--graphite-15); background: transparent; color: var(--graphite-75); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.chip.on { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+
+input[type=range] { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; height: 30px; }
+input[type=range]::-webkit-slider-runnable-track { height: 2px; background: var(--graphite-15); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -12px; border-radius: 50%; background: var(--terracotta); }
+input[type=range]::-moz-range-track { height: 2px; background: var(--graphite-15); }
+input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 50%; background: var(--terracotta); }
+
+input[type=text], input[type=number], input[type=time], textarea {
+  width: 100%; font-family: var(--font-sans); font-size: 16px; color: var(--graphite);
+  background: transparent; border: 1px solid var(--graphite-15); padding: 11px 12px; border-radius: 0;
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--terracotta); }
+textarea { resize: vertical; min-height: 58px; line-height: 1.45; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pair label { display: block; font-size: 12px; color: var(--graphite-50); margin-bottom: 5px; }
+
+details { border-top: 1px solid var(--graphite-08); padding: 14px 0; }
+summary { list-style: none; cursor: pointer; font-size: 14px; color: var(--graphite-65); display: flex; justify-content: space-between; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; font-family: var(--font-mono); color: var(--graphite-30); }
+details[open] summary::after { content: '−'; }
+details > div { margin-top: 14px; }
+
+button.act { background: var(--graphite); color: var(--paper); padding: 15px 28px; border: none; font-size: 15px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
+button.act:hover { background: var(--terracotta); }
+button.act:disabled { background: var(--graphite-30); cursor: progress; }
+button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 14px 22px; font-size: 15px; cursor: pointer; font-family: var(--font-sans); }
+button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); }
+button.ghost:disabled { color: var(--graphite-30); border-color: var(--graphite-15); cursor: not-allowed; }
+.actions { margin-top: 26px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.banner { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 22px; font-size: 14px; color: var(--graphite); }
+.banner strong { font-weight: 500; }
+.status { margin-top: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); min-height: 16px; }
+.status.error { color: var(--alert); }
+
+.recap { border: 1px solid var(--graphite-08); }
+.recap-row { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 16px; border-bottom: 1px solid var(--graphite-08); }
+.recap-row:last-child { border-bottom: 0; }
+.recap-name { font-size: 14px; color: var(--graphite-75); }
+.recap-val { font-family: var(--font-mono); font-size: 17px; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 380px) {
+  .scale { gap: 2px; }
+  .scale-btn { font-size: 12px; padding: 10px 0; }
+  h1 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* ==== ЧИСТАЯ ЛОГИКА: НАЧАЛО ====
+   Всё внутри этих границ не трогает DOM и не ходит в сеть.
+   Скрипт проверок вырезает этот блок и прогоняет функции на выдуманных данных.
+   Менять только вместе с проверками. */
+
+// ---- Контейнеры жизни: перенос словаря из bot.py один в один ----
+// Метка человеку НЕ показывается никогда — это данные для панели, а не ярлык
+// в лицо. Конституция, принцип V.
+var LIFE_CONTAINERS = ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"];
+
+// Как читать маркер:
+//   «работ»  — начало слова плюс до трёх букв окончания
+//   «=долги» — только целое слово, там где короткая основа цепляет чужое
+var CONTAINER_MARKERS = {
+  "Семья": [
+    "жен", "муж", "=дети", "=детей", "=детям", "=детьми", "=детях",
+    "ребенок", "ребенка", "ребенком", "сын", "дочь", "дочк", "дочер",
+    "садик", "школ", "родител", "мам", "=папа", "=папе", "=папу", "=папой",
+    "=отец", "=отца", "=отцом", "=семья", "=семьи", "=семье", "=семью",
+    "=семей", "семейн", "=брат", "=брата", "=брату", "=братом", "сестр",
+    "бабушк", "дедушк", "внук", "супруг", "свекров", "теща", "развод",
+    "беремен", "декрет", "бытов"
+  ],
+  "Работа": [
+    "работ", "отчет", "встреч", "клиент", "команд", "начальн", "сотрудник",
+    "проект", "дедлайн", "задач", "совещан", "планерк", "увол", "нанял",
+    "собеседован", "презентац", "офис", "коллег", "руковод", "продаж",
+    "=зум", "завал", "переработ", "договор", "сделк", "переговор",
+    "подрядчик"
+  ],
+  "Тело": [
+    "спин", "=боль", "=боли", "=болит", "=болел", "=больно", "больниц",
+    "болезн", "врач", "доктор", "зуб", "температур", "простуд", "заболе",
+    "устал", "усталост", "тренировк", "качалк", "спортзал", "=зал",
+    "=зала", "=зале", "=залом", "пробеж", "бегал", "разминк", "растяжк",
+    "травм", "=живот", "=живота", "=животе", "давлен", "анализы",
+    "анализов", "таблетк", "лекарств", "похуде", "=вес", "=веса", "=весом"
+  ],
+  "Деньги": [
+    "деньг", "денег", "деньгам", "зарплат", "платеж", "оплат", "кредит",
+    "ипотек", "=долг", "=долга", "=долги", "=долгу", "=долгов", "задолжен",
+    "=счет", "=счета", "=счету", "=счетов", "налог", "финанс", "=банк",
+    "=банка", "=банке", "выручк", "=доход", "=доходы", "=доходов",
+    "=расход", "=расходы", "=расходов", "бюджет"
+  ],
+  "Я сам": [
+    "тревог", "тревожн", "накрыл", "злюсь", "злился", "злость", "бесит",
+    "бесило", "раздража", "апати", "депресс", "тоск", "обид", "обидел",
+    "стыд", "виноват", "=пусто", "=пустота", "=пустоту", "смысл", "страх",
+    "боюсь", "боялся", "паник", "срыв", "сорвал", "ярост", "отчаян",
+    "безнадеж", "ненавиж"
+  ],
+  "Круг": [
+    "=друг", "=друга", "=другу", "=другом", "=друге", "друзь", "друзьям",
+    "подруг", "приятел", "созвон", "встретил", "тусов", "одинок",
+    "=никого", "общени", "пообщал", "гост", "вечеринк"
+  ],
+  "Время на себя": [
+    "отдых", "отдохн", "отпуск", "книг", "сериал", "кино", "прогул",
+    "гуля", "погуля", "=баня", "=бани", "=бане", "=баню", "хобби",
+    "музык", "тишин", "рисова"
+  ]
+};
+
+// В JS «\b» не работает с русскими буквами: он считает их не-буквами и границы
+// слова находит не там. Поэтому текст приводим к виду « слово слово » — все
+// разделители становятся пробелами, и граница слова = пробел. Ровно тот же
+// результат, что у python-овского \b на русском тексте.
+var WORD_CHAR = "a-zа-я0-9_";
+
+function padWords(s) {
+  var t = String(s == null ? "" : s).toLowerCase().replace(/ё/g, "е");
+  t = t.replace(new RegExp("[^" + WORD_CHAR + "]+", "g"), " ").trim();
+  return " " + t + " ";
+}
+
+var CONTAINER_MARKER_RE = (function () {
+  var out = {};
+  Object.keys(CONTAINER_MARKERS).forEach(function (c) {
+    out[c] = CONTAINER_MARKERS[c].map(function (m) {
+      var body = m.charAt(0) === "=" ? m.slice(1) : m + "[а-я]{0,3}";
+      return new RegExp(" " + body + "(?= )");
+    });
+  });
+  return out;
+})();
+
+// Порядок ответа — как в LIFE_CONTAINERS, а не как в тексте: иначе одинаковые
+// по смыслу дни лежали бы в базе по-разному и не сравнивались.
+function detectContainers(text) {
+  var t = padWords(text);
+  if (!t.trim()) return [];
+  return LIFE_CONTAINERS.filter(function (c) {
+    return CONTAINER_MARKER_RE[c].some(function (r) { return r.test(t); });
+  });
+}
+
+// Служебные слова самого замера — вычитаем перед поиском события, как в боте.
+// В мини-аппе цифры лежат в отдельных полях, но человек всё равно может
+// написать «спал плохо, завал в отчётах» — и тогда «спал» не должно стать
+// событием. Список слово в слово из DAILY_SERVICE_RE в bot.py.
+var DAILY_SERVICE_WORDS = [
+  "л[ег]г", "встал\\w*", "подъем\\w*", "проснул\\w*", "разбудил\\w*", "дремал\\w*", "спал\\w*",
+  "сон", "сна", "качеств\\w*", "тонус\\w*", "энерги\\w*", "сил[аы]", "настроен\\w*", "засыпал\\w*",
+  "просыпал\\w*", "пробужден\\w*", "пульс\\w*", "поко[йя]", "заряд\\w*", "батар\\w*",
+  "готовност\\w*", "вариабельност\\w*", "врв", "hrv", "медитац\\w*", "практик\\w*", "дыхани\\w*",
+  "шаг\\w*", "боди", "бетери", "вчп", "глубок\\w*", "быстр\\w*", "мин", "минут\\w*", "час\\w*", "раз", "раза",
+  "балл\\w*", "ч"
+];
+
+// Предлоги и вводные, которые остаются висеть без своего слова. «из» и «за» не
+// трогаем: они внутри «из-за», а это часть живой фразы про событие.
+var DAILY_STOP_WORDS = ["в", "на", "до", "у", "к", "по", "и", "а", "с", "же", "тоже", "наверно", "наверное", "вроде"];
+
+function reWords(list) {
+  // Замена \b(?:...)\b без lookbehind: разделитель слева забираем в группу
+  // и возвращаем при замене. Работает и на старых телефонах.
+  var body = list.join("|").replace(/\\w/g, "[" + WORD_CHAR + "]");
+  return new RegExp("(^|[^" + WORD_CHAR + "])(?:" + body + ")(?![" + WORD_CHAR + "])", "g");
+}
+
+var DAILY_SERVICE_RE_HEAD = /\d{1,2}[:.]\d{2}|\d+(?:[.,]\d+)?\s*%?/g;
+var DAILY_SERVICE_RE_WORDS = reWords(DAILY_SERVICE_WORDS);
+var DAILY_STOP_RE = reWords(DAILY_STOP_WORDS);
+
+function dailyEventText(text) {
+  var t = String(text == null ? "" : text).toLowerCase().replace(/ё/g, "е");
+  t = t.replace(DAILY_SERVICE_RE_HEAD, " ");
+  t = t.replace(DAILY_SERVICE_RE_WORDS, "$1 ");
+  t = t.replace(DAILY_STOP_RE, "$1 ");
+  t = t.replace(/[,;.!?·—]+/g, " ");
+  t = t.replace(/\s+/g, " ");
+  // Питоновский strip(" -") снимает пробелы и дефисы с обоих концов
+  return t.replace(/^[ -]+/, "").replace(/[ -]+$/, "");
+}
+
+// ---- Сборка scores ----
+// Ключи ровно те, что пишет бот из текстовой строки (parse_daily_line +
+// handle_daily_state). Если поменять хотя бы одно имя — панели и тренды
+// перестанут читать данные.
+var MEASUREMENT_KEYS = [
+  "bed", "wake", "sleep_hours", "sleep_quality", "tonus", "mood",
+  "sleep_latency", "awakenings", "resting_hr", "battery", "hrv",
+  "practice_min", "practice_kind"
+];
+
+// Границы значений — те же, что у парсера текста. Вне границ поле не пишется:
+// догадки не сохраняются как данные.
+var BOUNDS = {
+  sleep_hours: [0, 16], sleep_quality: [0, 10], tonus: [0, 10], mood: [0, 10],
+  sleep_latency: [0, 240], awakenings: [0, 20], resting_hr: [25, 120],
+  battery: [0, 100], hrv: [5, 250], practice_min: [0, 600]
+};
+
+function inBounds(key, v) {
+  var b = BOUNDS[key];
+  if (!b) return true;
+  return v >= b[0] && v <= b[1];
+}
+
+function putNum(scores, key, v) {
+  if (v === null || v === undefined || v === "") return;
+  var n = typeof v === "number" ? v : parseFloat(String(v).replace(",", "."));
+  if (!isFinite(n)) return;
+  if (!inBounds(key, n)) return;
+  scores[key] = n;
+}
+
+function clockToMinutes(x) {
+  var m = /^(\d{1,2})[:.](\d{2})$/.exec(String(x || "").trim());
+  if (!m) return null;
+  var hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+  if (hh > 23 || mm > 59) return null;
+  return hh * 60 + mm;
+}
+
+/** Собрать scores для блока state_day. Возвращает {scores, hasMeasurement}. */
+function buildScores(input) {
+  var i = input || {};
+  var s = {};
+
+  var bedM = clockToMinutes(i.bed);
+  var wakeM = clockToMinutes(i.wake);
+  if (bedM !== null) s.bed = String(i.bed).trim();
+  if (wakeM !== null) s.wake = String(i.wake).trim();
+
+  // Лёг и встал важнее ползунка: точнее, и бот считает длительность так же
+  if (bedM !== null && wakeM !== null) {
+    var d = wakeM - bedM;
+    if (d < 0) d += 24 * 60;
+    putNum(s, "sleep_hours", Math.round((d / 60) * 100) / 100);
+  } else {
+    putNum(s, "sleep_hours", i.sleepHours);
+  }
+
+  putNum(s, "sleep_quality", i.sleepQuality);
+  putNum(s, "tonus", i.tonus);
+  putNum(s, "mood", i.mood);
+  putNum(s, "sleep_latency", i.sleepLatency);
+  putNum(s, "awakenings", i.awakenings);
+  putNum(s, "resting_hr", i.restingHr);
+  putNum(s, "battery", i.battery);
+  putNum(s, "hrv", i.hrv);
+
+  // Практика. Ноль минут — это данные («практики не было»), но вид практики
+  // при нуле не пишется: бот в этом случае кладёт None, а None отбрасывается.
+  putNum(s, "practice_min", i.practiceMin);
+  var kind = String(i.practiceKind == null ? "" : i.practiceKind).trim().toLowerCase();
+  if (s.practice_min > 0 && kind) s.practice_kind = kind;
+
+  var has = MEASUREMENT_KEYS.some(function (k) { return s[k] !== undefined; });
+
+  // Из какой двери пришли данные. Ключ тот же, что у бота, значение своё —
+  // чтобы потом было видно, сколько суток заполнено формой, а сколько строкой.
+  s.source = "miniapp";
+
+  // Метка контейнера — из свободной строки, тем же словарём, что из текста.
+  // Пусто — поля нет вовсе: пустое поле в базе не данные.
+  var containers = detectContainers(dailyEventText(i.eventText));
+  if (containers.length) s.containers = containers;
+
+  // Три состояния, не два: «не отмечено» ≠ «не сделал». Пишется только тем,
+  // у кого есть активная цель в «Деле» — остальным метка ничего не значит.
+  if (i.actionMark === "done" || i.actionMark === "not_done" || i.actionMark === "unmarked") {
+    s.action_mark = i.actionMark;
+  }
+
+  return { scores: s, hasMeasurement: has };
+}
+
+/** Читаемая строка для answers.raw — чтобы запись можно было глазами прочесть. */
+function composeRaw(input) {
+  var i = input || {};
+  var p = [];
+  if (i.bed) p.push("лёг " + i.bed);
+  if (i.wake) p.push("встал " + i.wake);
+  if (i.sleepHours !== null && i.sleepHours !== undefined && !(i.bed && i.wake)) p.push("сон " + i.sleepHours + " ч");
+  if (i.sleepQuality !== null && i.sleepQuality !== undefined) p.push("качество " + i.sleepQuality);
+  if (i.tonus !== null && i.tonus !== undefined) p.push("тонус " + i.tonus);
+  if (i.mood !== null && i.mood !== undefined) p.push("настроение " + i.mood);
+  if (i.practiceMin !== null && i.practiceMin !== undefined) {
+    p.push("практика " + i.practiceMin + " мин" + (i.practiceMin > 0 && i.practiceKind ? " " + i.practiceKind : ""));
+  }
+  if (i.restingHr) p.push("пульс " + i.restingHr);
+  if (i.battery) p.push("заряд " + i.battery);
+  if (i.hrv) p.push("вариабельность " + i.hrv);
+  if (i.sleepLatency !== null && i.sleepLatency !== undefined) p.push("засыпал " + i.sleepLatency);
+  if (i.awakenings !== null && i.awakenings !== undefined) p.push("просыпался " + i.awakenings + " раз");
+  var line = p.join(", ");
+  var ev = String(i.eventText == null ? "" : i.eventText).trim();
+  return ev ? (line ? line + ". " + ev : ev) : line;
+}
+
+// ---- Сутки как ключ ----
+// Бот группирует суточные точки по completed_at[:10], то есть по дате в UTC.
+// Берём то же самое, иначе «одна точка за сутки» у бота и у мини-аппа будут
+// считаться по разным суткам.
+function utcDayKey(iso) {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+function dayWindow(dayKey) {
+  var next = new Date(dayKey + "T00:00:00.000Z");
+  next.setUTCDate(next.getUTCDate() + 1);
+  return { from: dayKey + "T00:00:00.000Z", to: next.toISOString().slice(0, 10) + "T00:00:00.000Z" };
+}
+
+// ---- Защита от дублей ----
+// Ключ записи детерминированный: один человек + одни сутки = один id.
+// Поэтому повторная отправка натыкается на первичный ключ, а не создаёт вторую
+// точку. Это и есть FR-011 на стороне базы, а не только на стороне формы.
+function idKeyString(userId, dayKey) {
+  return "state_day|" + userId + "|" + dayKey;
+}
+
+function uuidFromBytes(bytes) {
+  var b = Array.prototype.slice.call(bytes, 0, 16);
+  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
+  var h = b.map(function (x) { return ("0" + (x & 0xff).toString(16)).slice(-2); }).join("");
+  return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20, 32);
+}
+
+// Запасной хеш, если crypto.subtle недоступен: четыре независимых прохода
+// FNV-1a с разными затравками дают 128 бит.
+function fnvBytes(str) {
+  var seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
+  var out = [];
+  for (var s = 0; s < 4; s++) {
+    var h = seeds[s] >>> 0;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
+  }
+  return out;
+}
+
+/**
+ * Какой запрос делать. Знаем, что за сегодня уже есть точка — только правим.
+ * Не знаем — пишем новую с детерминированным id: если она вдруг уже есть,
+ * база ответит 409 и мы уйдём в правку. Двух точек не будет ни в одном случае.
+ */
+function decideWrite(ctx) {
+  return (ctx && ctx.knownExisting) ? "patch-window" : "post";
+}
+
+/**
+ * Замок на кнопку. Первое нажатие берёт замок, все следующие отбиваются, пока
+ * сервер не ответил. Тот самый случай: пять отправок нейротипа за девять минут.
+ */
+function makeSubmitLock() {
+  var busy = false;
+  return {
+    busy: function () { return busy; },
+    acquire: function () { if (busy) return false; busy = true; return true; },
+    release: function () { busy = false; }
+  };
+}
+
+/** Разобрать «tg_121202001» в число. Мусор — null, писать некуда. */
+function parseUserId(u) {
+  var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
+  return m ? m[1] : null;
+}
+
+/** Читаемая сводка записанного — то же, что бот отвечает строкой «Записал: …». */
+function recapRows(scores) {
+  var rows = [];
+  if (scores.sleep_hours !== undefined) rows.push(["Сон", scores.sleep_hours + " ч"]);
+  if (scores.sleep_quality !== undefined) rows.push(["Качество сна", String(scores.sleep_quality)]);
+  if (scores.tonus !== undefined) rows.push(["Тонус", String(scores.tonus)]);
+  if (scores.mood !== undefined) rows.push(["Настроение", String(scores.mood)]);
+  if (scores.practice_min !== undefined) {
+    rows.push(["Практика", scores.practice_min + " мин" + (scores.practice_kind ? " · " + scores.practice_kind : "")]);
+  }
+  if (scores.resting_hr !== undefined) rows.push(["Пульс покоя", String(scores.resting_hr)]);
+  if (scores.battery !== undefined) rows.push(["Заряд", String(scores.battery)]);
+  if (scores.hrv !== undefined) rows.push(["Вариабельность", String(scores.hrv)]);
+  if (scores.sleep_latency !== undefined) rows.push(["Засыпал", scores.sleep_latency + " мин"]);
+  if (scores.awakenings !== undefined) rows.push(["Просыпался", scores.awakenings + " раз"]);
+  if (scores.action_mark) {
+    rows.push(["Ведущее действие", scores.action_mark === "done" ? "сделал"
+      : scores.action_mark === "not_done" ? "не сделал" : "не отмечено"]);
+  }
+  return rows;
+}
+
+/* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
+
+// ---- Telegram ----
+var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+// tg.sendData здесь не вызывается сознательно: он закрывает мини-апп и запись
+// в базу не доходит. Пишем в Supabase напрямую, как остальные мини-аппы.
+
+var params = new URLSearchParams(window.location.search);
+var USER_ID = parseUserId(params.get("u")) ||
+  parseUserId(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
+
+// Флаги от бота. Бот читает базу сервисным ключом и знает то, чего мини-апп
+// знать не может: есть ли активная цель и заполнены ли сутки за сегодня.
+//   g=1 — есть активная цель в «Деле» → показываем галочку про действие (FR-015)
+//   d=1 — сутки за сегодня уже заполнены → показываем это сразу (FR-013)
+//   a=… — текст ведущего действия, необязательно
+var HAS_GOAL = params.get("g") === "1";
+var GOAL_ACTION = (params.get("a") || "").slice(0, 120);
+var BOT_SAYS_FILLED = params.get("d") === "1";
+
+// ---- Supabase ----
+var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+var TABLE = SUPABASE_URL + "/rest/v1/passport";
+
+function sbHeaders() {
+  return {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
+  };
+}
+
+async function recordId(dayKey) {
+  var key = idKeyString(USER_ID, dayKey);
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      var buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+      return uuidFromBytes(new Uint8Array(buf));
+    }
+  } catch (e) {}
+  return uuidFromBytes(fnvBytes(key));
+}
+
+// ---- Память устройства ----
+// Отметка «сегодня уже отправлял» ставится ТОЛЬКО после ответа сервера. Если
+// сеть отвалилась и ответа не было — отметки нет, повтор пойдёт как новая
+// запись, наткнётся на тот же id и уйдёт в правку. Ни потери, ни дубля.
+var LS_KEY = "sutki_v1_" + USER_ID;
+
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveLocal(obj) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+
+// ---- Состояние формы ----
+var todayKey = utcDayKey(new Date().toISOString());
+var local = loadLocal();
+var localFilledToday = local.dayKey === todayKey && !!local.savedAt;
+var knownExisting = BOT_SAYS_FILLED || localFilledToday;
+
+var form = {
+  sleepHours: null, sleepQuality: null, tonus: null, mood: null,
+  practiceMin: null, practiceKind: "",
+  restingHr: null, battery: null, hrv: null,
+  bed: "", wake: "", sleepLatency: null, awakenings: null,
+  eventText: "",
+  actionMark: HAS_GOAL ? "unmarked" : null
+};
+// Прошлая отправка за эти же сутки — подставляем, чтобы правка была правкой,
+// а не заполнением с нуля.
+if (localFilledToday && local.form) {
+  Object.keys(form).forEach(function (k) {
+    if (local.form[k] !== undefined && local.form[k] !== null && local.form[k] !== "") form[k] = local.form[k];
+  });
+  if (!HAS_GOAL) form.actionMark = null;
+}
+
+var lock = makeSubmitLock();
+var app = document.getElementById("app");
+var screen = "form";
+var lastSaved = null;
+
+var PRACTICE_STEPS = [0, 5, 10, 15, 20, 30, 45, 60];
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+function scaleRow(name) {
+  var v = form[name];
+  var cells = "";
+  for (var i = 0; i <= 10; i++) {
+    cells += '<div class="scale-btn' + (v === i ? " on" : "") + '" data-scale="' + name + '" data-v="' + i + '">' + i + "</div>";
+  }
+  return '<div class="scale">' + cells + "</div>";
+}
+
+function hoursLabel(h) {
+  if (h === null) return "—";
+  var hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  return hh + ":" + (mm < 10 ? "0" + mm : mm);
+}
+
+function renderForm() {
+  screen = "form";
+  var banner = knownExisting
+    ? '<div class="banner"><strong>Сутки за сегодня уже заполнены.</strong> Можно исправить — новые значения заменят прежние, вторая точка не появится. Или выйти и оставить как есть.</div>'
+    : "";
+
+  var actionBlock = "";
+  if (HAS_GOAL) {
+    var label = GOAL_ACTION ? esc(GOAL_ACTION) : "ведущее действие";
+    actionBlock =
+      '<div class="field">' +
+        '<div class="field-head"><div class="field-name">Ведущее действие</div>' +
+        '<div class="field-hint">' + label + "</div></div>" +
+        '<div class="chips">' +
+          '<div class="chip' + (form.actionMark === "done" ? " on" : "") + '" data-mark="done">Сделал</div>' +
+          '<div class="chip' + (form.actionMark === "not_done" ? " on" : "") + '" data-mark="not_done">Не сделал</div>' +
+          '<div class="chip' + (form.actionMark === "unmarked" ? " on" : "") + '" data-mark="unmarked">Не отмечаю</div>' +
+        "</div>" +
+      "</div>";
+  }
+
+  app.innerHTML =
+    "<h1>Сутки</h1>" +
+    '<p class="lead">Сон, тонус, настроение, практика. Полминуты — и точка встала на линию.</p>' +
+    banner +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Сколько спал</div>' +
+      '<div class="field-val' + (form.sleepHours === null ? " empty" : "") + '" id="valSleep">' + hoursLabel(form.sleepHours) + "</div></div>" +
+      '<input type="range" id="sleepRange" min="3" max="12" step="0.25" value="' + (form.sleepHours === null ? 7 : form.sleepHours) + '">' +
+    "</div>" +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Качество сна</div>' +
+      '<div class="field-hint">0 — разбит, 10 — выспался</div></div>' +
+      scaleRow("sleepQuality") +
+    "</div>" +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Тонус</div>' +
+      '<div class="field-hint">сколько сил в теле</div></div>' +
+      scaleRow("tonus") +
+    "</div>" +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Настроение</div>' +
+      '<div class="field-hint">0 — тяжело, 10 — хорошо</div></div>' +
+      scaleRow("mood") +
+    "</div>" +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Практика</div>' +
+      '<div class="field-hint">минут</div></div>' +
+      '<div class="chips" id="practiceChips">' +
+        PRACTICE_STEPS.map(function (n) {
+          return '<div class="chip' + (form.practiceMin === n ? " on" : "") + '" data-practice="' + n + '">' + n + "</div>";
+        }).join("") +
+      "</div>" +
+      (form.practiceMin > 0
+        ? '<div style="margin-top:8px"><input type="text" id="practiceKind" maxlength="24" placeholder="вид: дыхание, сканирование…" value="' + esc(form.practiceKind) + '"></div>'
+        : "") +
+    "</div>" +
+
+    '<div class="field">' +
+      '<div class="field-head"><div class="field-name">Что сегодня было</div>' +
+      '<div class="field-hint">одна фраза</div></div>' +
+      '<textarea id="eventText" rows="2" maxlength="300" placeholder="завал в отчётах · поругались из-за садика · спина отвалилась">' + esc(form.eventText) + "</textarea>" +
+    "</div>" +
+
+    actionBlock +
+
+    "<details" + (form.restingHr || form.battery || form.hrv ? " open" : "") + ">" +
+      "<summary>С часов — пульс, заряд, вариабельность</summary>" +
+      "<div>" +
+        '<div class="pair" style="grid-template-columns:1fr 1fr 1fr">' +
+          '<div><label>Пульс покоя</label><input type="number" inputmode="numeric" id="restingHr" min="25" max="120" value="' + (form.restingHr === null ? "" : form.restingHr) + '"></div>' +
+          '<div><label>Заряд</label><input type="number" inputmode="numeric" id="battery" min="0" max="100" value="' + (form.battery === null ? "" : form.battery) + '"></div>' +
+          '<div><label>ВСР</label><input type="number" inputmode="numeric" id="hrv" min="5" max="250" value="' + (form.hrv === null ? "" : form.hrv) + '"></div>' +
+        "</div>" +
+      "</div>" +
+    "</details>" +
+
+    "<details" + (form.bed || form.wake || form.sleepLatency !== null || form.awakenings !== null ? " open" : "") + ">" +
+      "<summary>Дневник сна — точное время, засыпание, пробуждения</summary>" +
+      "<div>" +
+        '<div class="pair">' +
+          '<div><label>Лёг</label><input type="time" id="bed" value="' + esc(form.bed) + '"></div>' +
+          '<div><label>Встал</label><input type="time" id="wake" value="' + esc(form.wake) + '"></div>' +
+        "</div>" +
+        '<div class="pair" style="margin-top:8px">' +
+          '<div><label>Засыпал, минут</label><input type="number" inputmode="numeric" id="sleepLatency" min="0" max="240" value="' + (form.sleepLatency === null ? "" : form.sleepLatency) + '"></div>' +
+          '<div><label>Просыпался, раз</label><input type="number" inputmode="numeric" id="awakenings" min="0" max="20" value="' + (form.awakenings === null ? "" : form.awakenings) + '"></div>' +
+        "</div>" +
+        '<p class="field-hint" style="margin-top:8px">Лёг и встал важнее ползунка: если заполнишь оба, сон посчитается по ним.</p>' +
+      "</div>" +
+    "</details>" +
+
+    '<div class="actions">' +
+      '<button class="act" id="submitBtn">' + (knownExisting ? "Исправить" : "Записать") + "</button>" +
+      (knownExisting && tg ? '<button class="ghost" id="exitBtn">Выйти</button>' : "") +
+    "</div>" +
+    '<div class="status" id="status"></div>';
+
+  bindForm();
+}
+
+function bindForm() {
+  var range = document.getElementById("sleepRange");
+  if (range) {
+    var onRange = function () {
+      form.sleepHours = parseFloat(range.value);
+      var el = document.getElementById("valSleep");
+      el.textContent = hoursLabel(form.sleepHours);
+      el.classList.remove("empty");
+    };
+    range.addEventListener("input", onRange);
+    range.addEventListener("change", onRange);
+  }
+
+  app.querySelectorAll("[data-scale]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var name = el.getAttribute("data-scale");
+      var v = parseInt(el.getAttribute("data-v"), 10);
+      form[name] = (form[name] === v) ? null : v;   // повторное касание снимает
+      var row = el.parentNode;
+      row.querySelectorAll(".scale-btn").forEach(function (b) {
+        b.classList.toggle("on", parseInt(b.getAttribute("data-v"), 10) === form[name]);
+      });
+    });
+  });
+
+  app.querySelectorAll("[data-practice]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var v = parseInt(el.getAttribute("data-practice"), 10);
+      form.practiceMin = (form.practiceMin === v) ? null : v;
+      form.eventText = readEventText();
+      renderForm();
+    });
+  });
+
+  app.querySelectorAll("[data-mark]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      form.actionMark = el.getAttribute("data-mark");
+      app.querySelectorAll("[data-mark]").forEach(function (b) {
+        b.classList.toggle("on", b.getAttribute("data-mark") === form.actionMark);
+      });
+    });
+  });
+
+  var btn = document.getElementById("submitBtn");
+  if (btn) btn.addEventListener("click", submit);
+  var ex = document.getElementById("exitBtn");
+  if (ex) ex.addEventListener("click", closeApp);
+}
+
+function readEventText() {
+  var el = document.getElementById("eventText");
+  return el ? el.value : form.eventText;
+}
+
+function numOrNull(id) {
+  var el = document.getElementById(id);
+  if (!el || el.value === "") return null;
+  var n = parseFloat(el.value.replace(",", "."));
+  return isFinite(n) ? n : null;
+}
+
+function strOrEmpty(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+function collect() {
+  form.eventText = readEventText();
+  form.practiceKind = strOrEmpty("practiceKind") || form.practiceKind;
+  form.restingHr = numOrNull("restingHr");
+  form.battery = numOrNull("battery");
+  form.hrv = numOrNull("hrv");
+  form.sleepLatency = numOrNull("sleepLatency");
+  form.awakenings = numOrNull("awakenings");
+  form.bed = strOrEmpty("bed");
+  form.wake = strOrEmpty("wake");
+  return form;
+}
+
+function setStatus(text, isError) {
+  var el = document.getElementById("status");
+  if (!el) return;
+  el.textContent = text || "";
+  el.classList.toggle("error", !!isError);
+}
+
+async function submit() {
+  // FR-012. Замок берётся до любой другой работы: между кликом и ответом
+  // сервера второе нажатие не должно дойти даже до сборки данных.
+  if (!lock.acquire()) return;
+  var btn = document.getElementById("submitBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "Записываю…"; }
+  setStatus("");
+
+  var unlock = function (msg) {
+    lock.release();
+    if (btn) { btn.disabled = false; btn.textContent = knownExisting ? "Исправить" : "Записать"; }
+    if (msg) setStatus(msg, true);
+  };
+
+  if (!USER_ID) {
+    unlock("Открой замер из бота — иначе запись некуда положить");
+    return;
+  }
+
+  var input = collect();
+  var built = buildScores(input);
+  if (!built.hasMeasurement) {
+    unlock("Ни одной цифры. Поставь хотя бы тонус и настроение");
+    return;
+  }
+
+  var completedAt = new Date().toISOString();
+  var dayKey = utcDayKey(completedAt);
+  var payload = {
+    user_id: Number(USER_ID),
+    block: "state_day",
+    instrument: "суточный мини-апп",
+    scores: built.scores,
+    answers: { raw: composeRaw(input) },
+    completed_at: completedAt
+  };
+
+  try {
+    var mode = decideWrite({ knownExisting: knownExisting });
+    var ok = (mode === "patch-window")
+      ? await patchWindow(dayKey, payload)
+      : await postThenPatch(dayKey, payload);
+    if (!ok) { unlock("База не приняла запись. Попробуй ещё раз — второй точки не будет"); return; }
+
+    lastSaved = built.scores;
+    saveLocal({ dayKey: dayKey, savedAt: completedAt, form: input });
+    knownExisting = true;
+    lock.release();
+    renderDone();
+  } catch (e) {
+    // Сеть могла отвалиться уже после записи. Отметку не ставим, поэтому
+    // повтор пойдёт тем же id: база вернёт 409 и мы уйдём в правку.
+    unlock("Сеть не ответила. Нажми ещё раз — вторая точка не появится");
+  }
+}
+
+/** Правка суточной точки за эти сутки. Ловит и запись, сделанную ботом из текста. */
+async function patchWindow(dayKey, payload) {
+  var w = dayWindow(dayKey);
+  var url = TABLE +
+    "?user_id=eq." + encodeURIComponent(payload.user_id) +
+    "&block=eq.state_day" +
+    "&completed_at=gte." + encodeURIComponent(w.from) +
+    "&completed_at=lt." + encodeURIComponent(w.to);
+  var r = await fetch(url, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({
+    instrument: payload.instrument, scores: payload.scores,
+    answers: payload.answers, completed_at: payload.completed_at
+  }) });
+  return r.status < 300;
+}
+
+/** Новая точка с детерминированным id. Уже есть — база даёт 409, уходим в правку. */
+async function postThenPatch(dayKey, payload) {
+  var id = await recordId(dayKey);
+  var body = Object.assign({ id: id }, payload);
+  var r = await fetch(TABLE, { method: "POST", headers: sbHeaders(), body: JSON.stringify(body) });
+  if (r.status < 300) return true;
+  if (r.status === 409) {
+    var r2 = await fetch(TABLE + "?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({
+      instrument: payload.instrument, scores: payload.scores,
+      answers: payload.answers, completed_at: payload.completed_at
+    }) });
+    return r2.status < 300;
+  }
+  return false;
+}
+
+function renderDone() {
+  screen = "done";
+  var rows = recapRows(lastSaved || {});
+  app.innerHTML =
+    "<h1>Записал</h1>" +
+    '<p class="lead">Одна точка за сутки. Один замер ничего не значит — смысл появится на линии, смотри в «📈 Динамика».</p>' +
+    '<div class="recap">' +
+      rows.map(function (r) {
+        return '<div class="recap-row"><div class="recap-name">' + esc(r[0]) + '</div><div class="recap-val">' + esc(r[1]) + "</div></div>";
+      }).join("") +
+    "</div>" +
+    '<div class="actions">' +
+      '<button class="ghost" id="againBtn">Исправить</button>' +
+      (tg ? '<button class="act" id="closeBtn">Закрыть</button>' : "") +
+    "</div>";
+  var a = document.getElementById("againBtn");
+  if (a) a.addEventListener("click", renderForm);
+  var c = document.getElementById("closeBtn");
+  if (c) c.addEventListener("click", closeApp);
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+// ---- Старт ----
+if (!USER_ID) {
+  app.innerHTML =
+    "<h1>Сутки</h1>" +
+    '<p class="lead">Замер открывается из бота — по кнопке «🌙 Сутки». Так он знает, чьи это сутки.</p>' +
+    '<p class="note">Если открыл ссылку из браузера, вернись в Телеграм.</p>';
+} else {
+  renderForm();
+}
+</script>
+</body>
+</html>
