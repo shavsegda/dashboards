@@ -542,7 +542,6 @@ if (localFilledToday && local.form) {
 
 var lock = makeSubmitLock();
 var app = document.getElementById("app");
-var screen = "form";
 var lastSaved = null;
 
 var PRACTICE_STEPS = [0, 5, 10, 15, 20, 30, 45, 60];
@@ -569,7 +568,6 @@ function hoursLabel(h) {
 }
 
 function renderForm() {
-  screen = "form";
   var banner = knownExisting
     ? '<div class="banner"><strong>Сутки за сегодня уже заполнены.</strong> Можно исправить — новые значения заменят прежние, вторая точка не появится. Или выйти и оставить как есть.</div>'
     : "";
@@ -621,7 +619,7 @@ function renderForm() {
     '<div class="field">' +
       '<div class="field-head"><div class="field-name">Практика</div>' +
       '<div class="field-hint">минут</div></div>' +
-      '<div class="chips" id="practiceChips">' +
+      '<div class="chips">' +
         PRACTICE_STEPS.map(function (n) {
           return '<div class="chip' + (form.practiceMin === n ? " on" : "") + '" data-practice="' + n + '">' + n + "</div>";
         }).join("") +
@@ -848,7 +846,6 @@ async function postThenPatch(dayKey, payload) {
 }
 
 function renderDone() {
-  screen = "done";
   var rows = recapRows(lastSaved || {});
   app.innerHTML =
     "<h1>Записал</h1>" +
