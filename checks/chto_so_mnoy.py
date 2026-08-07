@@ -237,15 +237,21 @@ def check_exactly_one_ask() -> None:
 
 def check_ask_link_intact() -> None:
     """7. Адреса и ключи не поломаны: просьба открывается с тем же человеком."""
-    first, _ = screens(link(FRESH, obs(OBS), "ask=state_week"))
+    # ПРАВКА 07.08.2026, спека 011: версия страницы больше не прибита единицей.
+    # Пока в адресе жёстко стояло `v=1`, версия из каталога не поднималась
+    # никогда, и Телеграм отдавал человеку старый экран из кэша (FR-014). Теперь
+    # версию присылает бот, и каталог передаёт её дальше.
+    first, _ = screens(link(FRESH, obs(OBS), "ask=state_week", "v=9"))
     reg = {r["key"]: r for r in catalog()["registry"]}
-    want = reg["state_week"]["url"] + "?v=1&u=tg_777"
+    want = reg["state_week"]["url"] + "?v=9&u=tg_777"
     # В разметке амперсанд экранирован — сравниваем с обратно раскодированной.
     assert want in first.replace("&amp;", "&"), f"адрес просьбы поехал, нет «{want}»"
     ok("страничная просьба открывается своим адресом с человеком в ссылке")
 
-    chat, _ = screens(link(FRESH, obs(OBS), "ask=state_move"))
-    assert "https://t.me/vslukh_shapovalov_bot?start=card_state_move" in chat, \
+    # Замер, который правда идёт разговором. Шесть прежних диалоговых замеров
+    # переехали на страницы (011), и переписку для них открывать больше нечем.
+    chat, _ = screens(link(FRESH, obs(OBS), "ask=pair_state"))
+    assert "https://t.me/vslukh_shapovalov_bot?start=card_pair_state" in chat, \
         "диалоговая просьба не открывает переписку с ботом"
     ok("диалоговая просьба открывает переписку со старт-параметром")
 
@@ -302,7 +308,7 @@ def check_fresh_visible_not_a_task() -> None:
 
     # Диалоговая карточка стоит сразу в нескольких областях жизни. Подробная
     # подсказка на каждой её копии — пять строк, повторённых семь раз: шум.
-    whole = visible(catalog_render(link(FRESH, obs(OBS), "ask=state_move")))
+    whole = visible(catalog_render(link(FRESH, obs(OBS), "ask=pair_state")))
     assert whole.count("Этот замер идёт разговором, не формой") == 1, \
         "подробная подсказка про разговор повторяется — в списке нужна одна строка"
     assert "идёт разговором — нажми, бот начнёт сам" in visible(rest), \

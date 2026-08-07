@@ -491,6 +491,47 @@ def bot() -> Dict:
     return ns
 
 
+# Адреса страниц замеров. Отдельно от `bot()`: их сборка требует `os.getenv`, а
+# реестры полей — нет, и мешать одно с другим значит тащить окружение в проверку
+# ключей. Нужно с 07.08.2026 (спека 011): каталог ведёт на страницы, и адрес в
+# каталоге обязан совпадать с адресом в боте — иначе человек уедет на страницу,
+# которой бот не знает, и запись ляжет мимо.
+_BOT_URL_WANTED = {
+    "STATE_DAY_MINI_APP_URL", "STATE_WEEK_MINI_APP_URL",
+    "STATE_MONTH_MINI_APP_URL", "STATE_QUARTER_MINI_APP_URL",
+    "STATE_CLINICAL_MINI_APP_URL", "SELFHOOD_MINI_APP_URL",
+    "STATE_MEANING_MINI_APP_URL", "STATE_BURNOUT_MINI_APP_URL",
+    "STATE_SUPPORT_MINI_APP_URL", "STATE_NEEDS_MINI_APP_URL",
+    "STATE_MIND_MINI_APP_URL", "SELFESTEEM_MINI_APP_URL",
+    "STATE_MOVE_MINI_APP_URL", "STATE_PEOPLE_MINI_APP_URL",
+    "STATE_FACTS_MINI_APP_URL", "STATE_NOTE_MINI_APP_URL",
+    "STATE_MONEY_MINI_APP_URL", "STATE_DOMAINS_MINI_APP_URL",
+    "CARD_MINI_APP_URL", "CARDS_MOVED_TO_PAGE", "MINI_APP_V",
+}
+
+
+def bot_urls() -> Dict:
+    """Адреса страниц замеров и версия из `bot.py`. Только чтение."""
+    tree = ast.parse(BOT.read_text(encoding="utf-8"))
+    picked, found = [], set()
+    for node in tree.body:
+        name = None
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name):
+            name = node.targets[0].id
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            name = node.target.id
+        if name in _BOT_URL_WANTED:
+            picked.append(node)
+            found.add(name)
+    missing = _BOT_URL_WANTED - found
+    assert not missing, f"в bot.py не нашёл адресов: {', '.join(sorted(missing))}"
+    ns: Dict = {"os": os, "Dict": Dict, "List": List, "Optional": Optional,
+                "Set": Set, "Tuple": Tuple}
+    exec(compile(ast.Module(body=picked, type_ignores=[]), "<bot-urls>", "exec"), ns)
+    return ns
+
+
 def block_paths(b: Dict, block: str) -> Set[str]:
     """Пути, которые бот читает из блока: «pss.total» → берём как есть."""
     return {p for p, *_rest in b["STATE_BLOCK_LINES"].get(block, [])}

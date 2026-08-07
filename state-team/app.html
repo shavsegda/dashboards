@@ -8,36 +8,74 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* Цвета. Каждый — из темы Телеграма, запасное значение — палитра Алексея
+   paper/graphite/terracotta. Тема есть — идём за клиентом; темы нет (браузер) —
+   страница выглядит как раньше.
+   Полупрозрачные оттенки собраны из триплетов --ink-rgb и --alert-rgb: добавить
+   альфу к чужому цвету средствами CSS нельзя, поэтому триплеты считает скрипт и
+   обновляет по themeChanged. */
 :root {
-  --paper: #F4F2EC;
-  --stone: #E8E5DC;
-  --graphite: #1A1A1A;
-  --graphite-90: rgba(26,26,26,0.9);
-  --graphite-75: rgba(26,26,26,0.75);
-  --graphite-65: rgba(26,26,26,0.65);
-  --graphite-50: rgba(26,26,26,0.5);
-  --graphite-30: rgba(26,26,26,0.3);
-  --graphite-15: rgba(26,26,26,0.15);
-  --graphite-08: rgba(26,26,26,0.08);
+  --paper: var(--tg-theme-bg_color, #F4F2EC);
+  --stone: var(--tg-theme-secondary_bg_color, #E8E5DC);
+  --graphite: var(--tg-theme-text_color, #1A1A1A);
+  --ink-rgb: 26,26,26;
+  --graphite-90: rgba(var(--ink-rgb),0.9);
+  --graphite-75: rgba(var(--ink-rgb),0.75);
+  --graphite-65: rgba(var(--ink-rgb),0.65);
+  --graphite-50: rgba(var(--ink-rgb),0.5);
+  --graphite-30: rgba(var(--ink-rgb),0.3);
+  --graphite-15: rgba(var(--ink-rgb),0.15);
+  --graphite-08: rgba(var(--ink-rgb),0.08);
+  /* Акцент свой: в теме Телеграма аналога нет — button_color у каждого клиента
+     свой и рвёт вид страницы. На тёмном фоне терракота не читается, поэтому для
+     тёмной темы ниже задан более светлый оттенок. */
   --terracotta: #B85C38;
-  --terracotta-tint: rgba(184,92,56,0.08);
-  --alert: #B91C1C;
-  --alert-tint: rgba(185,28,28,0.06);
+  --accent-rgb: 184,92,56;
+  --terracotta-tint: rgba(var(--accent-rgb),0.08);
+  --alert: var(--tg-theme-destructive_text_color, #B91C1C);
+  --alert-rgb: 185,28,28;
+  --alert-tint: rgba(var(--alert-rgb),0.06);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
+/* Телеграма нет, а система в тёмной теме: держим страницу тёмной целиком, иначе
+   получится светлый лист в тёмном окне. Значения запасные — тема клиента и
+   скрипт всегда сильнее. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: var(--tg-theme-bg_color, #17171A);
+    --stone: var(--tg-theme-secondary_bg_color, #202024);
+    --graphite: var(--tg-theme-text_color, #F0EEE8);
+    --ink-rgb: 240,238,232;
+    --terracotta: #E08A63;
+    --accent-rgb: 224,138,99;
+    --alert: var(--tg-theme-destructive_text_color, #F27A7A);
+    --alert-rgb: 242,122,122;
+  }
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-body { min-height: 100vh; }
+/* Высота — стабильная высота окна Телеграма: её ставит скрипт из
+   viewportStableHeight. У viewportHeight она меняется во время жестов, и низ
+   страницы прыгает под пальцем. */
+body { min-height: var(--tg-vh, 100vh); }
 
-.progress { position: sticky; top: 0; background: var(--paper); padding: 14px 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress { position: sticky; top: 0; background: var(--paper); padding: calc(14px + var(--tg-content-safe-area-inset-top, 0px)) 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
 .progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
 .progress-bar { height: 2px; background: var(--graphite-08); position: relative; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
 .progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
 
-main { max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+/* Безопасные зоны Телеграма: без них верх уезжает под вырез, а низ под панель */
+main {
+  max-width: 640px; margin: 0 auto;
+  padding-top: 40px;
+  padding-bottom: calc(80px + var(--tg-safe-area-inset-bottom, 0px));
+  padding-left: calc(24px + var(--tg-safe-area-inset-left, 0px));
+  padding-right: calc(24px + var(--tg-safe-area-inset-right, 0px));
+}
 h1 { font-size: 34px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
 h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; margin: 28px 0 10px; }
 p { margin-bottom: 12px; color: var(--graphite-75); }
@@ -123,6 +161,90 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
 // === Telegram WebApp ===
 const tg = window.Telegram?.WebApp;
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+/* ---- Тема Телеграма, безопасные зоны и высота ----
+ *
+ * Правило из «мини-аппы-правила.md»: цвета брать из темы клиента и слушать
+ * themeChanged. Раньше цвета были прибиты гвоздями, и у человека с тёмной темой
+ * страница светила белым листом.
+ *
+ * Как поделена работа. Без Телеграма (браузер) за вид отвечает CSS: светлая
+ * палитра в `:root`, тёмная — в блоке про тёмную тему системы. С Телеграмом за
+ * вид отвечает этот код: он берёт цвета у клиента и доставляет то, чего в CSS не
+ * выразить, — полупрозрачные оттенки от чужого цвета текста.
+ *
+ * Акцент остаётся своим: в теме Телеграма аналога нет, а button_color у каждого
+ * клиента свой и рвёт вид страницы. На тёмном фоне терракота не читается —
+ * поэтому для тёмной темы задан свой более светлый оттенок.
+ *
+ * Высота берётся из viewportStableHeight, а не viewportHeight: второй меняется
+ * во время жестов, и низ страницы прыгает под пальцем.
+ *
+ * Ключей полей, вопросов и сборки записи этот блок не касается.
+ */
+(function () {
+  var t = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (!t) return;                    // браузер: остаёмся на палитре из CSS
+  var root = document.documentElement;
+  if (!root || !root.style || !root.style.setProperty) return;
+
+  // Две палитры. Те же значения стоят в CSS: там они запасные для браузера,
+  // здесь — на случай, если клиент какого-то цвета не дал.
+  var LIGHT = { paper: "#F4F2EC", stone: "#E8E5DC", ink: "#1A1A1A",
+                inkRgb: "26,26,26", alert: "#B91C1C", alertRgb: "185,28,28",
+                accent: "#B85C38", accentRgb: "184,92,56" };
+  var DARK = { paper: "#17171A", stone: "#202024", ink: "#F0EEE8",
+               inkRgb: "240,238,232", alert: "#F27A7A", alertRgb: "242,122,122",
+               accent: "#E08A63", accentRgb: "224,138,99" };
+
+  /** «#1A1A1A» → «26,26,26». Не цвет — ничего не отдаём, возьмётся запасное. */
+  function trio(hex) {
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex == null ? "" : hex).trim());
+    if (!m) return null;
+    var h = m[1];
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16),
+            parseInt(h.slice(4, 6), 16)].join(",");
+  }
+
+  /** Светлый ли цвет. Не цвет — null: догадка тут хуже, чем «не знаю». */
+  function bright(hex) {
+    var c = trio(hex);
+    if (!c) return null;
+    var p = c.split(",");
+    return (Number(p[0]) * 299 + Number(p[1]) * 587 + Number(p[2]) * 114) / 1000 > 140;
+  }
+
+  function set(name, value) { root.style.setProperty(name, value); }
+
+  function paintTheme() {
+    var p = t.themeParams || {};
+    var dark = (t.colorScheme === "dark") || (bright(p.bg_color) === false);
+    var pal = dark ? DARK : LIGHT;
+    set("--paper", p.bg_color || pal.paper);
+    set("--stone", p.secondary_bg_color || pal.stone);
+    set("--graphite", p.text_color || pal.ink);
+    set("--ink-rgb", trio(p.text_color) || pal.inkRgb);
+    set("--alert", p.destructive_text_color || pal.alert);
+    set("--alert-rgb", trio(p.destructive_text_color) || pal.alertRgb);
+    set("--terracotta", pal.accent);
+    set("--accent-rgb", pal.accentRgb);
+    // Шапка и фон окна того же цвета, что страница: иначе виден чужой кант.
+    try { t.setHeaderColor("bg_color"); } catch (e) {}
+    try { t.setBackgroundColor("bg_color"); } catch (e) {}
+  }
+
+  function measureHeight() {
+    var h = t.viewportStableHeight;
+    if (typeof h === "number" && h > 0) set("--tg-vh", h + "px");
+  }
+
+  paintTheme();
+  measureHeight();
+  try { t.onEvent("themeChanged", paintTheme); } catch (e) {}
+  try { t.onEvent("viewportChanged", measureHeight); } catch (e) {}
+})();
+
 
 // === Идентификатор клиента: сначала ?u= из URL (его подставляет бот), потом Telegram, потом локальный ===
 function getOrCreateLocalUid() {

@@ -1,31 +1,35 @@
 # -*- coding: utf-8 -*-
-"""Проверки: замеры-разговоры и дорожка открываются через sendData.
+"""Проверки: замеры, которые правда идут разговором, открываются через sendData.
 
-Дефект с живого телефона. Алексей нажал «Восемь фактов» — мини-апп закрылся, в
-чате ничего не произошло. По логам бота видно причину: `/start` со
-старт-параметром до него не доходит вообще. `openTelegramLink` открывает
-переписку, но payload теряется, если чат с ботом уже существует. Это поведение
-Телеграма, и половина замеров была недостижима.
+ПЕРЕПИСАНО 07.08.2026, спека 011 «все замеры в мини-аппе».
 
-Правильный путь — `sendData`: боту приходит апдейт `web_app_data`, обработчик у
-него уже есть. По документации Телеграма метод доступен ТОЛЬКО мини-аппам,
-открытым кнопкой обычной клавиатуры, а у такого запуска init-данные пустые —
-это и есть признак доступности. Каталог открывается именно кнопкой клавиатуры.
+Что было в этом файле раньше. Через `sendData` открывались шесть замеров —
+Движение, Люди рядом, Восемь фактов, Что ещё стоит знать, Деньги за месяц,
+Области жизни. Это и был мост «мини-апп открывает разговор с ботом».
 
-Запрет `sendData` из правил здесь не нарушается: он про страницы-опросники,
+Почему утверждение отменено, а не ослаблено. Спека 011 отменяет сам мост как
+основной путь к замеру: шесть замеров стали страницами. Решение Алексея после
+живой пробы: «путает, когда тебя выкидывает в диалог». Ссылка со старт-параметром
+до бота вообще не доходила, если чат с ботом уже есть, — это и был дефект 008,
+который `sendData` закрывал.
+
+Что осталось. Разговором по-прежнему идут карточки, где нужен живой отклик и
+согласование двух людей: «Как я в наших отношениях», «Детектор взрыва», «Про
+нас», «Тест ОНИ», «Нагрузка», «Цифры группы», «Анализы» — и дорожка «несколько
+за раз». Им `sendData` нужен, и весь его контракт проверяется здесь.
+
+Запрет `sendData` из правил мини-аппов не нарушается: он про страницы-опросники,
 которые пишут результат в базу и обрываются на полуслове. Каталог не пишет
 ничего.
 
-Что проверяем:
+Что проверяется:
   · payload буквально по контракту: `{"action":"open_card","card":"<ключ>"}` и
     `{"action":"run_all"}`;
-  · нажатие карточки-разговора и входа в дорожку правда зовёт `sendData`;
+  · нажатие разговорной карточки правда зовёт `sendData`;
+  · шесть переехавших замеров `sendData` больше НЕ зовут — они ссылки;
   · `sendData` недоступен или бросил ошибку — человек видит запасной путь
     (переписка и фраза, которую можно скопировать), а не тишину;
   · слушатель на элементе один, сколько бы раз экран ни пересобирался.
-
-Проверки исполняют страницу в node, жмут элементы собранной разметки и смотрят,
-что ушло в Телеграм.
 
 Запуск:  python3 checks/dialog_cards_send_data.py
 """
@@ -39,11 +43,16 @@ from lib import catalog, catalog_taps, inline_script, ok, run, visible
 
 APP = "kak-ty/app.html"
 
-# Карточки, которые проходятся разговором. Ключи — из CARD_META бота.
-CHAT_CARDS = ["state_move", "state_people", "state_facts", "state_note",
-              "state_money", "state_domains"]
+# Карточки, которые идут разговором. Ключи — из CARD_META бота.
+CHAT_CARDS = ["pair_state", "pair_detector", "pair_context", "pair_are",
+              "pair_load", "forum_scales", "labs"]
+
+# Шесть переехавших: их в разговор больше не открывают.
+MOVED = ["state_move", "state_people", "state_facts", "state_note",
+         "state_money", "state_domains"]
 
 BOT_NAME = "vslukh_shapovalov_bot"
+
 
 # Контракт с ботом, буквально. Порядок полей тоже: сравниваем строку, а не dict.
 def card_payload(key: str) -> str:
@@ -75,10 +84,10 @@ OUT.dirty = cardPayload(null);
     for key, got in zip(CHAT_CARDS, c["cards"]):
         assert got == card_payload(key), \
             f"payload карточки «{key}»: {got} вместо {card_payload(key)}"
-    ok("карточка-разговор: {\"action\":\"open_card\",\"card\":\"<ключ>\"}")
+    ok("1. карточка-разговор: {\"action\":\"open_card\",\"card\":\"<ключ>\"}")
 
     assert c["runAll"] == RUN_ALL_PAYLOAD, f"payload дорожки: {c['runAll']}"
-    ok('дорожка: {"action":"run_all"}')
+    ok('1. дорожка: {"action":"run_all"}')
 
     # Порядок полей и разбор: бот читает JSON, и он обязан быть валидным.
     for got in c["cards"] + [c["runAll"]]:
@@ -86,7 +95,7 @@ OUT.dirty = cardPayload(null);
         assert set(parsed) <= {"action", "card"}, f"лишние поля в payload: {got}"
     assert json.loads(c["dirty"])["card"] == "", \
         "пустой ключ превратился в null — бот получит мусор"
-    ok("payload разбирается как JSON, лишних полей нет")
+    ok("1. payload разбирается как JSON, лишних полей нет")
 
 
 def check_availability_rule() -> None:
@@ -108,47 +117,70 @@ OUT.avail = {
     assert a["nullInit"] is True, "отсутствие init-данных — тот же запуск"
     assert a["menu"] is False, \
         "мини-апп открыт не кнопкой клавиатуры, а sendData считается рабочим"
-    ok("пустые init-данные = кнопка клавиатуры = sendData можно")
+    ok("2. пустые init-данные = кнопка клавиатуры = sendData можно")
 
     src = inline_script(APP)
     assert "initData" in src and "canSendData" in src, \
         "признак запуска не читается — доступность определяется наугад"
-    ok("признак берётся из initData, а не из версии клиента наугад")
+    ok("2. признак берётся из initData, а не из версии клиента наугад")
 
 
 def check_tap_sends_data() -> None:
-    """3. Нажатие карточки-разговора зовёт sendData с точным payload."""
-    c = catalog_taps(base("ask=state_move"), """
-  var el = tap('data-send', 'card_state_move');
+    """3. Нажатие разговорной карточки зовёт sendData с точным payload."""
+    c = catalog_taps(base("ask=pair_state"), """
+  var el = tap('data-send', 'card_pair_state');
   OUT.tap = el.click();
 """)
-    assert c["calls"]["sent"] == [card_payload("state_move")], \
+    assert c["calls"]["sent"] == [card_payload("pair_state")], \
         f"в Телеграм ушло: {c['calls']['sent']}"
     assert c["calls"]["opened"] == [], \
         "рядом с sendData ещё и переписка открылась — человек получит два действия"
     assert c["tap"]["prevented"] >= 1, \
         "переход по ссылке не отменён — Телеграм уйдёт по href мимо sendData"
-    ok("карточка первого экрана: один sendData, ссылка не срабатывает")
+    ok("3. карточка первого экрана: один sendData, ссылка не срабатывает")
 
     # То же из полного списка: там карточка — сама ссылка.
     c2 = catalog_taps(base("ask=state_week"), """
-  var el = tap('data-send', 'card_state_facts');
+  var el = tap('data-send', 'card_pair_detector');
   OUT.tap = el.click();
 """)
-    assert c2["calls"]["sent"] == [card_payload("state_facts")], \
+    assert c2["calls"]["sent"] == [card_payload("pair_detector")], \
         f"из списка ушло: {c2['calls']['sent']}"
-    ok("карточка списка: тот же sendData")
+    ok("3. карточка списка: тот же sendData")
 
-    # Все шесть диалоговых карточек несут свой payload в разметке.
+    # Все разговорные карточки несут свой payload в разметке.
     html = catalog_taps(base(), "")["html"]
     for key in CHAT_CARDS:
         want = 'data-send="' + card_payload(key).replace('"', "&quot;") + '"'
         assert want in html, f"у карточки «{key}» нет payload в разметке"
-    ok("все шесть карточек-разговоров несут свой payload")
+    ok(f"3. все {len(CHAT_CARDS)} разговорные карточки несут свой payload")
+
+
+def check_moved_do_not_send() -> None:
+    """4. Шесть переехавших замеров боту ничего не отправляют (спека 011)."""
+    html = catalog_taps(base(), "")["html"]
+    for key in MOVED:
+        want = 'data-send="' + card_payload(key).replace('"', "&quot;") + '"'
+        assert want not in html, \
+            f"«{key}» переехал на страницу, а каталог всё ещё зовёт разговор"
+    ok("4. ни один из шести не несёт payload разговора")
+
+    c = catalog_taps(base("ask=state_move"), """
+  var els = document.getElementById('app').querySelectorAll('[href]')
+    .filter(function (e) { return e.tag.indexOf('state-move') >= 0; });
+  OUT.found = els.length;
+  OUT.tap = els.length ? els[0].click() : null;
+""")
+    assert c["found"] >= 1, "карточка «Движение» не стала ссылкой на страницу"
+    assert c["calls"]["sent"] == [], \
+        f"нажатие «Движения» отправило боту: {c['calls']['sent']}"
+    assert c["calls"]["opened"] == [], \
+        f"нажатие «Движения» открыло переписку: {c['calls']['opened']}"
+    ok("4. нажатие «Движения» открывает страницу и ничего не отправляет")
 
 
 def check_run_all_sends_data() -> None:
-    """4. Вход в дорожку зовёт свой payload."""
+    """5. Вход в дорожку зовёт свой payload."""
     c = catalog_taps(base("ask=state_week"), """
   var el = tap('data-send', 'run_all');
   OUT.tap = el.click();
@@ -156,87 +188,87 @@ def check_run_all_sends_data() -> None:
     assert c["calls"]["sent"] == [RUN_ALL_PAYLOAD], \
         f"дорожка отправила: {c['calls']['sent']}"
     assert c["calls"]["opened"] == [], "дорожка вдобавок открыла переписку"
-    ok("дорожка: один sendData с {\"action\":\"run_all\"}")
+    ok("5. дорожка: один sendData с {\"action\":\"run_all\"}")
 
 
 def check_fallback_when_unavailable() -> None:
-    """5. sendData недоступен — человек видит запасной путь, а не тишину."""
-    c = catalog_taps(base("ask=state_move"), """
-  var el = tap('data-send', 'card_state_move');
+    """6. sendData недоступен — человек видит запасной путь, а не тишину."""
+    c = catalog_taps(base("ask=pair_state"), """
+  var el = tap('data-send', 'card_pair_state');
   OUT.tap = el.click();
 """, init_data=NOT_KEYBOARD)
     assert c["calls"]["sent"] == [], \
         "sendData позвали там, где он не работает — человек получит тишину"
     assert c["calls"]["opened"] == \
-        ["https://t.me/%s?start=card_state_move" % BOT_NAME], \
+        ["https://t.me/%s?start=card_pair_state" % BOT_NAME], \
         f"запасной путь не сработал: {c['calls']['opened']}"
-    ok("не кнопка клавиатуры: открывается переписка, прежний путь")
+    ok("6. не кнопка клавиатуры: открывается переписка, прежний путь")
 
     text = visible(c["html"])
-    assert "🏃 Движение" in text, "фразы для чата на экране нет"
+    assert "🫂 Как я в наших отношениях" in text, "фразы для чата на экране нет"
     assert "Скопировать фразу" in text, "кнопки «Скопировать фразу» нет"
     assert "скопируй фразу и отправь её в чат" in text, \
         "не сказано, что делать, если ничего не произошло"
-    ok("на экране остались фраза и «Скопировать фразу»")
+    ok("6. на экране остались фраза и «Скопировать фразу»")
 
     # Телеграма нет вовсе — браузер: ссылка обязана остаться живой.
-    c2 = catalog_taps(base("ask=state_move"), """
-  var el = tap('data-send', 'card_state_move');
+    c2 = catalog_taps(base("ask=pair_state"), """
+  var el = tap('data-send', 'card_pair_state');
   OUT.tap = el.click();
   OUT.href = el.getAttribute('href');
 """, telegram=False)
     assert c2["tap"]["prevented"] == 0, \
         "вне Телеграма переход отменён, а замена ему не работает"
-    assert c2["href"] == "https://t.me/%s?start=card_state_move" % BOT_NAME, \
+    assert c2["href"] == "https://t.me/%s?start=card_pair_state" % BOT_NAME, \
         f"у карточки нет живой ссылки: {c2['href']}"
-    ok("вне Телеграма работает обычная ссылка")
+    ok("6. вне Телеграма работает обычная ссылка")
 
 
 def check_fallback_when_throws() -> None:
-    """6. sendData бросил ошибку — уходим в запасной путь, а не падаем."""
-    c = catalog_taps(base("ask=state_move"), """
-  var el = tap('data-send', 'card_state_move');
+    """7. sendData бросил ошибку — уходим в запасной путь, а не падаем."""
+    c = catalog_taps(base("ask=pair_state"), """
+  var el = tap('data-send', 'card_pair_state');
   OUT.tap = el.click();
 """, extra_tg="sendData: function () { throw new Error('нельзя'); }")
     assert c["calls"]["opened"] == \
-        ["https://t.me/%s?start=card_state_move" % BOT_NAME], \
+        ["https://t.me/%s?start=card_pair_state" % BOT_NAME], \
         f"после ошибки sendData запасной путь не сработал: {c['calls']['opened']}"
-    ok("ошибка sendData не оставляет человека без действия")
+    ok("7. ошибка sendData не оставляет человека без действия")
 
 
 def check_handler_bound_once() -> None:
-    """7. Слушатель один, сколько бы раз экран ни пересобирался."""
-    c = catalog_taps(base("ask=state_move"), """
+    """8. Слушатель один, сколько бы раз экран ни пересобирался."""
+    c = catalog_taps(base("ask=pair_state"), """
   render(); render();                       // пересобрали экран ещё дважды
-  var el = tap('data-send', 'card_state_move');
+  var el = tap('data-send', 'card_pair_state');
   OUT.tap = el.click();
 """)
     assert c["tap"]["handlers"] == 1, \
         f"на элементе {c['tap']['handlers']} слушателя — нажатие сработает дважды"
-    assert c["calls"]["sent"] == [card_payload("state_move")], \
+    assert c["calls"]["sent"] == [card_payload("pair_state")], \
         f"после пересборки экрана ушло: {c['calls']['sent']}"
-    ok("один слушатель, один sendData после трёх сборок экрана")
+    ok("8. один слушатель, один sendData после трёх сборок экрана")
 
 
 def check_old_path_left_as_backup() -> None:
-    """8. Прежний путь остался в разметке запасным, а не удалён."""
-    html = catalog_taps(base("ask=state_move"), "")["html"]
+    """9. Прежний путь остался в разметке запасным, а не удалён."""
+    html = catalog_taps(base("ask=pair_state"), "")["html"]
     assert 'data-tglink="https://t.me/' in html, \
         "ссылка на переписку удалена — вне Телеграма нажать будет нечем"
     for key in CHAT_CARDS:
         assert "?start=card_" + key in html, f"у «{key}» нет запасной ссылки"
-    ok("у каждой карточки рядом с payload лежит запасная ссылка")
+    ok("9. у каждой разговорной карточки рядом с payload лежит запасная ссылка")
 
     src = inline_script(APP)
     assert "openTelegramLink" in src, "запасной путь вырезан из кода"
     assert re.search(r"\.sendData\(", src), "основной путь не вызывается"
-    ok("в коде оба пути: sendData основной, openTelegramLink запасной")
+    ok("9. в коде оба пути: sendData основной, openTelegramLink запасной")
 
 
 if __name__ == "__main__":
     raise SystemExit(run([
         check_payload_contract, check_availability_rule, check_tap_sends_data,
-        check_run_all_sends_data, check_fallback_when_unavailable,
-        check_fallback_when_throws, check_handler_bound_once,
-        check_old_path_left_as_backup,
+        check_moved_do_not_send, check_run_all_sends_data,
+        check_fallback_when_unavailable, check_fallback_when_throws,
+        check_handler_bound_once, check_old_path_left_as_backup,
     ]))

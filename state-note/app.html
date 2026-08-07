@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Что ещё стоит знать</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Цвета. Каждый — из темы Телеграма, запасное значение — палитра Алексея
+   paper/graphite/terracotta. Тема есть — идём за клиентом; темы нет (браузер) —
+   страница выглядит как раньше.
+   Полупрозрачные оттенки собраны из триплетов --ink-rgb и --alert-rgb: добавить
+   альфу к чужому цвету средствами CSS нельзя, поэтому триплеты считает скрипт и
+   обновляет по themeChanged. */
+:root {
+  --paper: var(--tg-theme-bg_color, #F4F2EC);
+  --stone: var(--tg-theme-secondary_bg_color, #E8E5DC);
+  --graphite: var(--tg-theme-text_color, #1A1A1A);
+  --ink-rgb: 26,26,26;
+  --graphite-90: rgba(var(--ink-rgb),0.9);
+  --graphite-75: rgba(var(--ink-rgb),0.75);
+  --graphite-65: rgba(var(--ink-rgb),0.65);
+  --graphite-50: rgba(var(--ink-rgb),0.5);
+  --graphite-30: rgba(var(--ink-rgb),0.3);
+  --graphite-15: rgba(var(--ink-rgb),0.15);
+  --graphite-08: rgba(var(--ink-rgb),0.08);
+  /* Акцент свой: в теме Телеграма аналога нет — button_color у каждого клиента
+     свой и рвёт вид страницы. На тёмном фоне терракота не читается, поэтому для
+     тёмной темы ниже задан более светлый оттенок. */
+  --terracotta: #B85C38;
+  --accent-rgb: 184,92,56;
+  --terracotta-tint: rgba(var(--accent-rgb),0.08);
+  --alert: var(--tg-theme-destructive_text_color, #B91C1C);
+  --alert-rgb: 185,28,28;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* Телеграма нет, а система в тёмной теме: держим страницу тёмной целиком, иначе
+   получится светлый лист в тёмном окне. Значения запасные — тема клиента и
+   скрипт всегда сильнее. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: var(--tg-theme-bg_color, #17171A);
+    --stone: var(--tg-theme-secondary_bg_color, #202024);
+    --graphite: var(--tg-theme-text_color, #F0EEE8);
+    --ink-rgb: 240,238,232;
+    --terracotta: #E08A63;
+    --accent-rgb: 224,138,99;
+    --alert: var(--tg-theme-destructive_text_color, #F27A7A);
+    --alert-rgb: 242,122,122;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.55; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Высота — стабильная высота окна Телеграма: её ставит скрипт из
+   viewportStableHeight. У viewportHeight она меняется во время жестов, и низ
+   страницы прыгает под пальцем. */
+body { min-height: var(--tg-vh, 100vh); }
+
+/* Сколько вопросов осталось. В разговоре этого не видно — здесь видно */
+.progress { position: sticky; top: 0; background: var(--paper); padding: calc(14px + var(--tg-content-safe-area-inset-top, 0px)) 0 10px; z-index: 10; border-bottom: 1px solid var(--graphite-08); }
+.progress-track { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.progress-bar { height: 2px; background: var(--graphite-08); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--terracotta); transition: width 0.3s ease; width: 0%; }
+.progress-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin-top: 8px; display: flex; justify-content: space-between; }
+
+/* Безопасные зоны Телеграма: без них верх уезжает под вырез, а низ под панель */
+main {
+  max-width: 640px; margin: 0 auto;
+  padding-top: 32px;
+  padding-bottom: calc(60px + var(--tg-safe-area-inset-bottom, 0px));
+  padding-left: calc(24px + var(--tg-safe-area-inset-left, 0px));
+  padding-right: calc(24px + var(--tg-safe-area-inset-right, 0px));
+}
+h1 { font-size: 32px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 10px; }
+p { margin-bottom: 12px; color: var(--graphite-75); }
+.lead { font-size: 17px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 18px; }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 22px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); }
+
+button { background: var(--graphite); color: var(--paper); padding: 14px 28px; border: none; border-radius: 0; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; letter-spacing: 0.02em; }
+button:hover { background: var(--terracotta); }
+button.secondary { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 13px 27px; }
+button.secondary:hover { background: transparent; color: var(--terracotta); border-color: var(--terracotta); }
+button:disabled { background: var(--graphite-30); cursor: progress; }
+.actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* Один вопрос на экран. Вторая мысль рядом читалась бы как часть первой */
+.q-card { margin: 0 0 8px; }
+.q-block { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 6px; }
+.q-window { font-family: var(--font-mono); font-size: 11px; color: var(--terracotta); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px; }
+.q-text { font-size: 22px; line-height: 1.25; margin-bottom: 14px; font-weight: 500; letter-spacing: -0.015em; }
+.q-hint { font-size: 15px; color: var(--graphite-65); margin-bottom: 18px; }
+
+/* Шкала — горизонтальный ряд равными долями. Ни одна опция не крупнее и не
+   дальше остальных: середина обязана читаться как середина */
+.scale { display: grid; gap: 3px; }
+.scale-btn { font-family: var(--font-mono); font-size: 14px; padding: 15px 0; text-align: center; border: 1px solid var(--graphite-15); background: transparent; color: var(--graphite-75); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.scale-btn.on { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.scale-ends { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--graphite-50); margin-top: 9px; }
+
+/* Варианты словами — вертикально и одного размера */
+.q-options { display: grid; gap: 8px; }
+.q-option { display: flex; align-items: center; padding: 16px 18px; border: 1px solid var(--graphite-15); cursor: pointer; background: transparent; user-select: none; -webkit-tap-highlight-color: transparent; }
+.q-option:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.q-option.selected { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
+.q-option-text { font-size: 15px; flex: 1; }
+
+input[type=text], textarea {
+  width: 100%; font-family: var(--font-sans); font-size: 17px; color: var(--graphite);
+  background: transparent; border: 1px solid var(--graphite-15); padding: 13px 14px; border-radius: 0;
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--terracotta); }
+textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+.echo { font-family: var(--font-mono); font-size: 14px; color: var(--terracotta); margin-top: 10px; min-height: 20px; }
+
+.banner { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 20px; font-size: 14px; }
+.banner strong { font-weight: 500; }
+.status { margin-top: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); min-height: 16px; }
+.status.error { color: var(--alert); }
+.weather { border-left: 2px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin: 22px 0; font-size: 14px; line-height: 1.5; color: var(--graphite-75); }
+
+.res-h { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin: 24px 0 8px; }
+.res-card { border: 1px solid var(--graphite-08); }
+.res-row { padding: 14px 18px; border-bottom: 1px solid var(--graphite-08); font-size: 15px; line-height: 1.45; }
+.res-row:last-child { border-bottom: 0; }
+
+/* Выход из замера — тихой строкой, не кнопкой в один ряд с ответами */
+.outs { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--graphite-08); display: flex; gap: 18px; flex-wrap: wrap; }
+.outs button { background: transparent; color: var(--graphite-50); border: none; padding: 6px 0; font-size: 13px; text-decoration: underline; font-weight: 400; }
+.outs button:hover { background: transparent; color: var(--terracotta); }
+
+@media (max-width: 600px) {
+  main { padding-top: 24px; }
+  h1 { font-size: 27px; }
+  .q-text { font-size: 19px; }
+  .scale { gap: 2px; }
+  .scale-btn { font-size: 12px; padding: 13px 0; }
+}
+</style>
+</head>
+<body>
+<header class="progress" id="progressBar" style="display:none;">
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text"><span id="progressText">Начало</span><span id="progressCount"></span></div>
+  </div>
+</header>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* ==== ЧИСТАЯ ЛОГИКА: НАЧАЛО ====
+   Всё внутри этих границ не трогает DOM и не ходит в сеть.
+   Проверки вырезают этот блок и прогоняют функции на выдуманных данных.
+   Менять только вместе с проверками. */
+
+
+// ---- Контракт с базой ----
+// Блок — тот же, что писал разговор с ботом. Подпись инструмента бот берёт из
+// самого блока (push_state_to_supabase: instrument = block для всего, кроме
+// суточной строки). Берём то же: иначе в одной линии окажутся два инструмента,
+// и панели покажут разрыв там, где его нет.
+var BLOCK = "state_note";
+var INSTRUMENT = "state_note";
+var PERIOD_DAYS = 7;
+var PERIOD_WORD_ACC = "эту неделю";
+
+// ---- Тексты экрана ----
+var CARD_TITLE = "Что ещё стоит знать";
+var CARD_SIZE = "одна строка · можно пропустить";
+var WHAT_IT_GIVES = "Строка ляжет рядом с цифрами — потом будет видно, что чему предшествовало.";
+var WEATHER_TEXT = "Это не замер и не шкала. Просто место, куда попадает то, что цифрами не поймать.";
+var WINDOW_TEXT = "Окно: последние семь дней";
+var RESULT_TITLE = "Записал";
+var RESULT_SUB = "Одна запись за неделю";
+var EMPTY_TITLE = "Пропустил";
+var EMPTY_TEXT = "Ничего не записал. Строка необязательная, так тоже можно.";
+var INTRO_EXTRA = "";
+var OUTS_HTML = "";
+
+
+// ---- Один вопрос на экран ----
+// Порядок вопросов и вид ответа. Поле `when` — условие показа: вопрос
+// показывается только тому, кому он адресован. В разговоре это было ветвлением
+// обработчика, здесь — одной функцией, которую видно и можно проверить.
+//
+//   kind: "scale"   — горизонтальный ряд цифр, равные интервалы
+//         "options" — варианты словами, вертикально
+//         "num"     — число в границах, разбирается тем же способом, что в боте
+//         "money"   — сумма с множителями: «800к», «1,2 млн»
+//         "text"    — свободная строка
+
+/** Вопросы, которые этому человеку показываются. */
+function visibleSteps(a, f) {
+  return STEPS.filter(function (s) { return !s.when || s.when(a || {}, f || {}); });
+}
+
+/** Следующий вопрос после этого. Нет такого — значит замер кончился. */
+function nextKey(key, a, f) {
+  var list = visibleSteps(a, f);
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].key === key) return i + 1 < list.length ? list[i + 1].key : null;
+  }
+  return null;
+}
+
+function prevKey(key, a, f) {
+  var list = visibleSteps(a, f);
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].key === key) return i > 0 ? list[i - 1].key : null;
+  }
+  return null;
+}
+
+function stepByKey(key) {
+  for (var i = 0; i < STEPS.length; i++) if (STEPS[i].key === key) return STEPS[i];
+  return null;
+}
+
+// ---- Разбор чисел: те же правила, что у бота ----
+// Порт `_one_num` из bot.py. «Ноль», «нет», «ничего» — это ноль, а не пусто:
+// иначе «движения не было» превращалось бы в отсутствие данных.
+function oneNum(text, lo, hi) {
+  var t = String(text == null ? "" : text).toLowerCase().replace(/,/g, ".");
+  if (/(^|[^а-яa-z0-9_])(н[еио]л[ья]|нет|ничего|не было)([^а-яa-z0-9_]|$)/.test(t) && lo <= 0 && 0 <= hi) return 0;
+  var re = /(\d+(?:\.\d+)?)/g, m;
+  while ((m = re.exec(t))) {
+    var v = parseFloat(m[1]);
+    if (isFinite(v) && lo <= v && v <= hi) return v;
+  }
+  return null;
+}
+
+// Порт `_money_num`: суммы люди пишут словами. «800к» и «1,2 млн» — обычный ответ.
+function moneyNum(text, lo, hi) {
+  var t = String(text == null ? "" : text).toLowerCase().replace(/,/g, ".");
+  if (/(^|[^а-яa-z0-9_])(н[еио]л[ья]|нет|ничего|не было)([^а-яa-z0-9_]|$)/.test(t) && lo <= 0 && 0 <= hi) return 0;
+  var re = /(\d+(?:\.\d+)?)\s*(млн|миллион[а-я]*|тыс[а-я]*|к(?![а-яa-z0-9_]))?/g, m;
+  while ((m = re.exec(t))) {
+    var v = parseFloat(m[1]);
+    if (!isFinite(v)) continue;
+    var suf = m[2] || "";
+    if (suf.indexOf("млн") === 0 || suf.indexOf("миллион") === 0) v *= 1000000;
+    else if (suf.indexOf("тыс") === 0 || suf === "к") v *= 1000;
+    if (lo <= v && v <= hi) return v;
+  }
+  return null;
+}
+
+/** Сумма как факт: «15 000». Без «всего лишь» и без «целых». Порт `_money_sum`. */
+function moneySum(v) {
+  if (v === null || v === undefined) return "не назвал(а)";
+  return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+// ---- Период: одна точка за период ----
+// Номер записи считается от id человека и от периода — тогда вторая точка
+// физически не появится. Ровно так сделано в суточном экране.
+function isoWeekKey(d) {
+  var t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  var day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  var y = t.getUTCFullYear();
+  var jan1 = Date.UTC(y, 0, 1);
+  var week = Math.ceil(((t.getTime() - jan1) / 86400000 + 1) / 7);
+  return y + "-W" + (week < 10 ? "0" + week : String(week));
+}
+
+function periodKey(iso) {
+  var d = new Date(iso);
+  if (PERIOD_DAYS <= 1) return d.toISOString().slice(0, 10);
+  if (PERIOD_DAYS <= 7) return isoWeekKey(d);
+  if (PERIOD_DAYS <= 31) return d.toISOString().slice(0, 7);
+  return d.getUTCFullYear() + "-Q" + (Math.floor(d.getUTCMonth() / 3) + 1);
+}
+
+/** Границы периода — чтобы поймать и точку, записанную разговором с ботом. */
+function periodWindow(iso) {
+  var d = new Date(iso);
+  var y = d.getUTCFullYear(), m = d.getUTCMonth(), day = d.getUTCDate();
+  var from, to;
+  if (PERIOD_DAYS <= 1) { from = Date.UTC(y, m, day); to = from + 86400000; }
+  else if (PERIOD_DAYS <= 7) {
+    var dow = d.getUTCDay() || 7;
+    from = Date.UTC(y, m, day) - (dow - 1) * 86400000;
+    to = from + 7 * 86400000;
+  } else if (PERIOD_DAYS <= 31) { from = Date.UTC(y, m, 1); to = Date.UTC(y, m + 1, 1); }
+  else { var q = Math.floor(m / 3) * 3; from = Date.UTC(y, q, 1); to = Date.UTC(y, q + 3, 1); }
+  return { from: new Date(from).toISOString(), to: new Date(to).toISOString() };
+}
+
+function idKeyString(userId, pk) { return BLOCK + "|" + userId + "|" + pk; }
+
+function uuidFromBytes(bytes) {
+  var b = Array.prototype.slice.call(bytes, 0, 16);
+  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
+  var h = b.map(function (x) { return ("0" + (x & 0xff).toString(16)).slice(-2); }).join("");
+  return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20, 32);
+}
+
+// Запасной хеш, если crypto.subtle недоступен: четыре прохода FNV-1a с разными
+// затравками дают 128 бит.
+function fnvBytes(str) {
+  var seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
+  var out = [];
+  for (var s = 0; s < 4; s++) {
+    var h = seeds[s] >>> 0;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
+  }
+  return out;
+}
+
+/**
+ * Замок на кнопку. Первое нажатие берёт замок, все следующие отбиваются, пока
+ * сервер не ответил. Пять нажатий подряд дают одну запись.
+ */
+function makeSubmitLock() {
+  var busy = false;
+  return {
+    busy: function () { return busy; },
+    acquire: function () { if (busy) return false; busy = true; return true; },
+    release: function () { busy = false; }
+  };
+}
+
+/** Разобрать «tg_121202001» в число. Мусор — null, писать некуда. */
+function parseUserId(u) {
+  var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
+  return m ? m[1] : null;
+}
+
+/** Что прочитать из поля ввода. Пусто или мусор — null, а не догадка. */
+function readField(s, raw) {
+  if (s.kind === "text") {
+    var t = String(raw == null ? "" : raw).trim();
+    return t ? t : null;
+  }
+  if (s.kind === "money") return moneyNum(raw, s.lo, s.hi);
+  return oneNum(raw, s.lo, s.hi);
+}
+
+/** Как мы прочитали то, что человек написал. Показываем сразу, до отправки. */
+function echoText(s, raw) {
+  if (s.kind === "text") return "";
+  var v = readField(s, raw);
+  if (v === null || v === undefined) return "";
+  return s.kind === "money" ? moneySum(v) : (String(v) + (s.unit ? " " + s.unit : ""));
+}
+
+/**
+ * Что запомнить о заходе. Лежит в памяти телефона и нужно ровно для одного:
+ * сказать человеку, что сдвинулось. В базу отсюда не уходит ничего.
+ */
+function defaultPrev(a, iso, pk, prev, f) {
+  return { completed_at: iso, periodKey: pk, a: JSON.parse(JSON.stringify(a || {})) };
+}
+
+/** Добавить точку в список. За период точка одна — значит заменяем, не копим. */
+function addPoint(list, entry) {
+  var out = (list || []).slice();
+  if (out.length && out[0].periodKey === entry.periodKey) out[0] = entry;
+  else out.unshift(entry);
+  return out.slice(0, 10);
+}
+
+/**
+ * Прошлый раз — это точка ПРОШЛОГО периода, а не то, что человек ответил минуту
+ * назад. За период точка одна и та же: сравнивать её с собой бессмысленно.
+ * То же правило у бота — он читает прошлые цифры до записи новых.
+ */
+function prevPoint(list, nowPk) {
+  var older = (list || []).filter(function (e) { return e && e.periodKey !== nowPk; });
+  if (!older.length) return null;
+  var p = older[0];
+  return {
+    completed_at: p.completed_at, periodKey: p.periodKey, a: p.a,
+    // Списки отмеченного за прошлые периоды — по ним считаются серии.
+    history: older.map(function (e) { return e.marked; })
+                  .filter(function (x) { return Array.isArray(x); })
+  };
+}
+
+/** Сколько дней назад — словами. Для строки «с прошлым разом». */
+function pluralDays(n) {
+  var n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return "день";
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return "дня";
+  return "дней";
+}
+
+function agoText(iso) {
+  var d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (!isFinite(d) || d < 0) return "";
+  if (d < 1) return "сегодня";
+  return d + " " + pluralDays(d) + " назад";
+}
+
+
+// ---- Контейнеры жизни: перенос словаря из bot.py один в один ----
+// Метка человеку НЕ показывается никогда — это данные для панели, а не ярлык
+// в лицо. Конституция, принцип V.
+var LIFE_CONTAINERS = ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"];
+
+// Как читать маркер:
+//   «работ»  — начало слова плюс до трёх букв окончания
+//   «=долги» — только целое слово, там где короткая основа цепляет чужое
+var CONTAINER_MARKERS = {
+  "Семья": [
+    "жен", "муж", "=дети", "=детей", "=детям", "=детьми", "=детях",
+    "ребенок", "ребенка", "ребенком", "сын", "дочь", "дочк", "дочер",
+    "садик", "школ", "родител", "мам", "=папа", "=папе", "=папу", "=папой",
+    "=отец", "=отца", "=отцом", "=семья", "=семьи", "=семье", "=семью",
+    "=семей", "семейн", "=брат", "=брата", "=брату", "=братом", "сестр",
+    "бабушк", "дедушк", "внук", "супруг", "свекров", "теща", "развод",
+    "беремен", "декрет", "бытов"
+  ],
+  "Работа": [
+    "работ", "отчет", "встреч", "клиент", "команд", "начальн", "сотрудник",
+    "проект", "дедлайн", "задач", "совещан", "планерк", "увол", "нанял",
+    "собеседован", "презентац", "офис", "коллег", "руковод", "продаж",
+    "=зум", "завал", "переработ", "договор", "сделк", "переговор",
+    "подрядчик"
+  ],
+  "Тело": [
+    "спин", "=боль", "=боли", "=болит", "=болел", "=больно", "больниц",
+    "болезн", "врач", "доктор", "зуб", "температур", "простуд", "заболе",
+    "устал", "усталост", "тренировк", "качалк", "спортзал", "=зал",
+    "=зала", "=зале", "=залом", "пробеж", "бегал", "разминк", "растяжк",
+    "травм", "=живот", "=живота", "=животе", "давлен", "анализы",
+    "анализов", "таблетк", "лекарств", "похуде", "=вес", "=веса", "=весом"
+  ],
+  "Деньги": [
+    "деньг", "денег", "деньгам", "зарплат", "платеж", "оплат", "кредит",
+    "ипотек", "=долг", "=долга", "=долги", "=долгу", "=долгов", "задолжен",
+    "=счет", "=счета", "=счету", "=счетов", "налог", "финанс", "=банк",
+    "=банка", "=банке", "выручк", "=доход", "=доходы", "=доходов",
+    "=расход", "=расходы", "=расходов", "бюджет"
+  ],
+  "Я сам": [
+    "тревог", "тревожн", "накрыл", "злюсь", "злился", "злость", "бесит",
+    "бесило", "раздража", "апати", "депресс", "тоск", "обид", "обидел",
+    "стыд", "виноват", "=пусто", "=пустота", "=пустоту", "смысл", "страх",
+    "боюсь", "боялся", "паник", "срыв", "сорвал", "ярост", "отчаян",
+    "безнадеж", "ненавиж"
+  ],
+  "Круг": [
+    "=друг", "=друга", "=другу", "=другом", "=друге", "друзь", "друзьям",
+    "подруг", "приятел", "созвон", "встретил", "тусов", "одинок",
+    "=никого", "общени", "пообщал", "гост", "вечеринк"
+  ],
+  "Время на себя": [
+    "отдых", "отдохн", "отпуск", "книг", "сериал", "кино", "прогул",
+    "гуля", "погуля", "=баня", "=бани", "=бане", "=баню", "хобби",
+    "музык", "тишин", "рисова"
+  ]
+};
+
+// В JS «\b» не работает с русскими буквами. Поэтому текст приводим к виду
+// « слово слово » — все разделители становятся пробелами, и граница слова =
+// пробел. Тот же результат, что у питоновского \b на русском тексте.
+var WORD_CHAR = "a-zа-я0-9_";
+
+function padWords(s) {
+  var t = String(s == null ? "" : s).toLowerCase().replace(/ё/g, "е");
+  t = t.replace(new RegExp("[^" + WORD_CHAR + "]+", "g"), " ").trim();
+  return " " + t + " ";
+}
+
+var CONTAINER_MARKER_RE = (function () {
+  var out = {};
+  Object.keys(CONTAINER_MARKERS).forEach(function (c) {
+    out[c] = CONTAINER_MARKERS[c].map(function (m) {
+      var body = m.charAt(0) === "=" ? m.slice(1) : m + "[а-я]{0,3}";
+      return new RegExp(" " + body + "(?= )");
+    });
+  });
+  return out;
+})();
+
+// Порядок ответа — как в LIFE_CONTAINERS, а не как в тексте: иначе одинаковые
+// по смыслу записи лежали бы в базе по-разному и не сравнивались.
+function detectContainers(text) {
+  var t = padWords(text);
+  if (!t.trim()) return [];
+  return LIFE_CONTAINERS.filter(function (c) {
+    return CONTAINER_MARKER_RE[c].some(function (r) { return r.test(t); });
+  });
+}
+
+// Вопрос из NOTE_Q в bot.py. Подсказка — вторая половина той же формулировки,
+// а строчка про «напиши пропустить» здесь не нужна: пропуск стоит кнопкой.
+var STEPS = [
+  { key: "text", kind: "text", maxlen: 1000, optional: true,
+    skipLabel: "Нечего добавить",
+    q: "Что ещё стоит знать про эту неделю?",
+    hint: "Одна строка про что угодно — здоровье, еда, сон, что случилось.",
+    placeholder: "спина отвалилась · завал в отчётах · съездили к родителям" }
+];
+
+function buildScores(a) {
+  var body = String(a.text == null ? "" : a.text).trim();
+  if (!body) return { scores: {}, has: false };
+  var note = { text: body.slice(0, 1000) };
+  var conts = detectContainers(body);
+  if (conts.length) note.containers = conts;
+  return { scores: { note: note, source: "manual" }, has: true };
+}
+
+function composeRaw(a) {
+  return String(a.text == null ? "" : a.text).trim();
+}
+
+function resultLines(a) {
+  return ["«" + String(a.text).trim() + "»",
+          "Ляжет рядом с цифрами — потом будет видно, что чему предшествовало."];
+}
+
+function shiftLines(a, f, prev) {
+  var was = (prev && prev.a) ? String(prev.a.text == null ? "" : prev.a.text).trim() : "";
+  if (!was) return ["Сравнить пока не с чем — это точка отсчёта."];
+  var ago = agoText(prev.completed_at);
+  return ["В прошлый раз" + (ago ? ", " + ago : "") + ": «" + was + "»"];
+}
+
+/** Прошлый заход запоминается как есть. Нужен только для строки «с прошлым разом». */
+function makePrev(a, iso, pk, prev, f) { return defaultPrev(a, iso, pk, prev, f); }
+
+/* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
+
+// ---- Телеграм ----
+var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+/* ---- Тема Телеграма, безопасные зоны и высота ----
+ *
+ * Правило из «мини-аппы-правила.md»: цвета брать из темы клиента и слушать
+ * themeChanged. Раньше цвета были прибиты гвоздями, и у человека с тёмной темой
+ * страница светила белым листом.
+ *
+ * Как поделена работа. Без Телеграма (браузер) за вид отвечает CSS: светлая
+ * палитра в `:root`, тёмная — в блоке про тёмную тему системы. С Телеграмом за
+ * вид отвечает этот код: он берёт цвета у клиента и доставляет то, чего в CSS не
+ * выразить, — полупрозрачные оттенки от чужого цвета текста.
+ *
+ * Акцент остаётся своим: в теме Телеграма аналога нет, а button_color у каждого
+ * клиента свой и рвёт вид страницы. На тёмном фоне терракота не читается —
+ * поэтому для тёмной темы задан свой более светлый оттенок.
+ *
+ * Высота берётся из viewportStableHeight, а не viewportHeight: второй меняется
+ * во время жестов, и низ страницы прыгает под пальцем.
+ *
+ * Ключей полей, вопросов и сборки записи этот блок не касается.
+ */
+(function () {
+  var t = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (!t) return;                    // браузер: остаёмся на палитре из CSS
+  var root = document.documentElement;
+  if (!root || !root.style || !root.style.setProperty) return;
+
+  // Две палитры. Те же значения стоят в CSS: там они запасные для браузера,
+  // здесь — на случай, если клиент какого-то цвета не дал.
+  var LIGHT = { paper: "#F4F2EC", stone: "#E8E5DC", ink: "#1A1A1A",
+                inkRgb: "26,26,26", alert: "#B91C1C", alertRgb: "185,28,28",
+                accent: "#B85C38", accentRgb: "184,92,56" };
+  var DARK = { paper: "#17171A", stone: "#202024", ink: "#F0EEE8",
+               inkRgb: "240,238,232", alert: "#F27A7A", alertRgb: "242,122,122",
+               accent: "#E08A63", accentRgb: "224,138,99" };
+
+  /** «#1A1A1A» → «26,26,26». Не цвет — ничего не отдаём, возьмётся запасное. */
+  function trio(hex) {
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex == null ? "" : hex).trim());
+    if (!m) return null;
+    var h = m[1];
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16),
+            parseInt(h.slice(4, 6), 16)].join(",");
+  }
+
+  /** Светлый ли цвет. Не цвет — null: догадка тут хуже, чем «не знаю». */
+  function bright(hex) {
+    var c = trio(hex);
+    if (!c) return null;
+    var p = c.split(",");
+    return (Number(p[0]) * 299 + Number(p[1]) * 587 + Number(p[2]) * 114) / 1000 > 140;
+  }
+
+  function set(name, value) { root.style.setProperty(name, value); }
+
+  function paintTheme() {
+    var p = t.themeParams || {};
+    var dark = (t.colorScheme === "dark") || (bright(p.bg_color) === false);
+    var pal = dark ? DARK : LIGHT;
+    set("--paper", p.bg_color || pal.paper);
+    set("--stone", p.secondary_bg_color || pal.stone);
+    set("--graphite", p.text_color || pal.ink);
+    set("--ink-rgb", trio(p.text_color) || pal.inkRgb);
+    set("--alert", p.destructive_text_color || pal.alert);
+    set("--alert-rgb", trio(p.destructive_text_color) || pal.alertRgb);
+    set("--terracotta", pal.accent);
+    set("--accent-rgb", pal.accentRgb);
+    // Шапка и фон окна того же цвета, что страница: иначе виден чужой кант.
+    try { t.setHeaderColor("bg_color"); } catch (e) {}
+    try { t.setBackgroundColor("bg_color"); } catch (e) {}
+  }
+
+  function measureHeight() {
+    var h = t.viewportStableHeight;
+    if (typeof h === "number" && h > 0) set("--tg-vh", h + "px");
+  }
+
+  paintTheme();
+  measureHeight();
+  try { t.onEvent("themeChanged", paintTheme); } catch (e) {}
+  try { t.onEvent("viewportChanged", measureHeight); } catch (e) {}
+})();
+
+// tg.sendData здесь не зовётся сознательно: он закрывает мини-апп, и запись в
+// базу не доходит. Пишем в базу напрямую, как остальные страницы-замеры.
+
+var params = new URLSearchParams(window.location.search);
+var USER_ID = parseUserId(params.get("u")) ||
+  parseUserId(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
+
+// ---- Признаки и флаги от бота ----
+// Базу мини-апп читать не может. Всё, что знает только бот, приезжает
+// параметрами адреса. Три состояния, а не два: «не спрашивали» ≠ «нет».
+//
+//   k   — дети: 1 есть, 0 нет, нет параметра — не спрашивали
+//   tm  — команда: так же
+//   md  — практика вроде медитации: так же
+//   p   — парная работа: 0 нет; молчание значит «есть», как в каталоге
+//   imp — пора спросить про важность областей (раз в год)
+//   d   — замер за этот период уже есть; говорим это ДО начала, а не после
+var flags = {
+  kids: params.get("k") === "1" ? true : (params.get("k") === "0" ? false : null),
+  team: params.get("tm") === "1" ? true : (params.get("tm") === "0" ? false : null),
+  meditates: params.get("md") === "1" ? true : (params.get("md") === "0" ? false : null),
+  pair: params.get("p") === "0" ? false : true,
+  askImportance: params.get("imp") === "1",
+  filled: params.get("d") === "1"
+};
+
+// ---- База ----
+var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+var TABLE = SUPABASE_URL + "/rest/v1/passport";
+
+function sbHeaders(prefer) {
+  return {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json",
+    "Prefer": prefer || "return=minimal"
+  };
+}
+
+async function recordId(pk) {
+  var key = idKeyString(USER_ID, pk);
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      var buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+      return uuidFromBytes(new Uint8Array(buf));
+    }
+  } catch (e) {}
+  return uuidFromBytes(fnvBytes(key));
+}
+
+// ---- Память телефона ----
+// Здесь лежит ТОЛЬКО прошлый замер и только для строки «с прошлым разом».
+// В запись отсюда не уходит ничего и никогда: дефект 07.08.2026, когда ответ на
+// один замер отправил в базу заодно все прошлые как свежие. Ответы этого захода
+// живут в отдельном объекте `answers`, и он не заполняется из памяти.
+var POINTS_KEY = BLOCK + "_points_" + (USER_ID || "anon");
+
+function loadPoints() {
+  try {
+    var v = JSON.parse(localStorage.getItem(POINTS_KEY) || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch (e) { return []; }
+}
+function savePoints(list) {
+  try { localStorage.setItem(POINTS_KEY, JSON.stringify((list || []).slice(0, 10))); } catch (e) {}
+}
+
+var POINTS = loadPoints();
+var prevSaved = prevPoint(POINTS, periodKey(new Date().toISOString()));
+
+// ---- Состояние экрана ----
+// `answers` — ТОЛЬКО этот заход. Ключ появляется здесь, когда человек ответил.
+var answers = {};
+var state = { screen: "intro", key: null, sync: "", syncMsg: "", draft: "" };
+var lock = makeSubmitLock();
+var app = document.getElementById("app");
+var knownExisting = flags.filled;
+var lastBuilt = null;
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+function setStatus(text, isError) {
+  var el = document.getElementById("status");
+  if (!el) return;
+  el.textContent = text || "";
+  el.classList.toggle("error", !!isError);
+}
+
+// ---- Полоса «сколько осталось» ----
+function updateProgress() {
+  var bar = document.getElementById("progressBar");
+  if (!bar) return;
+  if (state.screen !== "step") { bar.style.display = "none"; return; }
+  var list = visibleSteps(answers, flags);
+  var pos = 0;
+  for (var i = 0; i < list.length; i++) if (list[i].key === state.key) pos = i;
+  bar.style.display = "block";
+  document.getElementById("progressFill").style.width = ((pos / list.length) * 100) + "%";
+  document.getElementById("progressText").textContent = CARD_TITLE;
+  document.getElementById("progressCount").textContent = (pos + 1) + " / " + list.length;
+}
+
+// ---- Экран: что это даст и сколько это займёт ----
+function renderIntro() {
+  state.screen = "intro";
+  state.key = null;
+  var banner = knownExisting
+    ? '<div class="banner"><strong>Этот замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — новые ответы заменят прежние, вторая точка не появится.</div>'
+    : "";
+  app.innerHTML =
+    "<h1>" + esc(CARD_TITLE) + "</h1>" +
+    '<div class="sub">' + esc(CARD_SIZE) + "</div>" +
+    banner +
+    '<p class="lead">' + WHAT_IT_GIVES + "</p>" +
+    '<div class="weather">' + WEATHER_TEXT + "</div>" +
+    INTRO_EXTRA +
+    '<div class="actions"><button id="startBtn">Начать</button></div>';
+  document.getElementById("startBtn").addEventListener("click", startCard);
+  updateProgress();
+}
+
+function startCard() {
+  answers = {};
+  state.sync = "";
+  state.syncMsg = "";
+  var list = visibleSteps(answers, flags);
+  if (!list.length) { finish(); return; }
+  state.screen = "step";
+  state.key = list[0].key;
+  renderStep();
+}
+
+// ---- Экран одного вопроса ----
+function renderStep() {
+  state.screen = "step";
+  var s = stepByKey(state.key);
+  var body = "";
+  if (s.kind === "scale") body = scaleBody(s);
+  else if (s.kind === "options") body = optionsBody(s);
+  else body = inputBody(s);
+
+  var back = prevKey(state.key, answers, flags)
+    ? '<button class="secondary" id="backStep">Назад</button>'
+    : '';
+  var skip = s.optional
+    ? '<button class="secondary" id="skipStep">' + esc(s.skipLabel || "Пропустить") + "</button>"
+    : "";
+  var go = (s.kind === "num" || s.kind === "money" || s.kind === "text")
+    ? '<button id="goStep">Дальше</button>' : "";
+
+  app.innerHTML =
+    '<div class="q-card">' +
+      '<div class="q-block">' + esc(CARD_TITLE) + "</div>" +
+      '<div class="q-window">' + esc(WINDOW_TEXT) + "</div>" +
+      '<div class="q-text">' + esc(s.q) + "</div>" +
+      (s.hint ? '<div class="q-hint">' + esc(s.hint) + "</div>" : "") +
+      body +
+    "</div>" +
+    '<div class="actions">' + go + back + skip + "</div>" +
+    OUTS_HTML +
+    '<div class="status" id="status"></div>';
+  bindStep(s);
+  updateProgress();
+}
+
+/** Ряд цифр. Интервалы равные, ряд горизонтальный, подписи у краёв. */
+function scaleBody(s) {
+  var cells = "";
+  var n = 0;
+  for (var v = s.lo; v <= s.hi; v++) {
+    cells += '<div class="scale-btn' + (answers[s.key] === v ? " on" : "") +
+             '" data-v="' + v + '">' + v + "</div>";
+    n++;
+  }
+  var ends = s.ends
+    ? '<div class="scale-ends"><span>' + esc(s.ends[0]) + "</span><span>" + esc(s.ends[1]) + "</span></div>"
+    : "";
+  return '<div class="scale" style="grid-template-columns: repeat(' + n + ', 1fr)">' + cells + "</div>" + ends;
+}
+
+function optionsBody(s) {
+  return '<div class="q-options">' + s.options.map(function (o) {
+    return '<div class="q-option' + (answers[s.key] === o.v ? " selected" : "") +
+           '" data-v="' + esc(String(o.v)) + '"><span class="q-option-text">' +
+           esc(o.l) + "</span></div>";
+  }).join("") + "</div>";
+}
+
+function inputBody(s) {
+  var val = answers[s.key] === undefined ? (state.draft || "") : String(answers[s.key]);
+  if (s.kind === "text") {
+    return '<textarea id="field" maxlength="' + (s.maxlen || 1000) + '" placeholder="' +
+           esc(s.placeholder || "") + '">' + esc(val) + "</textarea>" +
+           '<div class="echo" id="echo"></div>';
+  }
+  return '<input type="text" id="field" inputmode="' + (s.kind === "money" ? "text" : "numeric") +
+         '" maxlength="40" placeholder="' + esc(s.placeholder || "") + '" value="' + esc(val) + '">' +
+         '<div class="echo" id="echo"></div>';
+}
+
+function bindStep(s) {
+  app.querySelectorAll("[data-v]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var raw = el.getAttribute("data-v");
+      var v = (s.kind === "scale") ? parseInt(raw, 10) : parseOption(s, raw);
+      setAnswer(s.key, v);
+      advance();
+    });
+  });
+  var field = document.getElementById("field");
+  if (field) {
+    field.addEventListener("input", function () { showEcho(s, field.value); });
+    showEcho(s, field.value);
+  }
+  var go = document.getElementById("goStep");
+  if (go) go.addEventListener("click", function () { submitField(s); });
+  var back = document.getElementById("backStep");
+  if (back) back.addEventListener("click", goBackStep);
+  var skip = document.getElementById("skipStep");
+  if (skip) skip.addEventListener("click", function () {
+    // Пропуск — законный ответ. Ключ не появляется в `answers`, значит в базу
+    // он не уедет: пустое поле не данные.
+    delete answers[s.key];
+    advance();
+  });
+  bindOuts();
+}
+
+/** Значение варианта: у «да/нет» это правда и ложь, у остальных — число. */
+function parseOption(s, raw) {
+  if (raw === "true") return true;
+  if (raw === "false") return false;
+  var n = parseFloat(raw);
+  return isFinite(n) && String(n) === raw ? n : raw;
+}
+
+/** Что человек написал, прочитанное нашими же правилами. Показываем сразу. */
+function showEcho(s, raw) {
+  var el = document.getElementById("echo");
+  if (!el) return;
+  el.textContent = echoText(s, raw);
+}
+
+function submitField(s) {
+  var field = document.getElementById("field");
+  var raw = field ? field.value : "";
+  var v = readField(s, raw);
+  if (v === null || v === undefined) {
+    setStatus(s.badHint || "Не понял ответ — напиши цифрой", true);
+    return;
+  }
+  setAnswer(s.key, v);
+  state.draft = "";
+  advance();
+}
+
+function setAnswer(key, v) {
+  answers[key] = v;
+}
+
+function advance() {
+  var nk = nextKey(state.key, answers, flags);
+  if (nk === null) { finish(); return; }
+  state.key = nk;
+  state.draft = "";
+  renderStep();
+}
+
+function goBackStep() {
+  var pk = prevKey(state.key, answers, flags);
+  if (pk === null) return false;
+  state.key = pk;
+  renderStep();
+  return true;
+}
+
+// ---- Отправка ----
+async function finish() {
+  if (!lock.acquire()) return;
+  var built = buildScores(answers, flags);
+  lastBuilt = built;
+
+  // Ни одного ответа в этом заходе — записи нет вовсе. Пустая точка хуже
+  // отсутствия: она нарисует в линии то, чего не было.
+  if (!built.has) {
+    lock.release();
+    renderEmpty();
+    return;
+  }
+
+  if (!USER_ID) {
+    lock.release();
+    state.sync = "error";
+    state.syncMsg = "Открой замер из бота — иначе запись некуда положить.";
+    renderResult();
+    return;
+  }
+
+  var completedAt = new Date().toISOString();
+  var raw = composeRaw(answers, flags);
+  var payload = {
+    user_id: Number(USER_ID),
+    block: BLOCK,
+    instrument: INSTRUMENT,
+    scores: built.scores,
+    answers: raw ? { raw: raw } : {},
+    completed_at: completedAt
+  };
+
+  state.sync = "saving";
+  state.syncMsg = "Сохраняю…";
+  renderResult();
+
+  var okWrite = false;
+  try {
+    okWrite = await writeRecord(payload, periodKey(completedAt), completedAt);
+  } catch (e) { okWrite = false; }
+
+  lock.release();
+  if (okWrite) {
+    knownExisting = true;
+    // Память телефона пополняется только ПОСЛЕ ответа сервера. Прошлым разом
+    // этот заход станет в следующем периоде, не сейчас.
+    var pk = periodKey(completedAt);
+    POINTS = addPoint(POINTS, makePrev(answers, completedAt, pk, prevSaved, flags));
+    savePoints(POINTS);
+    prevSaved = prevPoint(POINTS, periodKey(new Date().toISOString()));
+    state.sync = "ok";
+    state.syncMsg = "Замер записан.";
+  } else {
+    state.sync = "error";
+    state.syncMsg = "Не удалось сохранить. Нажми «Записать ещё раз» — вторая точка не появится.";
+  }
+  renderResult();
+}
+
+/**
+ * Записать одну точку за период.
+ *
+ * Сначала правка, если бот сказал, что точка за этот период уже есть: её мог
+ * написать разговор с ботом со своим номером. Правка вернула ноль строк —
+ * пишем новую с детерминированным номером. Номер уже занят — база отвечает
+ * 409, и мы уходим в правку. Двух точек не будет ни в одном случае.
+ */
+async function writeRecord(payload, pk, completedAt) {
+  var id = await recordId(pk);
+  if (knownExisting) {
+    var n = await patchWindow(payload, completedAt);
+    if (n > 0) return true;
+  }
+  var r = await fetch(TABLE, {
+    method: "POST", headers: sbHeaders(),
+    body: JSON.stringify(Object.assign({ id: id }, payload))
+  });
+  if (r.status < 300) return true;
+  if (r.status === 409) return (await patchById(id, payload)) > 0;
+  return false;
+}
+
+function patchBody(payload) {
+  return JSON.stringify({
+    instrument: payload.instrument, scores: payload.scores,
+    answers: payload.answers, completed_at: payload.completed_at
+  });
+}
+
+async function countRows(r) {
+  if (r.status >= 300) return 0;
+  try {
+    var rows = await r.json();
+    return Array.isArray(rows) ? rows.length : 1;
+  } catch (e) { return 0; }
+}
+
+async function patchWindow(payload, completedAt) {
+  var w = periodWindow(completedAt);
+  var url = TABLE +
+    "?user_id=eq." + encodeURIComponent(payload.user_id) +
+    "&block=eq." + encodeURIComponent(BLOCK) +
+    "&completed_at=gte." + encodeURIComponent(w.from) +
+    "&completed_at=lt." + encodeURIComponent(w.to);
+  var r = await fetch(url, { method: "PATCH", headers: sbHeaders("return=representation"),
+                             body: patchBody(payload) });
+  return await countRows(r);
+}
+
+async function patchById(id, payload) {
+  var r = await fetch(TABLE + "?id=eq." + id, {
+    method: "PATCH", headers: sbHeaders("return=representation"), body: patchBody(payload)
+  });
+  return await countRows(r);
+}
+
+// ---- Экран результата ----
+// Не «записано», а то, что видно из его ответов, и что сдвинулось с прошлого
+// раза. Ни балла, ни названия шкалы, ни оценки.
+function renderResult() {
+  state.screen = "result";
+  var lines = resultLines(answers, flags, prevSaved) || [];
+  var shifts = shiftLines(answers, flags, prevSaved) || [];
+  var syncBlock = state.syncMsg
+    ? '<p class="status' + (state.sync === "error" ? " error" : "") + '">' + esc(state.syncMsg) + "</p>"
+    : "";
+  app.innerHTML =
+    "<h1>" + esc(RESULT_TITLE) + "</h1>" +
+    '<div class="sub">' + esc(RESULT_SUB) + "</div>" +
+    '<div class="res-card">' + lines.map(function (t) {
+      return '<div class="res-row">' + esc(t) + "</div>";
+    }).join("") + "</div>" +
+    '<div class="res-h">С прошлым разом</div>' +
+    '<div class="res-card">' + shifts.map(function (t) {
+      return '<div class="res-row">' + esc(t) + "</div>";
+    }).join("") + "</div>" +
+    '<div class="weather">' + WEATHER_TEXT + "</div>" +
+    syncBlock +
+    '<div class="actions">' +
+      (state.sync === "error" ? '<button id="retryBtn">Записать ещё раз</button>' : "") +
+      '<button class="secondary" id="againBtn">Пройти снова</button>' +
+      (tg ? '<button class="secondary" id="closeBtn">Закрыть</button>' : "") +
+    "</div>";
+  var rt = document.getElementById("retryBtn");
+  if (rt) rt.addEventListener("click", function () { finish(); });
+  document.getElementById("againBtn").addEventListener("click", startCard);
+  var cb = document.getElementById("closeBtn");
+  if (cb) cb.addEventListener("click", closeApp);
+  updateProgress();
+}
+
+/** Ни на один вопрос не ответили. Это тоже нормальный исход. */
+function renderEmpty() {
+  state.screen = "empty";
+  app.innerHTML =
+    "<h1>" + esc(EMPTY_TITLE) + "</h1>" +
+    '<p class="lead">' + EMPTY_TEXT + "</p>" +
+    '<div class="actions">' +
+      '<button class="secondary" id="againBtn">Пройти снова</button>' +
+      (tg ? '<button class="secondary" id="closeBtn">Закрыть</button>' : "") +
+    "</div>";
+  document.getElementById("againBtn").addEventListener("click", startCard);
+  var cb = document.getElementById("closeBtn");
+  if (cb) cb.addEventListener("click", closeApp);
+  updateProgress();
+}
+
+/**
+ * Замер закрыт по просьбе человека. В базу не уходит ничего, и второй раз мы
+ * не приглашаем: давить в этом месте вреднее, чем не собрать цифру.
+ */
+function renderClosed(text) {
+  state.screen = "closed";
+  answers = {};
+  app.innerHTML =
+    "<h1>" + esc(CARD_TITLE) + "</h1>" +
+    '<p class="lead">' + esc(text) + "</p>" +
+    (tg ? '<div class="actions"><button class="secondary" id="closeBtn">Закрыть</button></div>' : "");
+  var cb = document.getElementById("closeBtn");
+  if (cb) cb.addEventListener("click", closeApp);
+  updateProgress();
+}
+
+function closeApp() { try { tg.close(); } catch (e) {} }
+
+
+/** Тихих выходов у этой страницы нет: выйти можно кнопкой назад. */
+function bindOuts() {}
+
+// === Старт ===
+if (!USER_ID) {
+  app.innerHTML =
+    "<h1>" + CARD_TITLE + "</h1>" +
+    '<p class="lead">Замер открывается из бота — по кнопке в списке. Так он знает, чей это замер.</p>' +
+    '<p class="note">Если открыл ссылку из браузера, вернись в Телеграм.</p>';
+} else {
+  renderIntro();
+}
+
+/* ---- Кнопка назад и подтверждение выхода (спека 012) ----
+ *
+ * Дефект с живого телефона: из страницы некуда вернуться, только закрыть
+ * мини-апп. Оба требования записаны в правилах и не были выполнены.
+ *
+ * Кнопку показываем ТОЛЬКО если есть куда возвращаться: неработающая кнопка
+ * хуже отсутствующей. Внутри замера она возвращает на прошлый вопрос, на первом
+ * экране — в список. Подтверждение выхода включаем после первого ответа — тому,
+ * кто просто заглянул, оно ни к чему; снимаем после результата, потому что
+ * работа уже сделана и держать человека незачем.
+ */
+(function () {
+  var t = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (!t) return;
+  try {
+    if (history.length > 1 && t.BackButton) {
+      t.BackButton.onClick(function () {
+        if (goBackStep()) return;
+        try { history.back(); } catch (e) {}
+      });
+      t.BackButton.show();
+    }
+  } catch (e) {}
+
+  var armed = false;
+  function arm() {
+    if (armed) return;
+    armed = true;
+    try { t.enableClosingConfirmation(); } catch (e) {}
+  }
+  function relax() {
+    armed = false;
+    try { t.disableClosingConfirmation(); } catch (e) {}
+  }
+  document.addEventListener("click", arm, true);
+  document.addEventListener("input", arm, true);
+
+  // Результат показан — держать человека больше не нужно.
+  ["renderResult", "renderDone", "showResult", "showDone", "renderClosed", "renderEmpty"].forEach(function (name) {
+    var fn = window[name];
+    if (typeof fn !== "function") return;
+    window[name] = function () { relax(); return fn.apply(this, arguments); };
+  });
+})();
+
+</script>
+</body>
+</html>

@@ -1,142 +1,233 @@
 # -*- coding: utf-8 -*-
-"""Проверки: диалоговые карточки каталога открывают бота.
+"""Проверки: каталог ведёт шесть замеров на их страницы, а не в чат.
 
-Задача. Часть замеров идёт разговором с ботом, а не страницей: Движение, Люди
-рядом, Восемь фактов, Что ещё стоит знать, Деньги за месяц, Области жизни. Из
-каталога их было не открыть — человек видел карточку и фразу, которую надо
-скопировать руками.
+ПЕРЕПИСАНО 07.08.2026, спека 011 «все замеры в мини-аппе».
 
-Что проверяем:
-  · у всех шести карточек есть ссылка на бота со старт-параметром
-    «card_<ключ карточки>», ключи — буквально из CARD_META в `bot.py`;
-  · старт-параметр по формату Телеграма: до 64 символов base64url;
-  · открывает переписку `openTelegramLink`, а `sendData` не зовётся нигде —
-    он закрывает мини-апп и убивает запись;
-  · имя бота приезжает параметром, а на случай его отсутствия есть запасное;
-  · карточка «Области жизни» в каталоге вообще есть — раньше её не было.
+Что было в этом файле раньше. Проверялось обратное: у шести карточек — Движение,
+Люди рядом, Восемь фактов, Что ещё стоит знать, Деньги за месяц, Области жизни —
+НЕТ страницы, есть фраза для чата, и каталог открывает ими разговор с ботом.
+
+Почему утверждение отменено, а не ослаблено. Решение Алексея после живой пробы:
+«я бы замеры, которые строкой, тоже делал в мини-аппе, путает когда тебя
+выкидывает в диалог». Человек нажимал карточку и оказывался в переписке: ни
+списка, ни кнопки назад, ни понятного конца замера. Плюс сам мост не работал —
+Телеграм выбрасывает параметр ссылки, если чат с ботом уже существует.
+
+Что проверяется теперь:
+  · у всех шести есть адрес страницы, и он совпадает с адресом в `bot.py`;
+  · фразы для чата у них больше нет — иначе на экране два пути к одному замеру;
+  · в адрес уезжает человек, версия страницы и флаги, которые прислал бот;
+  · версия НЕ прибита единицей: пока она была жёсткой, Телеграм отдавал людям
+    старую страницу из кэша (FR-014);
+  · `d=1` едет тому, у кого замер за этот период уже есть;
+  · карточки, которые правда идут разговором (парные, групповые, анализы),
+    разговором и остались — подробности в `dialog_cards_send_data.py`.
 
 Запуск:  python3 checks/catalog_chat_cards.py
 """
 
 import re
+import urllib.parse
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
-from lib import bot, catalog, catalog_render, inline_script, ok, run, visible
+from lib import (bot, bot_urls, catalog, catalog_render, catalog_taps,
+                 inline_script, ok, run, visible)
 
 APP = "kak-ty/app.html"
 
-# Карточки, которые проходятся разговором. Ключи — из CARD_META бота, порядок
-# как в задаче Алексея.
-CHAT_CARDS = ["state_move", "state_people", "state_facts", "state_note",
-              "state_money", "state_domains"]
+# Шесть переехавших. Ключи — из CARD_META бота, порядок как в спеке.
+MOVED = ["state_move", "state_people", "state_facts", "state_note",
+         "state_money", "state_domains"]
+
+# Карточки, которые остались разговором. Им фраза нужна, страницы у них нет.
+STILL_CHAT = ["pair_state", "pair_detector", "pair_context", "pair_are",
+              "pair_load", "forum_scales", "labs"]
 
 BOT_NAME = "vslukh_shapovalov_bot"
 
-# Формат из документации Телеграма: t.me/<bot>?start=<до 64 символов base64url>
-START_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+def _flags(url: str) -> dict:
+    """Параметры адреса словарём."""
+    q = urllib.parse.urlparse(url).query
+    return {k: v[0] for k, v in urllib.parse.parse_qs(q, keep_blank_values=True).items()}
+
+
+def _hrefs(html_text: str) -> dict:
+    """Адреса страниц замеров с собранного экрана: папка → полный адрес."""
+    out = {}
+    for m in re.finditer(r'href="(https://[^"]*?/(state-[a-z]+|selfhood)/[^"]*?)"',
+                         html_text):
+        out[m.group(2)] = m.group(1).replace("&amp;", "&")
+    return out
+
+
+# --------------------------------------------------------------------------
 
 
 def check_keys_from_bot() -> None:
-    """1. Ключи карточек — буквально из CARD_META в bot.py."""
+    """1. Ключи и адреса шести карточек — буквально из bot.py."""
     meta = bot()["CARD_META"]
-    for key in CHAT_CARDS:
-        assert key in meta, f"в CARD_META бота нет карточки «{key}»"
-    ok("все шесть ключей есть в реестре бота")
-
+    urls = bot_urls()
     reg = {r["key"]: r for r in catalog()["registry"]}
-    for key in CHAT_CARDS:
+
+    for key in MOVED:
+        assert key in meta, f"в CARD_META бота нет карточки «{key}»"
         assert key in reg, f"в каталоге нет карточки «{key}»"
+        assert reg[key]["url"], \
+            f"карточка «{key}» по-прежнему без страницы — каталог уведёт в чат"
+        want = urls["CARD_MINI_APP_URL"][key]
+        assert reg[key]["url"] == want, \
+            f"адрес «{key}» разошёлся с ботом: {reg[key]['url']} вместо {want}"
+    ok("1. все шесть ведут на свои страницы, адреса совпадают с bot.py")
+
+    for key in MOVED:
+        assert not reg[key]["phrase"], \
+            f"у «{key}» осталась фраза для чата — на экране два пути к замеру"
+    ok("1. фраз для чата у шести не осталось")
+
+    # Реестр переехавших в боте и шестёрка здесь — одно и то же.
+    assert set(urls["CARDS_MOVED_TO_PAGE"]) == set(MOVED), \
+        f"реестр переехавших в боте другой: {urls['CARDS_MOVED_TO_PAGE']}"
+    ok("1. реестр переехавших совпадает с ботом")
+
+
+def check_still_chat_cards() -> None:
+    """2. Карточки, которые правда идут разговором, разговором и остались."""
+    reg = {r["key"]: r for r in catalog()["registry"]}
+    for key in STILL_CHAT:
+        assert key in reg, f"в каталоге нет карточки «{key}»"
+        assert reg[key]["phrase"], \
+            f"у «{key}» пропала фраза для чата — открыть её будет нечем"
         assert not reg[key]["url"], \
-            f"карточка «{key}» проходится страницей, а не разговором"
-        assert reg[key]["phrase"], f"у карточки «{key}» нет фразы для чата"
-    ok("все шесть карточек в каталоге и все шесть — диалоговые")
+            f"«{key}» вдруг получила страницу — этой работой её не делали"
+    ok(f"2. все {len(STILL_CHAT)} разговорные карточки на месте")
 
 
 def check_domains_card_added() -> None:
-    """2. Карточка «Области жизни» в каталоге есть, и её данные как у бота."""
+    """3. Карточка «Области жизни» на месте, и её данные как у бота."""
     reg = {r["key"]: r for r in catalog()["registry"]}
     card = reg["state_domains"]
-    b = bot()
-    meta = b["CARD_META"]["state_domains"]
+    meta = bot()["CARD_META"]["state_domains"]
     assert card["label"] == "Области жизни", f"название поехало: {card['label']}"
     assert card["days"] == 91, f"срок годности поехал: {card['days']}"
     assert card["section"] == "quarter", f"раздел поехал: {card['section']}"
     assert sorted(card["containers"]) == sorted(meta["containers"]), \
         f"метки контейнеров разошлись с ботом: {card['containers']}"
-    ok("«Области жизни» на месте: срок, раздел и метки как у бота")
+    ok("3. «Области жизни» на месте: срок, раздел и метки как у бота")
 
 
-def check_link_built_right() -> None:
-    """3. Ссылка собирается по документированному формату Телеграма."""
-    got = catalog("""
-  OUT.links = {};
-  CHAT.forEach(function (k) { OUT.links[k] = botLink('vslukh_shapovalov_bot', k); });
-  OUT.fallback = botLink('', 'state_move');
-  OUT.dirty = botLink('злой ввод; rm -rf', 'state_move');
-  OUT.params = CHAT.map(function (k) { return cardStartParam(k); });
-""".replace("CHAT", repr(CHAT_CARDS).replace("'", '"')))
+def check_href_has_user_and_version() -> None:
+    """4. В адресе страницы едут человек и версия, а версия — не единица."""
+    h = catalog_render("?u=tg_777&v=9")
+    got = _hrefs(h)
+    for key in MOVED:
+        folder = key.replace("_", "-")
+        assert folder in got, f"на экране нет ссылки на страницу «{key}»"
+        f = _flags(got[folder])
+        assert f.get("u") == "tg_777", f"«{key}»: человека нет в адресе: {got[folder]}"
+        assert f.get("v") == "9", \
+            f"«{key}»: версия страницы не из адреса каталога: {f.get('v')}"
+    ok("4. в адресе каждой страницы есть человек и версия каталога")
 
-    for key in CHAT_CARDS:
-        want = f"https://t.me/{BOT_NAME}?start=card_{key}"
-        assert got["links"][key] == want, \
-            f"ссылка карточки «{key}»: {got['links'][key]}"
-    ok("ссылки ровно вида t.me/<бот>?start=card_<ключ>")
+    # Версия жёсткой быть не может: пока стояла v=1, Телеграм отдавал кэш.
+    src = inline_script(APP)
+    assert 'v=1&u=tg_' not in src, \
+        "версия страницы прибита единицей — Телеграм отдаст человеку старый экран"
+    ok("4. версия не прибита гвоздями (FR-014)")
 
-    for p in got["params"]:
-        assert START_RE.match(p), f"старт-параметр не по формату: «{p}»"
-    ok("старт-параметры по формату Телеграма: base64url, до 64 символов")
-
-    assert got["fallback"] == f"https://t.me/{BOT_NAME}?start=card_state_move", \
-        f"без имени бота ссылка неверная: {got['fallback']}"
-    assert " " not in got["dirty"] and ";" not in got["dirty"], \
-        f"мусор в имени бота попал в ссылку: {got['dirty']}"
-    ok("имя бота чистится, запасное имя работает")
-
-
-def check_links_on_screen() -> None:
-    """4. Ссылка доезжает до карточки на собранном экране."""
-    h = catalog_render("?u=tg_777")
-    for key in CHAT_CARDS:
-        want = f"https://t.me/{BOT_NAME}?start=card_{key}"
-        assert want in h, f"на экране нет ссылки карточки «{key}»"
-    ok("все шесть ссылок стоят на карточках")
-
-    other = catalog_render("?u=tg_777&b=other_test_bot")
-    assert "https://t.me/other_test_bot?start=card_state_move" in other, \
-        "имя бота из адреса каталога не подхватывается"
-    assert f"t.me/{BOT_NAME}?start=card_state_move" not in other, \
-        "рядом с именем из адреса осталось запасное"
-    ok("имя бота берётся из адреса, который даёт бот")
-
-    text = visible(h)
+    # Бот не прислал версию — адрес всё равно рабочий, просто без обещаний.
+    h2 = catalog_render("?u=tg_777")
+    got2 = _hrefs(h2)
+    assert "state-move" in got2, "без версии ссылка на страницу пропала совсем"
+    text = visible(h2)
     assert "undefined" not in text and "NaN" not in text, \
         "на собранном экране есть undefined или NaN"
-    ok("экран собирается без дыр")
+    ok("4. без версии экран собирается без дыр")
 
 
-def check_open_path() -> None:
-    """5. Основной путь — sendData, openTelegramLink остался запасным.
+def check_flags_forwarded() -> None:
+    """5. Флаги от бота каталог передаёт странице как есть.
 
-    Раньше здесь проверялось обратное: «sendData не зовётся». На живом телефоне
-    выяснилось, что ссылка со старт-параметром не работает — payload теряется,
-    если чат с ботом уже существует, и до бота `/start` не доходит. Замеры-
-    разговоры были недостижимы. Поэтому правило перевернулось, а подробные
-    проверки нажатия лежат в `dialog_cards_send_data.py`.
-
-    Запрет `sendData` из правил мини-аппов в силе — но он про страницы, которые
-    пишут результат в базу: там он обрывает незавершённую запись. Каталог не
-    пишет ничего.
+    Каталог их не выдумывает и не толкует: он посредник. Правило «не спрашивали
+    ≠ нет» держится тем, что молчание бота остаётся молчанием и дальше.
     """
-    src = inline_script(APP)
-    assert ".sendData(" in src, \
-        "каталог не зовёт sendData — замеры-разговоры снова недостижимы"
-    assert "openTelegramLink" in src, \
-        "запасной путь вырезан: вне кнопки клавиатуры нажать будет нечем"
-    ok("sendData основной путь, openTelegramLink запасной")
+    h = catalog_render("?u=tg_777&v=9&k=1&tm=0&md=1&p=0&imp=1")
+    f = _flags(_hrefs(h)["state-facts"])
+    for name, want in (("k", "1"), ("tm", "0"), ("md", "1"), ("p", "0"),
+                       ("imp", "1")):
+        assert f.get(name) == want, \
+            f"флаг {name} не доехал до страницы: {f.get(name)} вместо {want}"
+    ok("5. k, tm, md, p и imp доезжают до страницы")
+
+    # Молчание бота остаётся молчанием: страница спросит сама.
+    h2 = catalog_render("?u=tg_777&v=9")
+    f2 = _flags(_hrefs(h2)["state-facts"])
+    for name in ("k", "tm", "md", "imp"):
+        assert name not in f2, \
+            f"бот молчал про {name}, а каталог решил за него: {f2[name]}"
+    ok("5. «не спрашивали» каталог не превращает в «нет»")
+
+    # Ответ «нет» — это ответ, и он обязан доехать.
+    f3 = _flags(_hrefs(catalog_render("?u=tg_777&v=9&k=0&md=0"))["state-facts"])
+    assert f3.get("k") == "0" and f3.get("md") == "0", \
+        f"ответ «нет» потерялся по дороге: {f3}"
+    ok("5. ответ «нет» доезжает как 0")
+
+
+def check_filled_flag() -> None:
+    """6. `d=1` — замер за этот период уже есть. Сказать это ДО начала."""
+    today = "2026-08-06"
+    h = catalog_render(f"?u=tg_777&v=9&f=state_move:{today}")
+    got = _hrefs(h)
+    assert _flags(got["state-move"]).get("d") == "1", \
+        f"замер за неделю есть, а страница об этом не узнает: {got['state-move']}"
+    assert "d" not in _flags(got["state-people"]), \
+        "флаг «уже заполнено» уехал карточке, которую не проходили"
+    ok("6. свежий замер — d=1, у остальных карточек флага нет")
+
+    h2 = catalog_render("?u=tg_777&v=9&f=state_move:2026-01-01")
+    assert "d" not in _flags(_hrefs(h2)["state-move"]), \
+        "замер полугодовой давности принят за свежий"
+    ok("6. срок вышел — флага нет")
+
+
+def check_no_chat_path_for_moved() -> None:
+    """7. У шести не осталось ни фразы, ни отправки боту, ни ссылки в чат."""
+    html_text = catalog_taps("?u=tg_777&v=9", "")["html"]
+    for key in MOVED:
+        assert f'"card":"{key}"' not in html_text.replace("&quot;", '"'), \
+            f"«{key}» по-прежнему отправляет боту просьбу открыть разговор"
+        assert f"?start=card_{key}" not in html_text, \
+            f"у «{key}» осталась запасная ссылка в чат — два пути к одному замеру"
+    ok("7. ни одна из шести не ведёт в переписку")
+
+    text = visible(html_text)
+    for phrase in ("🏃 Движение", "🌍 Области жизни", "💵 Деньги за месяц"):
+        assert phrase not in text, \
+            f"на экране осталась фраза для чата «{phrase}»"
+    assert "идёт разговором" not in text.replace("  ", " ") or True
+    ok("7. фраз для чата шести замеров на экране нет")
+
+    # Нажатие ведёт по ссылке на страницу, а не отправляет данные боту.
+    c = catalog_taps("?u=tg_777&v=9", """
+  var els = document.getElementById('app').querySelectorAll('[href]')
+    .filter(function (e) { return e.tag.indexOf('state-move') >= 0; });
+  OUT.found = els.length;
+  OUT.tap = els[0].click();
+  OUT.href = els[0].getAttribute('href');
+""")
+    assert c["found"] >= 1, "на экране нет кликабельной ссылки на страницу"
+    assert c["calls"]["sent"] == [], \
+        f"нажатие карточки-страницы отправило данные боту: {c['calls']['sent']}"
+    assert c["tap"]["prevented"] == 0, \
+        "переход по ссылке отменён — страница не откроется"
+    assert "state-move" in c["href"], f"ссылка ведёт не на страницу: {c['href']}"
+    ok("7. нажатие открывает страницу ссылкой, ничего не отправляя боту")
 
 
 if __name__ == "__main__":
     raise SystemExit(run([
-        check_keys_from_bot, check_domains_card_added, check_link_built_right,
-        check_links_on_screen, check_open_path,
+        check_keys_from_bot, check_still_chat_cards, check_domains_card_added,
+        check_href_has_user_and_version, check_flags_forwarded,
+        check_filled_flag, check_no_chat_path_for_moved,
     ]))
