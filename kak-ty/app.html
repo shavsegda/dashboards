@@ -84,8 +84,8 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .chat-phrase { font-family: var(--font-mono); font-size: 14px; padding: 9px 11px; background: var(--stone); word-break: break-word; }
 .chat-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .chat-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
-button.act { background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
-button.act:hover { background: var(--terracotta); }
+button.act, a.act { display: inline-block; background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; text-decoration: none; }
+button.act:hover, a.act:hover { background: var(--terracotta); }
 button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 10px 16px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); }
 button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); }
 
@@ -239,6 +239,16 @@ var REGISTRY = [
     size: "5 вопросов · один раз",
     phrase: "👨‍👩‍👧 Про нас",
     once: true
+  },
+  {
+    // Ядро квартала: проходится разговором, страницы у него нет (005).
+    // Метки контейнеров — из CARD_META бота, шесть, а не семь.
+    key: "state_domains", label: "Области жизни", group: "Состояние",
+    days: 91, section: "quarter",
+    what: "насколько устраивает каждая область жизни и насколько она важна",
+    containers: ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг"],
+    size: "8 областей · 2 минуты",
+    phrase: "🌍 Области жизни"
   },
   {
     key: "state_month", label: "Стресс и сон", group: "Состояние", days: 30, section: "month",
@@ -541,6 +551,24 @@ function parseFreshParam(s) {
   return out;
 }
 
+// ---- Ссылка в разговор с ботом ----
+// Часть замеров идёт разговором, а не формой, и открыть их можно единственным
+// способом: ссылкой на переписку с ботом со старт-параметром. Формат из
+// документации Телеграма: t.me/<бот>?start=<до 64 символов base64url>.
+// sendData тут запрещён: он закрывает мини-апп и запись не доходит.
+var BOT_FALLBACK = "vslukh_shapovalov_bot";
+
+/** Старт-параметр карточки. Ключи те же, что в CARD_META бота. */
+function cardStartParam(key) {
+  return "card_" + String(key == null ? "" : key).replace(/[^A-Za-z0-9_]/g, "");
+}
+
+/** Ссылка на переписку с ботом. Имя бота приходит от бота же, мусор чистится. */
+function botLink(botName, key) {
+  var name = String(botName == null ? "" : botName).replace(/[^A-Za-z0-9_]/g, "");
+  return "https://t.me/" + (name || BOT_FALLBACK) + "?start=" + cardStartParam(key);
+}
+
 /** Самая свежая дата по каждому блоку из строк passport. */
 function lastDatesFromRows(rows) {
   var out = {};
@@ -576,6 +604,9 @@ var HAS_PAIR = params.get("p") === "0" ? false : true;
 var HAS_FORUM = params.get("fm") === "0" ? false : true;
 var CLINICAL_FIRED = params.get("cl") === "1";
 var HAS_TEAM = params.get("tm") === "0" ? false : true;
+//   b=…  — имя бота для ссылок в разговор. Своего имени мини-апп не знает:
+//          Телеграм его не отдаёт. Не приехало — берём запасное.
+var BOT_NAME = params.get("b") || BOT_FALLBACK;
 
 // ---- Supabase ----
 var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -648,25 +679,31 @@ function cardHtml(card) {
     '<div class="card-sub">' + esc(card.what) + "</div>" +
     whenHtml(card);
 
+  // Замер разговором открывается ссылкой на переписку со старт-параметром:
+  // нажал карточку — бот открылся и сам начал этот замер.
+  var chatLink = (!href && card.phrase) ? botLink(BOT_NAME, card.key) : null;
+
   var openable;
   if (href) {
     openable = '<a class="card-open" href="' + esc(href) + '">' + head + "</a>";
-  } else if (card.phrase) {
-    openable = '<div class="card-open" data-chat="' + esc(card.key) + '">' + head + "</div>";
+  } else if (chatLink) {
+    openable = '<a class="card-open" href="' + esc(chatLink) +
+      '" data-tglink="' + esc(chatLink) + '">' + head + "</a>";
   } else {
     openable = "<div>" + head + "</div>";
   }
 
   var chat = "";
-  if (!href && card.phrase) {
+  if (chatLink) {
     chat =
-      '<div class="chat" id="chat-' + esc(card.key) + '">' +
+      '<div class="chat open" id="chat-' + esc(card.key) + '">' +
         '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
         '<div class="chat-acts">' +
-          '<button class="act" data-copy="' + esc(card.phrase) + '">Скопировать</button>' +
-          (tg ? '<button class="ghost" data-close="1">В разговор</button>' : "") +
+          '<a class="act" href="' + esc(chatLink) + '" data-tglink="' + esc(chatLink) + '">Открыть разговор</a>' +
+          '<button class="ghost" data-copy="' + esc(card.phrase) + '">Скопировать фразу</button>' +
         "</div>" +
-        '<div class="chat-hint">Этот замер идёт разговором, не формой. Скопируй фразу, вернись в чат и отправь её — бот начнёт.</div>' +
+        '<div class="chat-hint">Этот замер идёт разговором, не формой. Нажми — бот откроется и начнёт сам. ' +
+        "Если не открылось, скопируй фразу и отправь её в чат.</div>" +
       "</div>";
   }
   if (!href && !card.phrase && card.after) {
@@ -772,10 +809,15 @@ function bind() {
     });
   });
 
-  app.querySelectorAll("[data-chat]").forEach(function (el) {
-    el.addEventListener("click", function () {
-      var box = document.getElementById("chat-" + el.getAttribute("data-chat"));
-      if (box) box.classList.toggle("open");
+  // Ссылка на переписку с ботом. Внутри Телеграма её открывает
+  // openTelegramLink — это документированный способ (Bot API 6.1+), мини-апп при
+  // этом не закрывается. В браузере ссылка сработает сама, поэтому и href стоит.
+  app.querySelectorAll("[data-tglink]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      if (!tg || typeof tg.openTelegramLink !== "function") return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      try { tg.openTelegramLink(el.getAttribute("data-tglink")); } catch (e) {}
     });
   });
 
@@ -792,12 +834,6 @@ function bind() {
     });
   });
 
-  app.querySelectorAll("[data-close]").forEach(function (el) {
-    el.addEventListener("click", function (ev) {
-      ev.stopPropagation();
-      try { tg.close(); } catch (e) {}
-    });
-  });
 }
 
 function fallbackCopy(text, done) {

@@ -209,6 +209,85 @@ setTimeout(function () {
     return _node(js)["html"]
 
 
+RICH_DOM = r"""
+// Заглушка живого элемента: у формы есть слушатели, ползунки и поля ввода.
+// Без них суточная страница падает уже на отрисовке.
+globalThis.document.getElementById = function () {
+  return { style: {}, innerHTML: '', textContent: '', value: '', disabled: false,
+           addEventListener() {}, removeEventListener() {},
+           setAttribute() {}, getAttribute() { return null; },
+           querySelectorAll() { return []; },
+           classList: { toggle() {}, add() {}, remove() {} } };
+};
+globalThis.window.scrollTo = function () {};
+"""
+
+
+def app_run(rel: str, js: str) -> Dict:
+    """Исполнить мини-апп целиком и вернуть то, что собрал переданный кусок JS.
+
+    Нужно, чтобы смотреть на ЭКРАНЫ, а не на исходник: человек читает
+    собранный HTML. Скрипт исполняется весь, заглушки подменяют браузер, сеть и
+    Телеграм. Переданный `js` кладёт что хочет в объект `OUT`, он и возвращается.
+
+    Внутри `js` доступно всё, что объявил сам мини-апп: TESTS, SCORERS, results,
+    state, app, store или finish. Ответы сервера подменены, поэтому запись
+    доходит до конца и виден настоящий экран результата, а не «Сохраняю…».
+    """
+    code = NODE_STUBS + RICH_DOM + inline_script(rel) + r"""
+const OUT = {};
+/** Пройти тест целиком, отвечая одним значением на каждый пункт. Значения нет
+ *  в шкале пункта — берём первое, как сделал бы человек. */
+function __answers(key, value) {
+  const t = TESTS.find(x => x.key === key);
+  if (!t) throw new Error('нет теста ' + key);
+  const ans = {};
+  t.items.forEach((it, i) => {
+    const scale = it.scale || t.scale;
+    const opt = scale.find(s => s.v === value) || scale[0];
+    ans[i] = opt.v;
+  });
+  return ans;
+}
+/** Отправить замер тем же путём, каким его отправляет человек. */
+async function __pass(key, value) {
+  const ans = __answers(key, value);
+  state.key = key;
+  state.idx = 0;
+  state.answers = ans;
+  if (typeof store === 'function') {
+    await store(key, SCORERS[key](ans), Object.assign({}, ans));
+  } else {
+    await finish();
+  }
+  return app.innerHTML;
+}
+(async function () {
+  await new Promise(r => setTimeout(r, 30));
+""" + js + r"""
+  console.log('RESULT<' + JSON.stringify(OUT) + '>RESULT');
+})();
+"""
+    return _node(code)
+
+
+TAG_RE = re.compile(r"<[^>]*>")
+ENTITIES = {"&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"',
+            "&#39;": "'", "&nbsp;": " "}
+
+
+def visible(html_text: str) -> str:
+    """Текст, который человек реально читает: без тегов и без мнемоник.
+
+    Имена классов и обработчики живут внутри тегов и человеку не видны —
+    поэтому проверять надо именно этот текст, а не исходник страницы.
+    """
+    out = TAG_RE.sub(" ", html_text)
+    for k, v in ENTITIES.items():
+        out = out.replace(k, v)
+    return re.sub(r"\s+", " ", out)
+
+
 def catalog_render(search: str) -> str:
     """Собрать каталог целиком, как в телефоне, и отдать готовый HTML.
 

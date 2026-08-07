@@ -60,7 +60,6 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
 .hub-when { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); white-space: nowrap; }
 .hub-what { font-size: 14px; color: var(--graphite-75); margin-bottom: 4px; }
 .hub-note { font-size: 13px; color: var(--graphite-50); margin-bottom: 14px; }
-.hub-src { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--graphite-30); margin-bottom: 14px; }
 .hub-item button { padding: 11px 20px; font-size: 13px; }
 
 /* Метка «рабочий перевод» — рядом с названием теста, где нет официальной русской версии */
@@ -80,8 +79,15 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
 .result-row { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--graphite-08); gap: 12px; }
 .result-row:last-child { border-bottom: 0; }
 .result-name { font-size: 14px; color: var(--graphite); font-weight: 500; }
-.result-norm { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); margin-top: 4px; }
-.result-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--graphite); }
+/* Результат словами. Балла человек не видит: сумму своих ответов он читает как
+   приговор. Вместо неё — то, что он сам отметил, и сдвиг с прошлого раза. */
+.res-h { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--graphite-50); margin: 24px 0 8px; }
+.ans-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 13px 20px; border-bottom: 1px solid var(--graphite-08); }
+.ans-row:last-child { border-bottom: 0; }
+.ans-q { font-size: 14px; color: var(--graphite-75); flex: 1; }
+.ans-a { font-size: 14px; color: var(--graphite); font-weight: 500; text-align: right; max-width: 46%; }
+.shift-word { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--terracotta); text-align: right; }
+.first-point { font-size: 14px; color: var(--graphite-75); padding: 16px 20px; }
 .band { font-size: 16px; line-height: 1.45; margin-bottom: 18px; }
 .band.warn { color: var(--alert); }
 
@@ -95,7 +101,8 @@ button.secondary:hover { background: transparent; color: var(--terracotta); bord
   h1 { font-size: 28px; }
   .q-text { font-size: 19px; }
   .result-row { padding: 16px; }
-  .result-val { font-size: 22px; }
+  .ans-row { padding: 12px 16px; }
+  .ans-a { max-width: 52%; }
 }
 </style>
 </head>
@@ -342,14 +349,14 @@ function scoreClarity(ans) {
   t.items.forEach((it, i) => { sum += val(t, ans, i); });
   const mean = round1(sum / t.items.length);
   let band;
-  if (mean >= 4.0) band = 'Себе ясен — понимаешь, кто ты и чего хочешь. Картина себя держится и не рассыпается от настроения.';
-  else if (mean >= 3.2) band = 'Себя в общем знаешь, но местами картинка плывёт: в одни дни ты себе понятен, в другие меньше.';
-  else if (mean >= 2.4) band = 'Про себя много неясного: представления о себе спорят друг с другом и меняются от дня ко дню.';
-  else band = 'Себе сейчас непонятен — трудно сказать, кто ты и чего на самом деле хочешь.';
+  if (mean >= 4.0) band = 'Ты отвечал, что себе понятен: картина себя держится и не рассыпается от настроения.';
+  else if (mean >= 3.2) band = 'Ты отвечал, что себя в общем знаешь, но местами картинка плывёт: в одни дни понятен себе, в другие меньше.';
+  else if (mean >= 2.4) band = 'Ты отвечал, что неясного про себя больше, чем ясного: представления о себе спорят друг с другом и меняются от дня ко дню.';
+  else band = 'Ты отвечал, что себе сейчас непонятен: трудно сказать, кто ты и чего на самом деле хочешь.';
   return {
+    // Сумму человеку не показываем: она есть в записи, но не на экране.
     nums: [
-      {l: 'Ясность себе', v: mean, range: '1–5'},
-      {l: 'Сумма', v: sum, range: '12–60'}
+      {l: 'Ясность себе', v: mean, range: '1–5'}
     ],
     band: band,
     c: 'ok',
@@ -439,7 +446,7 @@ function scoreIdentity(ans) {
       {l: 'Смотришь вширь', v: sub.eb, range: '5–25'},
       {l: 'Проверяешь вглубь', v: sub.ed, range: '5–25'}
     ],
-    band: 'Решение: ' + lCm(sub.cm) + '. Своё ли оно: ' + lIc(sub.ic) + '. Перебор: ' + lRe(sub.re) + '. Вширь: ' + lEb(sub.eb) + '. Вглубь: ' + lEd(sub.ed) + '. Пять разных величин — они не складываются, и высокие сразу несколько тоже бывает.',
+    band: 'Решение: ' + lCm(sub.cm) + '. Своё ли оно: ' + lIc(sub.ic) + '. Перебор: ' + lRe(sub.re) + '. Вширь: ' + lEb(sub.eb) + '. Вглубь: ' + lEd(sub.ed) + '. Пять разных величин — они не складываются, и бывает, что несколько идут сильно сразу.',
     c: sub.re >= 19 ? 'warn' : 'ok',
     data: {
       commitment: sub.cm,
@@ -459,14 +466,14 @@ function scoreIposition(ans) {
   t.items.forEach((it, i) => { sum += val(t, ans, i); });
   const mean = round1(sum / t.items.length);
   let band;
-  if (mean >= 4.6) band = 'Рядом с сильным человеком себя не теряешь — держишь своё и под давлением.';
-  else if (mean >= 3.7) band = 'В основном себя держишь, но под сильным напором своё иногда сдаёшь.';
-  else if (mean >= 2.8) band = 'Под давлением своё часто уходит: легче согласиться, чем остаться при своём.';
-  else band = 'Рядом с чужой силой себя почти не слышно — своё сдаёшь почти сразу.';
+  if (mean >= 4.6) band = 'Ты отвечал, что рядом с сильным человеком себя не теряешь: держишь своё и под давлением.';
+  else if (mean >= 3.7) band = 'Ты отвечал, что в основном себя держишь, но под сильным напором своё иногда сдаёшь.';
+  else if (mean >= 2.8) band = 'Ты отвечал, что под давлением своё часто уходит: легче согласиться, чем остаться при своём.';
+  else band = 'Ты отвечал, что рядом с чужой силой себя почти не слышно: своё сдаёшь почти сразу.';
   return {
+    // Сумму человеку не показываем: она есть в записи, но не на экране.
     nums: [
-      {l: 'Держишь себя', v: mean, range: '1–6'},
-      {l: 'Сумма', v: sum, range: '11–66'}
+      {l: 'Держишь себя', v: mean, range: '1–6'}
     ],
     band: band,
     c: 'ok',
@@ -629,13 +636,12 @@ function renderHub() {
       </div>
       <div class="hub-what">${t.what}</div>
       <div class="hub-note">${t.note}</div>
-      <div class="hub-src">${t.src}</div>
       <button onclick="startTest('${t.key}')">Снять новый замер</button>
     </div>
   `).join('');
   app.innerHTML = `
     <h1>Свою жизнь живёшь?</h1>
-    <div class="sub">Есть ли под тобой опора</div>
+    <div class="sub">Есть ли под тобой опора · 59 вопросов · 8 минут</div>
     <div class="weather">${FRAME_TEXT}</div>
     ${items}
     ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
@@ -670,17 +676,44 @@ function renderQuestion() {
   updateProgress();
 }
 
+// === Результат словами ===
+// Ни балла, ни диапазона: сумма ответов человеку не показывается. Он читает то,
+// что сам отметил, и куда это сдвинулось с прошлого раза. Правила мини-аппов,
+// часть 4: балл человек примет как приговор, хотя это просто сумма его ответов.
+function answerRows(key) {
+  const t = getTest(key);
+  const r = results[key] || {};
+  const ans = r.answers || {};
+  return t.items.map((it, i) => {
+    const scale = it.scale || t.scale;
+    const opt = (scale || []).find(s => s.v === ans[i]);
+    if (!opt) return '';
+    return `<div class="ans-row"><div class="ans-q">${it.t}</div><div class="ans-a">${opt.l}</div></div>`;
+  }).join('');
+}
+
+// Сдвиг с прошлого раза — направление словами, без цифр. Прошлого нет — так и
+// говорим: сравнить пока не с чем. Без упрёка и без обещаний.
+function shiftRows(key) {
+  const r = results[key] || {};
+  const prev = r.prev && r.prev.nums;
+  if (!prev) return '<div class="first-point">Сравнить пока не с чем — это точка отсчёта.</div>';
+  return (r.nums || []).map(n => {
+    const was = prev.find(p => p.l === n.l);
+    const word = !was ? 'спрашиваем впервые'
+      : (n.v > was.v ? 'выше, чем в прошлый раз'
+      : (n.v < was.v ? 'ниже, чем в прошлый раз' : 'как в прошлый раз'));
+    return `<div class="result-row"><div class="result-name">${n.l}</div><div class="shift-word">${word}</div></div>`;
+  }).join('');
+}
+
 // === Экран результата одного теста ===
 function renderResult(key) {
   state.screen = 'result';
   const t = getTest(key);
   const r = results[key];
-  const rows = r.nums.map(n => `
-    <div class="result-row">
-      <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
-      <div><span class="result-val">${n.v}</span></div>
-    </div>
-  `).join('');
+  const rows = shiftRows(key);
+  const answers = answerRows(key);
   const syncBlock = state.sync
     ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
     : '';
@@ -688,6 +721,9 @@ function renderResult(key) {
     <h1>${t.title}</h1>
     <div class="sub">Замер записан</div>
     <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
+    <div class="res-h">Что ты ответил</div>
+    <div class="result-card">${answers}</div>
+    <div class="res-h">С прошлым разом</div>
     <div class="result-card">${rows}</div>
     <div class="weather">${FRAME_TEXT}</div>
     ${syncBlock}
@@ -704,12 +740,7 @@ function renderAllResults() {
   state.screen = 'result';
   const blocks = TESTS.filter(t => results[t.key]).map(t => {
     const r = results[t.key];
-    const rows = r.nums.map(n => `
-      <div class="result-row">
-        <div><div class="result-name">${n.l}</div><div class="result-norm">Диапазон ${n.range}</div></div>
-        <div><span class="result-val">${n.v}</span></div>
-      </div>
-    `).join('');
+    const rows = shiftRows(t.key);
     return `
       <h2>${t.title}${tagFor(t)}</h2>
       <div class="hub-when" style="margin-bottom:10px;">${lastSeen(t.key)}</div>
@@ -763,7 +794,11 @@ function prev() {
 async function finish() {
   const key = state.key;
   const scored = SCORERS[key](state.answers);
+  // Прошлый результат остаётся рядом: по нему считается сдвиг словами. В базу
+  // он не уходит — запись собирается из data, band и nums.
+  const before = results[key];
   results[key] = {
+    prev: before ? {nums: before.nums, completed_at: before.completed_at} : null,
     nums: scored.nums,
     band: scored.band,
     c: scored.c,
