@@ -409,6 +409,12 @@ const SCORERS = {
 
 // === Хранение результатов ===
 let results = {};       // {panas: {...}, vitality: {...}, gate: {...}, flow: {...}}
+// Тесты, отвеченные В ЭТОМ заходе. Живёт только в памяти страницы: перезагрузили
+// — снова пусто, и это правильно. В базу уходят ТОЛЬКО эти ключи (sessionKeys).
+// Без такого фильтра ответ на один тест отправлял заодно все прошлые как
+// свежие: `results` поднимается из памяти телефона и из облака, и в линии
+// появлялись точки, которых человек не давал.
+const answeredNow = new Set();
 let cloudRestored = false;
 
 function loadResultsLocal() {
@@ -465,10 +471,16 @@ function ownKeys() {
   return Object.keys(results).filter(k => TESTS.some(t => t.key === k));
 }
 
+// Что можно писать в базу: тест есть в реестре страницы И отвечен в этом заходе.
+// Первое отсекает убранные тесты, второе — поднятые из памяти и из облака.
+function sessionKeys() {
+  return ownKeys().filter(k => answeredNow.has(k));
+}
+
 function buildScores() {
   // В scores складываем всё, что уже снято, плюс метку источника
   const scores = {source: 'manual'};
-  ownKeys().forEach(k => {
+  sessionKeys().forEach(k => {
     // Кладём и цифры, и человеческую формулировку: по band бот показывает
     // результат в разговоре и в панели, без него замер выглядит пустым.
     scores[k] = Object.assign({}, results[k].data, {
@@ -481,7 +493,7 @@ function buildScores() {
 
 function buildAnswers() {
   const answers = {};
-  ownKeys().forEach(k => { answers[k] = results[k].answers; });
+  sessionKeys().forEach(k => { answers[k] = results[k].answers; });
   return answers;
 }
 
@@ -795,9 +807,21 @@ async function store(key, scored, answers) {
     answers: answers,
     completed_at: new Date().toISOString()
   };
+  answeredNow.add(key);
   saveResultsLocal();
   saveToCloud();
   clearProgress();
+
+  // Ни одного ответа в этом заходе — записи нет вовсе. Пустая запись хуже
+  // отсутствия: она нарисует в линии точку, которой не было.
+  if (!sessionKeys().length) {
+    state.sync = 'error';
+    state.syncMsg = 'Записывать пока нечего: в этот раз ни один тест не пройден.';
+    // Экран результата рисуем только для существующего теста: по чужому ключу
+    // рисовать нечего, и попытка уронила бы страницу.
+    if (TESTS.some(t => t.key === key)) renderResult(key);
+    return;
+  }
 
   const record = {
     user_id: UID,

@@ -152,11 +152,15 @@ def form_app(rel: str, extra_js: str = "") -> Dict:
     body = s.split(mark)[0]
     js = NODE_STUBS + body + r"""
 globalThis.__api = { TESTS, SCORERS, BLOCK, INSTRUMENT, buildScores, buildAnswers,
-                     results, STORE_KEY, RESULT_KEY, CLOUD_KEY, UID };
+                     results, STORE_KEY, RESULT_KEY, CLOUD_KEY, UID,
+                     // Набор «отвечено в этом заходе». Есть только у страниц с
+                     // несколькими тестами; у односоставных его нет и не нужно.
+                     answeredNow: (typeof answeredNow === 'undefined' ? null : answeredNow) };
 const api = globalThis.__api;
 
 /** Пройти один тест, отвечая одним и тем же значением. Как живой человек,
- *  только без тапов: state здесь не нужен, считает та же функция. */
+ *  только без тапов: state здесь не нужен, считает та же функция.
+ *  Ключ помечается как отвеченный сейчас — ровно это делает живой ответ. */
 function fill(key, value) {
   const t = api.TESTS.find(x => x.key === key);
   if (!t) throw new Error('нет теста ' + key);
@@ -169,7 +173,19 @@ function fill(key, value) {
   const s = api.SCORERS[key](ans);
   api.results[key] = { nums: s.nums, band: s.band, c: s.c, data: s.data,
                        answers: ans, completed_at: new Date().toISOString() };
+  if (api.answeredNow) api.answeredNow.add(key);
   return s;
+}
+
+/** Положить результат ПРОШЛОГО захода: так он приходит из памяти телефона или
+ *  из облака. Ключ намеренно НЕ помечается отвеченным — в базу он попасть не
+ *  должен, и проверка на это и смотрит. */
+function fillFromMemory(key, value) {
+  const marked = api.answeredNow && api.answeredNow.has(key);
+  fill(key, value);
+  if (api.answeredNow && !marked) api.answeredNow.delete(key);
+  api.results[key].completed_at = '2026-08-03T10:00:00.000Z';
+  return api.results[key];
 }
 const OUT = {
   block: api.BLOCK, instrument: api.INSTRUMENT,
@@ -301,6 +317,125 @@ setTimeout(function () {
 }, 50);
 """
     return _node(js)["html"]
+
+
+TAP_DOM = r"""
+// Живой DOM ради одного: проверить НАЖАТИЕ. Разбор текста не видит, что
+// произойдёт по клику, а именно там ломался вход в замеры-разговоры.
+//
+// Что умеет заглушка: помнит собранную разметку, отдаёт по селектору «[атрибут]»
+// элементы с их настоящими атрибутами и хранит слушателей. Дальше проверка жмёт
+// элемент и смотрит, что ушло в Телеграм.
+globalThis.TG_CALLS = { sent: [], opened: [], bound: 0 };
+
+function __unesc(s) {
+  return String(s).replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+                  .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                  .replace(/&amp;/g, '&');
+}
+
+function __mkEl(tag) {
+  var attrs = {}, re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)="([^"]*)"/g, m;
+  while ((m = re.exec(tag))) attrs[m[1]] = __unesc(m[2]);
+  var handlers = [];
+  return {
+    tag: tag,
+    attrs: attrs,
+    textContent: '',
+    getAttribute: function (n) {
+      return Object.prototype.hasOwnProperty.call(attrs, n) ? attrs[n] : null;
+    },
+    setAttribute: function (n, v) { attrs[n] = String(v); },
+    addEventListener: function (t, fn) { handlers.push(fn); globalThis.TG_CALLS.bound++; },
+    handlers: handlers,
+    // Нажатие как в браузере: событие можно отменить, и это видно снаружи.
+    click: function () {
+      var ev = { prevented: 0, stopped: 0,
+                 preventDefault: function () { ev.prevented++; },
+                 stopPropagation: function () { ev.stopped++; } };
+      handlers.forEach(function (fn) { fn(ev); });
+      return { handlers: handlers.length, prevented: ev.prevented };
+    }
+  };
+}
+
+globalThis.__APP = {
+  _html: '',
+  // Один и тот же элемент разметки должен отдаваться одним и тем же объектом:
+  // иначе слушатель уходит в пустоту и нажатие ничего не проверяет. Новая
+  // разметка — новые объекты, как в браузере.
+  _cache: {},
+  get innerHTML() { return this._html; },
+  set innerHTML(v) { this._html = String(v); this._cache = {}; },
+  querySelectorAll: function (sel) {
+    var m = /^\[([-a-zA-Z0-9_]+)\]$/.exec(sel);
+    if (!m) return [];
+    var attr = m[1], out = [], seen = {};
+    var re = new RegExp('<[^>]*\\b' + attr + '="[^"]*"[^>]*>', 'g'), t;
+    while ((t = re.exec(this._html))) {
+      // Ключ — сам тег и номер его повтора, БЕЗ имени атрибута: у одного тега
+      // их несколько, и по каждому селектору должен приходить один объект.
+      var tag = t[0];
+      seen[tag] = (seen[tag] || 0) + 1;
+      var key = seen[tag] + '|' + tag;
+      if (!this._cache[key]) this._cache[key] = __mkEl(tag);
+      out.push(this._cache[key]);
+    }
+    return out;
+  },
+  classList: { toggle: function () {}, add: function () {}, remove: function () {} },
+  style: {}
+};
+globalThis.document.getElementById = function () { return globalThis.__APP; };
+globalThis.window.scrollTo = function () {};
+
+/** Найти элемент собранной страницы по куску его тега. */
+globalThis.tap = function (attr, needle) {
+  var els = globalThis.__APP.querySelectorAll('[' + attr + ']').filter(function (e) {
+    return e.tag.indexOf(needle) >= 0;
+  });
+  if (!els.length) throw new Error('нет элемента [' + attr + '] с «' + needle + '»');
+  return els[0];
+};
+"""
+
+
+def tg_stub(init_data: str = "", methods: str = "") -> str:
+    """Заглушка Телеграма. `init_data` пустой — запуск кнопкой клавиатуры, и
+    только у него по документации работает `sendData`."""
+    return r"""
+globalThis.window.Telegram = { WebApp: {
+  initData: %s,
+  initDataUnsafe: {},
+  version: '7.0',
+  ready: function () {}, expand: function () {},
+  isVersionAtLeast: function () { return true; },
+  sendData: function (d) { globalThis.TG_CALLS.sent.push(String(d)); },
+  openTelegramLink: function (u) { globalThis.TG_CALLS.opened.push(String(u)); }
+  %s
+}};
+""" % (json.dumps(init_data), ("," + methods) if methods else "")
+
+
+def catalog_taps(search: str, js: str, init_data: str = "",
+                 telegram: bool = True, extra_tg: str = "") -> Dict:
+    """Собрать каталог с живым DOM и заглушкой Телеграма и понажимать на него.
+
+    `js` кладёт что хочет в объект `OUT`: внутри доступны `tap('data-send', …)`,
+    `TG_CALLS` и всё, что объявил сам мини-апп.
+    """
+    stubs = NODE_STUBS.replace("'?u=tg_777'", repr(search).replace('"', "'"))
+    code = stubs + TAP_DOM + (tg_stub(init_data, extra_tg) if telegram else "") \
+        + inline_script("kak-ty/app.html") + r"""
+const OUT = {};
+setTimeout(function () {
+""" + js + r"""
+  OUT.calls = globalThis.TG_CALLS;
+  OUT.html = globalThis.__APP.innerHTML;
+  console.log('RESULT<' + JSON.stringify(OUT) + '>RESULT');
+}, 50);
+"""
+    return _node(code)
 
 
 def catalog(extra_js: str = "") -> Dict:

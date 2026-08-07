@@ -114,20 +114,29 @@ def check_links_on_screen() -> None:
     ok("экран собирается без дыр")
 
 
-def check_no_send_data() -> None:
-    """5. Открывает переписку openTelegramLink, sendData не зовётся."""
+def check_open_path() -> None:
+    """5. Основной путь — sendData, openTelegramLink остался запасным.
+
+    Раньше здесь проверялось обратное: «sendData не зовётся». На живом телефоне
+    выяснилось, что ссылка со старт-параметром не работает — payload теряется,
+    если чат с ботом уже существует, и до бота `/start` не доходит. Замеры-
+    разговоры были недостижимы. Поэтому правило перевернулось, а подробные
+    проверки нажатия лежат в `dialog_cards_send_data.py`.
+
+    Запрет `sendData` из правил мини-аппов в силе — но он про страницы, которые
+    пишут результат в базу: там он обрывает незавершённую запись. Каталог не
+    пишет ничего.
+    """
     src = inline_script(APP)
-    # Ищем именно вызов: слово `sendData` есть в комментарии, который объясняет,
-    # почему его тут нет, и убирать этот комментарий незачем.
-    assert ".sendData(" not in src, \
-        "в каталоге появился вызов sendData — он убивает запись"
+    assert ".sendData(" in src, \
+        "каталог не зовёт sendData — замеры-разговоры снова недостижимы"
     assert "openTelegramLink" in src, \
-        "переписка открывается не openTelegramLink — метод не по документации"
-    ok("sendData нет, открывает openTelegramLink")
+        "запасной путь вырезан: вне кнопки клавиатуры нажать будет нечем"
+    ok("sendData основной путь, openTelegramLink запасной")
 
 
 if __name__ == "__main__":
     raise SystemExit(run([
         check_keys_from_bot, check_domains_card_added, check_link_built_right,
-        check_links_on_screen, check_no_send_data,
+        check_links_on_screen, check_open_path,
     ]))

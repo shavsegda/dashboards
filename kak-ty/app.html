@@ -42,8 +42,14 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 
 /* Наблюдение — главное на экране. Отдаём раньше, чем просим */
 .obs { margin-bottom: 26px; }
+/* Под наблюдением стоит строка про слепую зону: они про одно, и «рядом
+   значит связано» — поэтому зазор до неё меньше, чем до просьбы */
+.obs-tight { margin-bottom: 10px; }
 .obs-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta); padding-bottom: 8px; border-bottom: 1px solid var(--terracotta); }
 .obs-text { font-size: 19px; line-height: 1.4; padding-top: 14px; }
+
+/* Слепая зона — одна тихая строка. Ни счётчика, ни полосы заполнения */
+.blind { font-size: 15px; line-height: 1.45; color: var(--graphite-65); margin-bottom: 26px; }
 
 /* Честная строка, когда данных нет или просьбы нет */
 .honest { font-size: 17px; line-height: 1.45; margin-bottom: 22px; }
@@ -63,6 +69,12 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .ask .card { border-bottom: none; }
 .ask .card-name { font-size: 20px; }
 
+/* Вход в дорожку «несколько за раз». Отдельная ссылка, не главная просьба */
+.runall { margin-top: 30px; }
+.runall a { display: inline-block; font-size: 15px; font-weight: 500; color: var(--graphite); text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.runall a::after { content: " →"; color: var(--graphite-30); }
+.runall a:hover { color: var(--terracotta); }
+
 /* Полный список — за одним нажатием */
 .all { margin-top: 30px; border-top: 1px solid var(--graphite-15); }
 .all > summary { list-style: none; cursor: pointer; padding: 16px 0; font-size: 15px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
@@ -72,11 +84,19 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .all > summary:hover { color: var(--terracotta); }
 .all-lead { font-size: 14px; color: var(--graphite-65); margin-bottom: 6px; }
 
-/* Область жизни — заголовок группы */
-.area { margin-top: 26px; }
-.area-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
-.area-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
+/* Область жизни — свёрнутая строка. На первом развороте списка человек видит
+   семь строк со структурой, а не двадцать три карточки подряд */
+.area { margin-top: 0; }
+.area-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--graphite-15); list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.area-head::-webkit-details-marker { display: none; }
+.area-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); flex: 1; }
 .area-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
+/* Знак «раскрыть»: без него свёрнутая строка не выглядит нажимаемой */
+.area-head::after { content: "+"; font-family: var(--font-mono); font-size: 13px; line-height: 1; color: var(--graphite-30); }
+.area[open] > .area-head::after { content: "–"; }
+.area[open] > .area-head .area-name { color: var(--terracotta); }
+.area-head:hover .area-name { color: var(--terracotta); }
+.area-cards { padding-bottom: 12px; }
 
 /* Замер, который проходится в разговоре с ботом, а не в мини-аппе */
 .chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; }
@@ -148,7 +168,11 @@ var RHYTHMS = [
 //   group      — группа из COVERAGE_MAP: Состояние / Пара / Группа
 //   days       — срок годности в днях, null — разовый
 //   section    — срок из реестра бота; служебное поле, на экране его нет
-//   containers — области жизни, одна или несколько (FR-020, FR-021)
+//   containers — области жизни, которые замер задевает; перенос из CARD_META
+//                бота один в один (FR-020, FR-021). Служебное поле: по нему
+//                бот считает покрытие. Место карточки в списке — не по нему
+//   area       — ОДНА главная область по смыслу замера. Только по ней карточка
+//                встаёт в список, и поэтому она стоит там ровно один раз
 //   size       — честная длина; посчитано по самим замерам, не придумано
 //   url        — адрес мини-аппа; перенос из констант *_MINI_APP_URL в bot.py
 //   phrase     — точный текст кнопки бота, если замер проходится в разговоре
@@ -159,18 +183,23 @@ var RHYTHMS = [
 //
 // Названия карточек — по СОДЕРЖАНИЮ, а не по сроку (007, FR-011). В `bot.py`
 // те же карточки пока называются по сроку — расхождение сознательное.
+//
+// Строка `what` — одна строка на телефоне. Длинная превращает список в стену
+// текста: человек листает двадцать три карточки, а не читает каждую.
 var REGISTRY = [
   {
+    // Главная область — Тело: сон и тонус мерятся телом, часть полей приезжает
+    // с часов. Настроение приходит вместе с ними, поэтому «ещё: Я сам».
     key: "state_day", label: "Тонус и сон", group: "Состояние", days: 1, section: "day",
     what: "тонус, сон и настроение день за днём",
-    containers: ["Я сам", "Тело"],
+    containers: ["Я сам", "Тело"], area: "Тело",
     size: "6 полей · 20 секунд",
     url: "https://shapovalov-aleksey.ru/state-day/app.html"
   },
   {
     key: "state_week", label: "Самочувствие", group: "Состояние", days: 7, section: "week",
-    what: "аффект, силы и поток за неделю",
-    containers: ["Я сам"],
+    what: "силы, настроение и поток за неделю",
+    containers: ["Я сам"], area: "Я сам",
     size: "25 вопросов · 2 минуты",
     url: "https://shapovalov-aleksey.ru/state-week/app4.html"
   },
@@ -178,84 +207,89 @@ var REGISTRY = [
   // короткое дешевле спросить в чате, и это уже работает (004, FR-008).
   {
     key: "state_move", label: "Движение", group: "Состояние", days: 7, section: "week",
-    what: "сколько дней и минут ты двигался за неделю",
-    containers: ["Тело"],
+    what: "сколько дней и минут движения за неделю",
+    containers: ["Тело"], area: "Тело",
     size: "2 вопроса · полминуты",
     phrase: "🏃 Движение"
   },
   {
     key: "state_people", label: "Люди рядом", group: "Состояние", days: 7, section: "week",
-    what: "ощущается ли одиночество и была ли живая встреча",
-    containers: ["Круг"],
+    what: "одиночество и живые встречи за неделю",
+    containers: ["Круг"], area: "Круг",
     size: "4 вопроса · минута",
     phrase: "🫂 Люди рядом"
   },
   {
-    // Метка «все семь» — у этой карточки внутри и есть все области жизни.
+    // Внутри — все семь областей жизни. Главной выбрано «Время на себя»: это
+    // единственный замер, который про него спрашивает. У остальных шести есть
+    // свои карточки, а у времени на себя больше нет ничего.
     key: "state_facts", label: "Восемь фактов", group: "Состояние", days: 7, section: "week",
-    what: "что было на этой неделе: пара, дети, работа, друзья, время на себя, деньги",
+    what: "что было за неделю в каждой области",
     containers: ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"],
+    area: "Время на себя",
     size: "8 отметок · меньше минуты",
     phrase: "✅ Восемь фактов"
   },
   {
     key: "state_note", label: "Что ещё стоит знать", group: "Состояние", days: 7, section: "week",
     what: "одна свободная строка про что угодно",
-    containers: ["Я сам"],
+    containers: ["Я сам"], area: "Я сам",
     size: "одна строка · можно пропустить",
     phrase: "✍️ Что ещё стоит знать"
   },
   {
     key: "pair_state", label: "Как я в наших отношениях", group: "Пара", days: 7, section: "week",
-    what: "насколько сейчас хорошо вам двоим и что повторяется",
-    containers: ["Семья"],
+    what: "насколько хорошо вам двоим сейчас",
+    containers: ["Семья"], area: "Семья",
     size: "7 вопросов",
     phrase: "🫂 Как я в наших отношениях"
   },
   {
     key: "pair_detector", label: "Детектор взрыва", group: "Пара", days: 7, section: "week",
-    what: "сколько маркеров напряжения набралось за неделю",
-    containers: ["Семья"],
+    what: "маркеры напряжения за неделю",
+    containers: ["Семья"], area: "Семья",
     size: "24 маркера · минута",
     phrase: "🌡 Детектор взрыва"
   },
   {
     key: "forum_scales", label: "Цифры группы", group: "Группа", days: 7, section: "week",
-    what: "ясность, энергия, продвижение и напряжение по шкале от 0 до 10",
-    containers: ["Круг"],
+    what: "ясность, энергия, продвижение, напряжение",
+    containers: ["Круг"], area: "Круг",
     size: "4 шкалы",
     phrase: "👥 Встреча форум-группы"
   },
   {
     // Разовый: уходит, как только заполнен (FR-010).
     key: "pair_context", label: "Про нас", group: "Пара", days: null, section: "once",
-    what: "сколько вы вместе, дети, быт и что давит снаружи",
-    containers: ["Семья"],
+    what: "сколько вы вместе, дети и быт",
+    containers: ["Семья"], area: "Семья",
     size: "5 вопросов · один раз",
     phrase: "👨‍👩‍👧 Про нас",
     once: true
   },
   {
     // Ядро квартала: проходится разговором, страницы у него нет (005).
-    // Метки контейнеров — из CARD_META бота, шесть, а не семь.
+    // Метки контейнеров — из CARD_META бота, шесть, а не семь. Главная область —
+    // «Я сам»: замер про то, насколько ТЕБЯ устраивает каждая область.
     key: "state_domains", label: "Области жизни", group: "Состояние",
     days: 91, section: "quarter",
-    what: "насколько устраивает каждая область жизни и насколько она важна",
+    what: "что устраивает в каждой области и что важно",
     containers: ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг"],
+    area: "Я сам",
     size: "8 областей · 2 минуты",
     phrase: "🌍 Области жизни"
   },
   {
     key: "state_month", label: "Стресс и сон", group: "Состояние", days: 30, section: "month",
-    what: "насколько месяц ощущался неуправляемым и как шёл сон",
-    containers: ["Я сам", "Тело"],
+    what: "управляемость месяца и как шёл сон",
+    containers: ["Я сам", "Тело"], area: "Я сам",
     size: "17 вопросов · 3 минуты",
     url: "https://shapovalov-aleksey.ru/state-month/app3.html"
   },
   {
     key: "state_money", label: "Деньги за месяц", group: "Состояние", days: 30, section: "month",
-    what: "хватило ли, дефицит, запас, долги, крупное непредвиденное",
-    containers: ["Деньги"],
+    what: "хватило ли, запас, долги за месяц",
+    containers: ["Деньги"], area: "Деньги",
     size: "5 цифр · можно пропустить",
     phrase: "💵 Деньги за месяц"
   },
@@ -265,31 +299,31 @@ var REGISTRY = [
     // настроение не безобидно (004, FR-010).
     key: "state_clinical", label: "Настроение и тревога подробно",
     group: "Состояние", days: 30, section: "month",
-    what: "полная версия короткого датчика — точнее, чем четыре вопроса",
-    containers: ["Я сам"],
+    what: "подробнее, чем четыре вопроса в чате",
+    containers: ["Я сам"], area: "Я сам",
     size: "21 вопрос · 4 минуты",
     cond: "clinical",
     url: "https://shapovalov-aleksey.ru/state-clinical/app.html"
   },
   {
     key: "pair_are", label: "Тест ОНИ", group: "Пара", days: 30, section: "month",
-    what: "насколько связь надёжна: отзывчивость, неравнодушие, искренность",
-    containers: ["Семья"],
+    what: "насколько связь надёжна",
+    containers: ["Семья"], area: "Семья",
     size: "15 утверждений",
     phrase: "🧭 Тест ОНИ"
   },
   {
     key: "pair_load", label: "Нагрузка по дому", group: "Пара", days: 30, section: "month",
-    what: "кто сколько несёт по дому и насколько это устраивает",
-    containers: ["Семья"],
+    what: "кто сколько несёт по дому",
+    containers: ["Семья"], area: "Семья",
     size: "3 вопроса",
     phrase: "⚖️ Нагрузка"
   },
   {
     key: "state_quarter", label: "Удовлетворённость и смысл", group: "Состояние",
     days: 91, section: "quarter",
-    what: "устраивает ли жизнь, есть ли смысл, что с выгоранием и поддержкой",
-    containers: ["Я сам"],
+    what: "устраивает ли жизнь и есть ли смысл",
+    containers: ["Я сам"], area: "Я сам",
     size: "68 вопросов · 7 минут",
     url: "https://shapovalov-aleksey.ru/state-quarter/app3.html"
   },
@@ -299,8 +333,8 @@ var REGISTRY = [
     // так её видно и так же устроен реестр бота.
     key: "state_needs", label: "Потребности", group: "Состояние",
     days: 91, section: "quarter",
-    what: "свобода, умение и близость — закрыты или зажаты",
-    containers: ["Я сам"],
+    what: "свобода, умение и близость",
+    containers: ["Я сам"], area: "Я сам",
     size: "24 вопроса · 4 минуты",
     url: "https://shapovalov-aleksey.ru/state-needs/app.html"
   },
@@ -309,39 +343,39 @@ var REGISTRY = [
     // пока человек прямо не сказал, что команды нет (004, FR-015).
     key: "state_team", label: "Психобезопасность команды", group: "Состояние",
     days: 91, section: "quarter",
-    what: "можно ли в твоей команде ошибаться и говорить вслух",
-    containers: ["Работа"],
+    what: "можно ли в команде ошибаться и говорить",
+    containers: ["Работа"], area: "Работа",
     size: "7 утверждений · 2 минуты",
     cond: "team",
     url: "https://shapovalov-aleksey.ru/state-team/app.html"
   },
   {
     key: "body_form", label: "Физическая форма", group: "Состояние", days: 91, section: "quarter",
-    what: "сила, выносливость, состав тела по нормам возраста",
-    containers: ["Тело"],
+    what: "сила, выносливость, состав тела",
+    containers: ["Тело"], area: "Тело",
     size: "7 вопросов",
     // Своей кнопки нет: физформа запускается сразу после квартального замера.
     after: "state_quarter"
   },
   {
     key: "labs", label: "Анализы крови", group: "Состояние", days: 180, section: "rare",
-    what: "дефициты и биомаркеры — частая причина упадка сил",
-    containers: ["Тело"],
+    what: "дефициты — частая причина упадка сил",
+    containers: ["Тело"], area: "Тело",
     size: "PDF анализов, вопросов нет",
     phrase: "🩸 Анализы"
   },
   {
     key: "selfhood", label: "Свою жизнь живёшь", group: "Опора", days: 180, section: "rare",
-    what: "своя ли это жизнь и держится ли под тобой опора",
-    containers: ["Я сам"],
+    what: "своя ли это жизнь и есть ли опора",
+    containers: ["Я сам"], area: "Я сам",
     size: "59 вопросов",
     url: "https://shapovalov-aleksey.ru/selfhood/app.html"
   },
   {
     // Годовой ритм: окно у этих вопросов двенадцать месяцев (004, FR-012).
     key: "state_year", label: "Раз в год", group: "Состояние", days: 365, section: "year",
-    what: "как шёл алкоголь за последние двенадцать месяцев",
-    containers: ["Тело"],
+    what: "как шёл алкоголь за год",
+    containers: ["Тело"], area: "Тело",
     size: "3 вопроса · минута",
     url: "https://shapovalov-aleksey.ru/state-year/app.html"
   }
@@ -358,11 +392,23 @@ var NOT_HERE = ["level", "ztpi", "stressrisk"];
 //
 //   o=   текст наблюдения, urlencoded, до 400 символов
 //   ask= ключ ровно одной предложенной карточки
+//   bs=  строка про слепую зону, urlencoded, до 200 символов
 //
 // Нет `o` — говорим честно, что пока ничего не знаем.
 // Нет `ask` — просьбы нет, говорим, когда заглянуть.
+// Нет `bs` — строки про слепую зону нет вовсе, пустого места не остаётся.
 
 var OBS_LIMIT = 400;
+
+// Слепая зона — одна строка, поэтому предел вдвое короче наблюдения.
+var BLIND_LIMIT = 200;
+
+/** Текст от бота к показу: пусто и пробелы — это «нет текста», длинное режется. */
+function trimTo(raw, limit) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (!s) return null;
+  return s.length > limit ? s.slice(0, limit) : s;
+}
 
 /**
  * Текст наблюдения к показу. Показывается КАК ЕСТЬ: ни слова от мини-аппа.
@@ -371,9 +417,20 @@ var OBS_LIMIT = 400;
  * длинным текстом ни к чему.
  */
 function parseObservation(raw) {
-  var s = String(raw == null ? "" : raw).trim();
-  if (!s) return null;
-  return s.length > OBS_LIMIT ? s.slice(0, OBS_LIMIT) : s;
+  return trimTo(raw, OBS_LIMIT);
+}
+
+/**
+ * Строка про слепую зону: то, чего бот про человека пока не видит (008, FR-007).
+ *
+ * Приезжает готовой от бота и показывается как есть. Мини-апп её не сочиняет и
+ * не дополняет: он не знает, что заполнено, а догадка тут была бы упрёком.
+ * Ни процентов, ни счётчика «пройдено N из M» — заполнение как долг превращает
+ * замеры в обязанность, а названная слепая зона — в интерес (008, FR-008).
+ * Параметра нет — строки нет вообще (008, FR-009).
+ */
+function parseBlindSpot(raw) {
+  return trimTo(raw, BLIND_LIMIT);
 }
 
 /**
@@ -406,10 +463,11 @@ function screenState(obs, ask) {
 /**
  * Разложить карточки по областям жизни (007, FR-010).
  *
- * Карточка попадает в КАЖДУЮ свою область, а не в одну главную: «Восемь
- * фактов» правда спрашивают про все семь, и человек, открывший «Работа»,
- * должен увидеть всё, чем эту область можно померить. Повтор тут честнее
- * выбора «главной» области за человека.
+ * ОДНА карточка — ОДНА область, по полю `area`. Раньше карточка попадала в
+ * каждую свою область: «Восемь фактов» стояли во всех семи, «Области жизни» в
+ * шести, и в «Я сам» набиралось девять карточек из двадцати трёх. Список
+ * читался как свалка, а человек одни и те же замеры видел по пять раз.
+ * Про остальные области карточка говорит одной короткой строкой внутри себя.
  *
  * Пустая область не показывается вовсе: строка «тут для тебя ничего нет»
  * пользы человеку не даёт, это карта покрытия для владельца.
@@ -418,11 +476,24 @@ function byArea(cards) {
   return AREA_ORDER.map(function (area) {
     return {
       area: area,
-      cards: cards.filter(function (c) {
-        return (c.containers || []).indexOf(area) >= 0;
-      })
+      cards: cards.filter(function (c) { return c.area === area; })
     };
   }).filter(function (g) { return g.cards.length > 0; });
+}
+
+/** Остальные области, которые замер задевает, кроме своей главной. */
+function otherAreas(card) {
+  return (card.containers || []).filter(function (a) { return a !== card.area; });
+}
+
+/**
+ * Короткая метка про остальные области. Одна строка и в самом длинном случае:
+ * «Восемь фактов» задевают все семь, и перечислять шесть имён — это шум.
+ */
+function alsoText(card) {
+  var rest = otherAreas(card);
+  if (!rest.length) return "";
+  return rest.length > 2 ? "ещё: другие области жизни" : "ещё: " + rest.join(" · ");
 }
 
 // ---- Когда замер был ----
@@ -512,7 +583,7 @@ function buildCards(registry, lastDates, nowISO, known) {
     var f = freshness(d[r.key] === undefined ? null : d[r.key], r.days, nowISO, known);
     return {
       key: r.key, label: r.label, what: r.what, group: r.group, days: r.days,
-      section: r.section, containers: r.containers, size: r.size,
+      section: r.section, containers: r.containers, area: r.area, size: r.size,
       url: r.url, phrase: r.phrase, after: r.after, once: r.once,
       state: f.state, daysAgo: f.daysAgo
     };
@@ -544,22 +615,85 @@ function parseFreshParam(s) {
   return out;
 }
 
-// ---- Ссылка в разговор с ботом ----
-// Часть замеров идёт разговором, а не формой, и открыть их можно единственным
-// способом: ссылкой на переписку с ботом со старт-параметром. Формат из
-// документации Телеграма: t.me/<бот>?start=<до 64 символов base64url>.
-// sendData тут запрещён: он закрывает мини-апп и запись не доходит.
+// ---- Как открыть замер-разговор ----
+// Часть замеров идёт разговором, а не формой. Открывает их `sendData`: бот
+// получает апдейт `web_app_data` и сам начинает замер.
+//
+// Почему не ссылка со старт-параметром. Так было сделано сначала, и на живом
+// телефоне это не работает: `openTelegramLink('t.me/<бот>?start=…')` открывает
+// переписку, но payload теряется, если чат с ботом уже существует. До бота
+// `/start` не доходит вовсе. Это поведение Телеграма, не наша ошибка.
+//
+// Почему `sendData` здесь можно, хотя в правилах он запрещён. Запрет про
+// страницы-опросники: они пишут результат в Supabase, а `sendData` мгновенно
+// закрывает мини-апп и обрывает незавершённую запись. ЭТОТ экран в базу не
+// пишет ничего — он только читает и открывает замеры, поэтому терять нечего.
+// На страницы с записью это решение не переносится.
+//
+// Ссылка на переписку остаётся ЗАПАСНЫМ путём: `sendData` работает только у
+// мини-аппов, открытых кнопкой обычной клавиатуры (документация Телеграма).
+// Открыли иначе — человек должен увидеть прежний путь, а не тишину.
 var BOT_FALLBACK = "vslukh_shapovalov_bot";
+
+// Старт-параметр дорожки «пройти несколько за раз». Ровно это слово: очередь,
+// порядок замеров и остановку на усталости держит бот, страница только дверь.
+var RUN_ALL_START = "run_all";
 
 /** Старт-параметр карточки. Ключи те же, что в CARD_META бота. */
 function cardStartParam(key) {
   return "card_" + String(key == null ? "" : key).replace(/[^A-Za-z0-9_]/g, "");
 }
 
+/** Ссылка на переписку с ботом с любым старт-параметром. Мусор чистится. */
+function startLink(botName, param) {
+  var name = String(botName == null ? "" : botName).replace(/[^A-Za-z0-9_]/g, "");
+  var p = String(param == null ? "" : param).replace(/[^A-Za-z0-9_-]/g, "");
+  return "https://t.me/" + (name || BOT_FALLBACK) + "?start=" + p;
+}
+
 /** Ссылка на переписку с ботом. Имя бота приходит от бота же, мусор чистится. */
 function botLink(botName, key) {
-  var name = String(botName == null ? "" : botName).replace(/[^A-Za-z0-9_]/g, "");
-  return "https://t.me/" + (name || BOT_FALLBACK) + "?start=" + cardStartParam(key);
+  return startLink(botName, cardStartParam(key));
+}
+
+/**
+ * Вход в дорожку «несколько за раз» (008, FR-010). Открывается тем же способом,
+ * что карточки-разговоры. Ссылка — запасной путь, основной путь — `sendData`.
+ */
+function runAllLink(botName) {
+  return startLink(botName, RUN_ALL_START);
+}
+
+// ---- Что уходит боту через sendData ----
+// Контракт с ботом, соблюдается буквально. Обработчик `web_app_data` у него уже
+// есть, и он ждёт ровно эти два вида сообщения.
+
+/** Открыть карточку-разговор. Ключ тот же, что в CARD_META бота. */
+function cardPayload(key) {
+  return JSON.stringify({ action: "open_card",
+                          card: String(key == null ? "" : key) });
+}
+
+/** Начать дорожку «несколько за раз». */
+function runAllPayload() {
+  return JSON.stringify({ action: "run_all" });
+}
+
+/**
+ * Можно ли вообще звать `sendData`.
+ *
+ * По документации Телеграма метод доступен ТОЛЬКО мини-аппам, открытым кнопкой
+ * обычной клавиатуры. У такого запуска init-данные пустые: Телеграм не передаёт
+ * в него ни пользователя, ни query_id. Это и есть признак, по которому мы
+ * различаем запуск, — а не догадка по версии клиента.
+ *
+ * Непустые init-данные значат, что мини-апп открыли иначе (кнопка меню, инлайн,
+ * вложение). Там `sendData` молча ничего не сделает, поэтому идём запасным
+ * путём: ссылка на переписку и фраза, которую можно скопировать.
+ */
+function canSendData(tg) {
+  if (!tg || typeof tg.sendData !== "function") return false;
+  return String(tg.initData == null ? "" : tg.initData) === "";
 }
 
 /** Самая свежая дата по каждому блоку из строк passport. */
@@ -578,8 +712,9 @@ function lastDatesFromRows(rows) {
 // ---- Telegram ----
 var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
-// tg.sendData здесь не вызывается сознательно: он закрывает мини-апп. Экран
-// ничего не пишет в базу — он только читает и открывает замеры.
+// `sendData` здесь зовётся сознательно: он закрывает мини-апп, но этот экран
+// ничего не пишет в базу — терять нечего, а замер-разговор иначе не начать.
+// На страницах-опросниках, которые пишут результат, он по-прежнему запрещён.
 
 var params = new URLSearchParams(window.location.search);
 var USER_ID = parseUserId(params.get("u")) ||
@@ -588,6 +723,7 @@ var USER_ID = parseUserId(params.get("u")) ||
 // Что присылает бот:
 //   o=…  — текст наблюдения по данным человека, urlencoded, до 400 символов
 //   ask= — ключ одной предложенной карточки
+//   bs=… — строка про слепую зону: чего бот пока не видит, до 200 символов
 //   f=…  — даты последних замеров: «ключ:ГГГГ-ММ-ДД» через запятую
 //   p=0  — парной работы нет → парные карточки не показываем (FR-012)
 //   fm=0 — форум-группы нет → «Цифры группы» не показываем
@@ -598,6 +734,7 @@ var USER_ID = parseUserId(params.get("u")) ||
 // Всё это ставит бот: он один знает и даты, и признаки, и что видно по данным.
 // Мини-апп ничего из этого не выдумывает.
 var OBSERVATION = parseObservation(params.get("o"));
+var BLIND_SPOT = parseBlindSpot(params.get("bs"));
 var ASK_KEY = params.get("ask");
 var FRESH_PARAM = parseFreshParam(params.get("f"));
 var HAS_PAIR = params.get("p") === "0" ? false : true;
@@ -651,12 +788,21 @@ function cardHref(card) {
 }
 
 /**
- * Когда замер был. Только это, и только если знаем.
- * Ни «пора», ни «просрочено»: сроки — забота бота, а не упрёк человеку.
+ * Служебная строка карточки в списке: когда замер был и какие ещё области он
+ * задевает. Обе части в ОДНОЙ строке — карточка от них не становится выше.
+ *
+ * Про «когда был» — только это, и только если знаем. Ни «пора», ни
+ * «просрочено»: сроки — забота бота, а не упрёк человеку.
  */
-function whenHtml(card) {
-  if (!card.daysAgo && card.daysAgo !== 0) return "";
-  return '<div class="card-when">последний замер ' + esc(agoText(card.daysAgo)) + "</div>";
+function metaHtml(card) {
+  var parts = [];
+  if (card.daysAgo || card.daysAgo === 0) {
+    parts.push("последний замер " + agoText(card.daysAgo));
+  }
+  var also = alsoText(card);
+  if (also) parts.push(also);
+  if (!parts.length) return "";
+  return '<div class="card-when">' + esc(parts.join(" · ")) + "</div>";
 }
 
 /**
@@ -668,26 +814,33 @@ function whenHtml(card) {
  * подряд превращается в шум. В списке остаётся одна строка, а сама карточка и
  * так открывает разговор нажатием.
  *
- * Строка «последний замер …» наоборот: она нужна в списке и не нужна в просьбе.
- * Просьба про то, что будет, а не про то, чего не было.
+ * Строка «последний замер … · ещё: …» наоборот: она нужна в списке и не нужна в
+ * просьбе. Просьба про то, что будет, а не про то, чего не было, и метка
+ * области на единственной карточке первого экрана ей ни к чему (007).
  */
 function cardHtml(card, inList) {
   var href = cardHref(card);
   var head =
     '<div class="card-name">' + esc(card.label) + "</div>" +
     '<div class="card-sub">' + esc(card.what) + "</div>" +
-    (inList ? whenHtml(card) : "");
+    (inList ? metaHtml(card) : "");
 
-  // Замер разговором открывается ссылкой на переписку со старт-параметром:
-  // нажал карточку — бот открылся и сам начал этот замер.
+  // Замер разговором: нажал карточку — боту уходит `sendData`, и он сам начинает
+  // этот замер. Ссылка на переписку остаётся в разметке запасным путём.
   var chatLink = (!href && card.phrase) ? botLink(BOT_NAME, card.key) : null;
+  // Обе метки на одном теге: `data-send` — основной путь, `data-tglink` —
+  // запасной. Какой сработает, решается в момент нажатия.
+  var send = chatLink
+    ? ' data-send="' + esc(cardPayload(card.key)) +
+      '" data-tglink="' + esc(chatLink) + '"'
+    : "";
 
   var openable;
   if (href) {
     openable = '<a class="card-open" href="' + esc(href) + '">' + head + "</a>";
   } else if (chatLink) {
-    openable = '<a class="card-open" href="' + esc(chatLink) +
-      '" data-tglink="' + esc(chatLink) + '">' + head + "</a>";
+    openable = '<a class="card-open" href="' + esc(chatLink) + '"' + send + ">" +
+      head + "</a>";
   } else {
     openable = "<div>" + head + "</div>";
   }
@@ -700,11 +853,11 @@ function cardHtml(card, inList) {
       '<div class="chat">' +
         '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
         '<div class="chat-acts">' +
-          '<a class="act" href="' + esc(chatLink) + '" data-tglink="' + esc(chatLink) + '">Открыть разговор</a>' +
+          '<a class="act" href="' + esc(chatLink) + '"' + send + ">Открыть разговор</a>" +
           '<button class="ghost" data-copy="' + esc(card.phrase) + '">Скопировать фразу</button>' +
         "</div>" +
-        '<div class="chat-hint">Этот замер идёт разговором, не формой. Нажми — бот откроется и начнёт сам. ' +
-        "Если не открылось, скопируй фразу и отправь её в чат.</div>" +
+        '<div class="chat-hint">Этот замер идёт разговором, не формой. Нажми — бот начнёт сам. ' +
+        "Если ничего не произошло, скопируй фразу и отправь её в чат.</div>" +
       "</div>";
   }
   if (!href && !card.phrase && card.after) {
@@ -717,19 +870,28 @@ function cardHtml(card, inList) {
 }
 
 /** Блок наблюдения. Текст бота — как есть, вокруг только подпись. */
-function obsHtml(text) {
-  return '<div class="obs">' +
+function obsHtml(text, tight) {
+  return '<div class="obs' + (tight ? " obs-tight" : "") + '">' +
     '<div class="obs-head">Что видно по твоим ответам</div>' +
     '<div class="obs-text">' + esc(text) + "</div></div>";
 }
 
+/**
+ * Строка про слепую зону. Ровно текст бота и ничего больше: ни подписи, ни
+ * счётчика, ни своей формулировки. Разметку внутри обезвреживаем — как в
+ * наблюдении: текст приезжает из адреса, и живой тег из него ничего не делает.
+ */
+function blindHtml(text) {
+  return '<div class="blind">' + esc(text) + "</div>";
+}
+
 /** Первый экран: сначала отдали, потом попросили. И попросили одно. */
-function firstScreenHtml(obs, ask) {
+function firstScreenHtml(obs, ask, blind) {
   var state = screenState(obs, ask);
   var out = "";
 
   if (state === "observation_ask" || state === "observation_only") {
-    out += obsHtml(obs);
+    out += obsHtml(obs, !!blind);
   } else {
     out += '<div class="honest">Про тебя я пока ничего не знаю.';
     if (state === "quiet") {
@@ -738,6 +900,10 @@ function firstScreenHtml(obs, ask) {
     }
     out += "</div>";
   }
+
+  // Слепая зона стоит под наблюдением и выше просьбы: сначала честно про то,
+  // что бот видит и чего не видит, и только потом просьба.
+  if (blind) out += blindHtml(blind);
 
   if (state === "observation_ask") {
     out += '<div class="ask"><div class="ask-head">Чтобы сказать точнее, не хватает одного</div>' +
@@ -752,13 +918,37 @@ function firstScreenHtml(obs, ask) {
   return out;
 }
 
-/** Одна область жизни в полном списке. */
+/**
+ * Вход в дорожку «несколько за раз». Отдельная ссылка ниже одной просьбы, а не
+ * вместо неё: просьба на экране остаётся одна (008, FR-010).
+ *
+ * Текст честно говорит, кому это надо: тому, кто пришёл разбираться сам.
+ * Обещаний «узнай себя полностью» тут нет — за вечер получается широкий срез,
+ * а не линия, и говорит об этом бот на входе в дорожку.
+ */
+function runAllHtml() {
+  var href = runAllLink(BOT_NAME);
+  return '<div class="runall"><a href="' + esc(href) +
+    '" data-send="' + esc(runAllPayload()) +
+    '" data-tglink="' + esc(href) + '">' +
+    "Хочешь разобраться, а не ответить на напоминание — пройти несколько за раз" +
+    "</a></div>";
+}
+
+/**
+ * Одна область жизни в полном списке — СВЁРНУТАЯ.
+ *
+ * Человек открывает список и видит семь строк со структурой, а не двадцать три
+ * карточки подряд. Нужную область раскрывает сам. Ничего не отнимаем: все
+ * замеры на месте, просто их не выливают все сразу.
+ */
 function areaHtml(group) {
-  return '<div class="area">' +
-    '<div class="area-head"><div class="area-name">' + esc(group.area) + "</div>" +
-    '<div class="area-count">' + group.cards.length + "</div></div>" +
+  return '<details class="area"><summary class="area-head">' +
+    '<span class="area-name">' + esc(group.area) + "</span>" +
+    '<span class="area-count">' + group.cards.length + "</span></summary>" +
+    '<div class="area-cards">' +
     group.cards.map(function (c) { return cardHtml(c, true); }).join("") +
-    "</div>";
+    "</div></details>";
 }
 
 /** Полный список — за одним нажатием, по областям жизни. */
@@ -785,18 +975,34 @@ function render() {
 
   app.innerHTML =
     "<h1>Что со мной?</h1>" +
-    firstScreenHtml(OBSERVATION, ask) +
+    firstScreenHtml(OBSERVATION, ask, BLIND_SPOT) +
+    runAllHtml() +
     allHtml(cards);
 
   bind();
 }
 
 function bind() {
-  // Ссылка на переписку с ботом. Внутри Телеграма её открывает
-  // openTelegramLink — это документированный способ (Bot API 6.1+), мини-апп при
-  // этом не закрывается. В браузере ссылка сработает сама, поэтому и href стоит.
+  // Открыть замер-разговор. Три пути, по убыванию надёжности:
+  //   1. `sendData` — боту уходит апдейт `web_app_data`, он начинает замер сам;
+  //   2. `openTelegramLink` — открывает переписку. Старт-параметр в ней
+  //      теряется, если чат уже существует, поэтому это запасной путь, а не
+  //      основной. Рядом всегда есть фраза, которую можно скопировать;
+  //   3. обычная ссылка — так работает в браузере вне Телеграма.
+  //
+  // Слушатель ставится на элементы ТОЛЬКО что собранной разметки: каждый render
+  // делает их заново, поэтому навесить дважды на один элемент нельзя.
   app.querySelectorAll("[data-tglink]").forEach(function (el) {
     el.addEventListener("click", function (ev) {
+      var payload = el.getAttribute("data-send");
+      if (payload && canSendData(tg)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try {
+          tg.sendData(payload);
+          return;
+        } catch (e) {}                  // не ушло — падаем в запасной путь
+      }
       if (!tg || typeof tg.openTelegramLink !== "function") return;
       ev.preventDefault();
       ev.stopPropagation();
