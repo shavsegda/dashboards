@@ -783,6 +783,48 @@ async function store(key, scored, answers) {
   cloudRestored = await restoreFromCloud();
   renderHub();
 })();
+
+/* ---- Кнопка назад и подтверждение выхода (спека 012) ----
+ *
+ * Дефект с живого телефона: из страницы некуда вернуться, только закрыть
+ * мини-апп. Оба требования записаны в правилах и не были выполнены.
+ *
+ * Кнопку показываем ТОЛЬКО если есть куда возвращаться: неработающая кнопка
+ * хуже отсутствующей. Подтверждение выхода включаем после первого ответа —
+ * тому, кто просто заглянул, оно ни к чему; снимаем после результата, потому
+ * что работа уже сделана и держать человека незачем.
+ */
+(function () {
+  var t = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (!t) return;
+  try {
+    if (history.length > 1 && t.BackButton) {
+      t.BackButton.onClick(function () { try { history.back(); } catch (e) {} });
+      t.BackButton.show();
+    }
+  } catch (e) {}
+
+  var armed = false;
+  function arm() {
+    if (armed) return;
+    armed = true;
+    try { t.enableClosingConfirmation(); } catch (e) {}
+  }
+  function relax() {
+    armed = false;
+    try { t.disableClosingConfirmation(); } catch (e) {}
+  }
+  document.addEventListener("click", arm, true);
+  document.addEventListener("input", arm, true);
+
+  // Результат показан — держать человека больше не нужно.
+  ["renderResult", "renderDone", "showResult", "showDone"].forEach(function (name) {
+    var fn = window[name];
+    if (typeof fn !== "function") return;
+    window[name] = function () { relax(); return fn.apply(this, arguments); };
+  });
+})();
+
 </script>
 </body>
 </html>
