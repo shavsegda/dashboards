@@ -57,6 +57,21 @@
   .hb-l b{font-size:16px;color:var(--graphite);}
   .hb-s{font-size:12.5px;color:var(--muted);}
   .hb-b{flex:0 0 auto;font-size:18px;color:var(--terra);font-weight:700;}
+  /* Результат словами: свои ответы и сдвиг с прошлого раза вместо балла */
+  .res-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;}
+  .res-block{margin-bottom:24px;}
+  .res-name{font-size:16px;font-weight:700;margin-bottom:6px;}
+  .ans-card{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--card);}
+  .ans-row{display:flex;align-items:baseline;gap:14px;padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .ans-row:last-child{border-bottom:0;}
+  .ans-q{flex:1;font-size:14px;color:var(--muted);line-height:1.4;}
+  .ans-a{font-size:14px;font-weight:600;text-align:right;max-width:46%;}
+  .sh-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .sh-row:last-child{border-bottom:0;}
+  .sh-row .rn{font-size:14px;font-weight:600;}
+  .shift{font-size:13px;color:var(--terra);text-align:right;}
+  .first-point{padding:14px 15px;font-size:14px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -184,6 +199,13 @@ const TESTS = [
     key:'riasec', title:'Профиль интересов',
     what:'какие занятия тебя тянут, а какие сушат',
     note:'отвечай про «нравится ли занятие», а не «умею ли я это»',
+    frame:'Это твои ответы про то, что тянет. Не оценка способностей. Где такого в твоей жизни хватает, а где нет совсем?',
+    lines:[{f:'realistic',l:'Делать руками и чинить'},
+           {f:'investigative',l:'Разбираться и докапываться'},
+           {f:'artistic',l:'Придумывать и выражать'},
+           {f:'social',l:'Учить и поддерживать'},
+           {f:'enterprising',l:'Затевать и убеждать'},
+           {f:'conventional',l:'Наводить порядок и точность'}],
     src:'O*NET Interest Profiler · RIASEC · рабочий перевод',
     scale:LIKE5,
     items:RIASEC_ITEMS.map(it=>({t:it.t})),
@@ -250,23 +272,104 @@ function optRow(o, selected){
     <span class="onum">${o.v}</span><span class="olbl">${o.l||''}</span></button>`;
 }
 
+const PAGE_TITLE='Интересы';
+const PAGE_SUB='К чему тебя тянет по складу';
+const PAGE_FRAME='Интересы складываются в молодости и потом почти не меняются. Это про тягу, а не про способности.';
+const PAGE_LEN='60 вопросов, ~7 минут. Можно бросить и вернуться, прогресс сохраняется.';
+
+// ===== Результат словами. Ни балла, ни ярлыка =====
+// Балл человек читает как приговор, хотя это просто сумма его ответов. Ярлык
+// («надёжный», «системщик») — как утверждение о своём характере, а из ответов
+// оно не следует. Поэтому человек видит другое: что он сам отметил и куда это
+// сдвинулось с прошлого раза. Правила мини-аппов, часть 4; конституция, IV и V.
+// В базу подсчёт уходит как раньше — его читает бот, и по нему собирается
+// разбор. Меняется только то, что человек читает.
+const PREV_KEY = RESULT_KEY+'_prev';
+const FIRST_POINT = 'Сравнить пока не с чем — это точка отсчёта.';
+const REFER_TEXT = 'В ответах есть то, что стоит обсудить со специалистом. Это не диагноз — это повод сходить.';
+let shiftPrev={}, shiftWords={}, shiftRefer={};
+try{ const p=JSON.parse(localStorage.getItem(PREV_KEY)||'{}');
+  if(p.prev) shiftPrev=p.prev; if(p.words) shiftWords=p.words; if(p.refer) shiftRefer=p.refer; }catch(e){}
+function savePrev(){ try{ localStorage.setItem(PREV_KEY,
+  JSON.stringify({prev:shiftPrev,words:shiftWords,refer:shiftRefer})); }catch(e){} }
+
+// Значение линии по пути. Нет значения — null, а не догадка.
+function lineVal(o,path){
+  return (Array.isArray(path)?path:[path]).reduce((x,k)=>(x==null?null:x[k]), o);
+}
+function lineValues(t,data){ return (t.lines||[]).map(l=>({l:l.l, v:lineVal(data,l.f)})); }
+
+// «Твои ответы» — пункт и выбранный вариант, его собственными словами.
+function answerRows(t){
+  const a=answers[t.key]||{};
+  return t.items.map((it,i)=>{
+    const opts=it.opts||t.scale||[];
+    const o=opts.find(s=>s.v===a[i]);
+    return o ? `<div class="ans-row"><span class="ans-q">${it.t}</span><span class="ans-a">${o.l}</span></div>` : '';
+  }).join('');
+}
+
+// Сдвиг с прошлого раза — направление словами, без цифр. Прошлого нет — так и
+// говорим: сравнить пока не с чем. Без упрёка и без обещаний.
+function makeShift(t,data){
+  const was=shiftPrev[t.key], now=lineValues(t,data);
+  shiftWords[t.key] = was ? now.map(n=>{
+    const w=was[n.l];
+    return {l:n.l, w:(w==null||n.v==null) ? 'спрашиваем впервые'
+      : (n.v>w ? 'выше, чем в прошлый раз'
+      : (n.v<w ? 'ниже, чем в прошлый раз' : 'как в прошлый раз'))};
+  }) : null;
+  const map={}; now.forEach(n=>{ if(n.v!=null) map[n.l]=n.v; });
+  shiftPrev[t.key]=map;
+  // Скрин сработал — направление к специалисту остаётся. Screen and refer.
+  shiftRefer[t.key] = !!(t.refer && t.refer(data));
+  savePrev();
+}
+function shiftBlock(t){
+  const words=shiftWords[t.key];
+  if(!words||!words.length) return `<div class="first-point">${FIRST_POINT}</div>`;
+  return words.map(x=>`<div class="sh-row"><span class="rn">${x.l}</span><span class="shift">${x.w}</span></div>`).join('');
+}
+function referBlock(t){
+  return shiftRefer[t.key] ? `<div class="refer">${REFER_TEXT}</div>` : '';
+}
+
+// Экран результата одного теста: рамка, сдвиг, свои ответы.
+// Раньше человек после отправки видел только список — самое дорогое место пути
+// пропадало. Теперь он читает то, что из его ответов видно.
+function renderTestResult(t){
+  app.innerHTML=`
+    <h1>${t.title}</h1>
+    <p class="sub">Ответы записаны и отправлены боту</p>
+    <div class="refer">${t.frame}</div>
+    ${referBlock(t)}
+    <div class="res-h">С прошлым разом</div>
+    <div class="ans-card">${shiftBlock(t)}</div>
+    <div class="res-h">Твои ответы</div>
+    <div class="ans-card">${answerRows(t)}</div>
+    <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>`;
+  const b=document.getElementById('tolist'); if(b) b.onclick=()=>renderHub();
+  window.scrollTo(0,0);
+}
+
 function renderHub(msg){
   cur=null; save();
   const rows=TESTS.map((t,idx)=>{
-    let status, badge='→', cls='';
-    if(testFullyAnswered(t)){ const s=t.score(answers[t.key]); status=s.band.t; badge='✓'; cls=s.band.c||''; }
-    else if(priorScores[t.key]){ status=priorScores[t.key].band||'готово'; badge='✓'; cls=priorScores[t.key].band_c||''; }
+    let status, badge='→';
+    // Ярлыка в списке больше нет: «надёжный», «системщик», «высокий» — это
+    // утверждения о характере, а из ответов они не следуют.
+    if(testFullyAnswered(t)||priorScores[t.key]){ status='ответы записаны'; badge='✓'; }
     else { const c=testAnsweredCount(t); status = c>0 ? ('в процессе · '+c+' из '+t.items.length) : ('не пройден · '+t.items.length+' вопр.'); }
     return `<button class="hubrow" data-ti="${idx}">
-      <span class="hb-l"><b>${t.title}</b><span class="hb-s ${cls}">${status}</span></span>
+      <span class="hb-l"><b>${t.title}</b><span class="hb-s">${status}</span></span>
       <span class="hb-b">${badge}</span></button>`;
   }).join('');
   app.innerHTML=`
-    <h1>Интересы</h1>
-    <p class="sub">К чему тебя тянет по складу</p>
+    <h1>${PAGE_TITLE}</h1>
+    <p class="sub">${PAGE_SUB}</p>
     ${msg?`<div class="refer"><span class="ok">${msg}</span></div>`:''}
-    <div class="refer">Интересы — самый устойчивый слой после ДНК: складываются к 20 с небольшим и держатся десятилетиями. Это про тягу, а не про способности.</div>
-    <div class="qintro">60 вопросов, ~7 минут. Можно бросить и вернуться, прогресс сохраняется.</div>
+    <div class="refer">${PAGE_FRAME}</div>
+    <div class="qintro">${PAGE_LEN}</div>
     <div class="hublist">${rows}</div>
     ${Object.keys(combinedScores()).length ? '<button class="btn" id="showres" style="margin-top:16px">📊 Показать результаты</button>' : ''}`;
   const sr=document.getElementById('showres'); if(sr) sr.onclick=()=>renderResults();
@@ -318,22 +421,28 @@ function renderQuestion(){
 
 async function finishTest(t){
   app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
+  const data=t.score(answers[t.key]).data;
   await pushCombined();
-  renderHub('«'+t.title+'» засчитан и отправлен боту.');
+  // Сдвиг считаем по прошлому заходу и только потом запоминаем этот.
+  makeShift(t,data);
+  renderTestResult(t);
 }
 
 function renderResults(){
   const scores=combinedScores();
-  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
-    const s=scores[t.key];
-    return `<div class="res-row"><span class="rn">${t.title}</span>
-      <span class="rv"><b class="${s.band_c||'neu'}">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
-  }).join('');
+  const rows=TESTS.filter(t=>scores[t.key]).map(t=>`
+    <div class="res-block">
+      <div class="res-name">${t.title}</div>
+      <div class="refer">${t.frame}</div>
+      ${referBlock(t)}
+      <div class="res-h">С прошлым разом</div>
+      <div class="ans-card">${shiftBlock(t)}</div>
+    </div>`).join('');
   app.innerHTML=`
-    <h1>Твои интересы</h1>
-    <p class="sub">К чему тебя тянет по складу</p>
+    <h1>${PAGE_TITLE}</h1>
+    <p class="sub">${PAGE_SUB}</p>
     ${rows||'<p class="sub">Пока ничего не пройдено.</p>'}
-    <div class="refer">Интересы — самый устойчивый слой после ДНК: складываются к 20 с небольшим и держатся десятилетиями. Это про тягу, а не про способности.</div>
+    <div class="refer">${PAGE_FRAME}</div>
     <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>`;
   document.getElementById('tolist').onclick=()=>renderHub();
   window.scrollTo(0,0);

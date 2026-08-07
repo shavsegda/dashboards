@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Личность — HEXACO</title>
+<title>Личность</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="items.js"></script>
 <style>
@@ -46,6 +46,21 @@
   .res-facets{color:var(--muted);font-size:13px;margin-top:5px;}
   .ok{color:#2E7D32;font-weight:600;}
   .err{color:#C0392B;font-weight:600;}
+  /* Результат словами: свои ответы и сдвиг с прошлого раза вместо балла */
+  .res-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;}
+  .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:11px 14px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .ans-card{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--card);}
+  .ans-row{display:flex;align-items:baseline;gap:14px;padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .ans-row:last-child{border-bottom:0;}
+  .ans-q{flex:1;font-size:14px;color:var(--muted);line-height:1.4;}
+  .ans-a{font-size:14px;font-weight:600;text-align:right;max-width:46%;}
+  .sh-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .sh-row:last-child{border-bottom:0;}
+  .sh-row .rn{font-size:14px;font-weight:600;}
+  .shift{font-size:13px;color:var(--terra);text-align:right;}
+  .first-point{padding:14px 15px;font-size:14px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -98,6 +113,48 @@ function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,idx}
 
 const app = document.getElementById('app');
 
+// ===== Результат словами. Ни балла, ни ярлыка =====
+// Цифру по фактору человек читает как оценку себя, хотя это просто сумма его
+// ответов. Поэтому он видит другое: что сам отметил и куда это сдвинулось с
+// прошлого раза. Правила мини-аппов, часть 4; конституция, IV и V.
+// В базу цифры уходят как раньше — их читает бот и по ним собирается разбор.
+const PAGE_TITLE='Личность';
+const PAGE_SUB='Твои ответы про себя';
+const PAGE_FRAME='Это твои ответы, а не оценка и не ярлык. Что тут про тебя, а что мимо?';
+const PREV_KEY = RESULT_KEY+'_prev';
+const FIRST_POINT = 'Сравнить пока не с чем — это точка отсчёта.';
+let shiftPrev={}, shiftWords=null;
+try{ const st=JSON.parse(localStorage.getItem(PREV_KEY)||'{}');
+  if(st.prev) shiftPrev=st.prev; if(st.words) shiftWords=st.words; }catch(e){}
+function savePrev(){ try{ localStorage.setItem(PREV_KEY,
+  JSON.stringify({prev:shiftPrev,words:shiftWords})); }catch(e){} }
+
+// Сдвиг с прошлого раза — направление словами, без цифр. Прошлого нет — так и
+// говорим: сравнить пока не с чем. Без упрёка и без обещаний.
+function makeShift(factors){
+  const was=shiftPrev, keys=Object.keys(FACTORS).filter(f=>factors[f]!=null);
+  const had=was && Object.keys(was).length>0;
+  shiftWords = had ? keys.map(f=>{
+    const w=was[f];
+    return {l:FACTORS[f], w:(w==null) ? 'спрашиваем впервые'
+      : (factors[f]>w ? 'выше, чем в прошлый раз'
+      : (factors[f]<w ? 'ниже, чем в прошлый раз' : 'как в прошлый раз'))};
+  }) : null;
+  const m={}; keys.forEach(f=>{ m[f]=factors[f]; });
+  shiftPrev=m; savePrev();
+}
+function shiftBlock(){
+  if(!shiftWords||!shiftWords.length) return `<div class="first-point">${FIRST_POINT}</div>`;
+  return shiftWords.map(x=>`<div class="sh-row"><span class="rn">${x.l}</span><span class="shift">${x.w}</span></div>`).join('');
+}
+// «Твои ответы» — пункт и выбранный вариант, его собственными словами.
+function answerRows(){
+  return ITEMS.map((it,i)=>{
+    const o=LIKERT.find(x=>x.v===answers[i]);
+    return o ? `<div class="ans-row"><span class="ans-q">${it.t}</span><span class="ans-a">${o.l}</span></div>` : '';
+  }).join('');
+}
+
 function render(){
   const total = ITEMS.length;
   const done = Object.keys(answers).length;
@@ -105,8 +162,8 @@ function render(){
   const it = ITEMS[idx];
   const cur = answers[idx];
   app.innerHTML = `
-    <h1>Личность</h1>
-    <p class="sub">Опросник HEXACO · вопрос ${idx+1} из ${total}</p>
+    <h1>${PAGE_TITLE}</h1>
+    <p class="sub">Вопрос ${idx+1} из ${total}</p>
     <div class="bar"><i style="width:${Math.round(idx/total*100)}%"></i></div>
     <div class="barlbl">${done} из ${total} отвечено · можно бросить и вернуться</div>
     ${(idx===0&&done>0&&done<total)?'<div class="resume">Продолжаем с того места, где остановился.</div>':''}
@@ -149,16 +206,11 @@ function score(){
   return {factors,facets};
 }
 
-function resultRows(factors,facets){
-  return Object.keys(FACTORS).map(f=>{
-    const val=factors[f]; if(val==null) return '';
-    const pct=Math.round((val-1)/4*100);
-    const fac=Object.keys(facets).filter(k=>k.startsWith(f+'·'))
-      .map(k=>k.split('·')[1]+' '+facets[k]).join(' · ');
-    return `<div class="res-factor"><div class="fname"><span>${FACTORS[f]}</span><span>${val}</span></div>
-      <div class="res-bar"><i style="width:${pct}%"></i></div>
-      <div class="res-facets">${fac}</div></div>`;
-  }).join('');
+function resultRows(){
+  const ans=answerRows();
+  return `<div class="res-h">С прошлым разом</div>
+    <div class="ans-card">${shiftBlock()}</div>
+    ${ans?`<div class="res-h">Твои ответы</div><div class="ans-card">${ans}</div>`:''}`;
 }
 
 function retake(){
@@ -170,12 +222,12 @@ function retake(){
 
 // Экран текущих результатов + «Перепройти»
 function renderResultView(res, justFinished){
-  const {factors,facets}=res;
   const when = res.completed_at ? ' · пройден '+res.completed_at.slice(0,10) : '';
   app.innerHTML=`
-    <h1>Твоя личность</h1>
-    <p class="sub">HEXACO · 1–5 по каждому фактору${when}</p>
-    ${resultRows(factors,facets)}
+    <h1>${PAGE_TITLE}</h1>
+    <p class="sub">${PAGE_SUB}${when}</p>
+    <div class="refer">${PAGE_FRAME}</div>
+    ${resultRows()}
     ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
     <div class="nav" style="margin-top:20px">
       <button class="btn ghost" id="retake">🔁 Перепройти</button>
@@ -199,6 +251,8 @@ async function renderFinish(){
   }
   // 3) сохранить результат локально (persist) + очистить прогресс
   const res={factors,facets,completed_at};
+  // Сдвиг считаем по прошлому заходу и только потом запоминаем этот.
+  makeShift(factors);
   try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
   // Облако Telegram: результаты переживают очистку памяти телефона
   // и подтягиваются при заходе с другого устройства.

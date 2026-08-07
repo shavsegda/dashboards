@@ -45,6 +45,23 @@
   .ok{color:#2E7D32;font-weight:600;}
   .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
   .intro-card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:20px 18px;margin-bottom:16px;}
+  /* Результат словами: свои ответы и сдвиг с прошлого раза вместо балла */
+  .res-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;}
+  .res-block{margin-bottom:24px;}
+  .res-name{font-size:16px;font-weight:700;margin-bottom:6px;}
+  .refer{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:11px 14px;
+    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
+  .ans-card{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--card);}
+  .ans-row{display:flex;align-items:baseline;gap:14px;padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .ans-row:last-child{border-bottom:0;}
+  .ans-q{flex:1;font-size:14px;color:var(--muted);line-height:1.4;}
+  .ans-a{font-size:14px;font-weight:600;text-align:right;max-width:46%;}
+  .sh-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    padding:12px 15px;border-bottom:1px solid var(--rule);}
+  .sh-row:last-child{border-bottom:0;}
+  .sh-row .rn{font-size:14px;font-weight:600;}
+  .shift{font-size:13px;color:var(--terra);text-align:right;}
+  .first-point{padding:14px 15px;font-size:14px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -98,6 +115,10 @@ const TESTS = [
     key:'mfq', title:'Моральные основания',
     what:'что для тебя весомо, когда решаешь, что правильно, а что нет',
     note:'«правильных» ответов нет — отвечай честно',
+    frame:'Это твои ответы про то, что для тебя весомо. Не оценка. Что тут узнаёшь, а что мимо?',
+    lines:[{f:'Забота',l:'Забота о том, кому больно'},{f:'Справедливость',l:'Справедливость'},
+           {f:'Лояльность',l:'Верность своим'},{f:'Авторитет',l:'Уважение к старшим'},
+           {f:'Чистота',l:'Чистота и приличия'}],
     src:'MFQ-30 · Хайдт, Грэм, Носек · рабочий перевод',
     items:[
       {p:'P1', opts:REL, t:'Пострадал ли кто-то эмоционально.'},
@@ -151,9 +172,14 @@ const TESTS = [
     }
   },
   {
-    key:'schwartz', title:'Ценности (Шварц)',
+    key:'schwartz', title:'Ценности и приоритеты',
     what:'что для тебя в приоритете и ради чего живёшь',
     note:'нет «правильных» ответов — отвечай про себя',
+    frame:'Это твои ответы про приоритеты. Не оценка. Чему в жизни правда достаётся твоё время?',
+    lines:[{f:['poles','Открытость изменениям'],l:'Открытость новому'},
+           {f:['poles','Сохранение'],l:'Сохранить и не расшатать'},
+           {f:['poles','Самоутверждение'],l:'Своё продвинуть'},
+           {f:['poles','Самопреодоление'],l:'Забота о других'}],
     src:'PVQ-RR · Шварц · 19 ценностей · рабочий перевод',
     scale:SIM, numbered:true,
     items:[
@@ -275,6 +301,67 @@ function optRow(o, selected){
     <span class="onum">${o.v}</span><span class="olbl">${o.l}</span></button>`;
 }
 
+const PAGE_TITLE='Ценности';
+const PAGE_SUB='Что для тебя в приоритете';
+const PAGE_FRAME='Это про приоритеты, а не про правильность. Ответы тут ничего про тебя не решают.';
+
+// ===== Результат словами. Ни балла, ни ярлыка =====
+// Балл человек читает как приговор, хотя это просто сумма его ответов. Ярлык
+// («надёжный», «системщик») — как утверждение о своём характере, а из ответов
+// оно не следует. Поэтому человек видит другое: что он сам отметил и куда это
+// сдвинулось с прошлого раза. Правила мини-аппов, часть 4; конституция, IV и V.
+// В базу подсчёт уходит как раньше — его читает бот, и по нему собирается
+// разбор. Меняется только то, что человек читает.
+const PREV_KEY = RESULT_KEY+'_prev';
+const FIRST_POINT = 'Сравнить пока не с чем — это точка отсчёта.';
+const REFER_TEXT = 'В ответах есть то, что стоит обсудить со специалистом. Это не диагноз — это повод сходить.';
+let shiftPrev={}, shiftWords={}, shiftRefer={};
+try{ const p=JSON.parse(localStorage.getItem(PREV_KEY)||'{}');
+  if(p.prev) shiftPrev=p.prev; if(p.words) shiftWords=p.words; if(p.refer) shiftRefer=p.refer; }catch(e){}
+function savePrev(){ try{ localStorage.setItem(PREV_KEY,
+  JSON.stringify({prev:shiftPrev,words:shiftWords,refer:shiftRefer})); }catch(e){} }
+
+// Значение линии по пути. Нет значения — null, а не догадка.
+function lineVal(o,path){
+  return (Array.isArray(path)?path:[path]).reduce((x,k)=>(x==null?null:x[k]), o);
+}
+function lineValues(t,data){ return (t.lines||[]).map(l=>({l:l.l, v:lineVal(data,l.f)})); }
+
+// «Твои ответы» — пункт и выбранный вариант, его собственными словами.
+function answerRows(t){
+  const a=answers[t.key]||{};
+  return t.items.map((it,i)=>{
+    const opts=it.opts||t.scale||[];
+    const o=opts.find(s=>s.v===a[i]);
+    return o ? `<div class="ans-row"><span class="ans-q">${it.t}</span><span class="ans-a">${o.l}</span></div>` : '';
+  }).join('');
+}
+
+// Сдвиг с прошлого раза — направление словами, без цифр. Прошлого нет — так и
+// говорим: сравнить пока не с чем. Без упрёка и без обещаний.
+function makeShift(t,data){
+  const was=shiftPrev[t.key], now=lineValues(t,data);
+  shiftWords[t.key] = was ? now.map(n=>{
+    const w=was[n.l];
+    return {l:n.l, w:(w==null||n.v==null) ? 'спрашиваем впервые'
+      : (n.v>w ? 'выше, чем в прошлый раз'
+      : (n.v<w ? 'ниже, чем в прошлый раз' : 'как в прошлый раз'))};
+  }) : null;
+  const map={}; now.forEach(n=>{ if(n.v!=null) map[n.l]=n.v; });
+  shiftPrev[t.key]=map;
+  // Скрин сработал — направление к специалисту остаётся. Screen and refer.
+  shiftRefer[t.key] = !!(t.refer && t.refer(data));
+  savePrev();
+}
+function shiftBlock(t){
+  const words=shiftWords[t.key];
+  if(!words||!words.length) return `<div class="first-point">${FIRST_POINT}</div>`;
+  return words.map(x=>`<div class="sh-row"><span class="rn">${x.l}</span><span class="shift">${x.w}</span></div>`).join('');
+}
+function referBlock(t){
+  return shiftRefer[t.key] ? `<div class="refer">${REFER_TEXT}</div>` : '';
+}
+
 // Один вопрос на экран, тап → следующий.
 function renderQuestion(){
   const total=FLAT.length;
@@ -324,6 +411,8 @@ async function finish(){
     try{ tg.sendData(JSON.stringify({type:'values',scores})); }catch(e){}
   }
   const res={scores,completed_at};
+  // Сдвиг считаем по прошлому заходу и только потом запоминаем этот.
+  TESTS.forEach(t=>makeShift(t, t.score(answers[t.key]).data));
   try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
   // Облако Telegram: результаты переживают очистку памяти телефона
   // и подтягиваются при заходе с другого устройства.
@@ -337,14 +426,19 @@ async function finish(){
 function renderResult(res, justFinished){
   const {scores}=res;
   const when=res.completed_at?' · '+res.completed_at.slice(0,10):'';
-  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
-    const s=scores[t.key];
-    return `<div class="res-row"><span class="rn">${t.title}</span>
-      <span class="rv"><b class="neu">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
-  }).join('');
+  const rows=TESTS.filter(t=>scores[t.key]).map(t=>`
+    <div class="res-block">
+      <div class="res-name">${t.title}</div>
+      <div class="refer">${t.frame}</div>
+      <div class="res-h">С прошлым разом</div>
+      <div class="ans-card">${shiftBlock(t)}</div>
+      ${answerRows(t)?`<div class="res-h">Твои ответы</div>
+      <div class="ans-card">${answerRows(t)}</div>`:''}
+    </div>`).join('');
   app.innerHTML=`
-    <h1>Твои ценности</h1>
-    <p class="sub">Приоритеты, не «хорошо/плохо»${when}</p>
+    <h1>${PAGE_TITLE}</h1>
+    <p class="sub">${PAGE_SUB}${when}</p>
+    <div class="refer">${PAGE_FRAME}</div>
     ${rows}
     ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
     <div class="nav">

@@ -1,230 +1,45 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Личность — HEXACO</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="items.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Личность</title>
 <style>
-  :root{
-    --paper:#F4F2EC; --graphite:#1A1A1A; --terra:#B85C38;
-    --muted:#7A756B; --rule:#E2DED4; --card:#FBFAF7;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;background:var(--paper);color:var(--graphite);
-    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
-  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
-  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
-  .sub{color:var(--muted);font-size:14px;margin:0 0 20px;}
-  .bar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:0 0 4px;}
-  .bar>i{display:block;height:100%;background:var(--terra);width:0;transition:width .25s;}
-  .barlbl{color:var(--muted);font-size:12px;text-align:right;margin-bottom:22px;}
-  .q{background:var(--card);border:1px solid var(--rule);border-radius:14px;
-    padding:22px 18px;margin-bottom:16px;}
-  .qtext{font-size:19px;font-weight:600;margin-bottom:18px;line-height:1.4;}
-  .likert{display:flex;flex-direction:column;gap:9px;}
-  .opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--rule);
-    border-radius:10px;cursor:pointer;background:#fff;transition:.12s;font-size:15px;}
-  .opt:active{transform:scale(.99);}
-  .opt.sel{border-color:var(--terra);background:#FBEEE7;}
-  .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--rule);flex:0 0 auto;}
-  .opt.sel .dot{border-color:var(--terra);background:var(--terra);box-shadow:inset 0 0 0 3px #fff;}
-  .nav{display:flex;gap:10px;margin-top:8px;}
-  .btn{flex:1;padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:600;
-    font-family:inherit;cursor:pointer;}
-  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
-  .btn.prim{background:var(--terra);color:#fff;}
-  .btn:disabled{opacity:.4;pointer-events:none;}
-  .center{text-align:center;padding:40px 0;}
-  .resume{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:12px;padding:14px;
-    font-size:14px;margin-bottom:18px;color:#8A4527;}
-  .res-factor{margin:0 0 16px;}
-  .res-factor .fname{display:flex;justify-content:space-between;font-weight:700;margin-bottom:5px;}
-  .res-bar{height:22px;background:var(--rule);border-radius:6px;overflow:hidden;}
-  .res-bar>i{display:block;height:100%;background:var(--terra);}
-  .res-facets{color:var(--muted);font-size:13px;margin-top:5px;}
-  .ok{color:#2E7D32;font-weight:600;}
-  .err{color:#C0392B;font-weight:600;}
+:root { color-scheme: light dark; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px calc(24px + var(--tg-safe-area-inset-right, 0px))
+           24px calc(24px + var(--tg-safe-area-inset-left, 0px));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  font-size: 17px; line-height: 1.5; text-align: center;
+  background: var(--tg-theme-bg_color, #fdfcfa);
+  color: var(--tg-theme-text_color, #1a1a1a);
+}
+p { margin: 0 auto 10px; max-width: 20em; }
+.hint { color: var(--tg-theme-hint_color, rgba(26, 26, 26, 0.5)); }
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
-
+<main>
+  <p class="hint">Открываю&nbsp;страницу&nbsp;замера.</p>
+  <noscript>
+    <p>Эта страница устарела.</p>
+    <p class="hint">Замеры теперь в кнопке «Что со мной?» в боте.</p>
+  </noscript>
+</main>
 <script>
-const FACTORS = window.HEXACO_FACTORS;
-const ITEMS = window.HEXACO_ITEMS;
+/* Старая версия страницы замера. Файл оставлен нарочно: ссылки на него лежат в
+   давних сообщениях бота, а сообщения в Телеграме живут годами. Удалить файл
+   значит выдать человеку пустую ошибку вместо перехода.
 
-const LIKERT = [
-  {v:1,l:'Совсем не про меня'},
-  {v:2,l:'Скорее нет'},
-  {v:3,l:'Когда как'},
-  {v:4,l:'Скорее да'},
-  {v:5,l:'Точно про меня'}
-];
+   Хвост адреса переносим целиком: в нём приходит, чей это замер. Потеряем —
+   актуальная страница не поймёт, чьи ответы записывать.
 
-// ---- Telegram ----
-const tg = window.Telegram?.WebApp;
-tg?.ready(); tg?.expand();
-function uidFromUrl(){try{const u=new URLSearchParams(location.search).get('u');if(u&&u.indexOf('tg_')===0){const n=parseInt(u.slice(3),10);if(!isNaN(n))return n;}}catch(e){}return null;}
-const UID = (tg?.initDataUnsafe?.user?.id) || uidFromUrl() || null;
-const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
-const STORE_KEY = 'hexaco_'+CLIENT_ID;        // прогресс (сбрасывается на финише)
-const RESULT_KEY = 'hexaco_result_'+CLIENT_ID; // готовый результат (persist)
-
-// ---- Supabase ----
-const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-// Пишем в Supabase прямым fetch — надёжнее, чем supabase-js (тот не принимал новый ключ).
-async function pushToSupabase(record){
-  try{
-    await fetch(SUPABASE_URL+'/rest/v1/passport', {
-      method:'POST',
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
-        'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(record)
-    });
-  }catch(e){}
-}
-
-// ---- Состояние + resume ----
-let answers = {};   // {itemIndex: 1..5}
-let idx = 0;
-try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-  if(s.answers){answers=s.answers; idx=s.idx||0;} }catch(e){}
-function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,idx}));}catch(e){} }
-
-const app = document.getElementById('app');
-
-function render(){
-  const total = ITEMS.length;
-  const done = Object.keys(answers).length;
-  if(idx>=total){ return renderFinish(); }
-  const it = ITEMS[idx];
-  const cur = answers[idx];
-  app.innerHTML = `
-    <h1>Личность</h1>
-    <p class="sub">Опросник HEXACO · ${total} утверждений · можно бросить и вернуться</p>
-    <div class="bar"><i style="width:${Math.round(done/total*100)}%"></i></div>
-    <div class="barlbl">${done} из ${total}</div>
-    ${(idx===0&&done>0&&done<total)?'<div class="resume">Продолжаем с того места, где остановился.</div>':''}
-    <div class="q">
-      <div class="qtext">${it.t}</div>
-      <div class="likert">
-        ${LIKERT.map(o=>`<div class="opt ${cur===o.v?'sel':''}" data-v="${o.v}">
-          <span class="dot"></span><span>${o.l}</span></div>`).join('')}
-      </div>
-    </div>
-    <div class="nav">
-      <button class="btn ghost" id="prev" ${idx===0?'disabled':''}>Назад</button>
-      <button class="btn prim" id="next" ${cur==null?'disabled':''}>${idx===total-1?'Завершить':'Дальше'}</button>
-    </div>`;
-  app.querySelectorAll('.opt').forEach(el=>el.onclick=()=>{
-    answers[idx]=+el.dataset.v; save(); render();
-  });
-  const nx=document.getElementById('next');
-  if(nx) nx.onclick=()=>{ idx++; save(); window.scrollTo(0,0); render(); };
-  const pv=document.getElementById('prev');
-  if(pv) pv.onclick=()=>{ idx=Math.max(0,idx-1); save(); window.scrollTo(0,0); render(); };
-}
-
-// ---- Скоринг ----
-function score(){
-  const facetSum={}, facetN={}, factorSum={}, factorN={};
-  ITEMS.forEach((it,i)=>{
-    const raw=answers[i]; if(raw==null) return;
-    const v = it.key===1 ? raw : (6-raw);          // реверс
-    const fk = it.f+'·'+it.facet;
-    facetSum[fk]=(facetSum[fk]||0)+v; facetN[fk]=(facetN[fk]||0)+1;
-    factorSum[it.f]=(factorSum[it.f]||0)+v; factorN[it.f]=(factorN[it.f]||0)+1;
-  });
-  const factors={}, facets={};
-  Object.keys(FACTORS).forEach(f=>{ if(factorN[f]) factors[f]=+(factorSum[f]/factorN[f]).toFixed(2); });
-  Object.keys(facetSum).forEach(fk=>{ facets[fk]=+(facetSum[fk]/facetN[fk]).toFixed(2); });
-  return {factors,facets};
-}
-
-function resultRows(factors,facets){
-  return Object.keys(FACTORS).map(f=>{
-    const val=factors[f]; if(val==null) return '';
-    const pct=Math.round((val-1)/4*100);
-    const fac=Object.keys(facets).filter(k=>k.startsWith(f+'·'))
-      .map(k=>k.split('·')[1]+' '+facets[k]).join(' · ');
-    return `<div class="res-factor"><div class="fname"><span>${FACTORS[f]}</span><span>${val}</span></div>
-      <div class="res-bar"><i style="width:${pct}%"></i></div>
-      <div class="res-facets">${fac}</div></div>`;
-  }).join('');
-}
-
-function retake(){
-  if(confirm('Перепройти тест заново? Текущие результаты заменятся новыми.')){
-    localStorage.removeItem(RESULT_KEY); localStorage.removeItem(STORE_KEY);
-    answers={}; idx=0; window.scrollTo(0,0); render();
-  }
-}
-
-// Экран текущих результатов + «Перепройти»
-function renderResultView(res, justFinished){
-  const {factors,facets}=res;
-  const when = res.completed_at ? ' · пройден '+res.completed_at.slice(0,10) : '';
-  app.innerHTML=`
-    <h1>Твоя личность</h1>
-    <p class="sub">HEXACO · 1–5 по каждому фактору${when}</p>
-    ${resultRows(factors,facets)}
-    ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
-    <div class="nav" style="margin-top:20px">
-      <button class="btn ghost" id="retake">🔁 Перепройти</button>
-      ${justFinished?'<button class="btn prim" onclick="Telegram.WebApp.close()">В чат</button>':''}
-    </div>`;
-  document.getElementById('retake').onclick=retake;
-}
-
-async function renderFinish(){
-  const {factors,facets}=score();
-  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
-  const completed_at=new Date().toISOString();
-  const record={user_id:UID, block:'personality', instrument:'IPIP-HEXACO',
-    scores:{factors,facets}, answers, completed_at};
-  // 1) в Supabase (passport)
-  await pushToSupabase(record);
-  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
-  // 2) боту (sendData)
-  if(tg&&typeof tg.sendData==='function'){
-    try{ tg.sendData(JSON.stringify({type:'personality',instrument:'IPIP-HEXACO',factors,facets})); }catch(e){}
-  }
-  // 3) сохранить результат локально (persist) + очистить прогресс
-  const res={factors,facets,completed_at};
-  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
-  localStorage.removeItem(STORE_KEY);
-  renderResultView(res, true);
-}
-
-// Вход. Приоритет: результат из URL (передал бот) → localStorage → тест.
-let urlResult=null;
-try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
-let savedResult=null;
-try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
-// Подхват старого результата под ключом 'anon'
-if(!savedResult||!savedResult.factors){
-  try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
-    if(a&&a.factors){ savedResult=a; localStorage.setItem(RESULT_KEY, JSON.stringify(a)); } }catch(e){}
-}
-const inProgress = Object.keys(answers).length>0;
-if(urlResult && urlResult.factors && !inProgress){
-  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(urlResult)); }catch(e){}
-  renderResultView(urlResult, false);
-} else if(savedResult && !inProgress){
-  // Досыл: результат есть локально, но мог не улететь в базу — отправить при открытии.
-  const pk=RESULT_KEY+'_pushed';
-  if(savedResult.factors && localStorage.getItem(pk)!==(savedResult.completed_at||'')){
-    pushToSupabase({user_id:UID, block:'personality', instrument:'IPIP-HEXACO',
-      scores:{factors:savedResult.factors, facets:savedResult.facets}, completed_at:savedResult.completed_at});
-    try{ localStorage.setItem(pk, savedResult.completed_at||''); }catch(e){}
-  }
-  renderResultView(savedResult, false);
-} else {
-  render();
-}
+   Адрес цели относительный: так переход работает на любом домене и на любом
+   вложенном пути. Уходим через replace: старый адрес не остаётся в истории, и
+   кнопка «назад» не возвращает человека сюда. */
+location.replace("app8.html" + location.search + location.hash);
 </script>
 </body>
 </html>

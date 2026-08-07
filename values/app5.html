@@ -1,380 +1,45 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ценности</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root{--paper:#F4F2EC;--graphite:#1A1A1A;--terra:#B85C38;--muted:#7A756B;--rule:#E2DED4;--card:#FBFAF7;}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;background:var(--paper);color:var(--graphite);
-    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
-  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
-  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
-  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
-  .qbar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:4px 0 8px;}
-  .qbar>i{display:block;height:100%;background:var(--terra);transition:width .25s;}
-  .qmeta{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
-  .qintro{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:10px 13px;
-    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
-  .qbox{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 18px;margin-bottom:14px;}
-  .qtext{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:20px;}
-  .opts{display:flex;flex-direction:column;gap:9px;}
-  .orow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-    padding:14px 15px;border:1.5px solid var(--rule);border-radius:11px;background:#fff;
-    font-family:inherit;font-size:15.5px;color:var(--graphite);cursor:pointer;transition:.12s;}
-  .orow:active{transform:scale(.99);}
-  .orow.sel{border-color:var(--terra);background:#FBEEE7;}
-  .orow .onum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--rule);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);}
-  .orow.sel .onum{border-color:var(--terra);background:var(--terra);color:#fff;}
-  .orow .olbl{flex:1;}
-  .qnav{margin-top:6px;}
-  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;
-    font-family:inherit;cursor:pointer;background:var(--terra);color:#fff;margin-top:8px;}
-  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
-  .qnav .btn{width:auto;padding:11px 18px;margin-top:0;}
-  .center{text-align:center;padding:40px 0;}
-  .res-row{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--rule);}
-  .res-row .rn{font-weight:600;} .res-row .rv{text-align:right;}
-  .res-row .rv b{display:block;} .res-row .rv small{color:var(--muted);font-weight:400;font-size:12.5px;}
-  .neu{color:var(--muted);}
-  .ok{color:#2E7D32;font-weight:600;}
-  .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
-  .intro-card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:20px 18px;margin-bottom:16px;}
+:root { color-scheme: light dark; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px calc(24px + var(--tg-safe-area-inset-right, 0px))
+           24px calc(24px + var(--tg-safe-area-inset-left, 0px));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  font-size: 17px; line-height: 1.5; text-align: center;
+  background: var(--tg-theme-bg_color, #fdfcfa);
+  color: var(--tg-theme-text_color, #1a1a1a);
+}
+p { margin: 0 auto 10px; max-width: 20em; }
+.hint { color: var(--tg-theme-hint_color, rgba(26, 26, 26, 0.5)); }
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
-
+<main>
+  <p class="hint">Открываю&nbsp;страницу&nbsp;замера.</p>
+  <noscript>
+    <p>Эта страница устарела.</p>
+    <p class="hint">Замеры теперь в кнопке «Что со мной?» в боте.</p>
+  </noscript>
+</main>
 <script>
-// ---- Telegram ----
-const tg = window.Telegram?.WebApp;
-tg?.ready(); tg?.expand();
-function uidFromUrl(){try{const u=new URLSearchParams(location.search).get('u');if(u&&u.indexOf('tg_')===0){const n=parseInt(u.slice(3),10);if(!isNaN(n))return n;}}catch(e){}return null;}
-const UID = (tg?.initDataUnsafe?.user?.id) || uidFromUrl() || null;
-const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
-const STORE_KEY = 'values_'+CLIENT_ID;
-const RESULT_KEY = 'values_result_'+CLIENT_ID;
+/* Старая версия страницы замера. Файл оставлен нарочно: ссылки на него лежат в
+   давних сообщениях бота, а сообщения в Телеграме живут годами. Удалить файл
+   значит выдать человеку пустую ошибку вместо перехода.
 
-// ---- Supabase ----
-const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-// Пишем в Supabase прямым fetch — надёжнее, чем supabase-js (тот не принимал новый ключ).
-async function pushToSupabase(record){
-  try{
-    await fetch(SUPABASE_URL+'/rest/v1/passport', {
-      method:'POST',
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
-        'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(record)
-    });
-  }catch(e){}
-}
+   Хвост адреса переносим целиком: в нём приходит, чей это замер. Потеряем —
+   актуальная страница не поймёт, чьи ответы записывать.
 
-// Шкала важности (Часть 1) и шкала согласия (Часть 2), 0..5
-const REL = [
-  {v:0,l:'Совсем не важно'},{v:1,l:'Почти не важно'},{v:2,l:'Немного важно'},
-  {v:3,l:'Отчасти важно'},{v:4,l:'Важно'},{v:5,l:'Крайне важно'}
-];
-const AGR = [
-  {v:0,l:'Совершенно не согласен'},{v:1,l:'В целом не согласен'},{v:2,l:'Скорее не согласен'},
-  {v:3,l:'Скорее согласен'},{v:4,l:'В целом согласен'},{v:5,l:'Совершенно согласен'}
-];
-// Шкала похожести для PVQ-RR (Шварц), 1..6
-const SIM = [
-  {v:1,l:'Совсем не про меня'},{v:2,l:'Не про меня'},{v:3,l:'Мало про меня'},
-  {v:4,l:'Немного про меня'},{v:5,l:'Про меня'},{v:6,l:'Очень про меня'}
-];
-
-// Пункты — рабочий перевод MFQ-30. Пункты 6 и 22 — «ловушки», в счёт не идут.
-const TESTS = [
-  {
-    key:'mfq', title:'Моральные основания',
-    what:'что для тебя весомо, когда решаешь, что правильно, а что нет',
-    note:'«правильных» ответов нет — отвечай честно',
-    src:'MFQ-30 · Хайдт, Грэм, Носек · рабочий перевод',
-    items:[
-      {p:'P1', opts:REL, t:'Пострадал ли кто-то эмоционально.'},
-      {p:'P1', opts:REL, t:'Отнеслись ли к одним людям иначе, чем к другим.'},
-      {p:'P1', opts:REL, t:'Проявил ли человек любовь к своей стране.'},
-      {p:'P1', opts:REL, t:'Проявил ли человек неуважение к власти или старшим.'},
-      {p:'P1', opts:REL, t:'Нарушил ли кто-то нормы чистоты и приличия.'},
-      {p:'P1', opts:REL, t:'Хорош ли человек в математике.'},
-      {p:'P1', opts:REL, t:'Позаботился ли кто-то о слабом или беззащитном.'},
-      {p:'P1', opts:REL, t:'Поступил ли кто-то несправедливо.'},
-      {p:'P1', opts:REL, t:'Предал ли человек свою группу.'},
-      {p:'P1', opts:REL, t:'Следовал ли человек традициям общества.'},
-      {p:'P1', opts:REL, t:'Сделал ли кто-то что-то отвратительное.'},
-      {p:'P1', opts:REL, t:'Был ли кто-то жесток.'},
-      {p:'P1', opts:REL, t:'Лишили ли человека его прав.'},
-      {p:'P1', opts:REL, t:'Проявил ли кто-то нелояльность.'},
-      {p:'P1', opts:REL, t:'Привело ли действие к хаосу или беспорядку.'},
-      {p:'P1', opts:REL, t:'Поступил ли человек так, как одобрил бы Бог.'},
-      {p:'P2', opts:AGR, t:'Сострадание к тем, кто страдает, — самая важная добродетель.'},
-      {p:'P2', opts:AGR, t:'Принимая законы, государство прежде всего должно следить, чтобы со всеми обходились справедливо.'},
-      {p:'P2', opts:AGR, t:'Я горжусь историей своей страны.'},
-      {p:'P2', opts:AGR, t:'Уважению к власти и старшим нужно научить каждого ребёнка.'},
-      {p:'P2', opts:AGR, t:'Нельзя делать отвратительные вещи, даже если никто не пострадал.'},
-      {p:'P2', opts:AGR, t:'Делать добро лучше, чем делать зло.'},
-      {p:'P2', opts:AGR, t:'Причинить боль беззащитному животному — одно из худших, что может сделать человек.'},
-      {p:'P2', opts:AGR, t:'Справедливость — самое важное для общества.'},
-      {p:'P2', opts:AGR, t:'Люди должны быть верны семье, даже если та поступила неправильно.'},
-      {p:'P2', opts:AGR, t:'У мужчин и женщин в обществе разные роли.'},
-      {p:'P2', opts:AGR, t:'Некоторые поступки я назвал бы неправильными просто потому, что они противоестественны.'},
-      {p:'P2', opts:AGR, t:'Убивать человека нельзя ни при каких обстоятельствах.'},
-      {p:'P2', opts:AGR, t:'Несправедливо, что дети богатых наследуют много, а дети бедных — ничего.'},
-      {p:'P2', opts:AGR, t:'Быть командным игроком важнее, чем выражать себя.'},
-      {p:'P2', opts:AGR, t:'Будь я солдатом и не согласись с приказом командира, я всё равно подчинился бы — это долг.'},
-      {p:'P2', opts:AGR, t:'Целомудрие — важная и ценная добродетель.'}
-    ],
-    // Скоринг MFQ-30: 5 оснований по 6 пунктов, сумма 0–30. Пункты 6 и 22 — ловушки, не считаются.
-    score:(ans)=>{
-      const F={
-        'Забота':[1,7,12,17,23,28],
-        'Справедливость':[2,8,13,18,24,29],
-        'Лояльность':[3,9,14,19,25,30],
-        'Авторитет':[4,10,15,20,26,31],
-        'Чистота':[5,11,16,21,27,32]
-      };
-      const sums={};
-      Object.keys(F).forEach(k=>{ sums[k]=F[k].reduce((a,q)=>a+(ans[q-1]!=null?ans[q-1]:0),0); });
-      const ranked=Object.keys(sums).sort((a,b)=>sums[b]-sums[a]);
-      const band={t:'Ведущие: '+ranked.slice(0,2).join(', '), c:'neu'};
-      const nums=Object.keys(F).map(k=>k+' '+sums[k]).join(' · ');
-      return {band, nums, data:{...sums}};
-    }
-  },
-  {
-    key:'schwartz', title:'Ценности (Шварц)',
-    what:'что для тебя в приоритете и ради чего живёшь',
-    note:'нет «правильных» ответов — отвечай про себя',
-    src:'PVQ-RR · Шварц · 19 ценностей · рабочий перевод',
-    scale:SIM, numbered:true,
-    items:[
-      {t:'Мне важно составлять собственное мнение самостоятельно.'},
-      {t:'Мне важно, чтобы моя страна была в безопасности и стабильна.'},
-      {t:'Мне важно хорошо проводить время.'},
-      {t:'Мне важно не расстраивать других людей.'},
-      {t:'Мне важно, чтобы слабых и уязвимых в обществе защищали.'},
-      {t:'Мне важно, чтобы люди делали то, что я говорю.'},
-      {t:'Мне важно никогда не считать, что я заслуживаю больше других.'},
-      {t:'Мне важно беречь природу.'},
-      {t:'Мне важно, чтобы меня никто никогда не опозорил.'},
-      {t:'Мне важно всё время искать, чем заняться по-новому.'},
-      {t:'Мне важно заботиться о близких людях.'},
-      {t:'Мне важно обладать силой, которую даёт богатство.'},
-      {t:'Мне очень важно избегать болезней и беречь здоровье.'},
-      {t:'Мне важно быть терпимым к самым разным людям и группам.'},
-      {t:'Мне важно никогда не нарушать правила и предписания.'},
-      {t:'Мне важно самому принимать решения о своей жизни.'},
-      {t:'Мне важно иметь амбиции в жизни.'},
-      {t:'Мне важно хранить традиционные ценности и образ мыслей.'},
-      {t:'Мне важно, чтобы знакомые полностью мне доверяли.'},
-      {t:'Мне важно быть богатым.'},
-      {t:'Мне важно участвовать в защите природы.'},
-      {t:'Мне важно никого не раздражать.'},
-      {t:'Мне важно вырабатывать собственные взгляды.'},
-      {t:'Мне важно беречь свою репутацию.'},
-      {t:'Мне важно помогать дорогим мне людям.'},
-      {t:'Мне важно чувствовать себя в безопасности.'},
-      {t:'Мне важно быть надёжным другом, на которого можно положиться.'},
-      {t:'Мне важно рисковать так, чтобы жизнь была яркой.'},
-      {t:'Мне важно иметь власть заставлять людей делать то, что я хочу.'},
-      {t:'Мне важно планировать свои дела самостоятельно.'},
-      {t:'Мне важно соблюдать правила, даже когда никто не видит.'},
-      {t:'Мне важно быть очень успешным.'},
-      {t:'Мне важно следовать обычаям своей семьи или религии.'},
-      {t:'Мне важно выслушивать и понимать людей, не похожих на меня.'},
-      {t:'Мне важно, чтобы государство было сильным и могло защитить граждан.'},
-      {t:'Мне важно наслаждаться радостями жизни.'},
-      {t:'Мне важно, чтобы у каждого человека в мире были равные возможности.'},
-      {t:'Мне важно быть скромным.'},
-      {t:'Мне важно во всём разбираться самому.'},
-      {t:'Мне важно чтить традиции своей культуры.'},
-      {t:'Мне важно быть тем, кто говорит другим, что делать.'},
-      {t:'Мне важно соблюдать все законы.'},
-      {t:'Мне важно получать самый разный новый опыт.'},
-      {t:'Мне важно владеть дорогими вещами, которые показывают достаток.'},
-      {t:'Мне важно защищать природу от разрушения и загрязнения.'},
-      {t:'Мне важно не упускать ни одной возможности повеселиться.'},
-      {t:'Мне важно откликаться на любую нужду дорогих мне людей.'},
-      {t:'Мне важно, чтобы люди признавали мои достижения.'},
-      {t:'Мне важно никогда не быть униженным.'},
-      {t:'Мне важно, чтобы моя страна защищала себя от любых угроз.'},
-      {t:'Мне важно никогда не злить других людей.'},
-      {t:'Мне важно, чтобы со всеми обходились справедливо, даже с незнакомыми.'},
-      {t:'Мне важно избегать всего опасного.'},
-      {t:'Мне важно довольствоваться тем, что есть, и не просить большего.'},
-      {t:'Мне важно, чтобы друзья и семья могли полностью на меня положиться.'},
-      {t:'Мне важно быть свободным в выборе того, что я делаю.'},
-      {t:'Мне важно принимать людей, даже когда я с ними не согласен.'}
-    ],
-    // Скоринг PVQ-RR. Номера пунктов 1-based → ans[q-1]. Центрируем по среднему (MRAT).
-    score:(ans)=>{
-      const V={
-        'Самостоятельность-мысли':[1,23,39], 'Самостоятельность-поступки':[16,30,56],
-        'Стимуляция':[10,28,43], 'Гедонизм':[3,36,46], 'Достижение':[17,32,48],
-        'Власть-доминирование':[6,29,41], 'Власть-ресурсы':[12,20,44], 'Репутация':[9,24,49],
-        'Безопасность-личная':[13,26,53], 'Безопасность-общественная':[2,35,50],
-        'Традиция':[18,33,40], 'Конформизм-правила':[15,31,42], 'Конформизм-межличностный':[4,22,51],
-        'Скромность':[7,38,54], 'Универсализм-природа':[8,21,45], 'Универсализм-забота':[5,37,52],
-        'Универсализм-толерантность':[14,34,57], 'Благожелательность-забота':[11,25,47],
-        'Благожелательность-надёжность':[19,27,55]
-      };
-      const mean={}; let all=0, n=0;
-      Object.keys(V).forEach(k=>{
-        let s=0,c=0; V[k].forEach(q=>{ const v=ans[q-1]; if(v!=null){ s+=v; c++; all+=v; n++; } });
-        mean[k]= c? s/c : 0;
-      });
-      const mrat = n? all/n : 0;
-      const cen={}; Object.keys(V).forEach(k=>{ cen[k]= +(mean[k]-mrat).toFixed(2); });
-      const HO={
-        'Открытость изменениям':['Самостоятельность-мысли','Самостоятельность-поступки','Стимуляция','Гедонизм'],
-        'Сохранение':['Безопасность-личная','Безопасность-общественная','Традиция','Конформизм-правила','Конформизм-межличностный'],
-        'Самоутверждение':['Достижение','Власть-доминирование','Власть-ресурсы'],
-        'Самопреодоление':['Универсализм-природа','Универсализм-забота','Универсализм-толерантность','Благожелательность-забота','Благожелательность-надёжность']
-      };
-      const poles={};
-      Object.keys(HO).forEach(k=>{ poles[k]= +(HO[k].reduce((a,x)=>a+cen[x],0)/HO[k].length).toFixed(2); });
-      const topPole=Object.keys(poles).sort((a,b)=>poles[b]-poles[a])[0];
-      const topVals=Object.keys(cen).sort((a,b)=>cen[b]-cen[a]).slice(0,3);
-      const band={t:'Ведущий полюс: '+topPole, c:'neu'};
-      const nums='Сильнее всего: '+topVals.join(', ')+' · '
-        +Object.keys(poles).map(k=>k+' '+(poles[k]>0?'+':'')+poles[k]).join(' · ');
-      return {band, nums, data:{poles, top:topVals}};
-    }
-  }
-];
-
-const app = document.getElementById('app');
-const PART_LABEL={
-  P1:'Часть 1 — при оценке «правильно / неправильно», насколько это важно',
-  P2:'Часть 2 — насколько согласен'
-};
-
-const FLAT=[];
-TESTS.forEach(t=>t.items.forEach((it,i)=>FLAT.push({t,i,it})));
-
-let answers={};
-let pos=0;
-try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-  if(s.answers) answers=s.answers; if(typeof s.pos==='number') pos=s.pos; }catch(e){}
-function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,pos}));}catch(e){} }
-
-function answeredCount(){
-  return FLAT.filter(f=> answers[f.t.key] && answers[f.t.key][f.i]!=null).length;
-}
-function optRow(o, selected){
-  return `<button class="orow ${selected?'sel':''}" data-v="${o.v}">
-    <span class="onum">${o.v}</span><span class="olbl">${o.l}</span></button>`;
-}
-
-// Один вопрос на экран, тап → следующий.
-function renderQuestion(){
-  const total=FLAT.length;
-  if(pos<0) pos=0;
-  if(pos>=total){ return finish(); }
-  const {t,i,it}=FLAT[pos];
-  answers[t.key]=answers[t.key]||{};
-  const opts = it.opts || t.scale;
-  const cur = answers[t.key][i];
-  const done = answeredCount();
-  const part = it.p ? (PART_LABEL[it.p]||it.p) : '';
-  const intro = (i===0) ? `<div class="qintro">${t.what}${t.note?' · '+t.note:''}</div>` : '';
-  app.innerHTML=`
-    <div class="qbar"><i style="width:${Math.round(done/total*100)}%"></i></div>
-    <div class="qmeta">${t.title}${part?' · '+part:''} · вопрос ${pos+1} из ${total}</div>
-    ${intro}
-    <div class="qbox">
-      <div class="qtext">${it.t}</div>
-      <div class="opts">${opts.map(o=>optRow(o,cur===o.v)).join('')}</div>
-    </div>
-    <div class="qnav"><button class="btn ghost" id="back" ${pos===0?'disabled':''}>← Назад</button></div>`;
-  let locked=false;
-  app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
-    if(locked) return; locked=true;
-    answers[t.key][i]=+el.dataset.v; save();
-    app.querySelectorAll('.orow').forEach(o=>o.classList.remove('sel'));
-    el.classList.add('sel');
-    setTimeout(()=>{ pos++; save(); renderQuestion(); }, 160);
-  });
-  const b=document.getElementById('back');
-  if(b) b.onclick=()=>{ pos=Math.max(0,pos-1); save(); renderQuestion(); };
-  window.scrollTo(0,0);
-}
-
-async function finish(){
-  const gap = FLAT.findIndex(f=> !(answers[f.t.key] && answers[f.t.key][f.i]!=null));
-  if(gap!==-1){ pos=gap; save(); renderQuestion(); return; }
-  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Считаю и сохраняю…</p></div>`;
-  const scores={};
-  TESTS.forEach(t=>{ const r=t.score(answers[t.key]);
-    scores[t.key]={...r.data, nums:r.nums, band:r.band.t, band_c:r.band.c}; });
-  const completed_at=new Date().toISOString();
-  const record={user_id:UID, block:'values', instrument:'MFQ-30 + PVQ-RR', scores, answers, completed_at};
-  await pushToSupabase(record);
-  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
-  if(tg&&typeof tg.sendData==='function'){
-    try{ tg.sendData(JSON.stringify({type:'values',scores})); }catch(e){}
-  }
-  const res={scores,completed_at};
-  try{ localStorage.setItem(RESULT_KEY, JSON.stringify(res)); }catch(e){}
-  localStorage.removeItem(STORE_KEY);
-  renderResult(res, true);
-}
-
-function renderResult(res, justFinished){
-  const {scores}=res;
-  const when=res.completed_at?' · '+res.completed_at.slice(0,10):'';
-  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
-    const s=scores[t.key];
-    return `<div class="res-row"><span class="rn">${t.title}</span>
-      <span class="rv"><b class="neu">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
-  }).join('');
-  app.innerHTML=`
-    <h1>Твои ценности</h1>
-    <p class="sub">Приоритеты, не «хорошо/плохо»${when}</p>
-    ${rows}
-    ${justFinished?'<p class="sub" style="margin-top:16px"><span class="ok">Отправил боту — вернись в чат, я разберу.</span></p>':''}
-    <div class="nav">
-      <button class="btn ghost" id="retake">🔁 Пройти заново</button>
-      ${justFinished?'<button class="btn" onclick="Telegram.WebApp.close()">В чат</button>':''}
-    </div>`;
-  document.getElementById('retake').onclick=()=>{
-    if(confirm('Пройти заново? Текущие ответы заменятся.')){
-      answers={}; pos=0; try{localStorage.removeItem(RESULT_KEY);localStorage.removeItem(STORE_KEY);}catch(e){}
-      renderQuestion();
-    }
-  };
-}
-
-// Вход. Приоритет: результат из URL (передал бот) → localStorage → тест.
-let urlResult=null;
-try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
-let savedResult=null;
-try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
-// Подхват старого результата под ключом 'anon' (когда id ещё не читался)
-if(!savedResult||!savedResult.scores){
-  try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
-    if(a&&a.scores){ savedResult=a; localStorage.setItem(RESULT_KEY, JSON.stringify(a)); } }catch(e){}
-}
-const inProgress=TESTS.some(t=>answers[t.key]&&Object.keys(answers[t.key]).length>0);
-if(urlResult&&urlResult.scores&&!inProgress){
-  try{ localStorage.setItem(RESULT_KEY,JSON.stringify(urlResult)); }catch(e){}
-  renderResult(urlResult,false);
-}else if(savedResult&&savedResult.scores&&!inProgress){
-  const pk=RESULT_KEY+'_pushed';
-  if(localStorage.getItem(pk)!==(savedResult.completed_at||'')){
-    pushToSupabase({user_id:UID, block:'values', instrument:'MFQ-30 + PVQ-RR',
-      scores:savedResult.scores, completed_at:savedResult.completed_at});
-    try{ localStorage.setItem(pk, savedResult.completed_at||''); }catch(e){}
-  }
-  renderResult(savedResult,false);
-}else{
-  renderQuestion();
-}
+   Адрес цели относительный: так переход работает на любом домене и на любом
+   вложенном пути. Уходим через replace: старый адрес не остаётся в истории, и
+   кнопка «назад» не возвращает человека сюда. */
+location.replace("app8.html" + location.search + location.hash);
 </script>
 </body>
 </html>

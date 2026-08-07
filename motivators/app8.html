@@ -1,327 +1,45 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Мотиваторы</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root{--paper:#F4F2EC;--graphite:#1A1A1A;--terra:#B85C38;--muted:#7A756B;--rule:#E2DED4;--card:#FBFAF7;}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;background:var(--paper);color:var(--graphite);
-    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.5;}
-  .wrap{max-width:620px;margin:0 auto;padding:20px 18px 40px;}
-  h1{font-size:22px;margin:0 0 6px;font-weight:700;}
-  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;}
-  .qbar{height:6px;background:var(--rule);border-radius:6px;overflow:hidden;margin:4px 0 8px;}
-  .qbar>i{display:block;height:100%;background:var(--terra);transition:width .25s;}
-  .qmeta{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
-  .qintro{background:#FBEEE7;border:1px solid #EBD5C8;border-radius:10px;padding:10px 13px;
-    font-size:13px;color:#8A4527;margin-bottom:14px;line-height:1.45;}
-  .qbox{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 18px;margin-bottom:14px;}
-  .qtext{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:20px;}
-  .opts{display:flex;flex-direction:column;gap:9px;}
-  .orow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-    padding:14px 15px;border:1.5px solid var(--rule);border-radius:11px;background:#fff;
-    font-family:inherit;font-size:15.5px;color:var(--graphite);cursor:pointer;transition:.12s;}
-  .orow:active{transform:scale(.99);}
-  .orow.sel{border-color:var(--terra);background:#FBEEE7;}
-  .orow .onum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--rule);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);}
-  .orow.sel .onum{border-color:var(--terra);background:var(--terra);color:#fff;}
-  .orow .olbl{flex:1;}
-  .qnav{margin-top:6px;}
-  .btn{width:100%;padding:15px;border-radius:12px;border:none;font-size:16px;font-weight:700;
-    font-family:inherit;cursor:pointer;background:var(--terra);color:#fff;margin-top:8px;}
-  .btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--graphite);}
-  .qnav .btn{width:auto;padding:11px 18px;margin-top:0;}
-  .center{text-align:center;padding:40px 0;}
-  .res-row{padding:14px 0;border-bottom:1px solid var(--rule);}
-  .res-row .rn{font-weight:700;display:block;margin-bottom:4px;}
-  .res-row .rv{display:block;}
-  .res-row .rv b{display:block;font-weight:600;line-height:1.35;}
-  .res-row .rv small{display:block;color:var(--muted);font-weight:400;font-size:12.5px;margin-top:2px;}
-  .neu{color:var(--muted);}
-  .ok{color:#2E7D32;font-weight:600;}
-  .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
-  .qctx{background:var(--card);border:1px solid var(--rule);border-radius:12px;
-    padding:14px 15px;font-size:15.5px;line-height:1.45;margin-bottom:12px;}
-  .hublist{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
-  .hubrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 16px;
-    border:1.5px solid var(--rule);border-radius:12px;background:#fff;font-family:inherit;cursor:pointer;transition:.12s;}
-  .hubrow:active{transform:scale(.99);}
-  .hb-l{flex:1;display:flex;flex-direction:column;gap:3px;}
-  .hb-l b{font-size:16px;color:var(--graphite);}
-  .hb-s{font-size:12.5px;color:var(--muted);}
-  .hb-b{flex:0 0 auto;font-size:18px;color:var(--terra);font-weight:700;}
+:root { color-scheme: light dark; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px calc(24px + var(--tg-safe-area-inset-right, 0px))
+           24px calc(24px + var(--tg-safe-area-inset-left, 0px));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  font-size: 17px; line-height: 1.5; text-align: center;
+  background: var(--tg-theme-bg_color, #fdfcfa);
+  color: var(--tg-theme-text_color, #1a1a1a);
+}
+p { margin: 0 auto 10px; max-width: 20em; }
+.hint { color: var(--tg-theme-hint_color, rgba(26, 26, 26, 0.5)); }
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
-
+<main>
+  <p class="hint">Открываю&nbsp;страницу&nbsp;замера.</p>
+  <noscript>
+    <p>Эта страница устарела.</p>
+    <p class="hint">Замеры теперь в кнопке «Что со мной?» в боте.</p>
+  </noscript>
+</main>
 <script>
-// ---- Telegram ----
-const tg = window.Telegram?.WebApp;
-tg?.ready(); tg?.expand();
-function uidFromUrl(){try{const u=new URLSearchParams(location.search).get('u');if(u&&u.indexOf('tg_')===0){const n=parseInt(u.slice(3),10);if(!isNaN(n))return n;}}catch(e){}return null;}
-const UID = (tg?.initDataUnsafe?.user?.id) || uidFromUrl() || null;
-const CLIENT_ID = UID ? ('tg_'+UID) : 'anon';
-const STORE_KEY = 'motivators_'+CLIENT_ID;
-const RESULT_KEY = 'motivators_result_'+CLIENT_ID;
+/* Старая версия страницы замера. Файл оставлен нарочно: ссылки на него лежат в
+   давних сообщениях бота, а сообщения в Телеграме живут годами. Удалить файл
+   значит выдать человеку пустую ошибку вместо перехода.
 
-// ---- Supabase (прямой fetch — надёжно) ----
-const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
-async function pushToSupabase(record){
-  try{
-    await fetch(SUPABASE_URL+'/rest/v1/passport', {
-      method:'POST',
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
-        'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(record)
-    });
-  }catch(e){}
-}
+   Хвост адреса переносим целиком: в нём приходит, чей это замер. Потеряем —
+   актуальная страница не поймёт, чьи ответы записывать.
 
-// Шкалы RFQ (у пунктов разные подписи полюсов, 1..5)
-const F_FREQ  = [{v:1,l:'Никогда/почти никогда'},{v:2,l:'Редко'},{v:3,l:'Иногда'},{v:4,l:'Часто'},{v:5,l:'Очень часто'}];
-const F_TIMES = [{v:1,l:'Никогда/почти никогда'},{v:2,l:'Пару раз'},{v:3,l:'Несколько раз'},{v:4,l:'Часто'},{v:5,l:'Много раз'}];
-const F_ALW   = [{v:1,l:'Никогда/почти никогда'},{v:2,l:'Редко'},{v:3,l:'Иногда'},{v:4,l:'Обычно'},{v:5,l:'Всегда'}];
-const F_TRUE  = [{v:1,l:'Совсем не верно'},{v:2,l:'Скорее не верно'},{v:3,l:'Отчасти верно'},{v:4,l:'Скорее верно'},{v:5,l:'Очень верно'}];
-const F_CERT  = [{v:1,l:'Точно неверно'},{v:2,l:'Скорее неверно'},{v:3,l:'Затрудняюсь'},{v:4,l:'Скорее верно'},{v:5,l:'Точно верно'}];
-
-// 7-балльная шкала вероятности для GCOS
-const GCOS7 = [
-  {v:1,l:'Совсем маловероятно'},{v:2,l:'Маловероятно'},{v:3,l:'Скорее нет'},{v:4,l:'Умеренно'},
-  {v:5,l:'Скорее да'},{v:6,l:'Вероятно'},{v:7,l:'Очень вероятно'}
-];
-// GCOS: 12 ситуаций, у каждой 3 реакции. Рабочий перевод. Порядок вариантов = порядок ключа скоринга.
-const GCOS_V = [
-  {ctx:'Вам предложили новую должность в компании, где вы давно работаете. Первый вопрос, который приходит в голову:',
-   o:['«А вдруг я не справлюсь с новой ответственностью?»','«Буду ли я больше зарабатывать на этой должности?»','«Интересно, будет ли новая работа увлекательной.»']},
-  {ctx:'У вас дочь школьного возраста. На собрании учитель говорит, что она учится плохо и словно не вовлечена. Вы скорее:',
-   o:['Поговорите с дочерью, чтобы лучше понять, в чём проблема.','Отчитаете её и понадеетесь, что дальше будет лучше.','Проследите, чтобы она делала задания, — она должна стараться усерднее.']},
-  {ctx:'Несколько недель назад у вас было собеседование. Пришло типовое письмо: место занято. Вы скорее подумаете:',
-   o:['«Дело не в том, что ты знаешь, а в том, кого ты знаешь.»','«Наверное, я недостаточно хорош для этой работы.»','«Видимо, мои качества не совпали с тем, что им было нужно.»']},
-  {ctx:'Вы начальник цеха; нужно распределить перерывы троим работникам, которые не могут отдыхать одновременно. Вы скорее:',
-   o:['Расскажете троим о ситуации и вместе с ними составите график.','Просто назначите каждому время, чтобы избежать проблем.','Узнаете у начальства, как быть, или сделаете как раньше.']},
-  {ctx:'Близкий друг (того же пола) в последнее время не в духе и пару раз сильно разозлился на вас «из-за пустяка». Вы скорее:',
-   o:['Поделитесь наблюдениями и попробуете понять, что с ним происходит.','Не будете обращать внимания — всё равно тут мало что сделаешь.','Скажете, что готовы общаться, только если он постарается держать себя в руках.']},
-  {ctx:'Вы только что узнали, что сдали тест очень плохо. Первая реакция скорее:',
-   o:['«Ничего у меня не получается», и вам грустно.','«Интересно, почему я так плохо справился», и вам досадно.','«Этот дурацкий тест ничего не показывает», и вы злитесь.']},
-  {ctx:'Вас позвали на большую вечеринку, где вы почти никого не знаете. Думая о вечере, вы скорее ожидаете, что:',
-   o:['Подстроитесь под происходящее, чтобы хорошо провести время и не ударить в грязь лицом.','Найдёте людей, с которыми вам будет близко.','Скорее будете чувствовать себя одиноко и незаметно.']},
-  {ctx:'Вас просят организовать пикник для вас и коллег. Ваш стиль скорее можно описать как:',
-   o:['Взять всё на себя: большинство решений принять самому.','Идти по накатанной: вы не очень-то готовы, поэтому сделаете как принято.','Спросить участия: собрать идеи у желающих, прежде чем решить.']},
-  {ctx:'На работе открылась должность — ваше возможное повышение. Но её предложили не вам, а коллеге. Вы скорее подумаете:',
-   o:['Вы и не ждали этой должности — вас часто обходят.','Тот, другой, наверное, «сделал всё правильно» в политическом смысле.','Посмотрите, что в вашей работе привело к тому, что вас обошли.']},
-  {ctx:'Вы начинаете новую карьеру. Самое важное соображение скорее:',
-   o:['Сможете ли вы справиться, не взяв на себя слишком много.','Насколько вам интересна такая работа.','Есть ли хорошие возможности для роста.']},
-  {ctx:'Сотрудница, обычно работавшая нормально, последние две недели работает хуже и словно потеряла интерес. Ваша реакция скорее:',
-   o:['Скажете, что её работа ниже ожиданий и что пора работать усерднее.','Спросите, в чём дело, и дадите понять, что готовы помочь разобраться.','Трудно понять, что сделать, чтобы её «выправить».']},
-  {ctx:'Компания повысила вас с переводом в город далеко от нынешнего. Думая о переезде, вы скорее:',
-   o:['Почувствуете интерес к новому вызову и лёгкое волнение.','Обрадуетесь более высокому статусу и зарплате.','Почувствуете стресс и тревогу из-за перемен.']}
-];
-const GCOS_ITEMS = [];
-GCOS_V.forEach(v=>v.o.forEach(t=>GCOS_ITEMS.push({ctx:v.ctx, t})));
-
-const TESTS = [
-  {
-    key:'rfq', title:'Регуляторный фокус',
-    what:'что тебя двигает — «выиграть» (рост) или «не проиграть» (безопасность)',
-    note:'отвечай, как было в жизни на самом деле',
-    src:'RFQ · Хиггинс, 2001 · рабочий перевод',
-    items:[
-      {opts:F_FREQ,  t:'По сравнению с большинством людей, вам обычно не удаётся получить от жизни то, что хотите?'},
-      {opts:F_FREQ,  t:'В детстве вы «переходили черту», делая то, чего родители не потерпели бы?'},
-      {opts:F_TIMES, t:'Как часто вы добивались такого, что вас «заводило» работать ещё усерднее?'},
-      {opts:F_FREQ,  t:'В детстве вы часто действовали родителям на нервы?'},
-      {opts:F_ALW,   t:'Как часто вы соблюдали правила, установленные родителями?'},
-      {opts:F_FREQ,  t:'В детстве вы вели себя так, что родители считали это недопустимым?'},
-      {opts:F_FREQ,  t:'Часто ли у вас хорошо получается то, за что вы беретесь?'},
-      {opts:F_FREQ,  t:'Бывало, что недостаточная осторожность приводила меня к неприятностям.'},
-      {opts:F_TRUE,  t:'Когда речь о важных для меня целях, я справляюсь не так хорошо, как хотелось бы в идеале.'},
-      {opts:F_CERT,  t:'Я чувствую, что продвинулся к успеху в жизни.'},
-      {opts:F_CERT,  t:'В жизни я нашёл очень мало занятий, которые захватывают меня и мотивируют вкладываться.'}
-    ],
-    // Скоринг RFQ. Q1..Q11 = ans[0..10]. Реверс = (6 − ответ).
-    score:(ans)=>{
-      const q=(i)=>ans[i-1];
-      const rev=(i)=>6-ans[i-1];
-      const promo=(rev(1)+q(3)+q(7)+rev(9)+q(10)+rev(11))/6;
-      const prev=(rev(2)+rev(4)+q(5)+rev(6)+rev(8))/5;
-      const d=promo-prev;
-      let band;
-      if(d>0.4) band={t:'Ведущий фокус — рост (promotion): движет «выиграть»',c:'neu'};
-      else if(d<-0.4) band={t:'Ведущий фокус — безопасность (prevention): движет «не проиграть»',c:'neu'};
-      else band={t:'Смешанный фокус — рост и безопасность рядом',c:'neu'};
-      return {band, nums:`Рост (promotion) ${promo.toFixed(1)} · Безопасность (prevention) ${prev.toFixed(1)}`,
-        data:{promotion:+promo.toFixed(2), prevention:+prev.toFixed(2)}};
-    }
-  },
-  {
-    key:'gcos', title:'Каузальные ориентации',
-    what:'как ты обычно регулируешь себя: автономно, под контролем или безлично',
-    note:'нет «правильных» ответов — как чаще бывает у тебя',
-    src:'GCOS · Деси-Райан · рабочий перевод',
-    scale:GCOS7,
-    items:GCOS_ITEMS,
-    // Скоринг GCOS: 3 ориентации по 12 пунктов, сумма 12–84. Индексы = порядок вариантов.
-    score:(ans)=>{
-      const AUT=[2,3,8,9,12,16,19,23,26,28,31,33];
-      const CON=[1,5,6,10,14,17,18,21,25,29,30,34];
-      const IMP=[0,4,7,11,13,15,20,22,24,27,32,35];
-      const s=(arr)=>arr.reduce((n,i)=>n+(ans[i]!=null?ans[i]:0),0);
-      const a=s(AUT), c=s(CON), im=s(IMP);
-      const pr=[['автономная',a],['контролируемая',c],['безличная',im]].sort((x,y)=>y[1]-x[1]);
-      return {band:{t:'Ведущая ориентация: '+pr[0][0], c:'neu'},
-        nums:`Автономия ${a} · Контроль ${c} · Безличность ${im} (каждая 12–84)`,
-        data:{autonomy:a, controlled:c, impersonal:im}};
-    }
-  }
-];
-
-const app = document.getElementById('app');
-
-let answers={};        // {testKey:{i:v}}
-let priorScores={};    // прошлые результаты (галочки + слияние)
-let cur=null;          // {ti,pos} или null (список)
-try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-  if(s.answers) answers=s.answers; if(s.priorScores) priorScores=s.priorScores; if(s.cur) cur=s.cur; }catch(e){}
-function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,priorScores,cur}));}catch(e){} }
-
-function testFullyAnswered(t){ const a=answers[t.key]||{}; return t.items.every((_,i)=>a[i]!=null); }
-function testAnsweredCount(t){ const a=answers[t.key]||{}; return t.items.filter((_,i)=>a[i]!=null).length; }
-
-function combinedScores(){
-  const out={};
-  TESTS.forEach(t=>{
-    if(testFullyAnswered(t)){ const r=t.score(answers[t.key]); out[t.key]={...r.data, nums:r.nums, band:r.band.t, band_c:r.band.c}; }
-    else if(priorScores[t.key]){ out[t.key]=priorScores[t.key]; }
-  });
-  return out;
-}
-
-async function pushCombined(){
-  const scores=combinedScores();
-  priorScores=scores;
-  const completed_at=new Date().toISOString();
-  const record={user_id:UID, block:'motivators', instrument:'RFQ + GCOS', scores, answers, completed_at};
-  await pushToSupabase(record);
-  try{ localStorage.setItem(RESULT_KEY, JSON.stringify({scores,answers,completed_at})); }catch(e){}
-  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
-  if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'motivators',scores})); }catch(e){} }
-  save();
-}
-
-function optRow(o, selected){
-  return `<button class="orow ${selected?'sel':''}" data-v="${o.v}">
-    <span class="onum">${o.v}</span><span class="olbl">${o.l||''}</span></button>`;
-}
-
-function renderHub(msg){
-  cur=null; save();
-  const rows=TESTS.map((t,idx)=>{
-    let status, badge='→', cls='';
-    if(testFullyAnswered(t)){ const s=t.score(answers[t.key]); status=s.band.t; badge='✓'; cls=s.band.c||''; }
-    else if(priorScores[t.key]){ status=priorScores[t.key].band||'готово'; badge='✓'; cls=priorScores[t.key].band_c||''; }
-    else { const c=testAnsweredCount(t); status = c>0 ? ('в процессе · '+c+' из '+t.items.length) : ('не пройден · '+t.items.length+' вопр.'); }
-    return `<button class="hubrow" data-ti="${idx}">
-      <span class="hb-l"><b>${t.title}</b><span class="hb-s ${cls}">${status}</span></span>
-      <span class="hb-b">${badge}</span></button>`;
-  }).join('');
-  app.innerHTML=`
-    <h1>Мотиваторы</h1>
-    <p class="sub">Что тебя движет к действию</p>
-    ${msg?`<div class="refer"><span class="ok">${msg}</span></div>`:''}
-    <div class="refer">Два коротких опросника. Проходи по одному — можно бросить и вернуться, каждый пересдаётся отдельно.</div>
-    <div class="hublist">${rows}</div>
-    ${Object.keys(combinedScores()).length ? '<button class="btn" id="showres" style="margin-top:16px">📊 Показать результаты</button>' : ''}`;
-  const sr=document.getElementById('showres'); if(sr) sr.onclick=()=>renderResults();
-  app.querySelectorAll('.hubrow').forEach(el=>el.onclick=()=>{
-    const idx=+el.dataset.ti, t=TESTS[idx];
-    if(testFullyAnswered(t)||priorScores[t.key]){
-      if(!confirm('«'+t.title+'» уже пройден. Пройти заново? Прошлый результат этого теста заменится, остальные не тронутся.')) return;
-      answers[t.key]={};
-    }
-    let p=0; const a=answers[t.key]||{};
-    for(let i=0;i<t.items.length;i++){ if(a[i]==null){ p=i; break; } p=i; }
-    cur={ti:idx,pos:p}; save(); renderQuestion();
-  });
-  window.scrollTo(0,0);
-}
-
-function renderQuestion(){
-  if(!cur){ return renderHub(); }
-  const t=TESTS[cur.ti];
-  answers[t.key]=answers[t.key]||{};
-  if(cur.pos<0) cur.pos=0;
-  if(cur.pos>=t.items.length){ return finishTest(t); }
-  const it=t.items[cur.pos];
-  const opts=it.opts||t.scale;
-  const val=answers[t.key][cur.pos];
-  const intro=(cur.pos===0)?`<div class="qintro">${t.what}${t.note?' · '+t.note:''}</div>`:'';
-  const prevCtx = cur.pos>0 ? (t.items[cur.pos-1].ctx||'') : '';
-  const ctx = (it.ctx && it.ctx!==prevCtx) ? `<div class="qctx">${it.ctx}</div>` : '';
-  app.innerHTML=`
-    <div class="qbar"><i style="width:${Math.round(cur.pos/t.items.length*100)}%"></i></div>
-    <div class="qmeta">${t.title} · вопрос ${cur.pos+1} из ${t.items.length}</div>
-    ${intro}${ctx}
-    <div class="qbox"><div class="qtext">${it.t}</div>
-      <div class="opts">${opts.map(o=>optRow(o,val===o.v)).join('')}</div></div>
-    <div class="qnav"><button class="btn ghost" id="back">← ${cur.pos===0?'К списку':'Назад'}</button></div>`;
-  let locked=false;
-  app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
-    if(locked) return; locked=true;
-    answers[t.key][cur.pos]=+el.dataset.v; save();
-    app.querySelectorAll('.orow').forEach(o=>o.classList.remove('sel'));
-    el.classList.add('sel');
-    setTimeout(()=>{ cur.pos++; save(); renderQuestion(); }, 160);
-  });
-  document.getElementById('back').onclick=()=>{
-    if(cur.pos===0){ renderHub(); } else { cur.pos--; save(); renderQuestion(); }
-  };
-  window.scrollTo(0,0);
-}
-
-async function finishTest(t){
-  app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
-  await pushCombined();
-  renderHub('«'+t.title+'» засчитан и отправлен боту.');
-}
-
-function renderResults(){
-  const scores=combinedScores();
-  const rows=TESTS.filter(t=>scores[t.key]).map(t=>{
-    const s=scores[t.key];
-    return `<div class="res-row"><span class="rn">${t.title}</span>
-      <span class="rv"><b class="${s.band_c||'neu'}">${s.band||'—'}</b><small>${s.nums||''}</small></span></div>`;
-  }).join('');
-  app.innerHTML=`
-    <h1>Что тебя движет</h1>
-    <p class="sub">Устойчивые мотиваторы</p>
-    ${rows||'<p class="sub">Пока ничего не пройдено.</p>'}
-    <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>`;
-  document.getElementById('tolist').onclick=()=>renderHub();
-  window.scrollTo(0,0);
-}
-
-// ---- Вход ----
-let urlResult=null;
-try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
-let savedResult=null;
-try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
-if(!savedResult||!savedResult.scores){
-  try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
-    if(a&&a.scores) savedResult=a; }catch(e){}
-}
-if(Object.keys(priorScores).length===0){
-  if(urlResult&&urlResult.scores) priorScores={...urlResult.scores};
-  else if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
-  if(savedResult&&savedResult.answers && Object.keys(answers).length===0) answers={...savedResult.answers};
-  save();
-}
-if(cur && typeof cur.ti==='number'){ renderQuestion(); } else { renderHub(); }
+   Адрес цели относительный: так переход работает на любом домене и на любом
+   вложенном пути. Уходим через replace: старый адрес не остаётся в истории, и
+   кнопка «назад» не возвращает человека сюда. */
+location.replace("app10.html" + location.search + location.hash);
 </script>
 </body>
 </html>
