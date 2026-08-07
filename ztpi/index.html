@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Временная перспектива (ZTPI)</title>
+<title>Твоё время</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,6 +22,7 @@ h2 { font-size: 20px; font-weight: 600; margin: 24px 0 8px; }
 p { margin-bottom: 12px; color: #444; }
 .lead { font-size: 16px; color: #555; margin-bottom: 24px; }
 .note { font-size: 13px; color: #888; }
+.sub { font-size: 14px; color: #777; margin-bottom: 16px; }
 
 button { background: #1a1a1a; color: #fff; padding: 14px 28px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; font-family: inherit; font-weight: 500; }
 button:hover { background: #333; }
@@ -40,42 +41,32 @@ button.secondary:hover { background: #ebe7dc; }
 .q-option.selected { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
 .q-option-text { font-size: 15px; flex: 1; }
 
-.result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
-.result-need { padding: 16px 0; border-bottom: 1px solid #f0ede6; }
-.result-need:last-child { border-bottom: 0; }
-.result-need-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-.result-need-verdict { font-size: 13px; margin-bottom: 10px; }
-.verdict-good { color: #2d6a4f; }
-.verdict-watch { color: #b45309; }
-.verdict-bad { color: #b91c1c; }
-.result-need-row { display: flex; align-items: center; gap: 12px; }
-.result-need-bar { flex: 1; height: 10px; background: #e2dfd6; border-radius: 5px; overflow: hidden; position: relative; }
-.result-need-bar-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #1a1a1a; opacity: 0.35; }
-.result-need-bar-fill { height: 100%; transition: width 0.6s ease; }
-.bar-pos { background: #2d6a4f; }
-.bar-neg { background: #b45309; }
-.result-need-val { font-size: 15px; font-weight: 600; min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+/* Рамка результата: человек читает свои ответы, а не оценку. */
+.frame { background: #fff; border: 1px solid #e2dfd6; border-left: 3px solid #b8541a; border-radius: 8px; padding: 14px 16px; font-size: 14px; color: #555; margin-bottom: 20px; }
+.res-h { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin: 24px 0 8px; }
+.result-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.result-row { display: flex; align-items: baseline; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #f0ede6; }
+.result-row:last-child { border-bottom: 0; }
+.result-name { flex: 1; font-size: 15px; font-weight: 600; }
+.shift-word { font-size: 13px; color: #b8541a; text-align: right; }
+.first-point { padding: 16px; font-size: 14px; color: #666; }
+.ans-row { display: flex; align-items: baseline; gap: 14px; padding: 12px 16px; border-bottom: 1px solid #f0ede6; }
+.ans-row:last-child { border-bottom: 0; }
+.ans-q { flex: 1; font-size: 14px; color: #666; line-height: 1.4; }
+.ans-a { font-size: 14px; font-weight: 600; text-align: right; max-width: 46%; }
 
-.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: start; font-size: 14px; }
-.history-date { color: #888; }
-.history-pills { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #555; font-variant-numeric: tabular-nums; }
+.history-row { background: #fff; border: 1px solid #e2dfd6; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; color: #555; }
 
 .empty { text-align: center; padding: 40px 20px; color: #888; }
 .sync-status { font-size: 12px; color: #4a8c5e; }
 .sync-status.error { color: #b91c1c; }
-
-.chart-card { background: #fff; border: 1px solid #e2dfd6; border-radius: 10px; padding: 20px 16px; margin-bottom: 16px; }
-.chart-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.chart-sub { font-size: 12px; color: #888; margin-bottom: 8px; }
-.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px; justify-content: center; }
-.legend-item { font-size: 12px; color: #555; display: flex; align-items: center; gap: 5px; }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
 
 @media (max-width: 600px) {
   main { padding: 24px 16px 80px; }
   h1 { font-size: 22px; }
   .q-card { padding: 20px 16px; }
   .q-text { font-size: 16px; }
+  .ans-a { max-width: 40%; }
 }
 </style>
 </head>
@@ -96,6 +87,7 @@ if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 const TELEGRAM_USER_ID = tg?.initDataUnsafe?.user?.id;
 
 // === Идентификатор клиента ===
+// Человеку он не показывается: это техническая метка, а не часть замера.
 function getOrCreateLocalUid() {
   let id = localStorage.getItem("local_uid");
   if (!id) { id = "u" + Math.random().toString(36).slice(2, 12); localStorage.setItem("local_uid", id); }
@@ -110,6 +102,7 @@ function getClientId() {
 }
 const CLIENT_ID = getClientId();
 const STORAGE_KEY = "ztpi_v1_" + CLIENT_ID;
+const PREV_KEY = STORAGE_KEY + "_prev";   // прошлый заход, для сравнения словами
 
 // === Supabase client ===
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -125,9 +118,10 @@ const SCALE = [
   {label: 'Совершенно верно', value: 5}
 ];
 
-// === ZTPI-ru (адаптация Сырцовой и др.) — 56 пунктов, канонический порядок ===
-// Опросник временной перспективы Зимбардо. Порядок пунктов уже перемешан
-// по шкалам в самом инструменте. Группировка — только в логике подсчёта.
+// === Опросник временной перспективы, русская адаптация — 56 пунктов ===
+// Текст пунктов чужой: правка пункта — это правка инструмента, поэтому они не
+// меняются никогда. Порядок уже перемешан в самом инструменте, группировка —
+// только в логике подсчёта, человек её не видит.
 const QUESTIONS = [
   /*  1 */ 'Я считаю, что ходить вместе с друзьями на вечеринки — это одно из самых больших удовольствий в жизни.',
   /*  2 */ 'Знакомые с детства картины, звуки, запахи часто приносят с собой поток приятных воспоминаний.',
@@ -190,7 +184,7 @@ const QUESTIONS = [
 // Пункты с обратным подсчётом (1↔5, 2↔4)
 const REVERSE = [9, 24, 25, 41, 56];
 
-// Индексы шкал (1-based, как в опроснике)
+// Группы пунктов (нумерация как в опроснике). Ключи — как в базе: их читает бот.
 const SCALE_INDEX = {
   past_negative:      [4, 5, 16, 22, 27, 33, 34, 36, 50, 54],
   present_hedonistic: [1, 8, 12, 17, 19, 23, 26, 28, 31, 32, 42, 44, 46, 48, 55],
@@ -199,15 +193,20 @@ const SCALE_INDEX = {
   present_fatalistic: [3, 14, 35, 37, 38, 39, 47, 52, 53]
 };
 
-// Оптимальный сбалансированный профиль (Зимбардо, гл. 11) и тип шкалы
-const SCALE_META = {
-  past_positive:      { title: 'Позитивное прошлое', kind: 'pos', target: 4.4, want: 'high',  hint: 'корни, опора' },
-  future:             { title: 'Будущее',            kind: 'pos', target: 3.8, want: 'mid',   hint: 'крылья, цели' },
-  present_hedonistic: { title: 'Гедонистическое настоящее', kind: 'pos', target: 3.6, want: 'mid', hint: 'энергия, радость' },
-  past_negative:      { title: 'Негативное прошлое', kind: 'neg', target: 2.2, want: 'low',   hint: 'тянуть вниз' },
-  present_fatalistic: { title: 'Фаталистическое настоящее', kind: 'neg', target: 2.0, want: 'low', hint: 'тянуть вниз' }
-};
-const SCALE_ORDER = ['future', 'present_hedonistic', 'present_fatalistic', 'past_positive', 'past_negative'];
+// Линии, которые человек читает. Названия описывают то, о чём его спрашивали, —
+// без сокращений, без учёных слов и без оценки. Порядок — как на экране.
+const LINES = [
+  {key: 'future',             label: 'Планы и завтрашний день'},
+  {key: 'present_hedonistic', label: 'Радость сегодняшнего дня'},
+  {key: 'present_fatalistic', label: 'Чувство, что всё решают судьба и случай'},
+  {key: 'past_positive',      label: 'Тёплые воспоминания'},
+  {key: 'past_negative',      label: 'Болезненные воспоминания'}
+];
+
+const PAGE_TITLE = 'Твоё время';
+const PAGE_FRAME = 'Это твои ответы, а не оценка и не ярлык. Что тут про тебя, а что мимо?';
+const FIRST_POINT = 'Сравнить пока не с чем — это точка отсчёта.';
+const WEATHER_TEXT = 'Это про то, как ты отвечаешь сейчас, а не про характер. Смысл появляется в сравнении с прошлым разом.';
 
 // === Состояние ===
 const state = {
@@ -220,6 +219,9 @@ const state = {
 };
 
 let history = [];
+// Прошлый заход берётся один раз, на финише: иначе после обновления истории
+// свежая запись сама становится «прошлым разом» и сдвиг исчезает.
+let shiftPrev = null;
 
 // === Supabase: история ===
 async function loadHistoryFromSupabase() {
@@ -236,21 +238,23 @@ async function loadHistoryFromSupabase() {
 }
 
 // === Отправка боту ===
+// Запись не меняется: та же подпись действия и те же поля. По ним бот собирает
+// контекст и выгрузки — поехали ключи, и панели смотрят в пустоту.
 function sendToBot(record) {
   if (!tg || typeof tg.sendData !== 'function') {
     state.syncStatus = 'error';
-    state.syncMessage = 'Опросник заполнен, но открой его через бота — иначе результат не сохранится.';
+    state.syncMessage = 'Замер заполнен, но открой его через бота — иначе ответы не сохранятся.';
     return false;
   }
   try {
     tg.sendData(JSON.stringify({ action: 'ztpi_assessment', payload: record }));
     state.syncStatus = 'ok';
-    state.syncMessage = 'Результат отправлен боту. Ответ придёт в чат через секунду.';
+    state.syncMessage = 'Замер отправлен боту. Ответ придёт в чат через секунду.';
     return true;
   } catch (e) {
     console.error('sendData failed:', e);
     state.syncStatus = 'error';
-    state.syncMessage = 'Не удалось отправить боту: ' + e.message;
+    state.syncMessage = 'Не удалось отправить боту. Попробуй открыть замер из чата ещё раз.';
     return false;
   }
 }
@@ -266,7 +270,7 @@ function updateProgress() {
   bar.style.display = 'block';
   const pct = (answeredCount() / state.totalQuestions) * 100;
   fill.style.width = pct + '%';
-  text.textContent = 'Временная перспектива';
+  text.textContent = PAGE_TITLE;
   count.textContent = answeredCount() + ' / ' + state.totalQuestions;
 }
 
@@ -274,19 +278,19 @@ function updateProgress() {
 const app = document.getElementById('app');
 
 function renderWelcome() {
-  const inTelegram = !!tg;
-  const tgIndicator = inTelegram
-    ? `<p class="note" style="color:#0f7c3f;">✓ Telegram WebApp · client: ${CLIENT_ID}</p>`
-    : `<p class="note" style="color:#a16207;">⚠ Открыто вне Telegram · client: ${CLIENT_ID}</p>`;
+  // Открыто не из чата — предупреждаем сразу: иначе человек ответит на 56
+  // утверждений впустую. Без упрёка и без технических подробностей.
+  const outsideNote = tg ? ''
+    : '<p class="note" style="color:#a16207;">Открыто не через бота — ответы не сохранятся. Лучше открой замер из чата.</p>';
   app.innerHTML = `
-    <h1>Временная перспектива</h1>
-    ${tgIndicator}
-    <p class="lead">Опросник Зимбардо (ZTPI): через какое время ты живёшь — прошлое, настоящее, будущее. 56 утверждений, 10–12 минут.</p>
-    <p>Не оцениваем тебя. Смотрим, какая линза сейчас ведущая и где перекос. На выходе — пять шкал и сравнение со сбалансированным профилем.</p>
-    <p class="note">Отвечай быстро, первой реакцией. Лучше перепроходить раз в квартал — увидишь динамику.</p>
+    <h1>${PAGE_TITLE}</h1>
+    ${outsideNote}
+    <p class="lead">Через какое время ты живёшь: прошлое, настоящее или завтрашний день. 56 утверждений, 10–12 минут.</p>
+    <p>Покажет, на что ты опираешься чаще: на воспоминания, на сегодняшний день или на планы. Тебя тут не оценивают.</p>
+    <p class="note">Отвечай быстро, первой реакцией. Возвращайся раз в квартал — увидишь, куда идёт линия.</p>
     <div class="actions">
       <button onclick="start()">Начать</button>
-      ${history.length ? '<button class="secondary" onclick="showHistory()">История</button>' : ''}
+      ${history.length ? '<button class="secondary" onclick="showHistory()">Прошлые замеры</button>' : ''}
     </div>
   `;
   updateProgress();
@@ -346,200 +350,87 @@ function computeRecord() {
   };
 }
 
-// Ширина бара: значение 1.0–5.0 → 0–100%
-function barWidth(v) {
-  if (v === null || v === undefined) return 0;
-  return Math.max(0, Math.min(100, ((v - 1) / 4) * 100));
+// === Результат словами ===
+// Ни цифры, ни диапазона, ни сравнения с «правильным профилем»: цифру человек
+// примет как приговор, а «правильный профиль» — как норму, которой у нас на
+// русской выборке не замерено. Правила мини-аппов, часть 4.
+function readStoredPrev() {
+  try { return JSON.parse(localStorage.getItem(PREV_KEY) || 'null'); }
+  catch (e) { return null; }
 }
 
-// Вердикт по шкале относительно целевого профиля
-function verdict(key, v) {
-  if (v === null || v === undefined) return { cls: '', text: '' };
-  const m = SCALE_META[key];
-  if (m.want === 'low') {
-    if (v <= m.target + 0.3) return { cls: 'verdict-good', text: 'в норме — низкое, как и нужно' };
-    if (v <= m.target + 1.0) return { cls: 'verdict-watch', text: 'повышено — стоит снижать' };
-    return { cls: 'verdict-bad', text: 'высокое — главная зона работы' };
-  }
-  if (m.want === 'high') {
-    if (v >= m.target - 0.4) return { cls: 'verdict-good', text: 'в опоре — сильная сторона' };
-    if (v >= m.target - 1.2) return { cls: 'verdict-watch', text: 'средне — есть куда растить' };
-    return { cls: 'verdict-bad', text: 'просело — опора слабовата' };
-  }
-  // mid
-  if (v >= m.target - 0.5 && v <= m.target + 0.7) return { cls: 'verdict-good', text: 'в балансе' };
-  if (v < m.target - 0.5) return { cls: 'verdict-watch', text: 'ниже баланса — добрать' };
-  return { cls: 'verdict-watch', text: 'выше баланса — следить за перекосом' };
+// Прошлый заход: сначала из базы (переехал на другой телефон — история с собой),
+// потом из памяти телефона. Замер того же дня прошлым не считается.
+function pickPrev(record) {
+  const day = (record.checkin_date || '').slice(0, 10);
+  const fromCloud = (history || []).find(
+    r => ((r.checkin_date || '').slice(0, 10)) !== day);
+  if (fromCloud) return fromCloud;
+  const stored = readStoredPrev();
+  if (stored && (stored.checkin_date || '').slice(0, 10) !== day) return stored;
+  return null;
 }
 
-// === Визуализация ===
-// Оси радара и цвета (порядок: 3 «тянем вверх», затем 2 «тянем вниз»)
-const RADAR_AXES = [
-  { key: 'future',             label: ['Будущее'],            color: '#3b82a0' },
-  { key: 'present_hedonistic', label: ['Гедон.', 'настоящ.'], color: '#7a9e3a' },
-  { key: 'present_fatalistic', label: ['Фатал.', 'настоящ.'], color: '#b91c1c' },
-  { key: 'past_positive',      label: ['Поз.', 'прошлое'],    color: '#2d6a4f' },
-  { key: 'past_negative',      label: ['Нег.', 'прошлое'],    color: '#b45309' },
-];
-const OPTIMAL = { past_positive: 4.4, future: 3.8, present_hedonistic: 3.6, present_fatalistic: 2.0, past_negative: 2.2 };
-
-function radarPoint(i, v, cx, cy, R) {
-  const ang = (-90 + i * 72) * Math.PI / 180;
-  const r = (Math.max(0, Math.min(5, v || 0)) / 5) * R;
-  return [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
-}
-function polygonPoints(vals, cx, cy, R) {
-  return vals.map((v, i) => radarPoint(i, v, cx, cy, R).map(n => n.toFixed(1)).join(',')).join(' ');
-}
-
-function renderRadarSVG(record) {
-  const size = 300, cx = size / 2, cy = size / 2 + 4, R = 100;
-  const rings = [1, 2, 3, 4, 5].map(v =>
-    `<polygon points="${polygonPoints(RADAR_AXES.map(() => v), cx, cy, R)}" fill="none" stroke="#ece9e1" stroke-width="1"/>`
-  ).join('');
-  const axes = RADAR_AXES.map((a, i) => {
-    const [x, y] = radarPoint(i, 5, cx, cy, R);
-    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#ece9e1" stroke-width="1"/>`;
+// Сдвиг с прошлого раза — направление словами, без цифр. Прошлого нет — так и
+// говорим: сравнить пока не с чем. Без упрёка и без обещаний.
+function shiftRows(record) {
+  if (!shiftPrev) return `<div class="first-point">${FIRST_POINT}</div>`;
+  return LINES.map(l => {
+    const now = record[l.key], was = shiftPrev[l.key];
+    const word = (now === null || now === undefined || was === null || was === undefined)
+      ? 'спрашиваем впервые'
+      : (now > was ? 'выше, чем в прошлый раз'
+      : (now < was ? 'ниже, чем в прошлый раз' : 'как в прошлый раз'));
+    return `<div class="result-row"><div class="result-name">${l.label}</div><div class="shift-word">${word}</div></div>`;
   }).join('');
-  const labels = RADAR_AXES.map((a, i) => {
-    const [x, y] = radarPoint(i, 6.0, cx, cy, R);
-    const anchor = Math.abs(x - cx) < 10 ? 'middle' : (x < cx ? 'end' : 'start');
-    const y0 = y - (a.label.length - 1) * 6;
-    const tspans = a.label.map((l, li) => `<tspan x="${x.toFixed(1)}" dy="${li === 0 ? 0 : 12}">${l}</tspan>`).join('');
-    return `<text x="${x.toFixed(1)}" y="${y0.toFixed(1)}" font-size="11" fill="#666" text-anchor="${anchor}">${tspans}</text>`;
-  }).join('');
-  const optPts = polygonPoints(RADAR_AXES.map(a => OPTIMAL[a.key]), cx, cy, R);
-  const myPts = polygonPoints(RADAR_AXES.map(a => record[a.key]), cx, cy, R);
-  const dots = RADAR_AXES.map((a, i) => {
-    const [x, y] = radarPoint(i, record[a.key], cx, cy, R);
-    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${a.color}"/>`;
-  }).join('');
-  return `
-    <svg viewBox="0 0 ${size} ${size}" width="100%" style="max-width:330px;display:block;margin:0 auto;">
-      ${rings}${axes}
-      <polygon points="${optPts}" fill="none" stroke="#b8541a" stroke-width="1.5" stroke-dasharray="4 4"/>
-      <polygon points="${myPts}" fill="rgba(26,26,26,0.10)" stroke="#1a1a1a" stroke-width="2"/>
-      ${dots}${labels}
-    </svg>`;
 }
 
-function renderTrendSVG(recs) {
-  if (recs.length < 2) return '';
-  const W = 320, H = 180, padL = 20, padR = 8, padT = 10, padB = 22;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const n = recs.length;
-  const xFor = i => padL + (i / (n - 1)) * plotW;
-  const yFor = v => padT + plotH - ((Math.max(1, Math.min(5, v)) - 1) / 4) * plotH;
-  const grid = [1, 2, 3, 4, 5].map(v => {
-    const y = yFor(v).toFixed(1);
-    return `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#f0ede6" stroke-width="1"/><text x="2" y="${(yFor(v) + 3).toFixed(1)}" font-size="9" fill="#bbb">${v}</text>`;
+// «Твои ответы» — утверждение и выбранный вариант, его собственными словами.
+function answerRows() {
+  return QUESTIONS.map((q, i) => {
+    const opt = SCALE.find(s => s.value === state.answers['q' + (i + 1)]);
+    if (!opt) return '';
+    return `<div class="ans-row"><span class="ans-q">${q}</span><span class="ans-a">${opt.label}</span></div>`;
   }).join('');
-  const lines = RADAR_AXES.map(a => {
-    const pts = recs.map((r, i) => (r[a.key] == null ? null : `${xFor(i).toFixed(1)},${yFor(r[a.key]).toFixed(1)}`)).filter(Boolean).join(' ');
-    const dots = recs.map((r, i) => r[a.key] == null ? '' : `<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(r[a.key]).toFixed(1)}" r="2.5" fill="${a.color}"/>`).join('');
-    return `<polyline points="${pts}" fill="none" stroke="${a.color}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
-  }).join('');
-  const dlabel = r => new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
-  const dates = `<text x="${padL}" y="${H - 5}" font-size="9" fill="#999">${dlabel(recs[0])}</text><text x="${W - padR}" y="${H - 5}" font-size="9" fill="#999" text-anchor="end">${dlabel(recs[n - 1])}</text>`;
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:360px;display:block;margin:8px auto;">${grid}${lines}${dates}</svg>`;
-}
-
-function chartLegend() {
-  return `<div class="legend">${RADAR_AXES.map(a =>
-    `<span class="legend-item"><span class="legend-dot" style="background:${a.color}"></span>${a.label.join(' ')}</span>`
-  ).join('')}</div>`;
-}
-
-// Слить текущий замер с историей из Supabase (текущий побеждает по дате), новые первыми
-function mergeHistory(record, hist) {
-  const out = [record, ...hist.filter(r => (r.checkin_date || '').slice(0, 10) !== (record.checkin_date || '').slice(0, 10))];
-  return out.sort((a, b) => (b.completed_at || b.checkin_date || '').localeCompare(a.completed_at || a.checkin_date || ''));
 }
 
 function renderResult(record) {
   const syncBlock = state.syncStatus
     ? `<p class="sync-status${state.syncStatus === 'error' ? ' error' : ''}">${state.syncMessage}</p>`
     : '';
-
-  const rowsHtml = SCALE_ORDER.map(key => {
-    const m = SCALE_META[key];
-    const v = record[key];
-    const ver = verdict(key, v);
-    const barCls = m.kind === 'pos' ? 'bar-pos' : 'bar-neg';
-    return `
-      <div class="result-need">
-        <div class="result-need-title">${m.title}</div>
-        <div class="result-need-verdict ${ver.cls}">${ver.text}</div>
-        <div class="result-need-row">
-          <div class="result-need-bar">
-            <div class="result-need-bar-fill ${barCls}" style="width:${barWidth(v)}%"></div>
-            <div class="result-need-bar-target" style="left:${barWidth(m.target)}%"></div>
-          </div>
-          <span class="result-need-val">${v ?? '—'}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const allRecords = mergeHistory(record, history);
-  const chronological = allRecords.slice().reverse();  // старые слева
-
-  const radarCard = `
-    <div class="chart-card">
-      <div class="chart-title">Профиль времени</div>
-      <div class="chart-sub">Сплошная линия — ты. Оранжевый пунктир — сбалансированный профиль (Зимбардо).</div>
-      ${renderRadarSVG(record)}
-      ${chartLegend()}
-    </div>`;
-
-  const trendCard = chronological.length >= 2 ? `
-    <div class="chart-card">
-      <div class="chart-title">Динамика по замерам</div>
-      <div class="chart-sub">Как менялись пять шкал от замера к замеру.</div>
-      ${renderTrendSVG(chronological)}
-      ${chartLegend()}
-    </div>` : '';
-
+  const answers = answerRows();
   app.innerHTML = `
-    <h1>Твой профиль времени</h1>
-    <p class="lead">Запись от ${new Date(record.completed_at).toLocaleString('ru-RU', {dateStyle:'long', timeStyle:'short'})}</p>
+    <h1>${PAGE_TITLE}</h1>
+    <div class="sub">Замер пройден. Следующий — через квартал.</div>
+    <div class="frame">${PAGE_FRAME}</div>
+    <div class="res-h">С прошлым разом</div>
+    <div class="result-card">${shiftRows(record)}</div>
+    ${answers ? `<div class="res-h">Твои ответы</div><div class="result-card">${answers}</div>` : ''}
+    <p class="note">${WEATHER_TEXT}</p>
     ${syncBlock}
-    ${radarCard}
-    <div class="result-card">${rowsHtml}</div>
-    <p class="note">Шкала 1.0–5.0. Чёрная риска — где значение должно быть в сбалансированном профиле (Зимбардо). Зелёные шкалы тянем вверх, оранжевые — вниз. Это срез момента, а не приговор.</p>
-    ${trendCard}
-    ${allRecords.length > 1 ? `
-      <h2>Все замеры</h2>
-      <div>${renderHistoryList(allRecords)}</div>
-    ` : '<p class="note">Это твой первый замер. Возвращайся раз в квартал — увидишь динамику в графике выше.</p>'}
     <div class="actions">
       <button class="secondary" onclick="renderWelcome()">На главную</button>
+      ${history.length ? '<button class="secondary" onclick="showHistory()">Прошлые замеры</button>' : ''}
       ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
     </div>
   `;
   updateProgress();
 }
 
+// Прошлые замеры — только даты. Цифры туда не возвращаются: сравнение человек
+// читает словами на экране свежего замера.
 function renderHistoryList(records) {
   return records.map(r => {
     const d = new Date(r.completed_at || r.checkin_date).toLocaleDateString('ru-RU', {day:'2-digit', month:'short', year:'numeric'});
-    const fmt = v => v === null || v === undefined ? '—' : Number(v).toFixed(2);
-    return `
-      <div class="history-row">
-        <div class="history-date">${d}</div>
-        <div class="history-pills">
-          <div>Будущее: ${fmt(r.future)} · Гедон.: ${fmt(r.present_hedonistic)} · Фатал.: ${fmt(r.present_fatalistic)}</div>
-          <div>Поз. прошлое: ${fmt(r.past_positive)} · Нег. прошлое: ${fmt(r.past_negative)}</div>
-        </div>
-      </div>
-    `;
+    return `<div class="history-row">${d}</div>`;
   }).join('');
 }
 
 function showHistory() {
+  state.screen = 'history';
   app.innerHTML = `
-    <h1>История замеров</h1>
-    <p class="lead">Все твои замеры временной перспективы.</p>
+    <h1>Прошлые замеры</h1>
+    <p class="lead">Даты, когда этот замер был пройден. Сравнение с прошлым разом — на экране свежего замера.</p>
     ${history.length ? renderHistoryList(history) : '<div class="empty">Замеров пока нет.</div>'}
     <div class="actions"><button class="secondary" onclick="renderWelcome()">На главную</button></div>
   `;
@@ -577,7 +468,10 @@ function prev() {
 async function finish() {
   state.screen = 'result';
   const record = computeRecord();
+  // Прошлый заход — до того, как свежий станет прошлым.
+  shiftPrev = pickPrev(record);
   try { localStorage.setItem(STORAGE_KEY + '_last', JSON.stringify(record)); } catch (e) {}
+  try { localStorage.setItem(PREV_KEY, JSON.stringify(record)); } catch (e) {}
   sendToBot(record);
   renderResult(record);
   loadHistoryFromSupabase().then(h => {
