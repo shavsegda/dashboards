@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Как ты?</title>
+<title>Что со мной?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,7 +21,6 @@
   --graphite-08: rgba(26,26,26,0.08);
   --terracotta: #B85C38;
   --terracotta-tint: rgba(184,92,56,0.08);
-  --alert: #B91C1C;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -30,60 +29,62 @@
 html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body { min-height: 100vh; }
 
-main { max-width: 560px; margin: 0 auto; padding: 28px 20px 44px; }
-h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 8px; }
-.lead { font-size: 15px; color: var(--graphite-65); margin-bottom: 20px; }
+/* Безопасные зоны Телеграма: без них верх уезжает под вырез, а низ под панель */
+main {
+  max-width: 560px; margin: 0 auto;
+  padding-top: calc(28px + var(--tg-content-safe-area-inset-top, 0px));
+  padding-bottom: calc(44px + var(--tg-safe-area-inset-bottom, 0px));
+  padding-left: calc(20px + var(--tg-safe-area-inset-left, 0px));
+  padding-right: calc(20px + var(--tg-safe-area-inset-right, 0px));
+}
+h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 22px; }
 .note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
 
-/* Заголовок раздела: моно + капс, как во всей дизайн-системе */
-.sec { margin-top: 30px; }
-.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
-.sec-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
-.sec-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
-.sec-empty { padding: 14px 0; font-size: 14px; color: var(--graphite-50); }
+/* Наблюдение — главное на экране. Отдаём раньше, чем просим */
+.obs { margin-bottom: 26px; }
+.obs-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta); padding-bottom: 8px; border-bottom: 1px solid var(--terracotta); }
+.obs-text { font-size: 19px; line-height: 1.4; padding-top: 14px; }
 
-/* Первый экран — то, что пора. Рамка терракотой: видно, не заходя в раздел */
-.sec.urgent .sec-head { border-bottom-color: var(--terracotta); }
-.sec.urgent .sec-name { color: var(--terracotta); }
+/* Честная строка, когда данных нет или просьбы нет */
+.honest { font-size: 17px; line-height: 1.45; margin-bottom: 22px; }
+.honest .quiet { display: block; font-size: 15px; color: var(--graphite-65); margin-top: 8px; }
+
+/* Просьба — ровно одна */
+.ask-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
 
 /* Карточка замера */
 .card { padding: 15px 0; border-bottom: 1px solid var(--graphite-08); }
 .card-open { display: block; text-decoration: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .card-name { font-size: 16px; font-weight: 500; }
 .card-open:hover .card-name { color: var(--terracotta); }
 .card-sub { font-size: 13px; color: var(--graphite-65); margin-top: 3px; }
-.card-when { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); margin-top: 6px; }
-.card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 9px; }
-.card-size { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); margin-left: auto; }
+.card-when { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); margin-top: 6px; }
+.card-size { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); margin-top: 9px; }
+.ask .card { border-bottom: none; }
+.ask .card-name { font-size: 20px; }
 
-/* Метка свежести */
-.badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 8px; white-space: nowrap; border: 1px solid var(--graphite-15); color: var(--graphite-50); }
-.badge.due { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
-.badge.never { border-color: var(--graphite-30); color: var(--graphite-75); }
-.badge.fresh { border-color: var(--graphite-15); color: var(--graphite-50); }
-.badge.unknown { border-style: dashed; color: var(--graphite-30); }
+/* Полный список — за одним нажатием */
+.all { margin-top: 30px; border-top: 1px solid var(--graphite-15); }
+.all > summary { list-style: none; cursor: pointer; padding: 16px 0; font-size: 15px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+.all > summary::-webkit-details-marker { display: none; }
+.all > summary::after { content: " →"; color: var(--graphite-30); }
+.all[open] > summary::after { content: " ↑"; }
+.all > summary:hover { color: var(--terracotta); }
+.all-lead { font-size: 14px; color: var(--graphite-65); margin-bottom: 6px; }
 
-/* Метка контейнера жизни — она же кнопка фильтра */
-.tag { font-family: var(--font-mono); font-size: 11px; padding: 4px 9px; border: 1px solid var(--graphite-15); background: transparent; color: var(--graphite-65); cursor: pointer; font-family: var(--font-mono); -webkit-tap-highlight-color: transparent; }
-.tag:hover { border-color: var(--terracotta); color: var(--terracotta); }
-.tag.on { border-color: var(--terracotta); background: var(--terracotta); color: var(--paper); }
-
-/* Панель фильтра */
-.filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.filter .tag.zero { color: var(--graphite-30); border-style: dashed; }
-.filter-note { font-size: 12px; color: var(--graphite-50); margin-bottom: 4px; }
-
-.banner { border: 1px solid var(--terracotta); background: var(--terracotta-tint); padding: 14px 16px; margin-bottom: 20px; font-size: 14px; }
-.banner strong { font-weight: 500; }
-.calm { border: 1px solid var(--graphite-15); padding: 16px; margin-bottom: 20px; font-size: 15px; }
+/* Область жизни — заголовок группы */
+.area { margin-top: 26px; }
+.area-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
+.area-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
+.area-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
 
 /* Замер, который проходится в разговоре с ботом, а не в мини-аппе */
-.chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; display: none; }
-.chat.open { display: block; }
+.chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; }
 .chat-phrase { font-family: var(--font-mono); font-size: 14px; padding: 9px 11px; background: var(--stone); word-break: break-word; }
 .chat-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .chat-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
+/* То же самое одной строкой — для списка, где карточек два десятка */
+.chat-line { font-size: 12px; color: var(--graphite-50); margin-top: 6px; }
 button.act, a.act { display: inline-block; background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; text-decoration: none; }
 button.act:hover, a.act:hover { background: var(--terracotta); }
 button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 10px 16px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); }
@@ -93,6 +94,7 @@ button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); 
 
 @media (max-width: 380px) {
   h1 { font-size: 26px; }
+  .obs-text { font-size: 17px; }
   .card-name { font-size: 15px; }
 }
 </style>
@@ -108,38 +110,32 @@ button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); 
 
 // ---- Контейнеры жизни ----
 // Закрытый список из семи, перенос из bot.py (LIFE_CONTAINERS) один в один.
-// Порядок тот же: он же порядок чипов фильтра.
 var LIFE_CONTAINERS = ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"];
 
-// ---- Ритмы ----
-// Разделы по сроку. «Реже» — медленное состояние: анализы и «свою жизнь
-// живёшь» идут раз в полгода (FR-002e). «Раз в год» добавился вместе с годовым
-// ритмом: держать годовой вопрос в месячном замере значит спрашивать его мимо
-// его же окна.
-//
-// Граница между «Как ты?» и «Как я устроен» идёт НЕ по скорости, а по
-// тому, что замер спрашивает. Здесь состояние: «как мне это сейчас». Там
-// структура: «из чего я устроен». Смешивать состояния и структуры — главная
-// ошибка в измерении человека (FR-002a, FR-002b, FR-002f).
-var RHYTHMS = [
-  { id: "day",     name: "День",     sub: "каждый день" },
-  { id: "week",    name: "Неделя",   sub: "раз в неделю" },
-  { id: "month",   name: "Месяц",    sub: "раз в месяц" },
-  { id: "quarter", name: "Квартал",  sub: "раз в квартал" },
-  { id: "rare",    name: "Реже",     sub: "раз в полгода" },
-  // Шестой раздел появился вместе с годовым ритмом: у вопроса про алкоголь
-  // окно двенадцать месяцев, и в месячном замере он стоял мимо своего окна.
-  { id: "year",    name: "Раз в год", sub: "раз в год" }
-];
+// Порядок областей жизни на экране (007, FR-010). Тот же набор, что выше, но
+// свой порядок: список читается сверху вниз и начинается с себя.
+// Проверка следит, чтобы это была та же семёрка, а не новая таксономия.
+var AREA_ORDER = ["Я сам", "Тело", "Семья", "Круг", "Работа", "Деньги", "Время на себя"];
 
-// Разовое живёт отдельной строкой, не внутри ритма: пересдавать нечего.
-var ONCE_SECTION = { id: "once", name: "Один раз", sub: "пока не заполнено" };
+// ---- Ритмы ----
+// Сроки замеров. Человеку они больше не показываются: он не приходит с
+// периодом, он приходит с вопросом про себя (007, «Что убирается как шум»).
+// Список остаётся как перенос из bot.py — по нему проверка сверяет поле
+// `section` каждой карточки с реестром бота. Это служебные данные, не экран.
+var RHYTHMS = [
+  { id: "day",     name: "День",     sub: "сутки" },
+  { id: "week",    name: "Неделя",   sub: "семь дней" },
+  { id: "month",   name: "Месяц",    sub: "тридцать дней" },
+  { id: "quarter", name: "Квартал",  sub: "тринадцать недель" },
+  { id: "rare",    name: "Реже",     sub: "полгода" },
+  { id: "year",    name: "Раз в год", sub: "двенадцать месяцев" }
+];
 
 // ---- Реестр замеров ----
 // Перенос из bot.py, COVERAGE_MAP: замеры состояния, список из FR-002a.
 // Поля key / label / days взяты БУКВАЛЬНО из COVERAGE_MAP — их сверяет
 // отдельная проверка. Каталог ничего не добавляет от себя: новых замеров нет,
-// новых вопросов нет, сводных баллов нет (конституция, принцип IV).
+// новых вопросов нет, сводных чисел нет (конституция, принцип IV).
 //
 // Чего здесь СОЗНАТЕЛЬНО нет: level, ztpi, stressrisk и все блоки паспорта.
 // Это замеры структуры — стиль совладания, риск-профиль, временная
@@ -147,13 +143,13 @@ var ONCE_SECTION = { id: "once", name: "Один раз", sub: "пока не з
 // живут за кнопкой «🪞 Как я устроен» (FR-002b, FR-002f).
 //
 //   key        — ключ блока в таблице passport
-//   label      — название, как его видит человек в боте
-//   what       — на какой вопрос отвечает (пятое поле COVERAGE_MAP)
+//   label      — название, как его видит человек
+//   what       — что это даст, одной строкой (пятое поле COVERAGE_MAP)
 //   group      — группа из COVERAGE_MAP: Состояние / Пара / Группа
 //   days       — срок годности в днях, null — разовый
-//   section    — в каком из четырёх разделов стоит карточка
-//   containers — метка контейнера жизни, одна или две (FR-020, FR-021)
-//   size       — сколько вопросов; посчитано по самим замерам, не придумано
+//   section    — срок из реестра бота; служебное поле, на экране его нет
+//   containers — области жизни, одна или несколько (FR-020, FR-021)
+//   size       — честная длина; посчитано по самим замерам, не придумано
 //   url        — адрес мини-аппа; перенос из констант *_MINI_APP_URL в bot.py
 //   phrase     — точный текст кнопки бота, если замер проходится в разговоре
 //   cond       — условие показа: "clinical" — только когда сработал недельный
@@ -161,9 +157,8 @@ var ONCE_SECTION = { id: "once", name: "Один раз", sub: "пока не з
 //                сказал, что команды нет (приходит `tm=0`)
 //   once       — разовый: заполнен — карточка уходит (FR-010)
 //
-// Названия карточек — по СОДЕРЖАНИЮ, а не по сроку (007, FR-011). Человек не
-// приходит с периодом, он приходит с вопросом про себя. В `bot.py` те же
-// карточки пока называются по сроку — расхождение сознательное.
+// Названия карточек — по СОДЕРЖАНИЮ, а не по сроку (007, FR-011). В `bot.py`
+// те же карточки пока называются по сроку — расхождение сознательное.
 var REGISTRY = [
   {
     key: "state_day", label: "Тонус и сон", group: "Состояние", days: 1, section: "day",
@@ -232,7 +227,7 @@ var REGISTRY = [
     phrase: "👥 Встреча форум-группы"
   },
   {
-    // Разовый: стоит отдельной строкой и уходит, как только заполнен (FR-010).
+    // Разовый: уходит, как только заполнен (FR-010).
     key: "pair_context", label: "Про нас", group: "Пара", days: null, section: "once",
     what: "сколько вы вместе, дети, быт и что давит снаружи",
     containers: ["Семья"],
@@ -310,7 +305,7 @@ var REGISTRY = [
     url: "https://shapovalov-aleksey.ru/state-needs/app.html"
   },
   {
-    // Первый замер в контейнере «Работа». Условная наоборот: показывается,
+    // Первый замер в области «Работа». Условная наоборот: показывается,
     // пока человек прямо не сказал, что команды нет (004, FR-015).
     key: "state_team", label: "Психобезопасность команды", group: "Состояние",
     days: 91, section: "quarter",
@@ -357,10 +352,82 @@ var REGISTRY = [
 // множеств двух кнопок было пустым (FR-002f).
 var NOT_HERE = ["level", "ztpi", "stressrisk"];
 
-// ---- Свежесть ----
-// Считается по СУТКАМ, а не по часам: разница часовых поясов не важна
-// (пограничный случай в спеке). Сутки берём по UTC — так же, как бот
-// группирует точки в базе.
+// ---- Наблюдение и просьба ----
+// Их обе присылает бот параметрами адреса. Мини-апп не считает наблюдение сам
+// и не догадывается: базу он читать не может, а догадка — это уже толкование.
+//
+//   o=   текст наблюдения, urlencoded, до 400 символов
+//   ask= ключ ровно одной предложенной карточки
+//
+// Нет `o` — говорим честно, что пока ничего не знаем.
+// Нет `ask` — просьбы нет, говорим, когда заглянуть.
+
+var OBS_LIMIT = 400;
+
+/**
+ * Текст наблюдения к показу. Показывается КАК ЕСТЬ: ни слова от мини-аппа.
+ * Пусто или пробелы — значит наблюдения нет, а не «пустое наблюдение».
+ * Длиннее предела — режем: контракт с ботом 400 символов, и рвать вёрстку
+ * длинным текстом ни к чему.
+ */
+function parseObservation(raw) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (!s) return null;
+  return s.length > OBS_LIMIT ? s.slice(0, OBS_LIMIT) : s;
+}
+
+/**
+ * Карточка просьбы по ключу от бота. Ключа нет среди видимых карточек — значит
+ * просьбы нет. Ни пустой рамки, ни подмены на «похожую»: догадок не строим.
+ */
+function pickAsk(cards, key) {
+  var k = String(key == null ? "" : key).trim();
+  if (!k) return null;
+  for (var i = 0; i < cards.length; i++) {
+    if (cards[i].key === k) return cards[i];
+  }
+  return null;
+}
+
+/**
+ * Какой из четырёх экранов собирать. Два параметра, два состояния у каждого:
+ *   observation_ask  — есть наблюдение и есть просьба
+ *   observation_only — есть наблюдение, просьбы нет: сказать, когда заглянуть
+ *   first_step       — наблюдения нет: сказать честно и предложить первый шаг
+ *   quiet            — нет ни того, ни другого
+ */
+function screenState(obs, ask) {
+  if (obs && ask) return "observation_ask";
+  if (obs) return "observation_only";
+  if (ask) return "first_step";
+  return "quiet";
+}
+
+/**
+ * Разложить карточки по областям жизни (007, FR-010).
+ *
+ * Карточка попадает в КАЖДУЮ свою область, а не в одну главную: «Восемь
+ * фактов» правда спрашивают про все семь, и человек, открывший «Работа»,
+ * должен увидеть всё, чем эту область можно померить. Повтор тут честнее
+ * выбора «главной» области за человека.
+ *
+ * Пустая область не показывается вовсе: строка «тут для тебя ничего нет»
+ * пользы человеку не даёт, это карта покрытия для владельца.
+ */
+function byArea(cards) {
+  return AREA_ORDER.map(function (area) {
+    return {
+      area: area,
+      cards: cards.filter(function (c) {
+        return (c.containers || []).indexOf(area) >= 0;
+      })
+    };
+  }).filter(function (g) { return g.cards.length > 0; });
+}
+
+// ---- Когда замер был ----
+// Считается по СУТКАМ, а не по часам: разница часовых поясов не важна.
+// Сутки берём по UTC — так же, как бот группирует точки в базе.
 function utcMidnight(iso) {
   var d = new Date(iso);
   if (isNaN(d.getTime())) return null;
@@ -374,16 +441,17 @@ function daysBetween(fromISO, nowISO) {
 }
 
 /**
- * Метка свежести одного замера.
+ * Что известно про один замер: когда он был и не вышел ли срок.
  *
- * Четыре состояния, а не три: «неизвестно» — это когда даты не приехали вовсе.
- * Смешивать «неизвестно» с «не проходил» нельзя: получится врать человеку
- * в минус (конституция, «три состояния там, где данных может не быть»).
+ * Человеку из этого показывается ТОЛЬКО «когда был». Разница между «ни разу»
+ * и «даты не приехали» служебная: человеку в обоих случаях одно — можно
+ * пройти (007, «Что убирается как шум»). Само состояние остаётся внутри: по
+ * нему уходит из списка разовая карточка, которую уже заполнили.
  *
  * @param lastISO  дата последнего замера или null
  * @param ttlDays  срок годности в днях, null — разовый замер
  * @param nowISO   сейчас
- * @param known    приехали ли данные о свежести вообще
+ * @param known    приехали ли даты вообще
  */
 function freshness(lastISO, ttlDays, nowISO, known) {
   if (known === false) return { state: "unknown", daysAgo: null, overdue: null };
@@ -397,13 +465,9 @@ function freshness(lastISO, ttlDays, nowISO, known) {
   if (ttlDays === null || ttlDays === undefined) {
     return { state: "fresh", daysAgo: d, overdue: null };
   }
-  // Граница ровно как у бота: `days >= shelf` — уже пора.
+  // Граница ровно как у бота: `days >= shelf` — срок вышел.
   return { state: d >= ttlDays ? "due" : "fresh", daysAgo: d, overdue: d - ttlDays };
 }
-
-var BADGE_TEXT = { never: "не проходил", fresh: "свежее", due: "пора", unknown: "неизвестно" };
-
-function badgeText(state) { return BADGE_TEXT[state] || BADGE_TEXT.unknown; }
 
 /** «сегодня» · «9 дн. назад» · «3 мес назад» — словами бота, чтобы совпадало. */
 function agoText(daysAgo) {
@@ -438,9 +502,9 @@ function visibleCards(registry, opts) {
 }
 
 /**
- * Собрать карточки со свежестью. lastDates — {ключ: ISO-дата}.
+ * Собрать карточки и добавить к ним, когда замер был. lastDates — {ключ: ISO}.
  * Разовая карточка, которую уже заполнили, из списка уходит: спрашивать нечего
- * (FR-010). Пока свежесть неизвестна — остаётся, иначе мы бы её прятали зря.
+ * (FR-010). Пока даты неизвестны — остаётся, иначе мы бы её прятали зря.
  */
 function buildCards(registry, lastDates, nowISO, known) {
   var d = lastDates || {};
@@ -450,92 +514,21 @@ function buildCards(registry, lastDates, nowISO, known) {
       key: r.key, label: r.label, what: r.what, group: r.group, days: r.days,
       section: r.section, containers: r.containers, size: r.size,
       url: r.url, phrase: r.phrase, after: r.after, once: r.once,
-      state: f.state, daysAgo: f.daysAgo, overdue: f.overdue
+      state: f.state, daysAgo: f.daysAgo
     };
   }).filter(function (c) {
     return !(c.once && c.state === "fresh");
   });
 }
 
-/**
- * Фильтр по контейнеру жизни. null — фильтра нет, список полный (FR-023).
- * Отдаёт только свои карточки: двухметочный замер попадает в оба контейнера.
- */
-function filterByContainer(cards, container) {
-  if (!container) return cards.slice();
-  return cards.filter(function (c) {
-    return (c.containers || []).indexOf(container) >= 0;
-  });
-}
-
-/** Сколько замеров в каждом контейнере. Ноль — тоже ответ (FR-024). */
-function containerCounts(cards) {
-  var out = {};
-  LIFE_CONTAINERS.forEach(function (c) { out[c] = 0; });
-  cards.forEach(function (card) {
-    (card.containers || []).forEach(function (c) {
-      if (out[c] !== undefined) out[c] += 1;
-    });
-  });
-  return out;
-}
-
-/** Контейнеры, в которых замеров нет вовсе. Показываются честно, а не молчат. */
-function emptyContainers(cards) {
-  var counts = containerCounts(cards);
-  return LIFE_CONTAINERS.filter(function (c) { return counts[c] === 0; });
-}
-
-/**
- * Первый экран: всё, что пора, сверху самое старое (FR-004).
- * Сначала просроченное — по величине просрочки. Потом «не проходил» — по
- * частоте: чем чаще замер, тем выше. Разовое в конце.
- */
-function needsAttention(cards) {
-  var due = cards.filter(function (c) { return c.state === "due"; })
-    .sort(function (a, b) { return (b.overdue - a.overdue) || (b.daysAgo - a.daysAgo); });
-  var never = cards.filter(function (c) { return c.state === "never"; })
-    .sort(function (a, b) {
-      var ad = a.days === null ? Infinity : a.days;
-      var bd = b.days === null ? Infinity : b.days;
-      return ad - bd;
-    });
-  return due.concat(never);
-}
-
-/** Всё свежее — так и говорим прямо (FR-006). «Неизвестно» за свежесть не сходит. */
-function allFresh(cards) {
-  if (!cards.length) return false;
-  return cards.every(function (c) { return c.state === "fresh"; });
-}
-
-/**
- * Разложить карточки по разделам: пять ритмов и отдельная строка разового.
- * Пустой ритм остаётся в списке, а разовая строка исчезает целиком — раздел
- * «Один раз» без карточки не значит ничего.
- */
-function bySection(cards) {
-  var out = RHYTHMS.map(function (r) {
-    return {
-      id: r.id, name: r.name, sub: r.sub,
-      cards: cards.filter(function (c) { return c.section === r.id; })
-    };
-  });
-  var once = cards.filter(function (c) { return c.section === "once"; });
-  if (once.length) {
-    out.push({ id: ONCE_SECTION.id, name: ONCE_SECTION.name, sub: ONCE_SECTION.sub, cards: once });
-  }
-  return out;
-}
-
-/** Разобрать «tg_121202001» в число. Мусор — null, свежесть читать нечем. */
+/** Разобрать «tg_121202001» в число. Мусор — null, читать нечем. */
 function parseUserId(u) {
   var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
   return m ? m[1] : null;
 }
 
 /**
- * Разобрать параметр свежести от бота: «state_day:2026-08-06,state_week:2026-07-28».
+ * Разобрать даты замеров от бота: «state_day:2026-08-06,state_week:2026-07-28».
  * Бот читает базу сервисным ключом и знает даты, которых мини-апп не видит.
  * Ключа в строке нет — значит замер не проходили ни разу.
  */
@@ -585,27 +578,32 @@ function lastDatesFromRows(rows) {
 // ---- Telegram ----
 var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
-// tg.sendData здесь не вызывается сознательно: он закрывает мини-апп. Каталог
+// tg.sendData здесь не вызывается сознательно: он закрывает мини-апп. Экран
 // ничего не пишет в базу — он только читает и открывает замеры.
 
 var params = new URLSearchParams(window.location.search);
 var USER_ID = parseUserId(params.get("u")) ||
   parseUserId(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
 
-// Флаги от бота:
+// Что присылает бот:
+//   o=…  — текст наблюдения по данным человека, urlencoded, до 400 символов
+//   ask= — ключ одной предложенной карточки
 //   f=…  — даты последних замеров: «ключ:ГГГГ-ММ-ДД» через запятую
 //   p=0  — парной работы нет → парные карточки не показываем (FR-012)
 //   fm=0 — форум-группы нет → «Цифры группы» не показываем
 //   cl=1 — сработал недельный датчик → открываем полную версию (004, FR-010)
 //   tm=0 — человек сказал, что команды нет → прячем карточку команды (FR-015)
-// Флаги ставит бот: он один знает и даты, и признаки. Каталог их не выдумывает.
+//   b=…  — имя бота для ссылок в разговор. Своего имени мини-апп не знает:
+//          Телеграм его не отдаёт. Не приехало — берём запасное.
+// Всё это ставит бот: он один знает и даты, и признаки, и что видно по данным.
+// Мини-апп ничего из этого не выдумывает.
+var OBSERVATION = parseObservation(params.get("o"));
+var ASK_KEY = params.get("ask");
 var FRESH_PARAM = parseFreshParam(params.get("f"));
 var HAS_PAIR = params.get("p") === "0" ? false : true;
 var HAS_FORUM = params.get("fm") === "0" ? false : true;
 var CLINICAL_FIRED = params.get("cl") === "1";
 var HAS_TEAM = params.get("tm") === "0" ? false : true;
-//   b=…  — имя бота для ссылок в разговор. Своего имени мини-апп не знает:
-//          Телеграм его не отдаёт. Не приехало — берём запасное.
 var BOT_NAME = params.get("b") || BOT_FALLBACK;
 
 // ---- Supabase ----
@@ -637,7 +635,6 @@ async function fetchPassportDates() {
 // ---- Состояние экрана ----
 var lastDates = {};
 var dataKnown = false;
-var activeContainer = null;
 var app = document.getElementById("app");
 
 function esc(s) {
@@ -653,31 +650,33 @@ function cardHref(card) {
   return card.url + sep + "v=1&u=tg_" + USER_ID;
 }
 
-function badgeHtml(card) {
-  return '<div class="badge ' + card.state + '">' + esc(badgeText(card.state)) + "</div>";
-}
-
+/**
+ * Когда замер был. Только это, и только если знаем.
+ * Ни «пора», ни «просрочено»: сроки — забота бота, а не упрёк человеку.
+ */
 function whenHtml(card) {
-  if (card.state === "unknown") return '<div class="card-when">когда проходил — не знаю, открой из бота</div>';
-  if (card.state === "never") return "";
-  var ago = agoText(card.daysAgo);
-  if (card.days === null) return '<div class="card-when">заполнено ' + esc(ago) + "</div>";
-  var tail = card.state === "due" ? " · просрочено на " + card.overdue + " дн." : "";
-  return '<div class="card-when">последний замер ' + esc(ago) + esc(tail) + "</div>";
+  if (!card.daysAgo && card.daysAgo !== 0) return "";
+  return '<div class="card-when">последний замер ' + esc(agoText(card.daysAgo)) + "</div>";
 }
 
-function tagsHtml(card) {
-  return (card.containers || []).map(function (c) {
-    return '<button class="tag' + (activeContainer === c ? " on" : "") + '" data-tag="' + esc(c) + '">' + esc(c) + "</button>";
-  }).join("");
-}
-
-function cardHtml(card) {
+/**
+ * Карточка замера. `inList` — карточка стоит в полном списке, а не в просьбе.
+ *
+ * Разница сознательная. В просьбе карточка одна, и ей можно дать всё: подсказку
+ * с фразой, кнопку и запасной путь. В списке карточек два десятка, часть из них
+ * стоит сразу в нескольких областях жизни — там подробная подсказка пять раз
+ * подряд превращается в шум. В списке остаётся одна строка, а сама карточка и
+ * так открывает разговор нажатием.
+ *
+ * Строка «последний замер …» наоборот: она нужна в списке и не нужна в просьбе.
+ * Просьба про то, что будет, а не про то, чего не было.
+ */
+function cardHtml(card, inList) {
   var href = cardHref(card);
   var head =
-    '<div class="card-top"><div class="card-name">' + esc(card.label) + "</div>" + badgeHtml(card) + "</div>" +
+    '<div class="card-name">' + esc(card.label) + "</div>" +
     '<div class="card-sub">' + esc(card.what) + "</div>" +
-    whenHtml(card);
+    (inList ? whenHtml(card) : "");
 
   // Замер разговором открывается ссылкой на переписку со старт-параметром:
   // нажал карточку — бот открылся и сам начал этот замер.
@@ -694,9 +693,11 @@ function cardHtml(card) {
   }
 
   var chat = "";
-  if (chatLink) {
+  if (chatLink && inList) {
+    chat = '<div class="chat-line">идёт разговором — нажми, бот начнёт сам</div>';
+  } else if (chatLink) {
     chat =
-      '<div class="chat open" id="chat-' + esc(card.key) + '">' +
+      '<div class="chat">' +
         '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
         '<div class="chat-acts">' +
           '<a class="act" href="' + esc(chatLink) + '" data-tglink="' + esc(chatLink) + '">Открыть разговор</a>' +
@@ -707,108 +708,90 @@ function cardHtml(card) {
       "</div>";
   }
   if (!href && !card.phrase && card.after) {
-    chat = '<div class="chat open"><div class="chat-hint">Своей кнопки нет: идёт следом за квартальным замером, сразу после него.</div></div>';
+    chat = '<div class="chat-line">идёт следом за квартальным замером, сразу после него</div>';
   }
 
   return '<div class="card">' + openable +
-    '<div class="card-meta">' + tagsHtml(card) + '<div class="card-size">' + esc(card.size) + "</div></div>" +
+    '<div class="card-size">' + esc(card.size) + "</div>" +
     chat + "</div>";
 }
 
-function sectionHtml(sec, shown) {
-  var body = shown.length
-    ? shown.map(cardHtml).join("")
-    : '<div class="sec-empty">' + (activeContainer
-        ? "В этом ритме про «" + esc(activeContainer) + "» замеров нет."
-        : "Здесь пока пусто.") + "</div>";
-  return '<div class="sec">' +
-    '<div class="sec-head"><div class="sec-name">' + esc(sec.name) + " · " + esc(sec.sub) + "</div>" +
-    '<div class="sec-count">' + shown.length + "</div></div>" +
-    body + "</div>";
+/** Блок наблюдения. Текст бота — как есть, вокруг только подпись. */
+function obsHtml(text) {
+  return '<div class="obs">' +
+    '<div class="obs-head">Что видно по твоим ответам</div>' +
+    '<div class="obs-text">' + esc(text) + "</div></div>";
 }
 
-function filterHtml(all) {
-  var counts = containerCounts(all);
-  var chips = '<button class="tag' + (activeContainer === null ? " on" : "") + '" data-tag="">Все</button>';
-  chips += LIFE_CONTAINERS.map(function (c) {
-    var zero = counts[c] === 0 ? " zero" : "";
-    var on = activeContainer === c ? " on" : "";
-    return '<button class="tag' + zero + on + '" data-tag="' + esc(c) + '">' + esc(c) + " " + counts[c] + "</button>";
-  }).join("");
+/** Первый экран: сначала отдали, потом попросили. И попросили одно. */
+function firstScreenHtml(obs, ask) {
+  var state = screenState(obs, ask);
+  var out = "";
 
-  var empties = emptyContainers(all);
-  var note = empties.length
-    ? '<div class="filter-note">Пусто: ' + empties.map(esc).join(" · ") +
-      ". Замеров про эти области жизни нет вовсе — не спрятаны, а не сделаны.</div>"
-    : "";
-  return note + '<div class="filter">' + chips + "</div>";
+  if (state === "observation_ask" || state === "observation_only") {
+    out += obsHtml(obs);
+  } else {
+    out += '<div class="honest">Про тебя я пока ничего не знаю.';
+    if (state === "quiet") {
+      out += '<span class="quiet">Просьбы сейчас тоже нет. Загляни через неделю ' +
+        "— или открой список ниже и выбери сам.</span>";
+    }
+    out += "</div>";
+  }
+
+  if (state === "observation_ask") {
+    out += '<div class="ask"><div class="ask-head">Чтобы сказать точнее, не хватает одного</div>' +
+      cardHtml(ask, false) + "</div>";
+  } else if (state === "first_step") {
+    out += '<div class="ask"><div class="ask-head">Начни с этого — оно открывает больше всего</div>' +
+      cardHtml(ask, false) + "</div>";
+  } else if (state === "observation_only") {
+    out += '<div class="honest">Сейчас ничего не нужно. Загляни через неделю.</div>';
+  }
+
+  return out;
+}
+
+/** Одна область жизни в полном списке. */
+function areaHtml(group) {
+  return '<div class="area">' +
+    '<div class="area-head"><div class="area-name">' + esc(group.area) + "</div>" +
+    '<div class="area-count">' + group.cards.length + "</div></div>" +
+    group.cards.map(function (c) { return cardHtml(c, true); }).join("") +
+    "</div>";
+}
+
+/** Полный список — за одним нажатием, по областям жизни. */
+function allHtml(cards) {
+  return '<details id="all" class="all"><summary>Посмотреть всё</summary>' +
+    '<p class="all-lead">Всё, что можно про себя померить, по областям жизни. ' +
+    "Это не список дел: проходи то, про что самому интересно.</p>" +
+    byArea(cards).map(areaHtml).join("") +
+    '<div class="foot">Одного числа на всё нет и не будет: разные замеры мерят разное, ' +
+    "складывать их — терять то, ради чего мерили." +
+    "<br><br>Здесь только состояние: как тебе сейчас. Из чего ты устроен — личность, нейротип, " +
+    "ценности, уровень мышления, ощущение времени, стресс и риск — за кнопкой " +
+    "«🪞 Как я устроен». Один замер не бывает за двумя дверями.</div>" +
+    "</details>";
 }
 
 function render() {
-  var all = buildCards(visibleCards(REGISTRY, {
-                         hasPair: HAS_PAIR, hasForum: HAS_FORUM,
-                         clinicalFired: CLINICAL_FIRED, hasTeam: HAS_TEAM
-                       }),
-                       lastDates, new Date().toISOString(), dataKnown);
-  var shown = filterByContainer(all, activeContainer);
-
-  var top = "";
-  if (!dataKnown) {
-    top = '<div class="banner"><strong>Не знаю, что ты когда проходил.</strong> ' +
-      'Свежесть считает бот — открой каталог кнопкой «🌤 Как ты?», и метки встанут на место. ' +
-      'Список замеров ниже верный.</div>';
-  } else if (allFresh(all)) {
-    top = '<div class="calm"><strong>Сейчас ничего не нужно.</strong> Все замеры свежие. ' +
-      'Это хороший ответ: возвращайся, когда что-то подойдёт по сроку.</div>';
-  }
-
-  var urgent = needsAttention(shown);
-  var urgentHtml = "";
-  if (dataKnown && urgent.length) {
-    urgentHtml = '<div class="sec urgent">' +
-      '<div class="sec-head"><div class="sec-name">Пора · сверху самое старое</div>' +
-      '<div class="sec-count">' + urgent.length + "</div></div>" +
-      urgent.map(cardHtml).join("") + "</div>";
-  }
-
-  var emptyFilter = (activeContainer && shown.length === 0)
-    ? '<div class="calm">Про «' + esc(activeContainer) + '» замеров нет ни одного. ' +
-      'Это пустой контейнер, а не пропавший раздел: такую область жизни пока нечем мерить.</div>'
-    : "";
-
-  var sections = emptyFilter ? "" : bySection(shown).map(function (sec) {
-    return sectionHtml(sec, sec.cards);
-  }).join("");
+  var cards = buildCards(visibleCards(REGISTRY, {
+                           hasPair: HAS_PAIR, hasForum: HAS_FORUM,
+                           clinicalFired: CLINICAL_FIRED, hasTeam: HAS_TEAM
+                         }),
+                         lastDates, new Date().toISOString(), dataKnown);
+  var ask = pickAsk(cards, ASK_KEY);
 
   app.innerHTML =
-    "<h1>Как ты?</h1>" +
-    '<p class="lead">Подвижный слой: сон, силы, отношения, тело. Здесь не спрашивают — здесь видно, ' +
-    "что подошло по сроку. Каждый замер копится точками, смысл появляется на линии.</p>" +
-    top +
-    filterHtml(all) +
-    urgentHtml +
-    sections +
-    '<div class="foot">Замеров всего ' + all.length + ". Одного балла на всё нет и не будет: разные шкалы " +
-    "мерят разное, складывать их — терять то, ради чего мерили." +
-    "<br><br>Здесь только состояние: как тебе сейчас. Из чего ты устроен — личность, нейротип, " +
-    "ценности, уровень мышления, ощущение времени, стресс и риск — за кнопкой " +
-    "«🪞 Как я устроен». Один замер не бывает за двумя дверями.</div>";
+    "<h1>Что со мной?</h1>" +
+    firstScreenHtml(OBSERVATION, ask) +
+    allHtml(cards);
 
   bind();
 }
 
 function bind() {
-  app.querySelectorAll("[data-tag]").forEach(function (el) {
-    el.addEventListener("click", function (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      var v = el.getAttribute("data-tag");
-      activeContainer = (!v || v === activeContainer) ? null : v;
-      render();
-      window.scrollTo(0, 0);
-    });
-  });
-
   // Ссылка на переписку с ботом. Внутри Телеграма её открывает
   // openTelegramLink — это документированный способ (Bot API 6.1+), мини-апп при
   // этом не закрывается. В браузере ссылка сработает сама, поэтому и href стоит.
@@ -833,7 +816,6 @@ function bind() {
       } catch (e) { fallbackCopy(text, done); }
     });
   });
-
 }
 
 function fallbackCopy(text, done) {
@@ -853,7 +835,8 @@ function fallbackCopy(text, done) {
 
 // ---- Старт ----
 async function start() {
-  // Сначала показываем список — он верен и без сети. Свежесть догоняет.
+  // Сначала показываем экран — наблюдение и просьба уже приехали в адресе.
+  // Даты замеров догоняют: они нужны только полному списку.
   if (FRESH_PARAM) { lastDates = FRESH_PARAM; dataKnown = true; }
   render();
 
@@ -867,9 +850,9 @@ async function start() {
 
 if (!USER_ID) {
   app.innerHTML =
-    "<h1>Как ты?</h1>" +
-    '<p class="lead">Каталог открывается из бота — по кнопке «🌤 Как ты?». Так он знает, чьи это замеры ' +
-    "и что из них подошло по сроку.</p>" +
+    "<h1>Что со мной?</h1>" +
+    '<p class="honest">Этот экран открывается из бота — так он знает, чьи это замеры ' +
+    "и что по ним видно.</p>" +
     '<p class="note">Если открыл ссылку из браузера, вернись в Телеграм.</p>';
 } else {
   start();
