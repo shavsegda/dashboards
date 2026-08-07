@@ -178,6 +178,13 @@ var WEATHER_TEXT = "Это про чувство, а не про количес�
 var WINDOW_TEXT = "Окно: последние семь дней";
 var RESULT_TITLE = "Записал";
 var RESULT_SUB = "Одна точка за неделю";
+// Заголовки экрана отправки. Разведены сознательно: «Записал» человек имеет
+// право увидеть только после ответа сервера, иначе потерянная запись выглядит
+// сделанной («мини-аппы-правила.md», часть 3).
+var SEND_WAIT_TITLE = "Секунду";
+var SEND_WAIT_SUB = "Отправляю замер";
+var SEND_FAIL_TITLE = "Запись не ушла";
+var SEND_FAIL_SUB = "Ответы на месте";
 var EMPTY_TITLE = "Записывать нечего";
 var EMPTY_TEXT = "Ни одного ответа в этот раз — записи нет. Так тоже можно.";
 var INTRO_EXTRA = "";
@@ -493,6 +500,58 @@ function shiftLines(a, f, prev) {
 /** Прошлый заход запоминается как есть. Нужен только для строки «с прошлым разом». */
 function makePrev(a, iso, pk, prev, f) { return defaultPrev(a, iso, pk, prev, f); }
 
+/* ---- Черновик незаконченного замера (дефект 07.08.2026) ----
+ *
+ * Человек ответил на часть вопросов и вышел. Раньше это значило «работы не
+ * было»: в память телефона писались только прошлые РЕЗУЛЬТАТЫ, ради строки
+ * «с прошлым разом». Промежуточные ответы не хранились нигде.
+ *
+ * Черновик — ответы ЭТОГО захода, отложенные после каждого ответа. Он не запись:
+ * в базу отсюда не уходит ничего, запись по-прежнему собирается из `answers`.
+ * И он принадлежит своему периоду: начал недельный замер на прошлой неделе — на
+ * этой это новый замер, а не продолжение.
+ */
+
+/** Сколько дней живёт черновик. Срок — от периода замера, а не одно число на
+ *  всех: недельному незачем лежать полгода, полугодовому мало недели. */
+function draftTtlDays() { return PERIOD_DAYS <= 1 ? 1 : PERIOD_DAYS; }
+
+/** Годен ли черновик: тот же период и не старше срока. Иначе не продолжение. */
+function draftFresh(d, nowIso) {
+  if (!d || typeof d !== "object") return false;
+  if (d.periodKey !== periodKey(nowIso)) return false;
+  var age = (new Date(nowIso).getTime() - new Date(d.savedAt).getTime()) / 86400000;
+  if (!isFinite(age) || age < 0) return false;
+  return age <= draftTtlDays();
+}
+
+/** Есть ли в черновике работа, ради которой его поднимать. Набранная, но не
+ *  отправленная строка — тоже работа: на ней держится вся свободная строка. */
+function draftHasWork(d) {
+  if (!d) return false;
+  return Object.keys(d.a || {}).length > 0 ||
+         Object.keys(d.seen || {}).length > 0 ||
+         String(d.draft || "").trim().length > 0;
+}
+
+/** Первый вопрос, до которого человек не дошёл. Пройденным считается и
+ *  пропущенный: возвращать к нему значит спорить с его решением. */
+function firstUnseenKey(a, f, seen) {
+  var list = visibleSteps(a, f);
+  for (var i = 0; i < list.length; i++) {
+    if (!(seen || {})[list[i].key]) return list[i].key;
+  }
+  return null;
+}
+
+/** Сколько вопросов пройдено и сколько всего. Для строки «ты продолжаешь». */
+function draftProgress(a, f, seen) {
+  var list = visibleSteps(a, f);
+  var done = 0;
+  list.forEach(function (s) { if ((seen || {})[s.key]) done++; });
+  return { done: done, total: list.length };
+}
+
 /* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
 
 // ---- Телеграм ----
@@ -640,6 +699,34 @@ async function recordId(pk) {
 // живут в отдельном объекте `answers`, и он не заполняется из памяти.
 var POINTS_KEY = BLOCK + "_points_" + (USER_ID || "anon");
 
+// Черновик лежит в СВОЕЙ ячейке, отдельно от прошлых точек. Смешать их значит
+// однажды отправить прошлое как свежее — ровно тот дефект, из-за которого
+// появилось правило «в базу только ответы этого захода».
+var DRAFT_KEY = BLOCK + "_draft_" + (USER_ID || "anon");
+
+function loadDraft() {
+  try {
+    var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (!draftFresh(d, new Date().toISOString())) return null;
+    if (!draftHasWork(d)) return null;
+    return d;
+  } catch (e) { return null; }
+}
+
+function saveDraft() {
+  try {
+    var now = new Date().toISOString();
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      periodKey: periodKey(now), savedAt: now,
+      a: answers, seen: seen, key: state.key, draft: state.draft || ""
+    }));
+  } catch (e) {}
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+}
+
 function loadPoints() {
   try {
     var v = JSON.parse(localStorage.getItem(POINTS_KEY) || "[]");
@@ -656,6 +743,9 @@ var prevSaved = prevPoint(POINTS, periodKey(new Date().toISOString()));
 // ---- Состояние экрана ----
 // `answers` — ТОЛЬКО этот заход. Ключ появляется здесь, когда человек ответил.
 var answers = {};
+// Что человек уже прошёл: и отвеченное, и пропущенное. Нужно, чтобы вернуть его
+// на первый НЕпройденный вопрос, а не на тот, который он пропустил сознательно.
+var seen = {};
 var state = { screen: "intro", key: null, sync: "", syncMsg: "", draft: "" };
 var lock = makeSubmitLock();
 var app = document.getElementById("app");
@@ -696,26 +786,71 @@ function renderIntro() {
   var banner = knownExisting
     ? '<div class="banner"><strong>Этот замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — новые ответы заменят прежние, вторая точка не появится.</div>'
     : "";
+  // Начатое не прячем. Тихое восстановление хуже явного: человек увидит
+  // середину замера и не поймёт, чьи это ответы. Поэтому говорим прямо и рядом
+  // же даём выход — начать заново.
+  var draft = loadDraft();
+  var pr = draft ? draftProgress(draft.a || {}, flags, draft.seen || {}) : null;
+  var resume = "";
+  if (draft && pr.done >= pr.total) {
+    resume = '<div class="banner"><strong>Ответы на месте, а запись не ушла.</strong> ' +
+      "Всё, что ты отметил, лежит на телефоне. Можно отправить ещё раз или начать " +
+      "заново — тогда прежние ответы сотрутся.</div>";
+  } else if (draft) {
+    resume = '<div class="banner"><strong>Ты начал этот замер и не закончил.</strong> ' +
+      "Ответы на месте: " + pr.done + " из " + pr.total + ". Можно продолжить с того " +
+      "вопроса, где остановился, или начать заново — тогда прежние ответы сотрутся.</div>";
+  }
+  var buttons = draft
+    ? '<button id="resumeBtn">' +
+        (pr.done >= pr.total ? "Отправить ещё раз" : "Продолжить") + "</button>" +
+      '<button class="secondary" id="startBtn">Начать заново</button>'
+    : '<button id="startBtn">Начать</button>';
   app.innerHTML =
     "<h1>" + esc(CARD_TITLE) + "</h1>" +
     '<div class="sub">' + esc(CARD_SIZE) + "</div>" +
+    resume +
     banner +
     '<p class="lead">' + WHAT_IT_GIVES + "</p>" +
     '<div class="weather">' + WEATHER_TEXT + "</div>" +
     INTRO_EXTRA +
-    '<div class="actions"><button id="startBtn">Начать</button></div>';
+    '<div class="actions">' + buttons + "</div>";
   document.getElementById("startBtn").addEventListener("click", startCard);
+  var rb = document.getElementById("resumeBtn");
+  if (rb) rb.addEventListener("click", function () { continueCard(draft); });
   updateProgress();
 }
 
 function startCard() {
   answers = {};
+  seen = {};
+  state.draft = "";
+  clearDraft();
   state.sync = "";
   state.syncMsg = "";
   var list = visibleSteps(answers, flags);
   if (!list.length) { finish(); return; }
   state.screen = "step";
   state.key = list[0].key;
+  renderStep();
+}
+
+/**
+ * Продолжить начатое. Ответы поднимаются из черновика, открывается первый
+ * вопрос, до которого человек не дошёл. Всё пройдено, а запись не ушла — значит
+ * спрашивать нечего, надо отправлять.
+ */
+function continueCard(d) {
+  if (!d) { startCard(); return; }
+  answers = JSON.parse(JSON.stringify(d.a || {}));
+  seen = JSON.parse(JSON.stringify(d.seen || {}));
+  state.draft = d.draft || "";
+  state.sync = "";
+  state.syncMsg = "";
+  var nk = firstUnseenKey(answers, flags, seen);
+  if (nk === null) { finish(); return; }
+  state.screen = "step";
+  state.key = nk;
   renderStep();
 }
 
@@ -798,7 +933,12 @@ function bindStep(s) {
   });
   var field = document.getElementById("field");
   if (field) {
-    field.addEventListener("input", function () { showEcho(s, field.value); });
+    field.addEventListener("input", function () {
+      showEcho(s, field.value);
+      // Набранное, но не отправленное, — тоже работа человека.
+      state.draft = field.value;
+      saveDraft();
+    });
     showEcho(s, field.value);
   }
   var go = document.getElementById("goStep");
@@ -810,6 +950,8 @@ function bindStep(s) {
     // Пропуск — законный ответ. Ключ не появляется в `answers`, значит в базу
     // он не уедет: пустое поле не данные.
     delete answers[s.key];
+    seen[s.key] = true;
+    saveDraft();
     advance();
   });
   bindOuts();
@@ -845,6 +987,9 @@ function submitField(s) {
 
 function setAnswer(key, v) {
   answers[key] = v;
+  seen[key] = true;
+  // После КАЖДОГО ответа, не в конце. Иначе выход посреди замера стирает всё.
+  saveDraft();
 }
 
 function advance() {
@@ -908,6 +1053,9 @@ async function finish() {
   lock.release();
   if (okWrite) {
     knownExisting = true;
+    // Черновик стираем ТОЛЬКО здесь: пока сервер не ответил, он единственная
+    // копия ответов человека.
+    clearDraft();
     // Память телефона пополняется только ПОСЛЕ ответа сервера. Прошлым разом
     // этот заход станет в следующем периоде, не сейчас.
     var pk = periodKey(completedAt);
@@ -991,8 +1139,10 @@ function renderResult() {
     ? '<p class="status' + (state.sync === "error" ? " error" : "") + '">' + esc(state.syncMsg) + "</p>"
     : "";
   app.innerHTML =
-    "<h1>" + esc(RESULT_TITLE) + "</h1>" +
-    '<div class="sub">' + esc(RESULT_SUB) + "</div>" +
+    "<h1>" + esc(state.sync === "ok" ? RESULT_TITLE
+      : (state.sync === "error" ? SEND_FAIL_TITLE : SEND_WAIT_TITLE)) + "</h1>" +
+    '<div class="sub">' + esc(state.sync === "ok" ? RESULT_SUB
+      : (state.sync === "error" ? SEND_FAIL_SUB : SEND_WAIT_SUB)) + "</div>" +
     '<div class="res-card">' + lines.map(function (t) {
       return '<div class="res-row">' + esc(t) + "</div>";
     }).join("") + "</div>" +

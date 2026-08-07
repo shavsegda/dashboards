@@ -496,6 +496,37 @@ function recapRows(scores) {
   return rows;
 }
 
+/* ---- Черновик незаполненной формы (дефект 07.08.2026) ----
+ *
+ * Человек отметил тонус и настроение, отвлёкся и вышел, не нажав «Записать».
+ * Раньше это значило «работы не было»: в память телефона попадала только
+ * отправленная запись. Черновик — то же поле формы, но отложенное сразу, и
+ * принадлежит он своим суткам.
+ */
+
+// Ритм замера. Одна точка за сутки — значит и черновик живёт сутки.
+var PERIOD_DAYS = 1;
+
+/** Сколько дней живёт черновик. Срок от периода замера, а не одно число на всех. */
+function draftTtlDays() { return PERIOD_DAYS <= 1 ? 1 : PERIOD_DAYS; }
+
+/** Годен ли черновик: те же сутки и не старше срока. */
+function draftFresh(d, nowIso) {
+  if (!d || typeof d !== "object") return false;
+  if (d.dayKey !== utcDayKey(nowIso)) return false;
+  var age = (new Date(nowIso).getTime() - new Date(d.savedAt).getTime()) / 86400000;
+  if (!isFinite(age) || age < 0) return false;
+  return age <= draftTtlDays();
+}
+
+/** Есть ли в черновике хоть одно отмеченное поле. */
+function draftHasWork(d) {
+  var f = (d || {}).form || {};
+  return Object.keys(f).some(function (k) {
+    return f[k] !== null && f[k] !== undefined && f[k] !== "" && f[k] !== "unmarked";
+  });
+}
+
 /* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
 
 // ---- Telegram ----
@@ -639,6 +670,34 @@ function saveLocal(obj) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch (e) {}
 }
 
+// Черновик лежит в СВОЕЙ ячейке. `sutki_v1_*` значит «отправлено и подтверждено
+// сервером», и путать это с «человек начал заполнять» нельзя: тогда потерянная
+// запись выглядела бы сделанной.
+var DRAFT_KEY = "sutki_draft_" + USER_ID;
+
+function loadDraft() {
+  try {
+    var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (!draftFresh(d, new Date().toISOString())) return null;
+    if (!draftHasWork(d)) return null;
+    return d;
+  } catch (e) { return null; }
+}
+
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      dayKey: utcDayKey(new Date().toISOString()),
+      savedAt: new Date().toISOString(),
+      form: collect()
+    }));
+  } catch (e) {}
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+}
+
 // ---- Состояние формы ----
 var todayKey = utcDayKey(new Date().toISOString());
 var local = loadLocal();
@@ -661,6 +720,20 @@ if (localFilledToday && local.form) {
   });
   if (!HAS_GOAL) form.actionMark = null;
 }
+
+// Незаконченный черновик за эти же сутки. Подставляем ПОСЛЕ отправленного: то,
+// что человек отметил только что, важнее того, что он записал утром.
+var draftRestored = false;
+(function () {
+  var d = loadDraft();
+  if (!d) return;
+  Object.keys(form).forEach(function (k) {
+    var v = d.form[k];
+    if (v !== undefined && v !== null && v !== "") form[k] = v;
+  });
+  if (!HAS_GOAL) form.actionMark = null;
+  draftRestored = true;
+})();
 
 var lock = makeSubmitLock();
 var app = document.getElementById("app");
@@ -694,6 +767,12 @@ function renderForm() {
     ? '<div class="banner"><strong>Сутки за сегодня уже заполнены.</strong> Можно исправить — новые значения заменят прежние, вторая точка не появится. Или выйти и оставить как есть.</div>'
     : "";
 
+  // Восстановление говорим вслух. Молча подставить чужие с виду цифры хуже, чем
+  // не подставить: человек не поймёт, откуда они, и не будет им верить.
+  var draftLine = draftRestored
+    ? '<div class="banner"><strong>Черновик за сегодня на месте.</strong> Ты уже что-то отмечал и не нажал «Записать» — подставил, что было. Можно дописать или начать заново.</div>'
+    : "";
+
   var actionBlock = "";
   if (HAS_GOAL) {
     var label = GOAL_ACTION ? esc(GOAL_ACTION) : "ведущее действие";
@@ -713,6 +792,7 @@ function renderForm() {
     "<h1>Сутки</h1>" +
     '<p class="lead">Сон, тонус, настроение, практика. Полминуты — и точка встала на линию.</p>' +
     banner +
+    draftLine +
 
     '<div class="field">' +
       '<div class="field-head"><div class="field-name">Сколько спал</div>' +
@@ -787,6 +867,7 @@ function renderForm() {
 
     '<div class="actions">' +
       '<button class="act" id="submitBtn">' + (knownExisting ? "Исправить" : "Записать") + "</button>" +
+      (draftRestored ? '<button class="ghost" id="dropDraftBtn">Начать заново</button>' : "") +
       (knownExisting && tg ? '<button class="ghost" id="exitBtn">Выйти</button>' : "") +
     "</div>" +
     '<div class="status" id="status"></div>';
@@ -802,6 +883,7 @@ function bindForm() {
       var el = document.getElementById("valSleep");
       el.textContent = hoursLabel(form.sleepHours);
       el.classList.remove("empty");
+      saveDraft();                       // после КАЖДОГО касания, не в конце
     };
     range.addEventListener("input", onRange);
     range.addEventListener("change", onRange);
@@ -816,6 +898,7 @@ function bindForm() {
       row.querySelectorAll(".scale-btn").forEach(function (b) {
         b.classList.toggle("on", parseInt(b.getAttribute("data-v"), 10) === form[name]);
       });
+      saveDraft();
     });
   });
 
@@ -824,6 +907,7 @@ function bindForm() {
       var v = parseInt(el.getAttribute("data-practice"), 10);
       form.practiceMin = (form.practiceMin === v) ? null : v;
       form.eventText = readEventText();
+      saveDraft();
       renderForm();
     });
   });
@@ -834,6 +918,7 @@ function bindForm() {
       app.querySelectorAll("[data-mark]").forEach(function (b) {
         b.classList.toggle("on", b.getAttribute("data-mark") === form.actionMark);
       });
+      saveDraft();
     });
   });
 
@@ -841,6 +926,30 @@ function bindForm() {
   if (btn) btn.addEventListener("click", submit);
   var ex = document.getElementById("exitBtn");
   if (ex) ex.addEventListener("click", closeApp);
+  var dd = document.getElementById("dropDraftBtn");
+  if (dd) dd.addEventListener("click", resetDraft);
+
+  // Поля, у которых своего обработчика не было вовсе: их читал только `collect()`
+  // при отправке. Теперь набранное в них тоже ложится в черновик сразу.
+  ["eventText", "practiceKind", "restingHr", "battery", "hrv",
+   "bed", "wake", "sleepLatency", "awakenings"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", saveDraft);
+    el.addEventListener("change", saveDraft);
+  });
+}
+
+/** Начать заново: черновик стираем, форма пустеет. Отправленное за сегодня, если
+ *  оно было, остаётся — это не оно. */
+function resetDraft() {
+  clearDraft();
+  draftRestored = false;
+  Object.keys(form).forEach(function (k) {
+    form[k] = (typeof form[k] === "string") ? "" : null;
+  });
+  form.actionMark = HAS_GOAL ? "unmarked" : null;
+  renderForm();
 }
 
 function readEventText() {
@@ -926,6 +1035,10 @@ async function submit() {
 
     lastSaved = built.scores;
     saveLocal({ dayKey: dayKey, savedAt: completedAt, form: input });
+    // Черновик стираем ТОЛЬКО здесь: пока сервер не ответил, он единственная
+    // копия того, что человек отметил.
+    clearDraft();
+    draftRestored = false;
     knownExisting = true;
     lock.release();
     renderDone();

@@ -412,11 +412,79 @@ function saveToCloud() {
 }
 
 // === Прогресс прохождения (черновик незаконченного теста) ===
-function saveProgress() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({key: state.key, idx: state.idx, answers: state.answers})); } catch (e) {}
+// Дефект с живого человека 07.08.2026: черновик писался и не читался ни одной
+// строкой. Человек отвечал на часть пунктов, выходил — и возвращался на пустой
+// список, будто ничего не было.
+//
+// Черновик принадлежит своему периоду: начал недельный замер на прошлой неделе —
+// на этой это новый замер, а не продолжение. Срок жизни тоже от периода, а не
+// одно число на всех: недельному незачем лежать полгода.
+const PERIOD_DAYS = 91;
+
+function isoWeekKey(d) {
+  const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y = t.getUTCFullYear();
+  const week = Math.ceil(((t.getTime() - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7);
+  return y + '-W' + (week < 10 ? '0' + week : String(week));
 }
+
+/** Ключ периода замера. Тот же способ, что у страниц-карточек. */
+function periodKey(iso) {
+  const d = new Date(iso);
+  if (PERIOD_DAYS <= 1) return d.toISOString().slice(0, 10);
+  if (PERIOD_DAYS <= 7) return isoWeekKey(d);
+  if (PERIOD_DAYS <= 31) return d.toISOString().slice(0, 7);
+  return d.getUTCFullYear() + '-Q' + (Math.floor(d.getUTCMonth() / 3) + 1);
+}
+
+/** Сколько дней живёт черновик. Срок — от периода замера. */
+function draftTtlDays() { return PERIOD_DAYS <= 1 ? 1 : PERIOD_DAYS; }
+
+/** Годен ли черновик: тот же период и не старше срока. */
+function draftFresh(d, nowIso) {
+  if (!d || typeof d !== 'object') return false;
+  if (d.periodKey !== periodKey(nowIso)) return false;
+  const age = (new Date(nowIso).getTime() - new Date(d.savedAt).getTime()) / 86400000;
+  if (!isFinite(age) || age < 0) return false;
+  return age <= draftTtlDays();
+}
+
+function saveProgress() {
+  try {
+    const now = new Date().toISOString();
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      periodKey: periodKey(now), savedAt: now,
+      key: state.key, idx: state.idx, answers: state.answers
+    }));
+  } catch (e) {}
+}
+
+/** Черновик, который можно предложить продолжить. Чужой период, просрочен, теста
+ *  в замере больше нет или отвечать было нечего — поднимать нечего. */
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (!draftFresh(d, new Date().toISOString())) return null;
+    if (!TESTS.some(t => t.key === d.key)) return null;
+    if (!d.answers || !Object.keys(d.answers).length) return null;
+    return d;
+  } catch (e) { return null; }
+}
+
 function clearProgress() {
   try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+
+/** Первый пункт, на который человек не ответил. Все отвечены — null. */
+function firstUnansweredIdx(key, answers) {
+  const t = getTest(key);
+  if (!t) return null;
+  for (let i = 0; i < t.items.length; i++) {
+    if ((answers || {})[i] === undefined) return i;
+  }
+  return null;
 }
 
 // === Общий флаг тревоги по всем снятым тестам ===
@@ -568,6 +636,7 @@ function renderHub() {
     <div class="sub">Можно ли здесь ошибаться и говорить вслух · 7 утверждений · 2 минуты</div>
     <div class="weather">${WEATHER_TEXT}</div>
     ${alertCard()}
+    ${resumeNote()}
     ${items}
     ${Object.keys(results).length ? '<div class="actions"><button class="secondary" onclick="renderAllResults()">Показать последние результаты</button></div>' : ''}
   `;
@@ -667,9 +736,14 @@ function renderResult(key) {
   const syncBlock = state.sync
     ? `<p class="sync-status${state.sync === 'error' ? ' error' : ''}">${state.syncMsg}</p>`
     : '';
+  // Подзаголовок говорит правду о записи. «Записан» человек имеет право увидеть
+  // только после ответа сервера: иначе потерянная запись выглядит сделанной.
+  const doneSub = skipped ? 'Тест пропущен — записали как есть.' : 'Замер записан. Следующий — через квартал.';
+  const sentSub = state.sync === 'ok' ? doneSub
+    : (state.sync === 'error' ? 'Запись не ушла. Ответы на месте.' : 'Отправляю замер…');
   app.innerHTML = `
     <h1>${t.title}</h1>
-    <div class="sub">${skipped ? 'Тест пропущен — записали как есть.' : 'Замер записан. Следующий — через квартал.'}</div>
+    <div class="sub">${sentSub}</div>
     <div class="band ${r.c === 'warn' ? 'warn' : ''}">${r.band}</div>
     ${skipped ? '' : `
       <div class="res-h">Что ты ответил</div>
@@ -680,6 +754,7 @@ function renderResult(key) {
     <div class="weather">${WEATHER_TEXT}</div>
     ${syncBlock}
     <div class="actions">
+      ${state.sync === 'error' ? `<button onclick="retryStore('${key}')">Записать ещё раз</button>` : ''}
       <button class="secondary" onclick="renderHub()">К списку</button>
       ${tg ? '<button onclick="closeApp()">Закрыть</button>' : ''}
     </div>
@@ -718,7 +793,73 @@ function closeApp() { try { tg.close(); } catch (e) {} }
 
 // === Действия ===
 // Повторный замер — это норма, никаких переспрашиваний перед стартом
+/** Строка про начатое и не законченное. Нечего продолжать — пусто. */
+function resumeNote() {
+  const d = loadProgress();
+  if (!d) return '';
+  const t = getTest(d.key);
+  if (!t) return '';
+  const done = Object.keys(d.answers).length;
+  const left = firstUnansweredIdx(d.key, d.answers) !== null;
+  return `
+    <div class="weather">
+      <strong>${left
+        ? 'Ты начал «' + t.title + '» и не закончил.'
+        : 'Ответы по «' + t.title + '» на месте, а запись не ушла.'}</strong>
+      Отмечено ${done} из ${t.items.length}.
+      ${left
+        ? 'Можно продолжить с того вопроса, где остановился, или начать этот замер заново'
+        : 'Можно отправить ещё раз или начать этот замер заново'} — тогда прежние ответы сотрутся.
+    </div>
+    <div class="actions">
+      <button onclick="resumeTest()">${left ? 'Продолжить' : 'Отправить ещё раз'}</button>
+      <button class="secondary" onclick="dropProgress()">Начать заново</button>
+    </div>`;
+}
+
+/**
+ * Продолжить начатое. Ответы поднимаются из черновика, открывается первый пункт,
+ * до которого человек не дошёл. Все пункты отвечены, а запись не ушла — значит
+ * спрашивать нечего, надо отправлять.
+ */
+function resumeTest() {
+  const d = loadProgress();
+  if (!d) { renderHub(); return; }
+  const t = getTest(d.key);
+  state.key = d.key;
+  state.answers = Object.assign({}, d.answers);
+  state.sync = '';
+  state.syncMsg = '';
+  const idx = firstUnansweredIdx(d.key, state.answers);
+  if (idx === null) {
+    state.idx = t.items.length - 1;
+    state.screen = 'test';
+    finish();
+    return;
+  }
+  state.idx = idx;
+  state.screen = 'test';
+  renderQuestion();
+}
+
+/** Начать этот замер заново: черновик стираем, а не прячем. */
+function dropProgress() {
+  clearProgress();
+  renderHub();
+}
+
+/** Повтор отправки того же замера, теми же ответами. */
+async function retryStore(key) {
+  const r = results[key];
+  if (!r) { renderHub(); return; }
+  await store(key, {nums: r.nums, band: r.band, c: r.c, data: r.data}, r.answers, true);
+}
+
 function startTest(key) {
+  // Начал этот же замер заново — черновик больше не нужен. Черновик другого
+  // теста не трогаем: он переживёт первый ответ и так.
+  const started = loadProgress();
+  if (started && started.key === key) clearProgress();
   state.key = key;
   state.idx = 0;
   state.answers = {};
@@ -769,12 +910,15 @@ async function skipTest(key) {
 }
 
 // Общая часть: сохранить результат локально, в облако и в базу
-async function store(key, scored, answers) {
+async function store(key, scored, answers, keepPrev) {
   // Прошлый результат остаётся рядом: по нему считается сдвиг словами. В базу
   // он не уходит — запись собирается из data, band и nums.
   const before = results[key];
   results[key] = {
-    prev: before ? {nums: before.nums, completed_at: before.completed_at} : null,
+    // Повтор отправки — тот же замер, а не новый: прошлый результат оставляем
+    // прежним, иначе сдвиг посчитается сам с собой.
+    prev: keepPrev ? ((before && before.prev) || null)
+                   : (before ? {nums: before.nums, completed_at: before.completed_at} : null),
     nums: scored.nums,
     band: scored.band,
     c: scored.c,
@@ -783,9 +927,9 @@ async function store(key, scored, answers) {
     completed_at: new Date().toISOString()
   };
   answeredNow.add(key);
-  saveResultsLocal();
-  saveToCloud();
-  clearProgress();
+  // Память телефона, облако и очистка черновика — ниже, после ответа сервера.
+  // Раньше они стояли здесь, и потерянная запись выглядела сделанной: в списке
+  // «последний замер сегодня», а единственная копия ответов уже удалена.
 
   // Ни одного ответа в этом заходе — записи нет вовсе. Пустая запись хуже
   // отсутствия: она нарисует в линии точку, которой не было.
@@ -813,11 +957,18 @@ async function store(key, scored, answers) {
   state.syncMsg = 'Сохраняю…';
   renderResult(key);
 
-  const ok = await pushToSupabase(record);
-  state.sync = ok ? 'ok' : 'error';
-  state.syncMsg = ok
+  const okPush = await pushToSupabase(record);
+  // Отметка «отправлено» — только после ответа сервера. Правило из
+  // «мини-аппы-правила.md», часть 3.
+  if (okPush) {
+    saveResultsLocal();
+    saveToCloud();
+    clearProgress();
+  }
+  state.sync = okPush ? 'ok' : 'error';
+  state.syncMsg = okPush
     ? 'Замер записан. Можно вернуться к списку и пройти остальное.'
-    : 'Не удалось сохранить — открой замер через бота и попробуй ещё раз.';
+    : 'Запись не ушла. Ответы на месте — нажми «Записать ещё раз».';
   if (state.screen === 'result') renderResult(key);
 }
 

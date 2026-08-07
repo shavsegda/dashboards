@@ -539,6 +539,29 @@ def check_one_card_one_record() -> None:
     ok("шесть страниц: один заход — одна запись с одним замером")
 
 
+def _setitem_calls(src: str):
+    """Все вызовы `localStorage.setItem` с ключом и целым аргументом.
+
+    Разбираем по скобкам, а не построчно: вызов бывает на пять строк, и наивная
+    регулярка обрывает его на середине — то есть перестаёт видеть, что пишется.
+    """
+    out = []
+    for m in re.finditer(r"localStorage\.setItem\(", src):
+        i = m.end() - 1
+        depth, j = 0, i
+        while j < len(src):
+            if src[j] == "(":
+                depth += 1
+            elif src[j] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        arg = src[i + 1:j]
+        out.append((arg.split(",")[0].strip(), arg))
+    return out
+
+
 def check_only_this_session() -> None:
     """5. В базу уходит только то, что человек ответил в этом заходе."""
     cases = {
@@ -584,20 +607,39 @@ def check_only_this_session() -> None:
         f"в записи показано {scores['facts']['shown']}, а отвечали один пункт"
     ok("восемь фактов: в записи только отвеченные пункты и ни одного лишнего признака")
 
-    # Набор ответов этого захода нигде не сохраняется: перезапустили — снова пусто.
+    # Ответы этого захода лежат в СВОЕЙ ячейке-черновике и только там.
+    #
+    # Правило переписано 07.08.2026, и вот почему. Раньше проверка требовала,
+    # чтобы ответы захода не попадали в память телефона ВОВСЕ. Смысл был верный —
+    # прошлое не должно уезжать в базу как свежее, — но средство слишком грубое:
+    # оно же запрещало сохранять начатый замер. Живой человек ответил на часть
+    # вопросов, вышел и потерял всю работу.
+    #
+    # Теперь запрет точный. В память телефона ответы кладёт только черновик и
+    # только в ячейку `DRAFT_KEY`, помеченную своим периодом. Ячейка прошлых
+    # точек ответов захода не касается, сборка записи в память телефона не
+    # заглядывает совсем — ни в точки, ни в черновик.
     for block in PAGES:
         src = inline_script(PAGES[block])
         assert "var answers = {};" in src, \
             f"{PAGES[block]}: нет отдельного набора ответов этого захода"
-        for m in re.finditer(r"setItem\(([^;]*)\)", src):
-            assert "answers" not in m.group(1), \
-                f"{PAGES[block]}: ответы захода уезжают в память телефона"
+        assert "function saveDraft()" in src, \
+            f"{PAGES[block]}: начатый замер негде сохранить"
+        for key, arg in _setitem_calls(src):
+            if "answers" not in arg:
+                continue
+            assert key == "DRAFT_KEY", \
+                f"{PAGES[block]}: ответы захода уезжают в ячейку {key}, а не в черновик"
+        i = src.index("function saveDraft()")
+        draft = src[i:src.index("\n}", i)]
+        assert "POINTS" not in draft, \
+            f"{PAGES[block]}: черновик пишется в ячейку прошлых точек"
         i = src.index("function buildScores(")
         body = src[i:src.index("\n}", i)]
-        for bad in ("prevSaved", "loadPoints", "POINTS"):
+        for bad in ("prevSaved", "loadPoints", "POINTS", "loadDraft", "DRAFT_KEY"):
             assert bad not in body, \
                 f"{PAGES[block]}: сборка записи заглядывает в память телефона ({bad})"
-    ok("сборка записи не читает память телефона ни на одной странице")
+    ok("ответы захода живут только в черновике, сборка записи их оттуда не берёт")
 
 
 def check_skip_makes_no_record() -> None:
