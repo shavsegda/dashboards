@@ -144,7 +144,7 @@ const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
 const SUPABASE_TABLE = "passport";
 const BLOCK = 'state_week';
-const INSTRUMENT = 'PANAS-SF + Vitality + PHQ-2/GAD-2 + поток + UCLA-3 + KMS-3';
+const INSTRUMENT = 'PANAS-SF + Vitality + PHQ-2/GAD-2 + поток + KMS-3';
 
 // Плашка-напоминание: один замер ничего не значит, смысл появляется на линии
 const WEATHER_TEXT = 'Это погода, а не характер. Один замер ничего не значит — смысл появляется на линии из нескольких недель.';
@@ -179,12 +179,6 @@ const SCALE_FLOW = [
   {v: 1, l: 'Один раз'},
   {v: 2, l: 'Два-три раза'},
   {v: 3, l: 'Почти каждый день'}
-];
-// UCLA-3: трёхбалльная шкала частоты из оригинала Hughes и соавт. (2004)
-const SCALE_UCLA = [
-  {v: 1, l: 'Почти никогда'},
-  {v: 2, l: 'Иногда'},
-  {v: 3, l: 'Часто'}
 ];
 // KMS-3: семибалльная шкала удовлетворённости из оригинала Schumm и соавт.
 const SCALE_KMS = [
@@ -270,22 +264,9 @@ const TESTS = [
       {t: 'Сколько раз за последние 7 дней работа несла тебя сама — время исчезало, и делалось само?'}
     ]
   },
-  {
-    key: 'lonely',
-    title: 'Одиночество',
-    what: 'есть ли рядом люди — и есть ли с ними ощущение общности',
-    note: 'три вопроса про то, как сейчас',
-    wt: true,
-    src: 'UCLA-3 (Hughes, Waite, Hawkley, Cacioppo, 2004) · формулировки по русскому переводу шкалы UCLA · рабочий перевод',
-    instruction: 'Отметь, как часто это про тебя сейчас.',
-    scale: SCALE_UCLA,
-    // Три пункта краткой шкалы: нехватка общения, ощущение лишнего, изоляция. Обратных нет.
-    items: [
-      {t: 'Как часто тебе не хватает дружеского общения?'},
-      {t: 'Как часто ты чувствуешь себя лишним?'},
-      {t: 'Как часто ты чувствуешь себя изолированным от других людей?'}
-    ]
-  },
+  // Одиночество из недельного мини-аппа убрано: те же три пункта теперь
+  // спрашивает карточка бота «🫂 Люди рядом» (блок state_people). Человек
+  // отвечал дважды, и в базу ложились две точки на одну линию.
   {
     key: 'couple',
     title: 'Близкая связь',
@@ -395,24 +376,6 @@ function scoreFlow(ans) {
   };
 }
 
-// UCLA-3: сумма 3–9, обратных пунктов нет. 3–5 — одиночества мало, 6–9 — заметное
-function scoreLonely(ans) {
-  const t = getTest('lonely');
-  let sum = 0;
-  t.items.forEach((it, i) => { sum += ans[i] || 0; });
-  let band;
-  if (sum <= 3) band = 'Рядом есть люди — и с ними есть ощущение общности.';
-  else if (sum <= 5) band = 'Общности в целом хватает: пусто рядом бывает, но редко.';
-  else if (sum <= 7) band = 'Связи есть, но ощущения общности мало — рядом с людьми часто пусто.';
-  else band = 'Люди вокруг есть, а общности почти нет — большую часть времени ты сам по себе.';
-  return {
-    nums: [{l: 'Одиночество', v: sum, range: '3–9'}],
-    band: band,
-    c: 'ok',
-    data: {sum: sum}
-  };
-}
-
 // KMS-3: сумма 3–21, обратных пунктов нет
 function scoreCouple(ans) {
   const t = getTest('couple');
@@ -434,7 +397,7 @@ function scoreCouple(ans) {
 
 const SCORERS = {
   panas: scorePanas, vitality: scoreVitality, gate: scoreGate, flow: scoreFlow,
-  lonely: scoreLonely, couple: scoreCouple
+  couple: scoreCouple
 };
 
 // === Хранение результатов ===
@@ -488,10 +451,17 @@ function clearProgress() {
 }
 
 // === Отправка результата ===
+// Ключ из памяти телефона, которого в замере больше нет, в базу не уходит.
+// Так было с одиночеством: тест уехал в свою карточку, а старый ответ лежал в
+// localStorage и уезжал бы в базу каждую неделю как свежий.
+function ownKeys() {
+  return Object.keys(results).filter(k => TESTS.some(t => t.key === k));
+}
+
 function buildScores() {
   // В scores складываем всё, что уже снято, плюс метку источника
   const scores = {source: 'manual'};
-  Object.keys(results).forEach(k => {
+  ownKeys().forEach(k => {
     // Кладём и цифры, и человеческую формулировку: по band бот показывает
     // результат в разговоре и в панели, без него замер выглядит пустым.
     scores[k] = Object.assign({}, results[k].data, {
@@ -504,7 +474,7 @@ function buildScores() {
 
 function buildAnswers() {
   const answers = {};
-  Object.keys(results).forEach(k => { answers[k] = results[k].answers; });
+  ownKeys().forEach(k => { answers[k] = results[k].answers; });
   return answers;
 }
 
