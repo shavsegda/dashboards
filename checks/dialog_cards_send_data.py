@@ -15,16 +15,20 @@
 
 Что осталось. Разговором по-прежнему идут карточки, где нужен живой отклик и
 согласование двух людей: «Как я в наших отношениях», «Детектор взрыва», «Про
-нас», «Тест ОНИ», «Нагрузка», «Цифры группы», «Анализы» — и дорожка «несколько
-за раз». Им `sendData` нужен, и весь его контракт проверяется здесь.
+нас», «Надёжна ли связь», «Нагрузка», «Цифры группы», «Анализы». Им `sendData`
+нужен, и весь его контракт проверяется здесь.
+
+Дорожки «несколько за раз» в этом списке больше нет: 08.08.2026 она переехала
+внутрь мини-аппа цепочкой экранов (спека 011, История 3). Её payload удалён, и
+здесь проверяется обратное — что вход в дорожку боту НИЧЕГО не отправляет.
+Сама дорожка проверяется в `dorozhka.py`.
 
 Запрет `sendData` из правил мини-аппов не нарушается: он про страницы-опросники,
 которые пишут результат в базу и обрываются на полуслове. Каталог не пишет
 ничего.
 
 Что проверяется:
-  · payload буквально по контракту: `{"action":"open_card","card":"<ключ>"}` и
-    `{"action":"run_all"}`;
+  · payload буквально по контракту: `{"action":"open_card","card":"<ключ>"}`;
   · нажатие разговорной карточки правда зовёт `sendData`;
   · шесть переехавших замеров `sendData` больше НЕ зовут — они ссылки;
   · `sendData` недоступен или бросил ошибку — человек видит запасной путь
@@ -59,7 +63,6 @@ def card_payload(key: str) -> str:
     return '{"action":"open_card","card":"%s"}' % key
 
 
-RUN_ALL_PAYLOAD = '{"action":"run_all"}'
 
 # Init-данные непустые — значит мини-апп открыли НЕ кнопкой клавиатуры, и
 # sendData там молча ничего не сделает.
@@ -77,7 +80,6 @@ def check_payload_contract() -> None:
     """1. Payload собирается буквально по контракту с ботом."""
     c = catalog("""
 OUT.cards = CHAT.map(function (k) { return cardPayload(k); });
-OUT.runAll = runAllPayload();
 OUT.dirty = cardPayload(null);
 """.replace("CHAT", json.dumps(CHAT_CARDS)))
 
@@ -86,11 +88,14 @@ OUT.dirty = cardPayload(null);
             f"payload карточки «{key}»: {got} вместо {card_payload(key)}"
     ok("1. карточка-разговор: {\"action\":\"open_card\",\"card\":\"<ключ>\"}")
 
-    assert c["runAll"] == RUN_ALL_PAYLOAD, f"payload дорожки: {c['runAll']}"
-    ok('1. дорожка: {"action":"run_all"}')
+    # У дорожки payload нет вовсе: она идёт внутри мини-аппа (спека 011).
+    src = inline_script(APP)
+    assert "runAllPayload" not in src, \
+        "у дорожки снова есть payload для бота — она опять уйдёт в чат"
+    ok("1. у дорожки payload нет: она не разговор")
 
     # Порядок полей и разбор: бот читает JSON, и он обязан быть валидным.
-    for got in c["cards"] + [c["runAll"]]:
+    for got in c["cards"]:
         parsed = json.loads(got)
         assert set(parsed) <= {"action", "card"}, f"лишние поля в payload: {got}"
     assert json.loads(c["dirty"])["card"] == "", \
@@ -180,15 +185,19 @@ def check_moved_do_not_send() -> None:
 
 
 def check_run_all_sends_data() -> None:
-    """5. Вход в дорожку зовёт свой payload."""
+    """5. Вход в дорожку боту ничего не отправляет (спека 011, История 3)."""
     c = catalog_taps(base("ask=state_week"), """
-  var el = tap('data-send', 'run_all');
+  var el = tap('data-track', 'start');
   OUT.tap = el.click();
+  OUT.href = el.getAttribute('href');
 """)
-    assert c["calls"]["sent"] == [RUN_ALL_PAYLOAD], \
-        f"дорожка отправила: {c['calls']['sent']}"
-    assert c["calls"]["opened"] == [], "дорожка вдобавок открыла переписку"
-    ok("5. дорожка: один sendData с {\"action\":\"run_all\"}")
+    assert c["calls"]["sent"] == [], \
+        f"вход в дорожку отправил боту: {c['calls']['sent']}"
+    assert c["calls"]["opened"] == [], \
+        f"вход в дорожку открыл переписку: {c['calls']['opened']}"
+    assert "track=1" in (c["href"] or ""), \
+        f"вход в дорожку ведёт не на её экран: {c['href']}"
+    ok("5. дорожка идёт в мини-аппе: боту ни payload, ни переписки")
 
 
 def check_fallback_when_unavailable() -> None:

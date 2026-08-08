@@ -11,9 +11,14 @@
     Параметра нет — строки нет вовсе, пустого места не остаётся (FR-007…FR-009).
 
   · **История 3, вход в дорожку.** Отдельная ссылка ниже одной просьбы и рядом
-    с «Посмотреть всё». Открывает бота со старт-параметром ровно `run_all` —
-    тем же способом, каким открываются карточки-разговоры. Очередь, порядок и
-    остановку на усталости держит бот, страница только даёт вход (FR-010).
+    с «Посмотреть всё». Ведёт на экран дорожки в ТОМ ЖЕ мини-аппе — свой адрес с
+    меткой `track=1` (FR-010).
+
+    ПЕРЕПИСАНО 08.08.2026, спека 011, История 3. Раньше здесь проверялось
+    обратное: вход открывает бота старт-параметром `run_all`, а очередь держит
+    бот. Решение Алексея после живой пробы отменило этот путь — «путает, когда
+    тебя выкидывает в диалог», — и очередь переехала в мини-апп. Сама дорожка
+    проверяется в `dorozhka.py`, здесь только её вход на первом экране.
 
 Проверки исполняют страницу в node с заглушками и смотрят на СОБРАННЫЙ экран,
 а не ищут слова в исходнике: ошибку шаблона разбором текста не поймать.
@@ -184,26 +189,25 @@ def check_blind_not_a_debt() -> None:
 
 
 def check_run_all_link_pure() -> None:
-    """6. Ссылка в дорожку собирается со старт-параметром ровно `run_all`."""
+    """6. Вход в дорожку собирается на СВОЁМ адресе, а не на адресе бота."""
     c = catalog("""
-OUT.start = RUN_ALL_START;
-OUT.link = runAllLink("vslukh_shapovalov_bot");
-OUT.fallback = runAllLink("");
-OUT.dirty = runAllLink("злой ввод; rm -rf");
+OUT.link = trackHref("/kak-ty/app.html", "?u=tg_777&f=state_day:2026-08-06", "1");
+OUT.done = trackHref("/kak-ty/app.html", "?u=tg_777", "done");
+OUT.again = trackHref("/kak-ty/app.html", "?u=tg_777&track=done", "1");
+OUT.plain = trackHref("/kak-ty/app.html", "?u=tg_777&track=1", "");
 OUT.card = botLink("vslukh_shapovalov_bot", "state_move");
 """)
-    assert c["start"] == "run_all", f"старт-параметр дорожки: «{c['start']}»"
-    assert c["link"] == f"https://t.me/{BOT_NAME}?start=run_all", \
-        f"ссылка в дорожку: {c['link']}"
-    assert START_RE.match(c["start"]), \
-        f"старт-параметр не по формату Телеграма: «{c['start']}»"
-    ok("ссылка ровно вида t.me/<бот>?start=run_all")
+    assert c["link"] == "/kak-ty/app.html?u=tg_777&f=state_day:2026-08-06&track=1", \
+        f"вход в дорожку: {c['link']}"
+    assert "t.me" not in c["link"], "вход в дорожку всё ещё ведёт в переписку"
+    assert c["done"].endswith("track=done"), f"адрес итога дорожки: {c['done']}"
+    ok("вход ведёт на свой адрес с меткой дорожки")
 
-    assert c["fallback"] == f"https://t.me/{BOT_NAME}?start=run_all", \
-        f"без имени бота ссылка неверная: {c['fallback']}"
-    assert " " not in c["dirty"] and ";" not in c["dirty"], \
-        f"мусор в имени бота попал в ссылку: {c['dirty']}"
-    ok("имя бота чистится, запасное имя работает")
+    assert c["again"] == "/kak-ty/app.html?u=tg_777&track=1", \
+        f"метка дорожки удвоилась: {c['again']}"
+    assert c["plain"] == "/kak-ty/app.html?u=tg_777", \
+        f"без метки адрес не возвращается к списку: {c['plain']}"
+    ok("метка не дублируется и снимается")
 
     assert c["card"] == f"https://t.me/{BOT_NAME}?start=card_state_move", \
         f"ссылки карточек-разговоров сломались: {c['card']}"
@@ -214,9 +218,11 @@ def check_run_all_on_screen() -> None:
     """7. Вход в дорожку стоит ниже просьбы и рядом с «Посмотреть всё»."""
     search = link(FRESH, obs(OBS), blind(BLIND), "ask=state_week")
     whole = catalog_render(search)
-    want = f"https://t.me/{BOT_NAME}?start=run_all"
-    assert want in whole, "на экране нет ссылки в дорожку"
-    ok("ссылка в дорожку на экране, ведёт на run_all")
+    want = "track=1"
+    assert 'class="runall"' in whole, "на экране нет входа в дорожку"
+    assert want in whole, "вход в дорожку не ведёт на её экран"
+    assert "start=run_all" not in whole, "вход в дорожку всё ещё уходит боту"
+    ok("вход в дорожку на экране, ведёт на её экран в мини-аппе")
 
     i_ask = whole.index('class="card"')
     i_run = whole.index('class="runall"')
@@ -228,40 +234,47 @@ def check_run_all_on_screen() -> None:
         f"между дорожкой и «Посмотреть всё» что-то вклинилось: {after[:80]!r}"
     ok("ниже просьбы, вплотную к «Посмотреть всё»")
 
-    other = catalog_render(link(FRESH, "b=other_test_bot"))
-    assert "https://t.me/other_test_bot?start=run_all" in other, \
-        "имя бота из адреса не подхватывается ссылкой в дорожку"
-    assert f"t.me/{BOT_NAME}?start=run_all" not in other, \
-        "рядом с именем из адреса осталось запасное"
-    ok("имя бота берётся из адреса, который даёт бот")
+    # Всё, что прислал бот, доезжает до экрана дорожки: иначе она не узнает ни
+    # человека, ни даты замеров, и порядок собрать будет нечем.
+    m = re.search(r'<div class="runall"><a href="([^"]+)"', whole)
+    assert m, "у входа в дорожку нет адреса"
+    href = m.group(1)
+    for part in ("u=tg_777", "f=state_day", "track=1"):
+        assert part in href, f"вход в дорожку потерял «{part}»: {href}"
+    ok("вход доносит человека и даты замеров до экрана дорожки")
 
     # Дорожка — вход, а не просьба: она есть и когда просить нечего.
     quiet = catalog_render(link())
-    assert want in quiet, "без данных вход в дорожку пропал"
+    assert 'class="runall"' in quiet and want in quiet, \
+        "без данных вход в дорожку пропал"
     ok("вход в дорожку есть на любом состоянии экрана")
 
 
 def check_run_all_opens_bot() -> None:
-    """8. Дорожку начинает sendData, ссылка на переписку осталась запасной.
+    """8. Дорожка идёт внутри мини-аппа, а не в переписке.
 
-    Сначала тут стояло обратное: только `openTelegramLink`. На живом телефоне
-    оказалось, что старт-параметр теряется, если чат с ботом уже существует, —
-    дорожка не начиналась вовсе. Разбор нажатия лежит в
-    `dialog_cards_send_data.py`, здесь только разметка.
+    Сначала тут стояло обратное: дорожку начинает `sendData`, очередь держит бот.
+    Живая проба 07.08.2026 это отменила — человека выбрасывало в чат на каждом
+    переходе. Сама дорожка проверяется в `dorozhka.py`, здесь только её вход.
     """
     whole = catalog_render(link(FRESH, obs(OBS), "ask=state_week"))
     m = re.search(r'<div class="runall">(.*?)</div>', whole, re.S)
     assert m, "блока с входом в дорожку на экране нет"
-    assert "data-send=" in m.group(1), \
-        "у входа в дорожку нет payload — бот не узнает, что человек её начал"
-    assert 'data-tglink="https://t.me/' in m.group(1), \
-        "у входа в дорожку нет запасной ссылки на переписку"
-    ok("на входе в дорожку и payload, и запасная ссылка")
+    assert 'data-track="start"' in m.group(1), \
+        "у входа в дорожку нет метки, по которой он открывается в мини-аппе"
+    assert "data-send=" not in m.group(1), \
+        "у входа в дорожку остался payload для бота — он снова уйдёт в чат"
+    assert "t.me" not in m.group(1), \
+        "у входа в дорожку осталась ссылка на переписку"
+    ok("вход в дорожку помечен для мини-аппа, путей в чат у него нет")
 
     src = inline_script(APP)
-    assert ".sendData(" in src, "дорожка не отправляет ничего боту"
-    assert "openTelegramLink" in src, "запасной путь вырезан"
-    ok("sendData основной путь, openTelegramLink запасной")
+    assert "runAllPayload" not in src and "RUN_ALL_START" not in src, \
+        "в коде остался прежний путь дорожки через бота"
+    assert ".sendData(" in src, \
+        "sendData вырезан целиком — карточки-разговоры перестанут открываться"
+    assert "openTelegramLink" in src, "запасной путь карточек-разговоров вырезан"
+    ok("у дорожки путей в бота нет, у карточек-разговоров оба на месте")
 
 
 def check_main_ask_still_one() -> None:

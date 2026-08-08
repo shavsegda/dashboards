@@ -75,6 +75,15 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .runall a::after { content: " →"; color: var(--graphite-30); }
 .runall a:hover { color: var(--terracotta); }
 
+/* Экраны дорожки: строка и действия. Своя рамка, чтобы дорожка не читалась
+   ни как карточка замера, ни как просьба */
+.track { margin-top: 22px; border: 1px solid var(--graphite-15); padding: 14px 16px; }
+.track-line { font-size: 15px; line-height: 1.45; }
+.track-acts { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+/* Сшитый итог — один текст, а не столбик результатов */
+.stitch { font-size: 17px; line-height: 1.55; margin-bottom: 6px; }
+
 /* Полный список — за одним нажатием */
 .all { margin-top: 30px; border-top: 1px solid var(--graphite-15); }
 .all > summary { list-style: none; cursor: pointer; padding: 16px 0; font-size: 15px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
@@ -175,6 +184,9 @@ var RHYTHMS = [
 //                встаёт в список, и поэтому она стоит там ровно один раз
 //   size       — честная длина; посчитано по самим замерам, не придумано
 //   url        — адрес мини-аппа; перенос из констант *_MINI_APP_URL в bot.py
+//   track      — страница умеет дорожку «несколько за раз»: сама открывает
+//                следующий замер. Не умеет — в очередь не берём, иначе цепочка
+//                оборвётся на ней и человек застрянет (011, История 3)
 //   phrase     — точный текст кнопки бота, если замер проходится в разговоре
 //   cond       — условие показа: "clinical" — только когда сработал недельный
 //                датчик (приходит `cl=1`); "team" — пока человек прямо не
@@ -213,6 +225,7 @@ var REGISTRY = [
     what: "сколько дней и минут движения за неделю",
     containers: ["Тело"], area: "Тело",
     size: "2 вопроса · полминуты",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-move/app.html"
   },
   {
@@ -220,6 +233,7 @@ var REGISTRY = [
     what: "одиночество и живые встречи за неделю",
     containers: ["Круг"], area: "Круг",
     size: "4 вопроса · минута",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-people/app.html"
   },
   {
@@ -231,6 +245,7 @@ var REGISTRY = [
     containers: ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"],
     area: "Время на себя",
     size: "8 отметок · меньше минуты",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-facts/app.html"
   },
   {
@@ -238,6 +253,7 @@ var REGISTRY = [
     what: "одна свободная строка про что угодно",
     containers: ["Я сам"], area: "Я сам",
     size: "одна строка · можно пропустить",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-note/app.html"
   },
   {
@@ -280,6 +296,7 @@ var REGISTRY = [
     containers: ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг"],
     area: "Я сам",
     size: "8 областей · 2 минуты",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-domains/app.html"
   },
   {
@@ -294,6 +311,7 @@ var REGISTRY = [
     what: "хватило ли, запас, долги за месяц",
     containers: ["Деньги"], area: "Деньги",
     size: "5 цифр · можно пропустить",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-money/app.html"
   },
   {
@@ -309,11 +327,14 @@ var REGISTRY = [
     url: "https://shapovalov-aleksey.ru/state-clinical/app.html"
   },
   {
-    key: "pair_are", label: "Тест ОНИ", group: "Пара", days: 30, section: "month",
+    // Название и кнопка переименованы в боте 07-08.08.2026: «Тест ОНИ» человеку
+    // ничего не говорило. Здесь то же имя, что в боте, — иначе карточка и кнопка
+    // называются по-разному, и человек не находит одно по другому.
+    key: "pair_are", label: "Надёжна ли связь", group: "Пара", days: 30, section: "month",
     what: "насколько связь надёжна",
     containers: ["Семья"], area: "Семья",
     size: "15 утверждений",
-    phrase: "🧭 Тест ОНИ"
+    phrase: "🧭 Надёжна ли связь"
   },
   {
     key: "pair_load", label: "Нагрузка по дому", group: "Пара", days: 30, section: "month",
@@ -385,6 +406,7 @@ var REGISTRY = [
     what: "спокойно ли тебе с деньгами",
     containers: ["Деньги"], area: "Деньги",
     size: "10 вопросов · 3 минуты",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-finwell/app.html"
   },
   {
@@ -395,6 +417,7 @@ var REGISTRY = [
     what: "самочувствие целиком: тело и настроение",
     containers: ["Тело"], area: "Тело",
     size: "10 вопросов · 2 минуты",
+    track: true,
     url: "https://shapovalov-aleksey.ru/state-health/app.html"
   },
   {
@@ -416,6 +439,7 @@ var REGISTRY = [
     what: "гибкие ли правила и насколько вы вместе",
     containers: ["Семья"], area: "Семья",
     size: "42 пункта · 7 минут",
+    track: true,
     url: "https://shapovalov-aleksey.ru/pair-faces/app.html"
   }
 ];
@@ -623,7 +647,7 @@ function buildCards(registry, lastDates, nowISO, known) {
     return {
       key: r.key, label: r.label, what: r.what, group: r.group, days: r.days,
       section: r.section, containers: r.containers, area: r.area, size: r.size,
-      url: r.url, phrase: r.phrase, after: r.after, once: r.once,
+      url: r.url, phrase: r.phrase, after: r.after, once: r.once, track: r.track,
       state: f.state, daysAgo: f.daysAgo
     };
   }).filter(function (c) {
@@ -695,10 +719,6 @@ function pageFlags(params) {
 // Открыли иначе — человек должен увидеть прежний путь, а не тишину.
 var BOT_FALLBACK = "vslukh_shapovalov_bot";
 
-// Старт-параметр дорожки «пройти несколько за раз». Ровно это слово: очередь,
-// порядок замеров и остановку на усталости держит бот, страница только дверь.
-var RUN_ALL_START = "run_all";
-
 /** Старт-параметр карточки. Ключи те же, что в CARD_META бота. */
 function cardStartParam(key) {
   return "card_" + String(key == null ? "" : key).replace(/[^A-Za-z0-9_]/g, "");
@@ -716,14 +736,6 @@ function botLink(botName, key) {
   return startLink(botName, cardStartParam(key));
 }
 
-/**
- * Вход в дорожку «несколько за раз» (008, FR-010). Открывается тем же способом,
- * что карточки-разговоры. Ссылка — запасной путь, основной путь — `sendData`.
- */
-function runAllLink(botName) {
-  return startLink(botName, RUN_ALL_START);
-}
-
 // ---- Что уходит боту через sendData ----
 // Контракт с ботом, соблюдается буквально. Обработчик `web_app_data` у него уже
 // есть, и он ждёт ровно эти два вида сообщения.
@@ -732,11 +744,6 @@ function runAllLink(botName) {
 function cardPayload(key) {
   return JSON.stringify({ action: "open_card",
                           card: String(key == null ? "" : key) });
-}
-
-/** Начать дорожку «несколько за раз». */
-function runAllPayload() {
-  return JSON.stringify({ action: "run_all" });
 }
 
 /**
@@ -795,6 +802,325 @@ function navDepth(stack) { return (stack || []).length; }
 
 /** Кнопка назад нужна только там, откуда есть куда возвращаться. */
 function backVisible(stack) { return navDepth(stack) > 0; }
+
+/* ==== ДОРОЖКА: НАЧАЛО ====
+ *
+ * Дорожка «пройти несколько за раз» — цепочка экранов внутри мини-аппа. Каталог
+ * собирает очередь и открывает первый замер; каждая страница, закончив свой,
+ * открывает адрес следующего сама. Выходов в чат на этом пути нет ни одного:
+ * раньше очередь держал бот, и человека выбрасывало в переписку на каждом шаге.
+ *
+ * Запись дорожки лежит в памяти телефона в ОДНОЙ ячейке на все страницы — они на
+ * одном домене. Поэтому выход и возврат безопасны: вернулся — предложено
+ * продолжить с того места.
+ *
+ * Чего дорожка НЕ хранит: ответы внутри замера. За них отвечает черновик самой
+ * страницы, он уже есть и работает. Второго механизма для одного и того же не
+ * делаем — они разъедутся, и однажды в базу уедет прошлое как свежее.
+ *
+ * Этот блок побайтово одинаков в каталоге и на всех девяти страницах замеров.
+ * Разъехались бы — дорожка на одной странице считала бы усталость иначе, чем на
+ * другой. За одинаковостью следит `checks/dorozhka.py`.
+ */
+
+// Ячейка памяти телефона под запись дорожки. Одна на все страницы.
+var TRACK_KEY = "kak_ty_track_v1";
+
+// Около двадцати минут — предложение остановиться: уставшие ответы менее точны.
+// Предложение, не запрет. Решает человек.
+var TRACK_TIRED_MIN = 20;
+
+// Сколько максимум считаем за один замер. Человек отложил телефон на сутки — это
+// не сутки дорожки, это пауза.
+var TRACK_LEG_CAP_MIN = 15;
+
+/** Запись дорожки из памяти телефона. Мусор и чужая версия — null, не догадка. */
+function trackRec(raw) {
+  var r;
+  try { r = JSON.parse(raw || "null"); } catch (e) { return null; }
+  if (!r || typeof r !== "object" || r.v !== 1) return null;
+  if (!Array.isArray(r.queue) || !Array.isArray(r.done)) return null;
+  if (r.state !== "run" && r.state !== "finish" && r.state !== "stopped") return null;
+  return r;
+}
+
+/** Замер, который дорожка открывает сейчас. Очередь пуста — null. */
+function trackHead(rec) {
+  return (rec && rec.queue && rec.queue.length) ? rec.queue[0] : null;
+}
+
+/** Идёт ли дорожка прямо сейчас и есть ли куда идти. */
+function trackRunning(rec) {
+  return !!(rec && rec.state === "run" && trackHead(rec));
+}
+
+/** Ждёт ли дорожка именно этот замер. Не его — страница ведёт себя как обычно. */
+function trackIsHead(rec, block) {
+  var h = trackRunning(rec) ? trackHead(rec) : null;
+  return !!(h && h.key === block);
+}
+
+/** Сколько замеров позади и сколько ещё в очереди. */
+function trackDoneCount(rec) { return (rec && rec.done) ? rec.done.length : 0; }
+function trackLeft(rec) { return (rec && rec.queue) ? rec.queue.length : 0; }
+
+/** Время текущего замера, ограниченное сверху: пауза дорожкой не считается. */
+function trackLegMs(rec, nowMs) {
+  if (!rec || !rec.legAt) return 0;
+  var d = Number(nowMs) - Number(rec.legAt);
+  if (!isFinite(d) || d < 0) return 0;
+  var cap = TRACK_LEG_CAP_MIN * 60000;
+  return d > cap ? cap : d;
+}
+
+/** Сколько минут дорожка идёт. По замерам, а не по стенным часам. */
+function trackElapsedMin(rec) {
+  if (!rec) return 0;
+  var ms = Number(rec.spentMs);
+  if (!isFinite(ms) || ms < 0) ms = 0;
+  return Math.round(ms / 60000);
+}
+
+/** Начало замера: с этой секунды считается его время. */
+function trackTouch(rec, nowMs) {
+  var out = JSON.parse(JSON.stringify(rec));
+  out.legAt = nowMs;
+  return out;
+}
+
+/**
+ * Замер закончился: голова очереди уходит в пройденное вместе со своими словами.
+ * Слова нужны итогу — он сшивает их в один текст. Ответы не переносим: они уже
+ * в базе, а второй список ответов однажды уедет в базу как свежий.
+ */
+function trackLegDone(rec, lines, nowMs) {
+  var out = JSON.parse(JSON.stringify(rec));
+  var h = out.queue.shift();
+  out.spentMs = (Number(out.spentMs) || 0) + trackLegMs(rec, nowMs);
+  out.legAt = nowMs;
+  out.done.push({ key: h.key, label: h.label, area: h.area,
+                  lines: (lines || []).map(function (t) { return String(t); }) });
+  if (!out.queue.length) out.state = "finish";
+  return out;
+}
+
+/**
+ * Пора ли предложить остановиться. Не чаще, чем раз в те же двадцать минут:
+ * предложение после каждого замера подряд — это уже давление.
+ */
+function trackOfferStop(rec) {
+  if (!trackRunning(rec)) return false;
+  var min = trackElapsedMin(rec);
+  var was = Number(rec.offeredMin);
+  if (!isFinite(was) || was < 0) was = 0;
+  return min >= TRACK_TIRED_MIN && min >= was + TRACK_TIRED_MIN;
+}
+
+/** Предложение прозвучало, человек решил идти дальше. */
+function trackOffered(rec, nowMs) {
+  var out = trackTouch(rec, nowMs);
+  out.offeredMin = trackElapsedMin(rec);
+  return out;
+}
+
+/**
+ * Дорожка остановлена. Непройденное остаётся в очереди: человек вернётся, когда
+ * захочет. `refer` — строка про специалиста, если остановил тяжёлый ответ.
+ */
+function trackStop(rec, refer) {
+  var out = JSON.parse(JSON.stringify(rec));
+  out.state = "stopped";
+  if (refer) out.refer = String(refer);
+  return out;
+}
+
+/**
+ * Тяжёлый ответ. Признак объявляет сама страница функцией `heavyReason` — там,
+ * где он бывает. Не объявила — признака нет: догадки тут запрещены.
+ * Screen and refer, never treat: дорожка останавливается и отдаёт человека
+ * живому специалисту, ничего не толкуя.
+ */
+function trackHeavy(a, f, prev) {
+  return (typeof heavyReason === "function") ? (heavyReason(a, f, prev) || null) : null;
+}
+/* ==== ДОРОЖКА: КОНЕЦ ==== */
+
+/* ---- Дорожка: очередь и итог (008, FR-010…FR-015; 011, История 3) ----
+ *
+ * Очередь собирает каталог: он один знает и карточки, и то, что прислал бот —
+ * даты последних замеров и признаки. Порядок — по вкладу в картину, а не по
+ * календарю: пустое место закрывается раньше, чем уточняется известное.
+ */
+
+// Как область жизни называется в связном тексте итога.
+var AREA_SAY = {
+  "Я сам": "Про тебя самого", "Тело": "Про тело", "Семья": "Про семью",
+  "Круг": "Про круг", "Работа": "Про работу", "Деньги": "Про деньги",
+  "Время на себя": "Про время на себя"
+};
+
+// То же, но в середине фразы: «про время на себя пока не известно ничего».
+var AREA_ABOUT = {
+  "Я сам": "тебя самого", "Тело": "тело", "Семья": "семью", "Круг": "твой круг",
+  "Работа": "работу", "Деньги": "деньги", "Время на себя": "время на себя"
+};
+
+// Оговорка на входе в дорожку. Обещать «узнаешь себя полностью» нечестно: за
+// вечер получается широкий срез, а линия рождается только временем.
+var TRACK_HONEST = "Пройдёшь всё за один вечер — получишь широкий срез, но не " +
+  "линию. Линия рождается только временем: те же вопросы через неделю, через месяц.";
+
+/** «6 замеров» · «21 минуты». Родительный падеж — он идёт после «около». */
+function trackPlural(n, one, few, many) {
+  var n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return one;
+  if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return few;
+  return many;
+}
+
+/**
+ * Честная длина карточки в минутах. «полминуты» и «меньше минуты» — половина,
+ * «3 минуты» — три. Ничего не сказано — считаем минуту: это прикидка для суммы,
+ * а не обещание.
+ */
+function minsFromSize(size) {
+  var s = String(size == null ? "" : size).toLowerCase();
+  if (s.indexOf("полминуты") >= 0 || s.indexOf("меньше минуты") >= 0) return 0.5;
+  var m = /(\d+)\s*минут/.exec(s);
+  return m ? Number(m[1]) : 1;
+}
+
+/** Области жизни, в которых у человека есть хоть одна точка. */
+function filledAreas(cards) {
+  var out = [];
+  (cards || []).forEach(function (c) {
+    if (c.daysAgo === null || c.daysAgo === undefined) return;
+    if (out.indexOf(c.area) < 0) out.push(c.area);
+  });
+  return out;
+}
+
+/**
+ * Вклад замера в картину. Меньше — раньше:
+ *   0 — закрывает пустую область: про неё не известно ничего;
+ *   1 — область известна, а этого замера не было ни разу;
+ *   2 — уточняет известное: замер был, срок вышел.
+ * Календарь тут ни при чём: просрочка не делает замер важнее пустого места.
+ */
+function trackRank(card, filled) {
+  if ((filled || []).indexOf(card.area) < 0) return 0;
+  if (card.daysAgo === null || card.daysAgo === undefined) return 1;
+  return 2;
+}
+
+/**
+ * Замеры, которые дорожка может пройти цепочкой: у них есть своя страница, и
+ * страница умеет дорожку. Свежие не берём — за этот период они уже сказали всё,
+ * что могли, и шаг был бы пустым.
+ */
+function trackCards(cards) {
+  return (cards || []).filter(function (c) {
+    return c.track === true && c.url && c.state !== "fresh";
+  });
+}
+
+/** Очередь дорожки. Порядок держится на четырёх правилах, все они видимые. */
+function trackQueue(cards, opts) {
+  var o = opts || {};
+  var filled = filledAreas(cards);
+  var list = trackCards(cards).map(function (c) {
+    return { key: c.key, label: c.label, area: c.area,
+             mins: minsFromSize(c.size),
+             url: o.href ? o.href(c) : (c.url || ""),
+             rank: trackRank(c, filled),
+             wide: (c.containers || []).length,
+             at: AREA_ORDER.indexOf(c.area) };
+  });
+  list.sort(function (a, b) {
+    return (a.rank - b.rank) || (b.wide - a.wide) || (a.at - b.at) ||
+           (a.mins - b.mins) || (a.key < b.key ? -1 : (a.key > b.key ? 1 : 0));
+  });
+  return list.map(function (x) {
+    return { key: x.key, label: x.label, area: x.area, mins: x.mins,
+             url: x.url, rank: x.rank };
+  });
+}
+
+/** Сколько минут вся дорожка. Округляем вверх: обещать меньше нечестно. */
+function trackMinutes(queue) {
+  var sum = 0;
+  (queue || []).forEach(function (q) { sum += Number(q.mins) || 0; });
+  return Math.ceil(sum);
+}
+
+/** Строка до старта: сколько замеров и сколько минут. */
+function trackSizeLine(queue) {
+  var n = (queue || []).length;
+  var m = trackMinutes(queue);
+  return n + " " + trackPlural(n, "замер", "замера", "замеров") +
+    " · около " + m + " " + trackPlural(m, "минуты", "минут", "минут");
+}
+
+/** Почему дорожка начинает именно с этого замера. Без цифр и без долга. */
+function trackWhyFirst(head) {
+  if (!head) return "";
+  if (head.rank === 0) {
+    return "про " + (AREA_ABOUT[head.area] || head.area) + " пока не известно ничего";
+  }
+  if (head.rank === 1) return "этого замера ещё не было ни разу";
+  return "он уточняет то, что уже известно";
+}
+
+/** Адрес этого же экрана с меткой дорожки. Пустая метка — обычный список. */
+function trackHref(home, search, value) {
+  var q = String(search == null ? "" : search).replace(/^\?/, "").split("&")
+    .filter(function (p) { return p && p.indexOf("track=") !== 0; });
+  if (value) q.push("track=" + value);
+  return String(home == null ? "" : home) + (q.length ? "?" + q.join("&") : "");
+}
+
+/** Новая запись дорожки. */
+function trackNew(queue, home, nowMs) {
+  return { v: 1, state: "run", startedAt: nowMs, legAt: nowMs, spentMs: 0,
+           offeredMin: 0, home: String(home == null ? "" : home),
+           queue: (queue || []).slice(), done: [] };
+}
+
+/**
+ * Итог дорожки — ОДИН сшитый текст, а не столбик результатов.
+ *
+ * Зачем именно так. Человек шёл подряд ради общей картины; шесть отдельных
+ * результатов её не дают — их читают по диагонали. Поэтому слова замеров
+ * сшиваются по областям жизни в связную речь, а в конце говорится честное: это
+ * широкий срез, линия появится позже.
+ *
+ * Сводного числа тут нет и быть не может: разные замеры мерят разное
+ * (конституция, принцип IV).
+ */
+function stitchSummary(rec) {
+  var done = (rec && rec.done) ? rec.done : [];
+  if (!done.length) return "";
+  var areas = [];
+  done.forEach(function (d) { if (areas.indexOf(d.area) < 0) areas.push(d.area); });
+  var out = ["Замеры этого захода: " +
+             done.map(function (d) { return d.label; }).join(", ") + "."];
+  areas.forEach(function (area) {
+    var said = [];
+    done.forEach(function (d) {
+      if (d.area !== area) return;
+      (d.lines || []).forEach(function (t) {
+        var s = String(t).replace(/\s+/g, " ").trim();
+        if (s) said.push(/[.!?»]$/.test(s) ? s : s + ".");
+      });
+    });
+    if (said.length) {
+      out.push((AREA_SAY[area] || ("Про " + area)) + " — " + said.join(" "));
+    }
+  });
+  out.push("Это широкий срез: по нему видно, где сейчас как. Линии в нём нет — " +
+           "она появится, когда те же вопросы повторятся через неделю и через месяц.");
+  return out.join(" ");
+}
 
 /* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
 
@@ -868,6 +1194,42 @@ async function fetchPassportDates() {
 var lastDates = {};
 var dataKnown = false;
 var app = document.getElementById("app");
+
+// ---- Дорожка: память телефона, свой адрес и переходы ----
+// Метка в адресе говорит, какой экран дорожки просят: `track=1` — до старта,
+// `track=done` — итог. Своего адреса мини-апп не знает наперёд, поэтому берём
+// тот, которым его открыли: тогда возврат из замеров попадает туда же.
+var TRACK = trackLoad();
+var TRACK_ASK = params.get("track") || "";
+var HOME_URL = ((window.location && window.location.origin) || "") +
+               ((window.location && window.location.pathname) || "/kak-ty/app.html");
+var SEARCH_RAW = (window.location && window.location.search) || "";
+
+function trackLoad() {
+  try { return trackRec(localStorage.getItem(TRACK_KEY)); } catch (e) { return null; }
+}
+
+function trackSave(rec) {
+  try { localStorage.setItem(TRACK_KEY, JSON.stringify(rec)); } catch (e) {}
+  TRACK = rec;
+}
+
+function trackClear() {
+  try { localStorage.removeItem(TRACK_KEY); } catch (e) {}
+  TRACK = null;
+}
+
+/** Открыть адрес. Заменяем страницу, а не копим историю: кнопка назад должна
+ *  вести в каталог, а не в уже пройденный замер. */
+function trackGo(url) {
+  try {
+    if (window.location && typeof window.location.replace === "function") {
+      window.location.replace(url);
+      return;
+    }
+    window.location.href = url;
+  } catch (e) {}
+}
 
 function esc(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -1037,15 +1399,92 @@ function firstScreenHtml(obs, ask, blind) {
  *
  * Текст честно говорит, кому это надо: тому, кто пришёл разбираться сам.
  * Обещаний «узнай себя полностью» тут нет — за вечер получается широкий срез,
- * а не линия, и говорит об этом бот на входе в дорожку.
+ * а не линия, и говорится об этом на экране до старта.
+ *
+ * ПРАВКА 08.08.2026, спека 011, История 3. Раньше эта ссылка уводила в бота:
+ * очередь держал он, и человека на каждом переходе выбрасывало в переписку.
+ * Теперь дорожка идёт внутри мини-аппа, и вход ведёт на её экран — тот же адрес
+ * с меткой `track=1`. Ни `sendData`, ни ссылки на чат здесь больше нет.
+ *
+ * Дорожка идёт — входа нет: вместо него строка «продолжить с того места».
  */
-function runAllHtml() {
-  var href = runAllLink(BOT_NAME);
+function runAllHtml(cards) {
+  if (trackRunning(TRACK)) return "";
+  if (trackQueue(cards, {}).length < 2) return "";
+  var href = trackHref(HOME_URL, SEARCH_RAW, "1");
   return '<div class="runall"><a href="' + esc(href) +
-    '" data-send="' + esc(runAllPayload()) +
-    '" data-tglink="' + esc(href) + '">' +
+    '" data-track="start">' +
     "Хочешь разобраться, а не ответить на напоминание — пройти несколько за раз" +
     "</a></div>";
+}
+
+/**
+ * Строка про начатую дорожку. Человек вышел посреди цепочки — вернулся и видит,
+ * что она на месте, и какой замер идёт следующим (008, FR-015).
+ *
+ * Счётчика «пройдено N из M» здесь нет сознательно: он превращает дорожку в
+ * долг. Достаточно того, что она на месте и куда ведёт дальше.
+ */
+function trackResumeHtml() {
+  if (!trackRunning(TRACK)) return "";
+  var h = trackHead(TRACK);
+  return '<div class="track">' +
+    '<div class="track-line">Дорожка на месте. Дальше — «' + esc(h.label) + '».</div>' +
+    '<div class="track-acts">' +
+      '<button class="act" data-track="go">Продолжить</button>' +
+      '<button class="ghost" data-track="sum">Показать итог</button>' +
+    "</div></div>";
+}
+
+/** Экран до старта: сколько это, честная оговорка и с чего начнём. */
+function trackIntroHtml(cards) {
+  var q = trackQueue(cards, { href: cardHref });
+  if (!q.length) {
+    return "<h1>Несколько за раз</h1>" +
+      '<p class="honest">Сейчас проходить нечего: всё, что дорожка умеет, за этот ' +
+      "период уже отвечено." +
+      '<span class="quiet">Загляни через неделю — или открой список и выбери сам.</span></p>' +
+      '<div class="track"><div class="track-acts">' +
+      '<button class="ghost" data-track="back">В список</button></div></div>';
+  }
+  return "<h1>Несколько за раз</h1>" +
+    '<div class="note">' + esc(trackSizeLine(q)) + "</div>" +
+    '<p class="honest">' + esc(TRACK_HONEST) + "</p>" +
+    '<div class="track">' +
+    '<div class="track-line">Начнём с «' + esc(q[0].label) + "»: " +
+      esc(trackWhyFirst(q[0])) + ". Замер закончился — следующий откроется сразу." +
+    "</div>" +
+    '<div class="track-acts">' +
+      '<button class="act" data-track="go">Начать</button>' +
+      '<button class="ghost" data-track="back">Не сейчас</button>' +
+    "</div></div>";
+}
+
+/**
+ * Итог дорожки. ОДИН сшитый текст по всем пройденным замерам — за ним человек и
+ * шёл подряд. Столбик отдельных результатов даёт ровно обратное: его пролистают.
+ */
+function trackDoneHtml() {
+  var text = stitchSummary(TRACK);
+  var refer = (TRACK && TRACK.refer)
+    ? '<p class="honest">' + esc(TRACK.refer) + "</p>" : "";
+  var left = (trackLeft(TRACK) > 0)
+    ? '<div class="track-line">Непройденное осталось на месте: вернуться к дорожке ' +
+      "можно когда угодно.</div>"
+    : "";
+  var body = text
+    ? '<p class="stitch">' + esc(text) + "</p>"
+    : '<p class="honest">В этот раз ни один замер не закончен. Это тоже ' +
+      "нормальный исход.</p>";
+  // Человек может заглянуть в итог, не закончив дорожку: тогда ему нужно не
+  // «убрать», а «продолжить». Убираем дорожку только когда она правда кончилась.
+  var acts = trackRunning(TRACK)
+    ? '<button class="act" data-track="go">Продолжить</button>' +
+      '<button class="ghost" data-track="back">В список</button>'
+    : '<button class="act" data-track="close">В список</button>';
+  return "<h1>Что видно по дорожке</h1>" + refer + body +
+    '<div class="track">' + left + '<div class="track-acts">' + acts +
+    "</div></div>";
 }
 
 /**
@@ -1078,22 +1517,87 @@ function allHtml(cards) {
     "</details>";
 }
 
+/** Карточки на сейчас: то, что видит человек с его признаками и датами. */
+function screenCards() {
+  return buildCards(visibleCards(REGISTRY, {
+                      hasPair: HAS_PAIR, hasForum: HAS_FORUM,
+                      clinicalFired: CLINICAL_FIRED, hasTeam: HAS_TEAM
+                    }),
+                    lastDates, new Date().toISOString(), dataKnown);
+}
+
 function render() {
-  var cards = buildCards(visibleCards(REGISTRY, {
-                           hasPair: HAS_PAIR, hasForum: HAS_FORUM,
-                           clinicalFired: CLINICAL_FIRED, hasTeam: HAS_TEAM
-                         }),
-                         lastDates, new Date().toISOString(), dataKnown);
+  var cards = screenCards();
+
+  // Дорожка забирает экран себе: посреди цепочки список ни к чему, а после
+  // цепочки нужен один сшитый итог, а не двадцать три карточки.
+  if (TRACK_ASK === "done" || (TRACK && TRACK.state !== "run")) {
+    app.innerHTML = trackDoneHtml();
+    bindTrack();
+    return;
+  }
+  if (TRACK_ASK === "1") {
+    app.innerHTML = trackIntroHtml(cards);
+    bindTrack();
+    return;
+  }
+
   var ask = pickAsk(cards, ASK_KEY);
 
   app.innerHTML =
     "<h1>Что со мной?</h1>" +
     firstScreenHtml(OBSERVATION, ask, BLIND_SPOT) +
-    runAllHtml() +
+    trackResumeHtml() +
+    runAllHtml(cards) +
     allHtml(cards);
 
   bind();
   bindBack();
+  bindTrack();
+}
+
+/**
+ * Начать дорожку: собрать очередь, запомнить её и открыть первый замер.
+ *
+ * Запись кладём в память телефона ДО перехода: она и есть то, что переживает
+ * выход. Держать очередь только в памяти страницы значило бы терять дорожку на
+ * первом же закрытии мини-аппа.
+ */
+function trackBegin() {
+  var q = trackQueue(screenCards(), { href: cardHref });
+  if (!q.length) { render(); return; }
+  trackSave(trackNew(q, trackHref(HOME_URL, SEARCH_RAW, "done"), Date.now()));
+  trackGo(q[0].url);
+}
+
+/** Нажатия на экранах дорожки. Ни одного выхода в чат: только свои адреса. */
+function bindTrack() {
+  app.querySelectorAll("[data-track]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      var what = el.getAttribute("data-track");
+      if (ev && ev.preventDefault) ev.preventDefault();
+      if (what === "start") { trackGo(el.getAttribute("href")); return; }
+      if (what === "go") {
+        // Дорожка уже идёт — продолжаем с того места, а не начинаем заново.
+        if (trackRunning(TRACK)) { trackGo(trackHead(TRACK).url); return; }
+        trackBegin();
+        return;
+      }
+      if (what === "sum") {
+        // Заглянуть в итог, не закончив дорожку. Она остаётся на месте.
+        trackGo(trackHref(HOME_URL, SEARCH_RAW, "done"));
+        return;
+      }
+      if (what === "close") {
+        // Дорожка кончилась и итог прочитан — убираем её из памяти телефона.
+        trackClear();
+        trackGo(trackHref(HOME_URL, SEARCH_RAW, ""));
+        return;
+      }
+      // «Не сейчас» и «В список»: уходим к списку, дорожку не трогаем.
+      trackGo(trackHref(HOME_URL, SEARCH_RAW, ""));
+    });
+  });
 }
 
 /* ---- Кнопка назад: проводка (спека 012) ----

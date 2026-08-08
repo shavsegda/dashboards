@@ -808,13 +808,13 @@ FROZEN: Dict[str, Dict] = {
         "scores": ['authenticity', 'clarity', 'identity', 'iposition', 'source'],
         "answers": ['authenticity', 'clarity', 'identity', 'iposition'],
         "inner": {'clarity': ['band', 'mean', 'nums', 'sum'], 'authenticity': ['authentic_living', 'band', 'external_influence', 'nums', 'self_alienation'], 'identity': ['band', 'commitment', 'exploration_breadth', 'exploration_depth', 'identification', 'nums', 'rumination'], 'iposition': ['band', 'mean', 'nums', 'sum']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-clinical/app.html': {
         "block": 'state_clinical', "instrument": 'PHQ-9 + GAD-7 + ASRM',
         "scores": ['alert', 'asrm', 'gad', 'phq', 'source'],
         "answers": ['asrm', 'gad', 'phq'],
         "inner": {'phq': ['alert', 'band', 'item9', 'item9_flag', 'nums', 'total'], 'gad': ['alert', 'band', 'nums', 'total'], 'asrm': ['alert', 'band', 'nums', 'total']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-day/app.html': {
         "block": 'state_day', "instrument": 'суточный мини-апп',
         "scores": ['mood', 'source', 'tonus'],
@@ -856,7 +856,7 @@ FROZEN: Dict[str, Dict] = {
         "scores": ['alert', 'isi', 'pss', 'source'],
         "answers": ['isi', 'pss'],
         "inner": {'pss': ['band', 'nums', 'total'], 'isi': ['alert', 'band', 'nums', 'total']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-move/app.html': {
         "block": 'state_move', "instrument": 'state_move',
         "scores": ['evs', 'source'],
@@ -868,7 +868,7 @@ FROZEN: Dict[str, Dict] = {
         "scores": ['alert', 'bpnsfs', 'source'],
         "answers": ['bpnsfs'],
         "inner": {'bpnsfs': ['autonomy_frustration', 'autonomy_satisfaction', 'band', 'competence_frustration', 'competence_satisfaction', 'frustration', 'nums', 'relatedness_frustration', 'relatedness_satisfaction', 'satisfaction']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-note/app.html': {
         "block": 'state_note', "instrument": 'state_note',
         "scores": ['note', 'source'],
@@ -886,25 +886,25 @@ FROZEN: Dict[str, Dict] = {
         "scores": ['ffmq', 'mlq', 'olbi', 'rses', 'source', 'support', 'swls'],
         "answers": ['ffmq', 'mlq', 'olbi', 'rses', 'support', 'swls'],
         "inner": {'swls': ['band', 'nums', 'sum'], 'mlq': ['band', 'nums', 'presence', 'search'], 'ffmq': ['act_aware', 'band', 'describe', 'mean', 'nonjudge', 'nonreact', 'nums', 'observe'], 'rses': ['band', 'nums', 'sum'], 'olbi': ['band', 'disengagement', 'disengagement_sum', 'exhaustion', 'exhaustion_sum', 'nums'], 'support': ['band', 'family', 'friends', 'nums', 'significant_other']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-team/app.html': {
         "block": 'state_team', "instrument": 'Шкала психологической безопасности команды (Edmondson, 1999)',
         "scores": ['alert', 'safety', 'source'],
         "answers": ['safety'],
         "inner": {'safety': ['band', 'mean', 'nums']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-week/app4.html': {
         "block": 'state_week', "instrument": 'PANAS-SF + Vitality + PHQ-2/GAD-2 + поток + KMS-3',
         "scores": ['couple', 'flow', 'gate', 'panas', 'source', 'vitality'],
         "answers": ['couple', 'flow', 'gate', 'panas', 'vitality'],
         "inner": {'panas': ['band', 'na', 'nums', 'pa'], 'vitality': ['band', 'mean', 'nums'], 'gate': ['alert', 'band', 'gad', 'nums', 'phq'], 'flow': ['band', 'nums', 'value'], 'couple': ['band', 'nums', 'sum']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
     'state-year/app.html': {
         "block": 'state_year', "instrument": 'AUDIT-C',
         "scores": ['alert', 'audit', 'source'],
         "answers": ['audit'],
         "inner": {'audit': ['alert', 'band', 'nums', 'sex_asked', 'threshold', 'total']},
-        "top": ['answers', 'block', 'completed_at', 'instrument', 'scores', 'user_id']},
+        "top": ['answers', 'block', 'completed_at', 'id', 'instrument', 'scores', 'user_id']},
 }
 
 

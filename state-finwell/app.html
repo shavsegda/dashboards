@@ -614,6 +614,148 @@ function draftProgress(a, f, seen) {
   return { done: done, total: list.length };
 }
 
+/* ==== ДОРОЖКА: НАЧАЛО ====
+ *
+ * Дорожка «пройти несколько за раз» — цепочка экранов внутри мини-аппа. Каталог
+ * собирает очередь и открывает первый замер; каждая страница, закончив свой,
+ * открывает адрес следующего сама. Выходов в чат на этом пути нет ни одного:
+ * раньше очередь держал бот, и человека выбрасывало в переписку на каждом шаге.
+ *
+ * Запись дорожки лежит в памяти телефона в ОДНОЙ ячейке на все страницы — они на
+ * одном домене. Поэтому выход и возврат безопасны: вернулся — предложено
+ * продолжить с того места.
+ *
+ * Чего дорожка НЕ хранит: ответы внутри замера. За них отвечает черновик самой
+ * страницы, он уже есть и работает. Второго механизма для одного и того же не
+ * делаем — они разъедутся, и однажды в базу уедет прошлое как свежее.
+ *
+ * Этот блок побайтово одинаков в каталоге и на всех девяти страницах замеров.
+ * Разъехались бы — дорожка на одной странице считала бы усталость иначе, чем на
+ * другой. За одинаковостью следит `checks/dorozhka.py`.
+ */
+
+// Ячейка памяти телефона под запись дорожки. Одна на все страницы.
+var TRACK_KEY = "kak_ty_track_v1";
+
+// Около двадцати минут — предложение остановиться: уставшие ответы менее точны.
+// Предложение, не запрет. Решает человек.
+var TRACK_TIRED_MIN = 20;
+
+// Сколько максимум считаем за один замер. Человек отложил телефон на сутки — это
+// не сутки дорожки, это пауза.
+var TRACK_LEG_CAP_MIN = 15;
+
+/** Запись дорожки из памяти телефона. Мусор и чужая версия — null, не догадка. */
+function trackRec(raw) {
+  var r;
+  try { r = JSON.parse(raw || "null"); } catch (e) { return null; }
+  if (!r || typeof r !== "object" || r.v !== 1) return null;
+  if (!Array.isArray(r.queue) || !Array.isArray(r.done)) return null;
+  if (r.state !== "run" && r.state !== "finish" && r.state !== "stopped") return null;
+  return r;
+}
+
+/** Замер, который дорожка открывает сейчас. Очередь пуста — null. */
+function trackHead(rec) {
+  return (rec && rec.queue && rec.queue.length) ? rec.queue[0] : null;
+}
+
+/** Идёт ли дорожка прямо сейчас и есть ли куда идти. */
+function trackRunning(rec) {
+  return !!(rec && rec.state === "run" && trackHead(rec));
+}
+
+/** Ждёт ли дорожка именно этот замер. Не его — страница ведёт себя как обычно. */
+function trackIsHead(rec, block) {
+  var h = trackRunning(rec) ? trackHead(rec) : null;
+  return !!(h && h.key === block);
+}
+
+/** Сколько замеров позади и сколько ещё в очереди. */
+function trackDoneCount(rec) { return (rec && rec.done) ? rec.done.length : 0; }
+function trackLeft(rec) { return (rec && rec.queue) ? rec.queue.length : 0; }
+
+/** Время текущего замера, ограниченное сверху: пауза дорожкой не считается. */
+function trackLegMs(rec, nowMs) {
+  if (!rec || !rec.legAt) return 0;
+  var d = Number(nowMs) - Number(rec.legAt);
+  if (!isFinite(d) || d < 0) return 0;
+  var cap = TRACK_LEG_CAP_MIN * 60000;
+  return d > cap ? cap : d;
+}
+
+/** Сколько минут дорожка идёт. По замерам, а не по стенным часам. */
+function trackElapsedMin(rec) {
+  if (!rec) return 0;
+  var ms = Number(rec.spentMs);
+  if (!isFinite(ms) || ms < 0) ms = 0;
+  return Math.round(ms / 60000);
+}
+
+/** Начало замера: с этой секунды считается его время. */
+function trackTouch(rec, nowMs) {
+  var out = JSON.parse(JSON.stringify(rec));
+  out.legAt = nowMs;
+  return out;
+}
+
+/**
+ * Замер закончился: голова очереди уходит в пройденное вместе со своими словами.
+ * Слова нужны итогу — он сшивает их в один текст. Ответы не переносим: они уже
+ * в базе, а второй список ответов однажды уедет в базу как свежий.
+ */
+function trackLegDone(rec, lines, nowMs) {
+  var out = JSON.parse(JSON.stringify(rec));
+  var h = out.queue.shift();
+  out.spentMs = (Number(out.spentMs) || 0) + trackLegMs(rec, nowMs);
+  out.legAt = nowMs;
+  out.done.push({ key: h.key, label: h.label, area: h.area,
+                  lines: (lines || []).map(function (t) { return String(t); }) });
+  if (!out.queue.length) out.state = "finish";
+  return out;
+}
+
+/**
+ * Пора ли предложить остановиться. Не чаще, чем раз в те же двадцать минут:
+ * предложение после каждого замера подряд — это уже давление.
+ */
+function trackOfferStop(rec) {
+  if (!trackRunning(rec)) return false;
+  var min = trackElapsedMin(rec);
+  var was = Number(rec.offeredMin);
+  if (!isFinite(was) || was < 0) was = 0;
+  return min >= TRACK_TIRED_MIN && min >= was + TRACK_TIRED_MIN;
+}
+
+/** Предложение прозвучало, человек решил идти дальше. */
+function trackOffered(rec, nowMs) {
+  var out = trackTouch(rec, nowMs);
+  out.offeredMin = trackElapsedMin(rec);
+  return out;
+}
+
+/**
+ * Дорожка остановлена. Непройденное остаётся в очереди: человек вернётся, когда
+ * захочет. `refer` — строка про специалиста, если остановил тяжёлый ответ.
+ */
+function trackStop(rec, refer) {
+  var out = JSON.parse(JSON.stringify(rec));
+  out.state = "stopped";
+  if (refer) out.refer = String(refer);
+  return out;
+}
+
+/**
+ * Тяжёлый ответ. Признак объявляет сама страница функцией `heavyReason` — там,
+ * где он бывает. Не объявила — признака нет: догадки тут запрещены.
+ * Screen and refer, never treat: дорожка останавливается и отдаёт человека
+ * живому специалисту, ничего не толкуя.
+ */
+function trackHeavy(a, f, prev) {
+  return (typeof heavyReason === "function") ? (heavyReason(a, f, prev) || null) : null;
+}
+/* ==== ДОРОЖКА: КОНЕЦ ==== */
+
 /* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
 
 // ---- Телеграм ----
@@ -1130,6 +1272,9 @@ async function finish() {
     state.sync = "error";
     state.syncMsg = "Не удалось сохранить. Нажми «Записать ещё раз» — вторая точка не появится.";
   }
+  // Дорожка ведёт дальше сама: следующий замер открывается сразу, без возврата в
+  // список. Экран результата посреди цепочки лишний — слова соберутся в итог.
+  if (okWrite && trackAfterSave()) return;
   renderResult();
 }
 
@@ -1278,6 +1423,149 @@ function bindOuts() {
     el.addEventListener("click", function () { renderClosed(HARD_TEXT); });
   });
 }
+
+/* ==== ДОРОЖКА НА СТРАНИЦЕ: НАЧАЛО ====
+ *
+ * Что делает эта часть. Замер записан — дорожка решает, что дальше: открыть
+ * адрес следующего замера, предложить остановиться или остановиться самой и
+ * отдать человека специалисту.
+ *
+ * Чего она НЕ делает: не трогает замер. Ключи полей, сборка записи, одна точка
+ * за период, кнопка назад и подтверждение выхода остаются как были.
+ *
+ * Блок побайтово одинаков на всех девяти страницах замеров.
+ */
+var TRACK = trackLoad();
+
+function trackLoad() {
+  try { return trackRec(localStorage.getItem(TRACK_KEY)); } catch (e) { return null; }
+}
+
+function trackSave(rec) {
+  try { localStorage.setItem(TRACK_KEY, JSON.stringify(rec)); } catch (e) {}
+  TRACK = rec;
+}
+
+/** Открыть адрес. Заменяем страницу, а не копим историю: кнопка назад должна
+ *  вести в каталог, а не в уже пройденный замер. */
+function trackGo(url) {
+  try {
+    if (window.location && typeof window.location.replace === "function") {
+      window.location.replace(url);
+      return;
+    }
+    window.location.href = url;
+  } catch (e) {}
+}
+
+/** Наш ли это шаг дорожки. Не наш — страница ведёт себя как обычно. */
+function trackMine() { return trackIsHead(TRACK, BLOCK); }
+
+// Время замера считается с открытия страницы, а не с начала дорожки: между
+// замерами человек мог закрыть телефон на два дня, и это пауза, а не дорожка.
+if (trackMine()) trackSave(trackTouch(TRACK, Date.now()));
+
+// Внутри дорожки человек должен видеть, где он: иначе экран выглядит случайным.
+// Одна строка, без счётчиков: счётчик превращает дорожку в долг.
+if (trackMine()) {
+  INTRO_EXTRA += '<p class="note">Идёт дорожка · этот замер следующий</p>';
+}
+
+/**
+ * Что делает дорожка после записи. Вернула true — экран забрала себе, и страница
+ * свой результат не собирает: посреди цепочки он лишний, слова всех замеров
+ * соберутся в один сшитый итог в конце.
+ */
+function trackAfterSave() {
+  if (!trackMine()) return false;
+  var said = resultLines(answers, flags, prevSaved) || [];
+  var rec = trackLegDone(TRACK, said, Date.now());
+  var heavy = trackHeavy(answers, flags, prevSaved);
+  if (heavy) {
+    trackSave(trackStop(rec, heavy));
+    renderTrackRefer(heavy);
+    return true;
+  }
+  if (trackOfferStop(rec)) {
+    trackSave(rec);
+    renderTrackTired();
+    return true;
+  }
+  trackSave(rec);
+  var next = trackHead(rec);
+  if (!next) { trackGo(rec.home); return true; }
+  trackGo(next.url);
+  return true;
+}
+
+/**
+ * Предложение остановиться около двадцатой минуты. Это предложение, а не запрет:
+ * обе кнопки живые, и «Продолжить» ведёт дальше. Причина названа прямо —
+ * уставшие ответы менее точны, и это измеренный эффект, а не забота на словах.
+ */
+function renderTrackTired() {
+  var h = trackHead(TRACK);
+  app.innerHTML =
+    "<h1>Можно остановиться</h1>" +
+    '<div class="sub">Дорожка идёт больше двадцати минут</div>' +
+    '<p class="lead">Замер записан. Дальше — «' + esc(h ? h.label : "") + '».</p>' +
+    '<p class="lead">К двадцатой минуте люди отвечают быстрее, чем читают, и ответы ' +
+    "получаются менее точными. Поэтому предлагаю остановиться — но решаешь ты.</p>" +
+    '<p class="lead">Остановишься — покажу итог по тому, что уже есть. Дорожка ' +
+    "останется на месте, вернуться можно когда угодно.</p>" +
+    '<div class="actions">' +
+      '<button data-track="go">Продолжить</button>' +
+      '<button class="secondary" data-track="stop">Остановиться</button>' +
+    "</div>";
+  bindTrack();
+}
+
+/**
+ * Тяжёлый ответ. Дорожка останавливается, и человек идёт к живому специалисту.
+ * Ни диагноза, ни толкования, ни «почему это у тебя»: screen and refer, never
+ * treat. Остальные замеры подождут — гнать по списку тут вреднее, чем не собрать
+ * цифру.
+ */
+function renderTrackRefer(reason) {
+  app.innerHTML =
+    "<h1>Дальше не гоню</h1>" +
+    '<p class="lead">' + esc(reason) + "</p>" +
+    '<p class="lead">Ответ записан. Дорожку останавливаю здесь: остальные замеры ' +
+    "подождут, а это — не к форме, а к живому человеку.</p>" +
+    '<p class="lead">Если тяжело прямо сейчас — 112 или круглосуточная линия ' +
+    "8 800 2000 122.</p>" +
+    '<p class="note">Это не диагноз и не толкование: я только заметил и передаю ' +
+    "дальше.</p>" +
+    '<div class="actions">' +
+      '<button class="secondary" data-track="close">Закрыть</button>' +
+    "</div>";
+  bindTrack();
+}
+
+/** Нажатия на экранах дорожки. Ни одного выхода в чат: только свои адреса. */
+function bindTrack() {
+  app.querySelectorAll("[data-track]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var what = el.getAttribute("data-track");
+      if (what === "go") {
+        var rec = trackOffered(TRACK, Date.now());
+        trackSave(rec);
+        var next = trackHead(rec);
+        trackGo(next ? next.url : rec.home);
+        return;
+      }
+      if (what === "stop") {
+        var stopped = trackStop(TRACK);
+        trackSave(stopped);
+        trackGo(stopped.home);
+        return;
+      }
+      if (tg) { closeApp(); return; }
+      trackGo(TRACK && TRACK.home ? TRACK.home : "/kak-ty/app.html");
+    });
+  });
+}
+/* ==== ДОРОЖКА НА СТРАНИЦЕ: КОНЕЦ ==== */
 
 // === Старт ===
 if (!USER_ID) {
