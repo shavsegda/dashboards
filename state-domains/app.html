@@ -539,7 +539,11 @@ function composeRaw(a, f) {
  * Здесь агрегата нет: те же восемь пар, просто разложены по длине промежутка.
  */
 function gapRows(a) {
-  var sat = satOf(a), imp = impOf(a);
+  return gapRowsFrom(satOf(a), impOf(a));
+}
+
+function gapRowsFrom(sat, imp) {
+  sat = sat || {}; imp = imp || {};
   var rows = [];
   PWI_DOMAINS.forEach(function (d) {
     var now = sat[d.key], w = imp[d.key];
@@ -554,7 +558,10 @@ function gapRows(a) {
 }
 
 function gapRowsHtml(a) {
-  var rows = gapRows(a);
+  return gapRowsHtmlFrom(gapRows(a));
+}
+
+function gapRowsHtmlFrom(rows) {
   if (!rows.length) return "";
   return rows.map(function (r, i) {
     var lo = Math.min(r.now, r.imp === null ? r.now : r.imp);
@@ -920,6 +927,39 @@ var flags = {
   filled: params.get("d") === "1"
 };
 
+/* Прошлый замер приезжает адресом от бота (023): страница базу не читает, а в
+   памяти телефона результат живёт до первой чистки. Формат — цифры через
+   запятую в порядке PWI_DOMAINS, пропуск пустой: `pv=2,,0,5,0,1,0,0`. */
+var PREV_URL = (function () {
+  function parseLine(s) {
+    if (!s) return null;
+    var parts = String(s).split(",");
+    if (parts.length !== PWI_DOMAINS.length) return null;
+    var out = {}, any = false;
+    parts.forEach(function (v, i) {
+      if (v === "") return;
+      var n = Number(v);
+      if (!isFinite(n)) return;
+      out[PWI_DOMAINS[i].key] = n; any = true;
+    });
+    return any ? out : null;
+  }
+  var sat = parseLine(params.get("pv"));
+  if (!sat) return null;
+  return { sat: sat, imp: parseLine(params.get("pi")) || {},
+           at: params.get("pd") || "" };
+})();
+
+var PREV_MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня",
+                   "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+
+/** Дата словами: машинную с часовым поясом человек читает как ошибку. */
+function prevDateWords(iso) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ""));
+  if (!m) return "";
+  return String(Number(m[3])) + " " + PREV_MONTHS[Number(m[2]) - 1];
+}
+
 // ---- База ----
 var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
@@ -1064,10 +1104,23 @@ function renderIntro() {
         (pr.done >= pr.total ? "Отправить ещё раз" : "Продолжить") + "</button>" +
       '<button class="secondary" id="startBtn">Начать заново</button>'
     : '<button id="startBtn">Начать</button>';
+  // Прошлый замер показываем ДО вопросов и до всего остального: человек пришёл
+  // посмотреть на себя, а не заполнять. Отдать раньше, чем попросить.
+  var prevBlock = "";
+  if (PREV_URL) {
+    var prevRows = gapRowsHtmlFrom(gapRowsFrom(PREV_URL.sat, PREV_URL.imp));
+    if (prevRows) {
+      var when = prevDateWords(PREV_URL.at);
+      prevBlock =
+        '<div class="res-h">Прошлый замер' + (when ? ", " + esc(when) : "") + "</div>" +
+        '<div class="res-card">' + prevRows + "</div>";
+    }
+  }
   app.innerHTML =
     "<h1>" + esc(CARD_TITLE) + "</h1>" +
     '<div class="sub">' + esc(CARD_SIZE) + "</div>" +
     resume +
+    prevBlock +
     banner +
     '<p class="lead">' + WHAT_IT_GIVES + "</p>" +
     '<div class="weather">' + WEATHER_TEXT + "</div>" +
