@@ -51,10 +51,14 @@ MUTATIONS: List[Tuple[str, str, str, str, str]] = [
      "      state.draft = field.value;",
      "check_draft_saved_after_each_answer"),
 
+    # Место мутации пересняли 10.08.2026: спека 023 вставила между `resume` и
+    # `banner` блок с прошлым замером (`prevBlock`), и старый якорь из двух строк
+    # перестал встречаться в файле. Утверждение то же — если строку про
+    # продолжение убрать из сборки экрана, проверка должна покраснеть.
     ("восстановление тихое: строки про продолжение нет",
      "state-domains/app.html",
-     "    resume +\n    banner +",
-     "    banner +",
+     "    resume +\n    prevBlock +",
+     "    prevBlock +",
      "check_return_is_visible_and_explicit"),
 
     ("начать заново негде",
