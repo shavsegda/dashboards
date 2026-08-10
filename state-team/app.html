@@ -545,23 +545,21 @@ function buildAnswers() {
   return answers;
 }
 
-// === Запись в базу: одна точка за период ===
+// === Запись в базу: каждый заход — новая строка ===
 //
-// Дефект с живого человека, 07.08.2026. Страница писала POST без номера записи,
-// и каждая отправка создавала свою строку. У Алексея за 3 августа так набралось
-// пять квартальных точек и восемь месячных вместо одной и одной: линия в
-// «Динамике» строилась по мусору, а «уже проходил за этот период» не
-// определялось вовсе.
+// Дефект с живого человека, 10.08.2026. Страница считала постоянный номер записи
+// от id человека, блока и периода. Повтор замера в том же периоде упирался в
+// «номер занят» (409) и уходил в правку. А ключ страниц умеет ТОЛЬКО вставлять:
+// правка возвращала ноль изменённых строк, и человек видел красную строку «не
+// удалось сохранить». Значит любой повтор за период падал всегда.
 //
-// Починка та же, что в `state-day/app.html`: номер записи считается от id
-// человека, блока и периода замера. Повтор за тот же период попадает в ту же
-// строку — база отвечает 409 на занятый номер, и мы уходим в правку.
+// Теперь номер записи случайный: сталкиваться не с чем, править нечего. За период
+// в базе может лежать несколько строк — это нормально. Правило «одна точка за
+// период» держится на чтении: за период берётся запись с самым поздним
+// completed_at.
 //
-// Почему правка ТОЛЬКО по номеру записи. В базе уже лежат старые строки со
-// случайными номерами. Правка по окну «человек + блок + даты периода»
-// переписала бы все пять одним содержимым — это потеря истории, а не починка.
-// Поэтому старые строки не трогаются никогда: с этого момента на период
-// добавляется ровно одна новая строка, и дальше правится она.
+// Права ключа не трогаем: user_id приходит из адреса страницы и подделывается.
+// Разрешить этому ключу правку — значит разрешить менять чужие замеры.
 const TABLE = SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE;
 
 function sbHeaders() {
@@ -573,78 +571,45 @@ function sbHeaders() {
   };
 }
 
-function idKeyString(userId, pk) { return BLOCK + '|' + userId + '|' + pk; }
-
 function uuidFromBytes(bytes) {
   const b = Array.prototype.slice.call(bytes, 0, 16);
-  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[6] = (b[6] & 0x0f) | 0x40;          // версия 4 — «случайный»
   b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
   const h = b.map(x => ('0' + (x & 0xff).toString(16)).slice(-2)).join('');
   return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' +
          h.slice(16, 20) + '-' + h.slice(20, 32);
 }
 
-// Запасной хеш, если crypto.subtle недоступен: четыре прохода FNV-1a с разными
-// затравками дают 128 бит.
-function fnvBytes(str) {
-  const seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
-  const out = [];
-  for (let s = 0; s < 4; s++) {
-    let h = seeds[s] >>> 0;
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619) >>> 0;
-    }
-    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
-  }
-  return out;
-}
-
-/** Номер записи для человека и периода. Те же двое — тот же номер, всегда. */
-async function recordIdFor(userId, pk) {
-  const key = idKeyString(userId, pk);
+/** Номер новой записи. Случайный — чтобы никогда не совпал с уже занятым. */
+function newRecordId() {
   try {
-    if (window.crypto && window.crypto.subtle) {
-      const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
-      return uuidFromBytes(new Uint8Array(buf));
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      return uuidFromBytes(window.crypto.getRandomValues(new Uint8Array(16)));
     }
   } catch (e) {}
-  return uuidFromBytes(fnvBytes(key));
+  // Запасной путь, если браузер не даёт случайных чисел.
+  const b = [];
+  for (let i = 0; i < 16; i++) b.push(Math.floor(Math.random() * 256));
+  return uuidFromBytes(b);
 }
 
-function recordId(pk) { return recordIdFor(UID, pk); }
-
-// Порядок один и тот же всегда: сначала попытка создать строку, и только по
-// отказу базы — правка. Отметки «строка уже есть» на странице нет сознательно:
-// такая отметка может врать (строку удалили, память телефона старая), и тогда
-// правка ушла бы в пустоту, а человек увидел бы «записано». Спрашивать базу
-// дороже на один запрос — зато соврать невозможно.
+// Только вставка. Ответ не 2xx — честная ошибка записи: человек видит ошибку,
+// ответы остаются при нём. Ветки правки нет вовсе: ключ страниц править не умеет.
 async function pushToSupabase(record) {
   try {
-    const id = await recordId(periodKey(record.completed_at));
     const res = await fetch(TABLE, {
       method: 'POST',
       headers: sbHeaders(),
-      body: JSON.stringify(Object.assign({id: id}, record))
+      body: JSON.stringify(Object.assign({id: newRecordId()}, record))
     });
-    if (res.status < 300) return true;
-    // Номер занят — точка за этот период уже есть. Правим её, второй не будет.
-    if (res.status === 409) return await patchById(id, record);
-    return false;
+    return res.status < 300;
   } catch (e) {
     console.error('Supabase push failed:', e);
     return false;
   }
-}
-
-/** Правка одной строки по её номеру. Ни одной чужой строки не задевает. */
-async function patchById(id, record) {
-  const res = await fetch(TABLE + '?id=eq.' + id, {
-    method: 'PATCH',
-    headers: sbHeaders(),
-    body: JSON.stringify(record)
-  });
-  return res.status < 300;
 }
 
 function sendToBot(record) {

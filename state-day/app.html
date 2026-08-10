@@ -419,51 +419,17 @@ function utcDayKey(iso) {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
-function dayWindow(dayKey) {
-  var next = new Date(dayKey + "T00:00:00.000Z");
-  next.setUTCDate(next.getUTCDate() + 1);
-  return { from: dayKey + "T00:00:00.000Z", to: next.toISOString().slice(0, 10) + "T00:00:00.000Z" };
-}
-
-// ---- Защита от дублей ----
-// Ключ записи детерминированный: один человек + одни сутки = один id.
-// Поэтому повторная отправка натыкается на первичный ключ, а не создаёт вторую
-// точку. Это и есть FR-011 на стороне базы, а не только на стороне формы.
-function idKeyString(userId, dayKey) {
-  return "state_day|" + userId + "|" + dayKey;
-}
-
-function uuidFromBytes(bytes) {
+// ---- Номер записи ----
+// FR-001. Каждый заход — новая строка со случайным номером. Правку ключ страниц
+// делать не умеет, поэтому постоянный номер от суток давал только 409 и отказ.
+// Правило «одна точка за период» держится на чтении: берётся самая свежая
+// запись за период.
+function uuidFromRandomBytes(bytes) {
   var b = Array.prototype.slice.call(bytes, 0, 16);
-  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[6] = (b[6] & 0x0f) | 0x40;          // версия 4 — «случайный»
   b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
   var h = b.map(function (x) { return ("0" + (x & 0xff).toString(16)).slice(-2); }).join("");
   return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20, 32);
-}
-
-// Запасной хеш, если crypto.subtle недоступен: четыре независимых прохода
-// FNV-1a с разными затравками дают 128 бит.
-function fnvBytes(str) {
-  var seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
-  var out = [];
-  for (var s = 0; s < 4; s++) {
-    var h = seeds[s] >>> 0;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619) >>> 0;
-    }
-    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
-  }
-  return out;
-}
-
-/**
- * Какой запрос делать. Знаем, что за сегодня уже есть точка — только правим.
- * Не знаем — пишем новую с детерминированным id: если она вдруг уже есть,
- * база ответит 409 и мы уйдём в правку. Двух точек не будет ни в одном случае.
- */
-function decideWrite(ctx) {
-  return (ctx && ctx.knownExisting) ? "patch-window" : "post";
 }
 
 /**
@@ -809,21 +775,26 @@ function sbHeaders() {
   };
 }
 
-async function recordId(dayKey) {
-  var key = idKeyString(USER_ID, dayKey);
+// Случайный номер: 409 «номер занят» невозможен, и мы не зависим от того, что
+// база подставит сама.
+function newRecordId() {
   try {
-    if (window.crypto && window.crypto.subtle) {
-      var buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
-      return uuidFromBytes(new Uint8Array(buf));
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    if (window.crypto && window.crypto.getRandomValues) {
+      return uuidFromRandomBytes(window.crypto.getRandomValues(new Uint8Array(16)));
     }
   } catch (e) {}
-  return uuidFromBytes(fnvBytes(key));
+  var b = [];
+  for (var i = 0; i < 16; i++) b.push(Math.floor(Math.random() * 256));
+  return uuidFromRandomBytes(b);
 }
 
 // ---- Память устройства ----
 // Отметка «сегодня уже отправлял» ставится ТОЛЬКО после ответа сервера. Если
-// сеть отвалилась и ответа не было — отметки нет, повтор пойдёт как новая
-// запись, наткнётся на тот же id и уйдёт в правку. Ни потери, ни дубля.
+// сеть отвалилась и ответа не было — отметки нет, и повтор запишется заново.
+// В линии за сутки останется последняя запись.
 var LS_KEY = "sutki_v1_" + USER_ID;
 
 function loadLocal() {
@@ -912,8 +883,8 @@ var form = {
   eventText: "",
   actionMark: HAS_GOAL ? "unmarked" : null
 };
-// Прошлая отправка за эти же сутки — подставляем, чтобы правка была правкой,
-// а не заполнением с нуля.
+// Прошлая отправка за эти же сутки — подставляем, чтобы повтор шёл от прежних
+// ответов, а не с нуля.
 if (localFilledToday && local.form) {
   Object.keys(form).forEach(function (k) {
     if (local.form[k] !== undefined && local.form[k] !== null && local.form[k] !== "") form[k] = local.form[k];
@@ -1035,7 +1006,7 @@ function historyHtml() {
 
 function renderForm() {
   var banner = knownExisting
-    ? '<div class="banner"><strong>Сутки за сегодня уже заполнены.</strong> Можно исправить — новые значения заменят прежние, вторая точка не появится. Или выйти и оставить как есть.</div>'
+    ? '<div class="banner"><strong>Замер за сегодня уже есть.</strong> Можно пройти снова — запишем ещё раз, в линии останется последняя запись.</div>'
     : "";
 
   // Восстановление говорим вслух. Молча подставить чужие с виду цифры хуже, чем
@@ -1145,7 +1116,7 @@ function renderForm() {
     "</details>" +
 
     '<div class="actions">' +
-      '<button class="act" id="submitBtn">' + (knownExisting ? "Исправить" : "Записать") + "</button>" +
+      '<button class="act" id="submitBtn">' + (knownExisting ? "Записать ещё раз" : "Записать") + "</button>" +
       (draftRestored ? '<button class="ghost" id="dropDraftBtn">Начать заново</button>' : "") +
       (knownExisting && tg ? '<button class="ghost" id="exitBtn">Выйти</button>' : "") +
     "</div>" +
@@ -1276,9 +1247,14 @@ async function submit() {
   if (btn) { btn.disabled = true; btn.textContent = "Записываю…"; }
   setStatus("");
 
-  var unlock = function (msg) {
+  // Второй аргумент — «запись не прошла». Тогда кнопка называется так же, как
+  // сказано в тексте ошибки: иначе человек ищет на экране кнопку, которой нет.
+  var unlock = function (msg, failedWrite) {
     lock.release();
-    if (btn) { btn.disabled = false; btn.textContent = knownExisting ? "Исправить" : "Записать"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = (failedWrite || knownExisting) ? "Записать ещё раз" : "Записать";
+    }
     if (msg) setStatus(msg, true);
   };
 
@@ -1306,11 +1282,8 @@ async function submit() {
   };
 
   try {
-    var mode = decideWrite({ knownExisting: knownExisting });
-    var ok = (mode === "patch-window")
-      ? await patchWindow(dayKey, payload)
-      : await postThenPatch(dayKey, payload);
-    if (!ok) { unlock("База не приняла запись. Попробуй ещё раз — второй точки не будет"); return; }
+    var ok = await postRecord(payload);
+    if (!ok) { unlock("Запись не ушла. Ответы на месте — нажми «Записать ещё раз».", true); return; }
 
     lastSaved = built.scores;
     saveLocal({ dayKey: dayKey, savedAt: completedAt, form: input });
@@ -1325,41 +1298,17 @@ async function submit() {
     if (signalSaved()) return;
     renderDone();
   } catch (e) {
-    // Сеть могла отвалиться уже после записи. Отметку не ставим, поэтому
-    // повтор пойдёт тем же id: база вернёт 409 и мы уйдём в правку.
-    unlock("Сеть не ответила. Нажми ещё раз — вторая точка не появится");
+    // Сеть могла отвалиться уже после записи. Отметку не ставим, поэтому повтор
+    // запишется заново — в линии за сутки останется последняя запись.
+    unlock("Запись не ушла. Ответы на месте — нажми «Записать ещё раз».", true);
   }
 }
 
-/** Правка суточной точки за эти сутки. Ловит и запись, сделанную ботом из текста. */
-async function patchWindow(dayKey, payload) {
-  var w = dayWindow(dayKey);
-  var url = TABLE +
-    "?user_id=eq." + encodeURIComponent(payload.user_id) +
-    "&block=eq.state_day" +
-    "&completed_at=gte." + encodeURIComponent(w.from) +
-    "&completed_at=lt." + encodeURIComponent(w.to);
-  var r = await fetch(url, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({
-    instrument: payload.instrument, scores: payload.scores,
-    answers: payload.answers, completed_at: payload.completed_at
-  }) });
-  return r.status < 300;
-}
-
-/** Новая точка с детерминированным id. Уже есть — база даёт 409, уходим в правку. */
-async function postThenPatch(dayKey, payload) {
-  var id = await recordId(dayKey);
-  var body = Object.assign({ id: id }, payload);
+/** Новая строка. Только вставка: ключ страниц другого не умеет (FR-001, FR-003). */
+async function postRecord(payload) {
+  var body = Object.assign({ id: newRecordId() }, payload);
   var r = await fetch(TABLE, { method: "POST", headers: sbHeaders(), body: JSON.stringify(body) });
-  if (r.status < 300) return true;
-  if (r.status === 409) {
-    var r2 = await fetch(TABLE + "?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({
-      instrument: payload.instrument, scores: payload.scores,
-      answers: payload.answers, completed_at: payload.completed_at
-    }) });
-    return r2.status < 300;
-  }
-  return false;
+  return r.status < 300;
 }
 
 /* ---- Сигнал боту: запись прошла (019) ----
@@ -1416,7 +1365,7 @@ function renderDone() {
       }).join("") +
     "</div>" +
     '<div class="actions">' +
-      '<button class="ghost" id="againBtn">Исправить</button>' +
+      '<button class="ghost" id="againBtn">Записать ещё раз</button>' +
       (tg ? '<button class="act" id="closeBtn">Закрыть</button>' : "") +
     "</div>";
   var a = document.getElementById("againBtn");

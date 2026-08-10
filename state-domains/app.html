@@ -172,7 +172,7 @@ var PERIOD_WORD_ACC = "этот квартал";
 
 // ---- Тексты экрана ----
 var CARD_TITLE = "Области жизни";
-var CARD_SIZE = "8 областей · 2 минуты";
+var CARD_SIZE = "16 вопросов · 4 минуты";
 var WHAT_IT_GIVES = "Покажет, какая область жизни сейчас тоньше всего — и что сдвинулось с прошлого квартала.";
 var WEATHER_TEXT = "Общего числа здесь нет и не будет: складывать области значит терять то, ради чего мерили.";
 var WINDOW_TEXT = "Окно: последние три месяца";
@@ -265,9 +265,11 @@ function moneySum(v) {
   return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
-// ---- Период: одна точка за период ----
-// Номер записи считается от id человека и от периода — тогда вторая точка
-// физически не появится. Ровно так сделано в суточном экране.
+// ---- Период ----
+// Ключ периода нужен для черновика и для строки «с прошлым разом». Номер записи
+// от него больше не считается: каждый заход пишет новую строку (FR-001), а
+// правило «одна точка за период» держится на чтении — берётся самая свежая
+// запись за период (FR-002).
 function isoWeekKey(d) {
   var t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   var day = t.getUTCDay() || 7;
@@ -286,45 +288,12 @@ function periodKey(iso) {
   return d.getUTCFullYear() + "-Q" + (Math.floor(d.getUTCMonth() / 3) + 1);
 }
 
-/** Границы периода — чтобы поймать и точку, записанную разговором с ботом. */
-function periodWindow(iso) {
-  var d = new Date(iso);
-  var y = d.getUTCFullYear(), m = d.getUTCMonth(), day = d.getUTCDate();
-  var from, to;
-  if (PERIOD_DAYS <= 1) { from = Date.UTC(y, m, day); to = from + 86400000; }
-  else if (PERIOD_DAYS <= 7) {
-    var dow = d.getUTCDay() || 7;
-    from = Date.UTC(y, m, day) - (dow - 1) * 86400000;
-    to = from + 7 * 86400000;
-  } else if (PERIOD_DAYS <= 31) { from = Date.UTC(y, m, 1); to = Date.UTC(y, m + 1, 1); }
-  else { var q = Math.floor(m / 3) * 3; from = Date.UTC(y, q, 1); to = Date.UTC(y, q + 3, 1); }
-  return { from: new Date(from).toISOString(), to: new Date(to).toISOString() };
-}
-
-function idKeyString(userId, pk) { return BLOCK + "|" + userId + "|" + pk; }
-
-function uuidFromBytes(bytes) {
+function uuidFromRandomBytes(bytes) {
   var b = Array.prototype.slice.call(bytes, 0, 16);
-  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[6] = (b[6] & 0x0f) | 0x40;          // версия 4 — «случайный»
   b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
   var h = b.map(function (x) { return ("0" + (x & 0xff).toString(16)).slice(-2); }).join("");
   return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20, 32);
-}
-
-// Запасной хеш, если crypto.subtle недоступен: четыре прохода FNV-1a с разными
-// затравками дают 128 бит.
-function fnvBytes(str) {
-  var seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
-  var out = [];
-  for (var s = 0; s < 4; s++) {
-    var h = seeds[s] >>> 0;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619) >>> 0;
-    }
-    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
-  }
-  return out;
 }
 
 /**
@@ -437,11 +406,11 @@ var STEPS = PWI_DOMAINS.map(function (d) {
            q: "Насколько тебя устраивает " + d.name + "?", ends: SAT_ENDS };
 }).concat(PWI_DOMAINS.map(function (d) {
   return {
-    // Важность спрашивается раз в год: «здоровье важно» не переворачивается за
-    // три месяца. Когда пора — говорит бот, он один видит прошлые замеры.
+    // Важность спрашивается каждый раз, вторым проходом после удовлетворённости.
+    // Годовой срок убран: он экономил сорок секунд и стоил молчаливого отказа —
+    // важности не спрашивали, а в запись они попадали.
     key: "imp_" + d.key, kind: "scale", lo: 0, hi: 10, optional: true,
-    q: "Насколько для тебя важно " + d.name + "?", ends: IMP_ENDS,
-    when: function (a, f) { return (f || {}).askImportance === true; }
+    q: "Насколько для тебя важно " + d.name + "?", ends: IMP_ENDS
   };
 }));
 
@@ -456,9 +425,10 @@ function satOf(a) {
   return out;
 }
 
-function impOf(a, f) {
+/** Важности из ЭТОГО захода. Пропустил вопрос — значения нет: прошлое сюда не
+ *  подставляется никогда. */
+function impOf(a) {
   var out = {};
-  if (!(f || {}).askImportance) return out;
   PWI_DOMAINS.forEach(function (d) {
     if (a["imp_" + d.key] !== undefined) out[d.key] = a["imp_" + d.key];
   });
@@ -491,7 +461,7 @@ function pwiThinnest(sat, imp) {
  * никогда (дефект 07.08.2026).
  */
 function buildScores(a, f) {
-  var sat = satOf(a), imp = impOf(a, f);
+  var sat = satOf(a), imp = impOf(a);
   if (!Object.keys(sat).length) return { scores: {}, has: false };
   var pwi = {};
   PWI_DOMAINS.forEach(function (d) {
@@ -510,7 +480,7 @@ function composeRaw(a, f) {
 }
 
 function resultLines(a, f) {
-  var sat = satOf(a), imp = impOf(a, f);
+  var sat = satOf(a), imp = impOf(a);
   var out = [];
   PWI_DOMAINS.forEach(function (d) {
     var v = sat[d.key];
@@ -847,14 +817,12 @@ var USER_ID = parseUserId(params.get("u")) ||
 //   tm  — команда: так же
 //   md  — практика вроде медитации: так же
 //   p   — парная работа: 0 нет; молчание значит «есть», как в каталоге
-//   imp — пора спросить про важность областей (раз в год)
 //   d   — замер за этот период уже есть; говорим это ДО начала, а не после
 var flags = {
   kids: params.get("k") === "1" ? true : (params.get("k") === "0" ? false : null),
   team: params.get("tm") === "1" ? true : (params.get("tm") === "0" ? false : null),
   meditates: params.get("md") === "1" ? true : (params.get("md") === "0" ? false : null),
   pair: params.get("p") === "0" ? false : true,
-  askImportance: params.get("imp") === "1",
   filled: params.get("d") === "1"
 };
 
@@ -872,15 +840,20 @@ function sbHeaders(prefer) {
   };
 }
 
-async function recordId(pk) {
-  var key = idKeyString(USER_ID, pk);
+// Свежий номер на каждый заход. Занятым он быть не может, значит и отказа 409
+// с уходом в правку тоже не будет.
+function newRecordId() {
   try {
-    if (window.crypto && window.crypto.subtle) {
-      var buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
-      return uuidFromBytes(new Uint8Array(buf));
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    if (window.crypto && window.crypto.getRandomValues) {
+      return uuidFromRandomBytes(window.crypto.getRandomValues(new Uint8Array(16)));
     }
   } catch (e) {}
-  return uuidFromBytes(fnvBytes(key));
+  var b = [];
+  for (var i = 0; i < 16; i++) b.push(Math.floor(Math.random() * 256));
+  return uuidFromRandomBytes(b);
 }
 
 // ---- Память телефона ----
@@ -975,7 +948,7 @@ function renderIntro() {
   state.screen = "intro";
   state.key = null;
   var banner = knownExisting
-    ? '<div class="banner"><strong>Этот замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — новые ответы заменят прежние, вторая точка не появится.</div>'
+    ? '<div class="banner"><strong>Замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — запишем ещё раз, в линии останется последняя запись.</div>'
     : "";
   // Начатое не прячем. Тихое восстановление хуже явного: человек увидит
   // середину замера и не поймёт, чьи это ответы. Поэтому говорим прямо и рядом
@@ -1238,7 +1211,7 @@ async function finish() {
 
   var okWrite = false;
   try {
-    okWrite = await writeRecord(payload, periodKey(completedAt), completedAt);
+    okWrite = await writeRecord(payload);
   } catch (e) { okWrite = false; }
 
   lock.release();
@@ -1257,7 +1230,7 @@ async function finish() {
     state.syncMsg = "Замер записан.";
   } else {
     state.sync = "error";
-    state.syncMsg = "Не удалось сохранить. Нажми «Записать ещё раз» — вторая точка не появится.";
+    state.syncMsg = "Запись не ушла. Ответы на месте — нажми «Записать ещё раз».";
   }
   // Дорожка ведёт дальше сама: следующий замер открывается сразу, без возврата в
   // список. Экран результата посреди цепочки лишний — слова соберутся в итог.
@@ -1266,60 +1239,20 @@ async function finish() {
 }
 
 /**
- * Записать одну точку за период.
+ * Записать замер. Маршрут один — вставка новой строки.
  *
- * Сначала правка, если бот сказал, что точка за этот период уже есть: её мог
- * написать разговор с ботом со своим номером. Правка вернула ноль строк —
- * пишем новую с детерминированным номером. Номер уже занят — база отвечает
- * 409, и мы уходим в правку. Двух точек не будет ни в одном случае.
+ * Проверено 10.08.2026: ключ страниц умеет только вставлять. PATCH менял ноль
+ * строк, и повтор за период всегда заканчивался красной строкой «не удалось
+ * сохранить». Теперь каждый заход — новая строка со случайным номером (FR-001),
+ * а за период читается самая свежая запись (FR-002). Права ключа не трогаем
+ * (FR-003). Ответ не 2xx — честная ошибка: черновик остаётся на месте.
  */
-async function writeRecord(payload, pk, completedAt) {
-  var id = await recordId(pk);
-  if (knownExisting) {
-    var n = await patchWindow(payload, completedAt);
-    if (n > 0) return true;
-  }
+async function writeRecord(payload) {
   var r = await fetch(TABLE, {
     method: "POST", headers: sbHeaders(),
-    body: JSON.stringify(Object.assign({ id: id }, payload))
+    body: JSON.stringify(Object.assign({ id: newRecordId() }, payload))
   });
-  if (r.status < 300) return true;
-  if (r.status === 409) return (await patchById(id, payload)) > 0;
-  return false;
-}
-
-function patchBody(payload) {
-  return JSON.stringify({
-    instrument: payload.instrument, scores: payload.scores,
-    answers: payload.answers, completed_at: payload.completed_at
-  });
-}
-
-async function countRows(r) {
-  if (r.status >= 300) return 0;
-  try {
-    var rows = await r.json();
-    return Array.isArray(rows) ? rows.length : 1;
-  } catch (e) { return 0; }
-}
-
-async function patchWindow(payload, completedAt) {
-  var w = periodWindow(completedAt);
-  var url = TABLE +
-    "?user_id=eq." + encodeURIComponent(payload.user_id) +
-    "&block=eq." + encodeURIComponent(BLOCK) +
-    "&completed_at=gte." + encodeURIComponent(w.from) +
-    "&completed_at=lt." + encodeURIComponent(w.to);
-  var r = await fetch(url, { method: "PATCH", headers: sbHeaders("return=representation"),
-                             body: patchBody(payload) });
-  return await countRows(r);
-}
-
-async function patchById(id, payload) {
-  var r = await fetch(TABLE + "?id=eq." + id, {
-    method: "PATCH", headers: sbHeaders("return=representation"), body: patchBody(payload)
-  });
-  return await countRows(r);
+  return r.status < 300;
 }
 
 // ---- Экран результата ----
@@ -1396,13 +1329,6 @@ function closeApp() { try { tg.close(); } catch (e) {} }
 
 /** Тихих выходов нет: каждую область можно пропустить кнопкой на её экране. */
 function bindOuts() {}
-
-// Честная длина зависит от того, спрашиваем ли важность. Раз в год вопросов
-// вдвое больше, и человек должен знать это до начала, а не на девятом экране.
-CARD_SIZE = flags.askImportance ? "16 вопросов · 4 минуты" : "8 вопросов · 2 минуты";
-if (flags.askImportance) {
-  INTRO_EXTRA += '<p class="lead">Сегодня спрошу ещё и про важность каждой области — это бывает раз в год.</p>';
-}
 
 /* ==== ДОРОЖКА НА СТРАНИЦЕ: НАЧАЛО ====
  *

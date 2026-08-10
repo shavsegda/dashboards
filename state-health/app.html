@@ -298,49 +298,37 @@ function periodKey(iso) {
   return String(d.getUTCFullYear());
 }
 
-/** Границы периода — чтобы поймать и точку, записанную разговором с ботом. */
-function periodWindow(iso) {
-  var d = new Date(iso);
-  var y = d.getUTCFullYear(), m = d.getUTCMonth(), day = d.getUTCDate();
-  var from, to;
-  if (PERIOD_DAYS <= 1) { from = Date.UTC(y, m, day); to = from + 86400000; }
-  else if (PERIOD_DAYS <= 7) {
-    var dow = d.getUTCDay() || 7;
-    from = Date.UTC(y, m, day) - (dow - 1) * 86400000;
-    to = from + 7 * 86400000;
-  } else if (PERIOD_DAYS <= 31) { from = Date.UTC(y, m, 1); to = Date.UTC(y, m + 1, 1); }
-  else if (PERIOD_DAYS <= 92) {
-    var q = Math.floor(m / 3) * 3; from = Date.UTC(y, q, 1); to = Date.UTC(y, q + 3, 1);
-  } else if (PERIOD_DAYS <= 183) {
-    var h = m < 6 ? 0 : 6; from = Date.UTC(y, h, 1); to = Date.UTC(y, h + 6, 1);
-  } else { from = Date.UTC(y, 0, 1); to = Date.UTC(y + 1, 0, 1); }
-  return { from: new Date(from).toISOString(), to: new Date(to).toISOString() };
-}
-
-function idKeyString(userId, pk) { return BLOCK + "|" + userId + "|" + pk; }
-
-function uuidFromBytes(bytes) {
+function uuidFromRandomBytes(bytes) {
   var b = Array.prototype.slice.call(bytes, 0, 16);
-  b[6] = (b[6] & 0x0f) | 0x50;          // версия 5 — «имя + пространство»
+  b[6] = (b[6] & 0x0f) | 0x40;          // версия 4 — случайный
   b[8] = (b[8] & 0x3f) | 0x80;          // вариант RFC 4122
   var h = b.map(function (x) { return ("0" + (x & 0xff).toString(16)).slice(-2); }).join("");
   return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20, 32);
 }
 
-// Запасной хеш, если crypto.subtle недоступен: четыре прохода FNV-1a с разными
-// затравками дают 128 бит.
-function fnvBytes(str) {
-  var seeds = [0x811c9dc5, 0x01000193, 0x9e3779b9, 0x85ebca6b];
-  var out = [];
-  for (var s = 0; s < 4; s++) {
-    var h = seeds[s] >>> 0;
-    for (var i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619) >>> 0;
+/**
+ * Номер новой записи. Случайный, каждый заход свой.
+ *
+ * Раньше номер считался от человека, блока и периода — повтор за тот же период
+ * попадал в занятый номер, база отвечала 409, страница уходила в правку, а
+ * править ключ страницы не умеет: правка возвращала ноль строк, и человек видел
+ * «не удалось сохранить». Теперь каждый заход — новая строка, 409 невозможен.
+ * Правило «одна точка за период» живёт на чтении: берётся самая свежая запись.
+ */
+function newRecordId() {
+  try {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
     }
-    out.push((h >>> 24) & 0xff, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff);
-  }
-  return out;
+    if (window.crypto && window.crypto.getRandomValues) {
+      var b = new Uint8Array(16);
+      window.crypto.getRandomValues(b);
+      return uuidFromRandomBytes(b);
+    }
+  } catch (e) {}
+  var out = [];
+  for (var i = 0; i < 16; i++) out.push(Math.floor(Math.random() * 256));
+  return uuidFromRandomBytes(out);
 }
 
 /**
@@ -917,17 +905,6 @@ function sbHeaders(prefer) {
   };
 }
 
-async function recordId(pk) {
-  var key = idKeyString(USER_ID, pk);
-  try {
-    if (window.crypto && window.crypto.subtle) {
-      var buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
-      return uuidFromBytes(new Uint8Array(buf));
-    }
-  } catch (e) {}
-  return uuidFromBytes(fnvBytes(key));
-}
-
 // ---- Память телефона ----
 // Здесь лежит ТОЛЬКО прошлый замер и только для строки «с прошлым разом».
 // В запись отсюда не уходит ничего и никогда: дефект 07.08.2026, когда ответ на
@@ -1020,7 +997,7 @@ function renderIntro() {
   state.screen = "intro";
   state.key = null;
   var banner = knownExisting
-    ? '<div class="banner"><strong>Этот замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — новые ответы заменят прежние, вторая точка не появится.</div>'
+    ? '<div class="banner"><strong>Замер за ' + PERIOD_WORD_ACC + ' уже есть.</strong> Можно пройти снова — запишем ещё раз, в линии останется последняя запись.</div>'
     : "";
   // Начатое не прячем. Тихое восстановление хуже явного: человек увидит
   // середину замера и не поймёт, чьи это ответы. Поэтому говорим прямо и рядом
@@ -1283,7 +1260,7 @@ async function finish() {
 
   var okWrite = false;
   try {
-    okWrite = await writeRecord(payload, periodKey(completedAt), completedAt);
+    okWrite = await writeRecord(payload);
   } catch (e) { okWrite = false; }
 
   lock.release();
@@ -1302,7 +1279,7 @@ async function finish() {
     state.syncMsg = "Замер записан.";
   } else {
     state.sync = "error";
-    state.syncMsg = "Не удалось сохранить. Нажми «Записать ещё раз» — вторая точка не появится.";
+    state.syncMsg = "Запись не ушла. Ответы на месте — нажми «Записать ещё раз».";
   }
   // Дорожка ведёт дальше сама: следующий замер открывается сразу, без возврата в
   // список. Экран результата посреди цепочки лишний — слова соберутся в итог.
@@ -1311,60 +1288,18 @@ async function finish() {
 }
 
 /**
- * Записать одну точку за период.
+ * Записать замер. Всегда новая строка.
  *
- * Сначала правка, если бот сказал, что точка за этот период уже есть: её мог
- * написать разговор с ботом со своим номером. Правка вернула ноль строк —
- * пишем новую с детерминированным номером. Номер уже занят — база отвечает
- * 409, и мы уходим в правку. Двух точек не будет ни в одном случае.
+ * Правки нет вовсе: ключ страницы умеет только вставлять. Он же не даёт человеку
+ * менять чужие записи — поэтому прав ему не добавляем. Не 2xx — честная ошибка,
+ * показываем её и черновик не трогаем.
  */
-async function writeRecord(payload, pk, completedAt) {
-  var id = await recordId(pk);
-  if (knownExisting) {
-    var n = await patchWindow(payload, completedAt);
-    if (n > 0) return true;
-  }
+async function writeRecord(payload) {
   var r = await fetch(TABLE, {
     method: "POST", headers: sbHeaders(),
-    body: JSON.stringify(Object.assign({ id: id }, payload))
+    body: JSON.stringify(Object.assign({ id: newRecordId() }, payload))
   });
-  if (r.status < 300) return true;
-  if (r.status === 409) return (await patchById(id, payload)) > 0;
-  return false;
-}
-
-function patchBody(payload) {
-  return JSON.stringify({
-    instrument: payload.instrument, scores: payload.scores,
-    answers: payload.answers, completed_at: payload.completed_at
-  });
-}
-
-async function countRows(r) {
-  if (r.status >= 300) return 0;
-  try {
-    var rows = await r.json();
-    return Array.isArray(rows) ? rows.length : 1;
-  } catch (e) { return 0; }
-}
-
-async function patchWindow(payload, completedAt) {
-  var w = periodWindow(completedAt);
-  var url = TABLE +
-    "?user_id=eq." + encodeURIComponent(payload.user_id) +
-    "&block=eq." + encodeURIComponent(BLOCK) +
-    "&completed_at=gte." + encodeURIComponent(w.from) +
-    "&completed_at=lt." + encodeURIComponent(w.to);
-  var r = await fetch(url, { method: "PATCH", headers: sbHeaders("return=representation"),
-                             body: patchBody(payload) });
-  return await countRows(r);
-}
-
-async function patchById(id, payload) {
-  var r = await fetch(TABLE + "?id=eq." + id, {
-    method: "PATCH", headers: sbHeaders("return=representation"), body: patchBody(payload)
-  });
-  return await countRows(r);
+  return r.status < 300;
 }
 
 // ---- Экран результата ----
