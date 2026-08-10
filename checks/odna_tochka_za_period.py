@@ -1,33 +1,34 @@
 # -*- coding: utf-8 -*-
 """Проверки: одна точка за период на восьми страницах с тестами.
 
-Дефект с живого человека, 07.08.2026. У Алексея за 3 августа в базе лежит пять
-строк квартального замера и восемь строк месячного — вместо одной и одной.
-Каждая отправка создавала свою строку, потому что страницы писали в базу POST
-без номера записи: базе нечем было понять, что это тот же замер.
+ПЕРЕПИСАНО 10.08.2026, спека 023 «Замер сохраняется, важность спрашивается».
 
-Что из этого следовало:
-  · линия в «Динамике» строилась по мусору — восемь точек за один день;
-  · «уже проходил за этот период» не определялось вовсе;
-  · сторож бота считал это дублями и шумел владельцу.
+Что было. Правило «одна точка за период» держалось на ЗАПИСИ: номер строки
+считался от id человека, блока и периода, повтор натыкался на занятый номер и
+уходил в правку той же строки.
 
-Правило проекта — **одна точка за период**. Номер записи считается от id
-человека, блока и периода замера, поэтому повтор физически попадает в ту же
-строку. Так сделано в `state-day/app.html`, отсюда и взято.
+Почему отменено. Проверка 10.08.2026 показала: ключ, с которым работают
+страницы, умеет только вставлять. Правка возвращает HTTP 200 и ноль строк,
+чтение отдаёт пустой массив. Значит повтор всегда упирался в отказ, человек
+видел красную строку «Не удалось сохранить», а ответы не уходили никуда. Права
+ключа не меняем: `user_id` берётся из адреса страницы и подделывается, а право
+на правку означало бы право менять чужие замеры.
+
+Как стало.
+  · FR-001: каждый заход создаёт НОВУЮ строку со случайным номером. Занятого
+    номера быть не может, и отказа от базы по этой причине тоже.
+  · FR-002: правило «одна точка за период» переехало на ЧТЕНИЕ. Строк за период
+    в базе несколько, а в линии стоит одна — с самым поздним `completed_at`.
+  · FR-003: права ключа не трогаем. Только вставка, ни одной правки.
+  · FR-004: черновик ответов стирается только после подтверждённой записи.
+
+Поэтому проверки смотрят на две вещи сразу: что страница отправляет в базу (это
+СЕТЬ — метод, адрес, тело) и что из накопленных строк прочитает бот. Читающая
+часть берётся из `bot.py` разбором AST: `period_key`, `latest_per_period` и
+`line_series` — те самые, которыми бот строит «Динамику».
 
 Период у каждой страницы свой, по её ритму: неделя, месяц, квартал, полгода,
 год. Ритм берётся не из головы, а сверяется с реестром каталога.
-
-Про уже накопленные строки. Старые строки лежат в базе со случайными номерами.
-Правка по окну «человек + блок + даты периода» переписала бы ВСЕ пять строк
-одним и тем же содержимым — это не починка, а потеря истории. Поэтому правка
-идёт **только по номеру записи**: старые строки не трогаются никогда, а с этого
-момента на период добавляется ровно одна новая строка, и дальше правится она.
-Проверка `check_old_rows_untouched` следит именно за этим.
-
-Проверки смотрят на СЕТЬ: не «как написан код», а какой метод, по какому адресу
-и с каким телом уходит запрос. База подделана и ведёт себя как настоящая: POST
-с занятым номером отвечает 409.
 
 Запуск:      python3 checks/odna_tochka_za_period.py
 Одна страница: ODNA_PAGE=state-week/app4.html python3 checks/odna_tochka_za_period.py
@@ -39,13 +40,21 @@ import json
 import os
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
-from lib import BOT, ROOT, app_run, block_paths, bot, catalog, form_app, ok, run
+from lib import (BOT, ROOT, app_run, block_paths, bot, bot_reader, catalog,
+                 form_app, html, ok, run)
 
 CHECKS = Path(__file__).resolve().parent
+
+# Имена, вырезанные из страниц спекой 023. Ни одно из них не должно вернуться:
+# каждое было частью механики «повтор правит существующую строку».
+GONE_FROM_PAGES = ("recordId", "recordIdFor", "idKeyString", "fnvBytes",
+                   "patchById", "patchWindow", "patchBody", "countRows",
+                   "periodWindow", "decideWrite", "postThenPatch")
 
 
 def line_aliases() -> Dict[str, Tuple[str, ...]]:
@@ -196,9 +205,13 @@ BOUNDS: Dict[int, Tuple[str, str, str]] = {
 # Поддельная база
 # --------------------------------------------------------------------------
 # Ведёт себя как настоящая в том одном, что здесь важно: номер записи —
-# первичный ключ. POST с занятым номером получает 409. Правка по номеру меняет
-# ту самую строку. Правка БЕЗ номера (по окну дат) меняет все строки человека по
-# этому блоку — ровно так и потерялись бы старые строки, и проверка это увидит.
+# первичный ключ, POST с занятым номером получает 409.
+#
+# Правка тут нарочно ПОСЛУШНАЯ, хотя настоящий ключ прав на неё не имеет: правка
+# по номеру меняет строку, правка по окну — все строки человека по этому блоку.
+# Так сделано, чтобы поломка была видна. Смысл проверок — что страница не ходит
+# правкой вовсе; если бы поддельная база молчала в ответ, как настоящая,
+# вернувшаяся правка выглядела бы безобидно.
 FAKE_DB = r"""
   globalThis.ROWS = %s;
   globalThis.REQ = [];
@@ -251,6 +264,22 @@ FAKE_DB = r"""
   };
 """
 
+# База, которая отказывает: сеть отвалилась, ключ отозвали, таблица занята.
+# Нужна ради FR-004: человек обязан увидеть честную ошибку, а черновик ответов —
+# остаться на месте. Ошибка молчаливого успеха здесь стоит всего замера.
+FAKE_DB_REFUSES = r"""
+  globalThis.ROWS = %s;
+  globalThis.REQ = [];
+  globalThis.fetch = async function (url, opts) {
+    var o = opts || {};
+    var m = String(o.method || 'GET').toUpperCase();
+    globalThis.REQ.push({ method: m, url: String(url), id: null,
+                          body: o.body ? JSON.parse(o.body) : null,
+                          status: 500, hit: 0 });
+    return { ok: false, status: 500, json: async function () { return []; } };
+  };
+"""
+
 TAIL = r"""
   OUT.req = globalThis.REQ.map(function (r) {
     return { method: r.method, url: r.url, id: r.id, status: r.status,
@@ -280,6 +309,13 @@ def db_run(rel: str, body: str, seed: str = "{}") -> Dict:
 
 
 PASS_ALL = "  for (const t of TESTS) { await __pass(t.key, %d); }\n"
+
+# То же самое, но с паузой между ответами. Нужно там, где важна «самая
+# поздняя запись»: в жизни между тестами проходят секунды, а в node — доли
+# миллисекунды, и все строки получают одну и ту же метку времени. Тогда
+# «последнюю» не различить, и проверка ругалась бы на исправный код.
+PASS_ALL_SLOW = ("  for (const t of TESTS) { await __pass(t.key, %d);"
+                 " await new Promise(r => setTimeout(r, 3)); }\n")
 
 
 def new_rows(got: Dict, block: str) -> Dict:
@@ -326,140 +362,124 @@ def check_period_key_from_rhythm() -> None:
 
 
 # --------------------------------------------------------------------------
-# 2. Номер записи детерминированный
+# 2. Номер записи случайный: каждый заход — своя строка
 # --------------------------------------------------------------------------
-def check_record_id_deterministic() -> None:
-    """3. Номер записи одинаковый при одинаковых id и периоде, иначе разный."""
+def check_record_id_is_random() -> None:
+    """3. FR-001: номер записи свежий на каждый заход и не считается ни от чего."""
     seen: Dict[str, str] = {}
     for rel, blk, _d, _i in PAGES:
         got = form_app(rel, r"""
-  OUT.ids = {
-    same_a: await recordIdFor(777, 'P-1'),
-    same_b: await recordIdFor(777, 'P-1'),
-    other_user: await recordIdFor(778, 'P-1'),
-    other_period: await recordIdFor(777, 'P-2'),
-    key: idKeyString(777, 'P-1')
-  };
+  OUT.ids = { a: newRecordId(), b: newRecordId(), c: newRecordId() };
 """)
         ids = got["ids"]
-        assert ids["same_a"] == ids["same_b"], \
-            f"{rel}: один человек и один период дали разные номера записи"
-        assert ids["same_a"] != ids["other_user"], \
-            f"{rel}: у двух людей за один период один номер записи"
-        assert ids["same_a"] != ids["other_period"], \
-            f"{rel}: два периода дали один номер записи"
-        # Номер обязан выглядеть как uuid: колонка id в базе именно такая.
-        parts = ids["same_a"].split("-")
-        assert [len(p) for p in parts] == [8, 4, 4, 4, 12], \
-            f"{rel}: номер записи не похож на uuid — «{ids['same_a']}»"
-        assert blk in ids["key"], \
-            f"{rel}: блок не участвует в номере записи — «{ids['key']}»"
-        seen[rel] = ids["same_a"]
-    # Разные замеры за один и тот же период не должны попадать в одну строку.
-    if len(seen) > 1:
-        assert len(set(seen.values())) == len(seen), \
-            "разные страницы дают один номер записи: " + json.dumps(seen)
-    ok("номер записи считается от человека, блока и периода — и только от них")
+        assert len(set(ids.values())) == 3, \
+            f"{rel}: три захода подряд дали не три разных номера: {ids}"
+        for name, val in ids.items():
+            parts = val.split("-")
+            assert [len(x) for x in parts] == [8, 4, 4, 4, 12], \
+                f"{rel}: номер записи не похож на uuid — «{val}»"
+            assert parts[2][0] == "4", \
+                f"{rel}: номер записи не случайный (версия uuid не 4): «{val}»"
+        seen[rel] = ids["a"]
+        # Механика «повтор правит строку» вырезана целиком. Любое из этих имён
+        # на странице означает, что она вернулась.
+        src = html(rel)
+        back = [n for n in GONE_FROM_PAGES if n in src]
+        assert not back, f"{rel}: вернулись имена правки по номеру: {back}"
+    ok("номер записи свежий на каждый заход, старая механика правки не вернулась")
 
 
 # --------------------------------------------------------------------------
-# 3. Две отправки за период — одна строка
+# 3. Две отправки за период — две строки, и обе доехали
 # --------------------------------------------------------------------------
-def check_two_sends_one_row() -> None:
-    """4. Две отправки за один период дают ОДНУ строку, и в ней вторая отправка."""
+def check_two_sends_two_rows() -> None:
+    """4. FR-001: два захода за период сохраняются оба, ни одного отказа."""
     for rel, blk, _d, _i in PAGES:
         got = db_run(rel, PASS_ALL % 2 + PASS_ALL % 3, seed=junk(blk))
         mine = new_rows(got, blk)
-        assert len(mine) == 1, \
-            f"{rel}: после двух отправок строк {len(mine)}, а не одна: {sorted(mine)}"
+        assert len(mine) >= 2, \
+            f"{rel}: после двух заходов новых строк {len(mine)} — повтор не записался"
         assert got["sync"] == "ok", \
-            f"{rel}: повторная отправка объявлена провалом (sync={got['sync']})"
+            f"{rel}: повторный заход объявлен провалом (sync={got['sync']})"
         # Успех без строки — худшее из возможного: человек видит «записано», а в
-        # базе ничего. Значит последний запрос обязан был долететь до строки.
-        row = list(mine.values())[0]
-        assert row.get("__seq") == len(got["req"]), \
-            f"{rel}: последняя отправка до строки не дошла, " \
-            f"строку тронул запрос №{row.get('__seq')} из {len(got['req'])}"
-        # Запрос, который база приняла, обязан был долететь до строки. Отказ
-        # (409 на занятый номер) — не успех, его пропускаем: за ним идёт правка.
+        # базе ничего. Каждый принятый запрос обязан был дойти до строки.
         for r in got["req"]:
-            assert r["hit"] >= 1 or r["status"] >= 300, \
-                f"{rel}: запрос {r['method']} не задел ни одной строки, " \
-                f"а база ответила {r['status']}"
-    ok("две отправки за один период: одна строка, и в ней последние ответы")
+            assert r["status"] < 300, \
+                f"{rel}: база отказала запросу {r['method']} со статусом {r['status']}"
+            assert r["hit"] == 1, \
+                f"{rel}: запрос {r['method']} задел {r['hit']} строк вместо одной"
+    ok("два захода за период: обе записи сохранены, ни одного отказа")
 
 
-def check_second_send_is_patch_by_id() -> None:
-    """5. Строка правится, а не добавляется: вторая отправка — правка по номеру."""
+def check_only_inserts() -> None:
+    """5. FR-003: страница только вставляет. Ни правки, ни чтения."""
     for rel, blk, _d, _i in PAGES:
         got = db_run(rel, PASS_ALL % 2 + PASS_ALL % 3, seed=junk(blk))
-        made = [r for r in posts(got) if r["status"] < 300]
-        assert len(made) == 1, \
-            f"{rel}: строк создано {len(made)}, а должна быть одна"
-        the_id = made[0]["id"]
-        after = got["req"][got["req"].index(made[0]) + 1:]
-        assert after, f"{rel}: после первой записи в базу больше не ходили"
-        # Дальше строку меняет только правка по тому же номеру. Попытки создать
-        # вторую строку допустимы — но обязаны разбиваться о занятый номер.
-        for r in after:
-            assert r["id"] == the_id, \
-                f"{rel}: запрос ушёл по номеру «{r['id']}» вместо «{the_id}»"
-            if r["method"] == "POST":
-                assert r["status"] == 409, \
-                    f"{rel}: вторая строка создалась, база ответила {r['status']}"
-                continue
-            assert r["method"] == "PATCH", \
-                f"{rel}: повтор ушёл методом {r['method']}, а не правкой"
-            assert "id=eq." in r["url"], \
-                f"{rel}: правка идёт не по номеру записи — {r['url']}"
-        assert [r for r in after if r["method"] == "PATCH"], \
-            f"{rel}: правки не было вовсе — значит повтор ничего не записал"
-        # Содержимое строки — от ПОСЛЕДНЕЙ отправки, а не от первой.
-        row = new_rows(got, blk)[the_id]
-        last = patches(got)[-1]["body"]
-        assert row["scores"] == last["scores"], \
-            f"{rel}: в строке остались цифры первой отправки"
-        assert row["completed_at"] == last["completed_at"], \
-            f"{rel}: у строки осталась дата первой отправки"
-    ok("повтор правит ту же строку, и в ней последние ответы")
+        assert not patches(got), \
+            f"{rel}: страница ушла правкой — прав на неё у ключа нет"
+        bad = [r for r in got["req"] if r["method"] != "POST"]
+        assert not bad, \
+            f"{rel}: в базу ушли не только вставки: {[r['method'] for r in bad]}"
+        assert posts(got), f"{rel}: в базу не ушло ни одной вставки"
+        # Номер записи у каждой вставки свой: одинаковый означал бы отказ базы.
+        ids = [r["id"] for r in posts(got)]
+        assert len(set(ids)) == len(ids), \
+            f"{rel}: две вставки ушли под одним номером: {ids}"
+    ok("страница только вставляет: ни правки, ни чтения, номера не повторяются")
 
 
-def check_return_visit_edits_the_row() -> None:
-    """6. Человек вернулся позже в том же периоде — строка та же."""
+def check_return_visit_saves_again() -> None:
+    """6. Человек вернулся позже в том же периоде — запись проходит."""
     for rel, blk, _d, _i in PAGES:
-        # Заход первый: снимаем номер и строку.
+        # Заход первый: снимаем строки.
         first = db_run(rel, PASS_ALL % 2, seed=junk(blk))
         mine = new_rows(first, blk)
-        assert len(mine) == 1, f"{rel}: первый заход дал строк {len(mine)}"
-        the_id = list(mine)[0]
+        assert mine, f"{rel}: первый заход не записал ничего"
+        assert first["sync"] == "ok", f"{rel}: первый заход провалился"
 
         # Заход второй, страница загружена заново: в памяти телефона ничего про
-        # базу нет, а строка уже там. Повтор обязан наткнуться на номер.
+        # базу нет, а строки уже там. Это и есть повтор за период.
         seed = json.loads(junk(blk))
-        seed[the_id] = mine[the_id]
+        seed.update(mine)
         got = db_run(rel, PASS_ALL % 3, seed=json.dumps(seed, ensure_ascii=False))
-        again = new_rows(got, blk)
-        assert len(again) == 1, \
-            f"{rel}: после возвращения строк {len(again)}, а не одна"
-        assert the_id in again, f"{rel}: строка сменила номер"
         assert got["sync"] == "ok", \
             f"{rel}: возвращение объявлено провалом (sync={got['sync']})"
-        # Ровно то, ради чего всё: POST наткнулся на номер и ушёл в правку.
-        conflicts = [r for r in posts(got) if r["status"] == 409]
-        assert conflicts, \
-            f"{rel}: повтор не наткнулся на занятый номер — значит номер не тот"
-        assert [r for r in patches(got) if r["id"] == the_id], \
-            f"{rel}: после конфликта правки по номеру не было"
-        assert not [r for r in posts(got) if r["status"] < 300], \
-            f"{rel}: при занятом номере всё равно создалась новая строка"
-    ok("вернулся в том же периоде: правится та же строка, второй не появилось")
+        again = {k: v for k, v in new_rows(got, blk).items() if k not in mine}
+        assert again, f"{rel}: повтор не создал ни одной новой строки"
+        # Прежние строки захода на месте: их никто не трогал.
+        for k, v in mine.items():
+            assert got["rows"].get(k) == v, \
+                f"{rel}: строка первого захода «{k}» изменилась при повторе"
+    ok("вернулся в том же периоде: запись прошла, прежние строки целы")
+
+
+def check_failure_is_honest() -> None:
+    """7. FR-004: запись не прошла — сказано честно, черновик не стёрт."""
+    for rel, blk, _d, _i in PAGES:
+        got = app_run(rel, (FAKE_DB_REFUSES % junk(blk)) + r"""
+  // Черновик, как его сохраняет живой человек посреди прохождения.
+  state.key = TESTS[0].key;
+  state.idx = 1;
+  state.answers = {0: 1};
+  saveProgress();
+""" + PASS_ALL % 2 + TAIL + r"""
+  OUT.draft = localStorage.getItem(STORE_KEY) !== null;
+  OUT.screen = app.innerHTML;
+""")
+        assert got["sync"] == "error", \
+            f"{rel}: база отказала, а страница говорит sync={got['sync']}"
+        assert got["draft"], \
+            f"{rel}: запись не прошла, а черновик ответов уже стёрт"
+        assert not new_rows(got, blk), \
+            f"{rel}: база отказывала, а строки всё равно появились"
+    ok("отказ базы показан честно, черновик ответов на месте")
 
 
 # --------------------------------------------------------------------------
 # 4. Уже накопленное не портится
 # --------------------------------------------------------------------------
 def check_old_rows_untouched() -> None:
-    """7. Старые строки со случайными номерами не переписываются и не исчезают."""
+    """8. Старые строки со случайными номерами не переписываются и не исчезают."""
     for rel, blk, _d, _i in PAGES:
         seed = junk(blk, 5)
         before = json.loads(seed)
@@ -468,24 +488,22 @@ def check_old_rows_untouched() -> None:
             assert k in got["rows"], f"{rel}: старая строка «{k}» исчезла"
             assert got["rows"][k] == v, \
                 f"{rel}: старая строка «{k}» переписана новым замером"
-        # Правки по окну дат быть не должно: она и переписывает всё разом.
-        for r in patches(got):
+        # Ни одного запроса по окну дат: он и переписывает всё разом.
+        for r in got["req"]:
             assert "completed_at=gte" not in r["url"], \
-                f"{rel}: правка идёт по окну дат — так теряется история"
-            assert r["hit"] <= 1, \
-                f"{rel}: одна правка задела {r['hit']} строк"
-    ok("старые строки целы: правка ходит только по номеру записи")
+                f"{rel}: запрос идёт по окну дат — так теряется история"
+    ok("старые строки целы: страница ходит в базу только новой строкой")
 
 
 # --------------------------------------------------------------------------
 # 5. Ключи полей и суммы не изменились
 # --------------------------------------------------------------------------
 def check_record_keys_and_sums_unchanged() -> None:
-    """8. Ключи полей и числа те же — и в новой строке, и в правке.
+    """9. Ключи полей и числа те же — и в первой строке, и в последней.
 
     Запись собирается по ходу захода: после первого теста в ней один тест, после
-    последнего — все. Поэтому полную форму спрашиваем у ПОСЛЕДНЕГО запроса, а у
-    первого — только набор колонок.
+    последнего — все. Поэтому полную форму спрашиваем у ПОСЛЕДНЕЙ вставки, а у
+    первой — только набор колонок.
     """
     b = bot()
     aliases = line_aliases()
@@ -495,17 +513,15 @@ def check_record_keys_and_sums_unchanged() -> None:
         got = db_run(rel, PASS_ALL % 2 + PASS_ALL % 3, seed=junk(blk))
         made = [r for r in posts(got) if r["status"] < 300]
         assert made, f"{rel}: новой строки в базе не появилось"
-        assert patches(got), f"{rel}: правки не было — повтор ушёл иначе"
         first = made[0]["body"]
-        last = patches(got)[-1]["body"]
+        last = made[-1]["body"]
 
-        # Новая строка: те же колонки плюс номер записи.
-        assert set(first) == COLUMNS | {"id"}, \
-            f"{rel}: у новой строки колонки {sorted(first)}"
-        # Правка: те же колонки без номера — он в адресе.
-        assert set(last) == COLUMNS, f"{rel}: у правки колонки {sorted(last)}"
-
-        for name, body in (("новая строка", first), ("правка", last)):
+        # У каждой строки одни и те же колонки плюс номер записи. Номер теперь
+        # едет в теле всегда: без него база кладёт строку под своим, и страница
+        # перестаёт отвечать за то, что записала.
+        for name, body in (("первая строка", first), ("последняя строка", last)):
+            assert set(body) == COLUMNS | {"id"}, \
+                f"{rel}, {name}: колонки {sorted(body)}"
             assert body["block"] == blk, \
                 f"{rel}, {name}: блок стал «{body['block']}»"
             assert body["instrument"] == instr, \
@@ -515,7 +531,7 @@ def check_record_keys_and_sums_unchanged() -> None:
             assert body["scores"].get("source") == "manual", \
                 f"{rel}, {name}: пропала метка источника"
 
-        # Полная форма — в последней правке: там весь заход.
+        # Полная форма — в последней вставке: там весь заход.
         sc = last["scores"]
         for key, fields in SHAPE[rel].items():
             assert key in sc, f"{rel}: пропал тест «{key}»"
@@ -528,15 +544,69 @@ def check_record_keys_and_sums_unchanged() -> None:
         assert sizes == SIZES[rel], \
             f"{rel}: пунктов в ответах {sizes} вместо {SIZES[rel]}"
         # Линии, которые бот рисует в «Динамике», обязаны читаться числами —
-        # иначе после починки линия окажется пустой при полной базе.
+        # иначе линия окажется пустой при полной базе.
         for path in block_paths(b, blk):
             v = bot_number(sc, path, aliases)
             assert isinstance(v, (int, float)), \
                 f"{rel}: бот читает «{path}», а там {v!r}"
-        # Первая отправка — часть того же захода: её тесты обязаны быть внутри.
+        # Первая вставка — часть того же захода: её тесты обязаны быть внутри.
         assert set(first["scores"]) <= set(sc), \
-            f"{rel}: в новой строке тесты, которых нет в правке"
+            f"{rel}: в первой строке тесты, которых нет в последней"
     ok("ключи полей, подпись инструмента и числа не поехали")
+
+
+# --------------------------------------------------------------------------
+# 5а. Главное правило: одна точка за период — на ЧТЕНИИ
+# --------------------------------------------------------------------------
+# Ради чего вся спека 023. В базе за период лежит столько строк, сколько раз
+# человек нажал «готово». В линии обязана стоять ОДНА точка — самая поздняя.
+# Читающий код живёт в `bot.py` (`period_key`, `latest_per_period`,
+# `line_series`), поэтому проверка гоняет именно его — по строкам, которые
+# реально написала страница.
+def check_one_point_per_period_on_read() -> None:
+    """10. FR-002: строк за период много, точка в линии одна — последняя."""
+    R = bot_reader()
+    b = bot()
+    aliases = line_aliases()
+    checked = 0
+    for rel, blk, _d, _i in PAGES:
+        days = R["CARD_DAYS"].get(blk)
+        paths = sorted(block_paths(b, blk))
+        if not days or not paths:
+            # У карточки нет срока или нет своих линий — схлопывать нечего.
+            continue
+        got = db_run(rel, PASS_ALL_SLOW % 2 + PASS_ALL_SLOW % 3, seed=junk(blk))
+        rows = [dict(v, block=blk) for v in new_rows(got, blk).values()]
+        assert len(rows) >= 2, f"{rel}: строк за период меньше двух — нечего схлопывать"
+
+        # Точка из ПРОШЛОГО периода: линия обязана её сохранить, а не съесть.
+        past_when = (datetime.now(timezone.utc)
+                     - timedelta(days=max(days, 31) * 2 + 5)).isoformat()
+        last_scores = [r["body"]["scores"] for r in posts(got)][-1]
+
+        for path in paths:
+            want = bot_number(last_scores, path, aliases)
+            if not isinstance(want, (int, float)):
+                continue
+            past_row = {"block": blk, "completed_at": past_when,
+                        "scores": json.loads(json.dumps(last_scores))}
+            series = R["line_series"](rows + [past_row], blk, path)
+            # Ровно две точки: прошлый период и этот. Не десять.
+            assert len(series) == 2, \
+                f"{rel}, «{path}»: в линии {len(series)} точек при {len(rows)} строках"
+            assert series[-1][1] == want, \
+                f"{rel}, «{path}»: в линии не последняя запись периода: {series}"
+
+            # У проверки обязаны быть зубы: без схлопывания точек было бы
+            # больше. Если данные вдруг перестали содержать повтор, проверка
+            # проходила бы вхолостую — и мы бы этого не заметили.
+            naive = sorted({(str(r["completed_at"])[:10], id(r))
+                            for r in rows + [past_row]})
+            assert len(naive) > 2, \
+                f"{rel}: в наборе нет повтора за период — проверка бессмысленна"
+            checked += 1
+    assert checked, "ни одной линии не проверено — правило чтения не покрыто"
+    ok(f"одна точка за период на чтении: {checked} линий, в каждой последняя запись")
 
 
 # --------------------------------------------------------------------------
@@ -593,23 +663,29 @@ def check_repeat_does_not_compare_with_itself() -> None:
 # Конституция, принцип II: проверка обязана падать при сломанной логике.
 # (что ломаем · файл · было · стало · какая проверка обязана покраснеть)
 MUTATIONS: List[Tuple[str, str, str, str, str]] = [
-    ("номер записи не отправляется вовсе",
+    ("номер записи один и тот же на все заходы",
      "state-week/app4.html",
-     "      body: JSON.stringify(Object.assign({id: id}, record))",
-     "      body: JSON.stringify(record)",
-     "check_two_sends_one_row"),
+     "      body: JSON.stringify(Object.assign({id: newRecordId()}, record))",
+     "      body: JSON.stringify(Object.assign({id: 'один-и-тот-же'}, record))",
+     "check_two_sends_two_rows"),
 
-    ("номер записи не считается от периода",
+    ("номер записи снова считается, а не берётся случайным",
      "state-month/app3.html",
-     "function idKeyString(userId, pk) { return BLOCK + '|' + userId + '|' + pk; }",
-     "function idKeyString(userId, pk) { return BLOCK + '|' + userId; }",
-     "check_record_id_deterministic"),
+     "function newRecordId() {\n  try {",
+     "function newRecordId() {\n  return '00000000-0000-4000-8000-000000000000';\n  try {",
+     "check_return_visit_saves_again"),
 
-    ("номер записи не считается от человека",
+    ("номер записи один на всех",
      "state-quarter/app3.html",
-     "function idKeyString(userId, pk) { return BLOCK + '|' + userId + '|' + pk; }",
-     "function idKeyString(userId, pk) { return BLOCK + '|' + pk; }",
-     "check_record_id_deterministic"),
+     "function newRecordId() {\n  try {",
+     "function newRecordId() {\n  return '11111111-1111-4111-8111-111111111111';\n  try {",
+     "check_record_id_is_random"),
+
+    ("номер записи не отправляется вовсе",
+     "state-clinical/app.html",
+     "      body: JSON.stringify(Object.assign({id: newRecordId()}, record))",
+     "      body: JSON.stringify(record)",
+     "check_record_keys_and_sums_unchanged"),
 
     ("период считается сутками, а не своим ритмом",
      "state-week/app4.html",
@@ -623,31 +699,40 @@ MUTATIONS: List[Tuple[str, str, str, str, str]] = [
      "const PERIOD_DAYS = 7;",
      "check_period_days_match_rhythm"),
 
-    ("занятый номер не уводит в правку, а считается отказом",
-     "state-team/app.html",
-     "    if (res.status === 409) return await patchById(id, record);",
-     "    if (res.status === 409) return false;",
-     "check_return_visit_edits_the_row"),
-
-    ("правка идёт по окну дат и переписывает старые строки",
+    ("страница снова правит строки по окну дат",
      "state-needs/app.html",
-     "  const res = await fetch(TABLE + '?id=eq.' + id, {",
-     "  const res = await fetch(TABLE + '?user_id=eq.' + record.user_id"
-     " + '&block=eq.' + BLOCK, {",
+     "    return res.status < 300;",
+     "    if (res.status < 300) { await fetch(TABLE + '?user_id=eq.'"
+     " + record.user_id + '&block=eq.' + BLOCK, {method: 'PATCH',"
+     " headers: sbHeaders(), body: JSON.stringify(record)}); }\n"
+     "    return res.status < 300;",
      "check_old_rows_untouched"),
 
-    ("занятый номер объявлен успехом, а правки нет",
-     "state-year/app.html",
-     "    if (res.status === 409) return await patchById(id, record);",
-     "    if (res.status === 409) return true;",
-     "check_two_sends_one_row"),
+    ("правка вернулась и ходит по номеру записи",
+     "state-team/app.html",
+     "    return res.status < 300;",
+     "    await fetch(TABLE + '?id=eq.' + record.user_id, {method: 'PATCH',"
+     " headers: sbHeaders(), body: JSON.stringify(record)});\n"
+     "    return res.status < 300;",
+     "check_only_inserts"),
 
-    ("в правку не уходят цифры замера",
+    ("отказ базы объявлен успехом",
+     "state-year/app.html",
+     "    return res.status < 300;",
+     "    return true;",
+     "check_failure_is_honest"),
+
+    ("черновик стирается до ответа базы",
      "selfhood/app.html",
-     "async function patchById(id, record) {\n  const res = await fetch",
-     "async function patchById(id, record) {\n  record = {completed_at:"
-     " record.completed_at};\n  const res = await fetch",
-     "check_record_keys_and_sums_unchanged"),
+     "  if (okPush) {\n    saveResultsLocal();",
+     "  if (true) {\n    saveResultsLocal();",
+     "check_failure_is_honest"),
+
+    ("у всех строк захода одна и та же дата — «последнюю» не выбрать",
+     "state-year/app.html",
+     "    completed_at: results[key].completed_at",
+     "    completed_at: '2026-08-10T12:00:00.000Z'",
+     "check_one_point_per_period_on_read"),
 
     ("прошлый замер затирается повтором",
      "state-week/app4.html",
@@ -660,11 +745,14 @@ MUTATIONS: List[Tuple[str, str, str, str, str]] = [
 MUST_COVER = {
     "check_period_days_match_rhythm",
     "check_period_key_from_rhythm",
-    "check_record_id_deterministic",
-    "check_two_sends_one_row",
-    "check_return_visit_edits_the_row",
+    "check_record_id_is_random",
+    "check_two_sends_two_rows",
+    "check_only_inserts",
+    "check_return_visit_saves_again",
+    "check_failure_is_honest",
     "check_old_rows_untouched",
     "check_record_keys_and_sums_unchanged",
+    "check_one_point_per_period_on_read",
     "check_repeat_does_not_compare_with_itself",
 }
 
@@ -729,12 +817,14 @@ def check_mutations_are_caught() -> None:
 CHECKS_LIST = [
     check_period_days_match_rhythm,
     check_period_key_from_rhythm,
-    check_record_id_deterministic,
-    check_two_sends_one_row,
-    check_second_send_is_patch_by_id,
-    check_return_visit_edits_the_row,
+    check_record_id_is_random,
+    check_two_sends_two_rows,
+    check_only_inserts,
+    check_return_visit_saves_again,
+    check_failure_is_honest,
     check_old_rows_untouched,
     check_record_keys_and_sums_unchanged,
+    check_one_point_per_period_on_read,
     check_prev_comparison_still_works,
     check_repeat_does_not_compare_with_itself,
 ]

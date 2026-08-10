@@ -65,7 +65,9 @@ SINGLE: Dict[str, str] = {
     "state-facts/app.html": "?u=tg_777&p=1",
     "state-note/app.html": "?u=tg_777",
     "state-money/app.html": "?u=tg_777",
-    "state-domains/app.html": "?u=tg_777&imp=1",
+    # Флага важности в адресе больше нет (023, FR-007): страница всегда
+    # спрашивает и «устраивает», и «важно».
+    "state-domains/app.html": "?u=tg_777",
     "state-finwell/app.html": "?u=tg_777",
     "state-health/app.html": "?u=tg_777",
     "pair-faces/app.html": "?u=tg_777&bo=1",

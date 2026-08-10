@@ -39,7 +39,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
-from lib import ROOT, catalog, ok, run, visible
+from lib import ROOT, bot_reader, catalog, ok, run, visible
 from zamery_v_miniappe import page
 
 CHECKS = Path(__file__).resolve().parent
@@ -202,23 +202,53 @@ OUT.never = freshness(null, 7, "2026-08-10T21:00:00Z", true);
 
 
 def check_one_row_on_five_taps() -> None:
-    """7. Пять отправок подряд дают одну строку."""
+    """7. Пять отправок подряд добавляют одну строку: замок держит.
+
+    ПЕРЕПИСАНО 10.08.2026, спека 023. Раньше одну строку спасал не замок, а
+    номер записи: у всех пяти отправок он был один, и база отбивала лишние
+    ответом 409. Теперь номер у каждой отправки свой, и держать нажатия обязан
+    именно замок — без него пять тапов дадут пять строк.
+    """
     got = page(BLOCK, SKIP + """
+  var before = globalThis.DB.rows.length;
   await Promise.all([finish(), finish(), finish(), finish(), finish()]);
+  OUT.before = before;
   OUT.posts = globalThis.CALLS.filter(function (c) { return c.method === 'POST'; }).length;
 """)
-    assert len(rows_of(got)) == 1, f"строк {len(rows_of(got))}, а не одна"
-    ok("пять отправок — одна строка")
+    assert got["before"] == 1, \
+        f"до пяти нажатий строк {got['before']}, а должна быть одна — от «нечего добавить»"
+    added = len(rows_of(got)) - got["before"]
+    assert added == 1, f"пять нажатий добавили {added} строк, а не одну"
+    assert got["posts"] == 2, \
+        f"в сеть ушло {got['posts']} вставок вместо двух — замок не держит"
+    ok("пять нажатий подряд добавляют одну строку, лишние отбиты до запроса")
 
-    # Новый заход в том же периоде правит ту же точку, а не добавляет вторую.
+    # ПЕРЕПИСАНО 10.08.2026, спека 023. Было: второй заход в том же периоде
+    # правит ту же строку. Отменено — ключ страниц умеет только вставлять, и
+    # правка оборачивалась молчаливым отказом «Не удалось сохранить».
+    #
+    # Стало: второй заход кладёт свою строку, а «одна точка за период» держится
+    # на чтении. Замок на пяти нажатиях от этого никуда не делся: он про одно
+    # нажатие, а не про повтор через день.
     got2 = page(BLOCK, SKIP + """
+  await new Promise(function (r) { setTimeout(r, 5); });
   knownExisting = false;
 """ + SKIP + """
   OUT.ids = globalThis.DB.rows.map(function (r) { return r.id; });
+  OUT.other = globalThis.CALLS.filter(function (c) { return c.method !== 'POST'; }).length;
 """)
-    assert len(rows_of(got2)) == 1, \
-        f"второй заход создал вторую точку: {got2['ids']}"
-    ok("второй заход в том же периоде правит ту же точку")
+    assert len(rows_of(got2)) == 2, \
+        f"второй заход не записался: строк {len(rows_of(got2))}, ids {got2['ids']}"
+    assert len(set(got2["ids"])) == 2, \
+        f"две строки ушли под одним номером: {got2['ids']}"
+    assert got2["other"] == 0, \
+        f"страница ходит в базу не только вставкой: {got2['other']} прочих запросов"
+    R = bot_reader()
+    best = R["latest_per_period"](rows_of(got2), R["CARD_DAYS"].get(BLOCK))
+    assert len(best) == 1, f"за период осталось {len(best)} точек, а не одна"
+    assert best[0]["completed_at"] == max(r["completed_at"] for r in rows_of(got2)), \
+        "в линии не последняя запись периода"
+    ok("второй заход в том же периоде пишет свою строку, а в линии одна точка")
 
 
 # --------------------------------------------------------------------------

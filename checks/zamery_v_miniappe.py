@@ -31,7 +31,10 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
-from lib import BOT, _node, block_paths, bot, dig, html, inline_script, ok, run, visible
+# `bot_reader` — читающая часть бота: правило «одна точка за период» с
+# 10.08.2026 живёт там, а не на странице (спека 023, FR-002).
+from lib import (BOT, _node, block_paths, bot, bot_reader, dig, html,
+                 inline_script, ok, run, visible)
 
 # ---- Шесть страниц. Ключ — блок в базе, значение — файл ----
 PAGES: Dict[str, str] = {
@@ -100,7 +103,9 @@ SEARCH: Dict[str, str] = {
     "state_facts": "?u=tg_777&p=1",
     "state_note": "?u=tg_777",
     "state_money": "?u=tg_777",
-    "state_domains": "?u=tg_777&imp=1",
+    # Параметра `imp` больше нет (023, FR-007): страница всегда спрашивает и
+    # про «устраивает», и про «важно».
+    "state_domains": "?u=tg_777",
 }
 
 
@@ -497,22 +502,41 @@ def check_questions_from_bot() -> None:
         f"деньги: текст закрытия разошёлся: {got['close']}"
     ok("деньги: пять вопросов, порядок и текст закрытия из бота")
 
-    # Области жизни: восемь областей и обе формулировки.
+    # Области жизни: шестнадцать вопросов, ключи и порядок из бота.
+    #
+    # ПЕРЕПИСАНО 10.08.2026. Раньше требовалось, чтобы вопрос страницы буквально
+    # совпадал с шаблоном бота `PWI_SAT_Q`. Требование снято решением по ходу
+    # 023: шаблон «Насколько тебя устраивает {название}?» ломал согласование на
+    # двух областях из восьми — «устраивает дела и достижения», «устраивает
+    # близкие отношения». Кривая фраза стоит дороже, чем кажется: человек
+    # спотыкается о язык и отвечает про своё, а цифра идёт в расчёт направления.
+    # Поэтому вопрос на странице пишется целиком.
+    #
+    # Что осталось привязанным к боту и проверяется по-прежнему: ключи областей,
+    # их порядок, шкала и то, что в каждом заходе спрашивают оба блока. Название
+    # области — тоже из бота: переименуешь — потеряешь сопоставимость.
     st = steps_of("state_domains")
     keys = [k for k, _n, _c in t["PWI_DOMAINS"]]
     assert [s["key"] for s in st][:8] == keys, \
         f"области: ключи или порядок разошлись: {[s['key'] for s in st][:8]}"
-    for (key, name, _c), s in zip(t["PWI_DOMAINS"], st[:8]):
-        want_q = t["PWI_SAT_Q"].format(name=name)
-        assert want_q.startswith(s["q"]), \
-            f"области, «{key}»: вопрос разошёлся:\n  экран: {s['q']}\n  бот:   {want_q}"
-    for (key, name, _c), s in zip(t["PWI_DOMAINS"], st[8:]):
-        want_q = t["PWI_IMP_Q"].format(name=name)
-        assert want_q.startswith(s["q"]), \
-            f"области, важность «{key}»: вопрос разошёлся: {s['q']}"
+    assert [s["key"] for s in st][8:] == [f"imp_{k}" for k in keys], \
+        f"области: важность спрашивается не про те области: {[s['key'] for s in st][8:]}"
+    assert len(st) == 16, \
+        f"области: вопросов {len(st)}, а должно быть шестнадцать — 023, FR-006"
+    got = page("state_domains", "  OUT.d = PWI_DOMAINS.map(function (d) {"
+                                " return [d.key, d.name, d.sat, d.imp]; });")
+    for (key, name, _c), (gk, gname, sat, imp) in zip(t["PWI_DOMAINS"], got["d"]):
+        assert gk == key and gname == name, \
+            f"области: название «{gname}» разошлось с ботом «{name}»"
+        # Вопрос свой, но про эту область и про то самое: «устраивает» и «важно».
+        assert sat.strip().endswith("?") and imp.strip().endswith("?"), \
+            f"области, «{key}»: вопрос не вопрос: {sat} / {imp}"
+        assert "важ" in imp.lower(), \
+            f"области, «{key}»: второй вопрос не про важность: {imp}"
+        assert sat != imp, f"области, «{key}»: оба вопроса одинаковые"
     assert all(s["lo"] == 0 and s["hi"] == 10 for s in st), \
         "области: шкала не от 0 до 10"
-    ok("области жизни: восемь областей, обе формулировки и шкала 0–10 из бота")
+    ok("области жизни: 16 вопросов, ключи и названия из бота, шкала 0–10")
 
     # Метки контейнеров жизни там, где страница их ставит.
     for block in ("state_facts", "state_note"):
@@ -718,47 +742,75 @@ def check_skip_makes_no_record() -> None:
     ok("области жизни: пропущенная область в запись не попадает")
 
 
+# ПЕРЕПИСАНО 10.08.2026, спека 023 «Замер сохраняется».
+#
+# Было: вторая отправка за период правит ту же строку — номер записи считался от
+# человека, блока и периода. Отменено. Ключ страниц умеет только вставлять:
+# правка меняла ноль строк, и человек на повторе видел «Не удалось сохранить», а
+# ответы не уходили никуда.
+#
+# Стало: каждый заход кладёт свою строку со случайным номером, а «одна точка за
+# период» держится на ЧТЕНИИ — бот берёт из периода запись с самым поздним
+# `completed_at`. Проверка смотрит на оба конца: что записала страница и что из
+# этого прочитает бот.
 def check_one_point_per_period() -> None:
-    """7. Вторая отправка за период не создаёт вторую точку."""
+    """7. Повтор за период сохраняется, а в линии остаётся последняя запись."""
+    R = bot_reader()
     for block in PAGES:
         # Второй раз в том же заходе: страница уже знает, что точка есть.
         got = full_run(block, extra="""
+  await new Promise(function (r) { setTimeout(r, 5); });
   startCard();
   """ + FULL[block] + """
   await finish();
   OUT.ids = globalThis.DB.rows.map(function (r) { return r.id; });
+  OUT.fail = globalThis.__APP.innerHTML.indexOf('Не удалось') >= 0;
 """)
-        assert len(got["rows"]) == 1, \
-            f"{PAGES[block]}: после второй отправки строк {len(got['rows'])}"
-        patches = [c for c in got["calls"] if c["method"] == "PATCH"]
-        assert patches, f"{PAGES[block]}: вторая отправка не пошла в правку"
-    ok("шесть страниц: вторая отправка в том же заходе правит ту же точку")
+        assert len(got["rows"]) == 2, \
+            f"{PAGES[block]}: после второй отправки строк {len(got['rows'])}, а не две"
+        assert not got["fail"], \
+            f"{PAGES[block]}: повтор за период показал «Не удалось сохранить»"
+        assert len(set(got["ids"])) == 2, \
+            f"{PAGES[block]}: две строки ушли под одним номером: {got['ids']}"
+        assert not [c for c in got["calls"] if c["method"] != "POST"], \
+            f"{PAGES[block]}: страница ходит в базу не только вставкой"
 
-    # Новый заход: страница ничего не помнит, но номер записи тот же.
+        # Обе строки в одном периоде, а точка из них одна — последняя.
+        days = R["CARD_DAYS"].get(block)
+        assert days, f"у карточки «{block}» нет срока — период не посчитать"
+        best = R["latest_per_period"](got["rows"], days)
+        assert len(best) == 1, \
+            f"{PAGES[block]}: за период осталось {len(best)} точек, а не одна"
+        latest = max(r["completed_at"] for r in got["rows"])
+        assert best[0]["completed_at"] == latest, \
+            f"{PAGES[block]}: в линии не последняя запись периода"
+    ok("шесть страниц: повтор сохраняется, а в линии остаётся последняя запись")
+
+    # Новый заход после перезагрузки страницы: номер свежий, отказа нет.
     for block in PAGES:
         got = page(block, """
-  var id1 = await recordId(periodKey(new Date().toISOString()));
   startCard();
   """ + FULL[block] + """
   await finish();
+  await new Promise(function (r) { setTimeout(r, 5); });
   // Забываем всё, что знали: как будто страницу открыли заново.
   knownExisting = false;
   startCard();
   """ + FULL[block] + """
   await finish();
-  OUT.id1 = id1;
   OUT.ids = globalThis.DB.rows.map(function (r) { return r.id; });
-  OUT.conflict = globalThis.CALLS.filter(function (c) { return c.method === 'POST'; }).length;
+  OUT.posts = globalThis.CALLS.filter(function (c) { return c.method === 'POST'; }).length;
+  OUT.bad = globalThis.CALLS.filter(function (c) { return c.method !== 'POST'; }).length;
 """)
-        assert len(got["rows"]) == 1, \
-            f"{PAGES[block]}: новый заход создал вторую точку ({len(got['rows'])})"
-        assert got["ids"] == [got["id1"]], \
-            f"{PAGES[block]}: номер записи не детерминированный: {got['ids']} против {got['id1']}"
-        assert got["conflict"] == 2, \
-            f"{PAGES[block]}: вставок было {got['conflict']} — вторая должна биться о номер"
-    ok("шесть страниц: номер записи от id человека и периода, второй точки нет")
+        assert len(got["rows"]) == 2, \
+            f"{PAGES[block]}: новый заход не записался ({len(got['rows'])} строк)"
+        assert len(set(got["ids"])) == 2, \
+            f"{PAGES[block]}: номер записи повторился: {got['ids']}"
+        assert got["posts"] == 2 and got["bad"] == 0, \
+            f"{PAGES[block]}: в базу ушло {got['posts']} вставок и {got['bad']} прочих"
+    ok("шесть страниц: номер записи свежий на каждый заход, отказа нет")
 
-    # Точку, записанную разговором с ботом, страница правит, а не дублирует.
+    # Точку, записанную разговором с ботом, страница не трогает: она чужая.
     for block in PAGES:
         got = page(block, """
   globalThis.DB.rows.push({
@@ -770,11 +822,14 @@ def check_one_point_per_period() -> None:
   """ + FULL[block] + """
   await finish();
 """, search=SEARCH[block] + "&d=1")
-        assert len(got["rows"]) == 1, \
-            f"{PAGES[block]}: рядом с точкой из разговора появилась вторая"
-        assert got["rows"][0]["id"] == "чужой-номер-от-бота", \
-            f"{PAGES[block]}: точку из разговора не поправили, а создали новую"
-    ok("шесть страниц: точку, записанную разговором, страница правит")
+        old = [r for r in got["rows"] if r["id"] == "чужой-номер-от-бота"]
+        assert len(old) == 1, \
+            f"{PAGES[block]}: точка из разговора пропала или размножилась"
+        assert old[0]["answers"] == {"raw": "из разговора"}, \
+            f"{PAGES[block]}: точку из разговора переписали замером"
+        assert len(got["rows"]) == 2, \
+            f"{PAGES[block]}: рядом с точкой из разговора не появилось новой строки"
+    ok("шесть страниц: точка из разговора цела, замер лёг рядом новой строкой")
 
 
 def check_submit_lock() -> None:
@@ -985,8 +1040,15 @@ def check_what_it_gives() -> None:
                             search=SEARCH[block] + "&d=1")["screen"])
         assert "уже есть" in text, \
             f"{PAGES[block]}: про уже пройденный замер сказано не на входе"
-        assert "вторая точка не появится" in text, \
-            f"{PAGES[block]}: не сказано, что второй точки не будет"
+        # ПЕРЕПИСАНО 10.08.2026 (023, FR-005). Было: «вторая точка не появится».
+        # Так и не происходило — повтор просто не записывался. Теперь честно:
+        # запишем ещё раз, а в линии останется последняя запись.
+        assert "запишем ещё раз" in text, \
+            f"{PAGES[block]}: не сказано, что повтор запишется ещё раз"
+        assert "в линии останется последняя запись" in text, \
+            f"{PAGES[block]}: не сказано, что в линии останется последняя запись"
+        assert "не появится" not in text and "заменят" not in text, \
+            f"{PAGES[block]}: обещана замена прежних ответов, а её не происходит"
     ok("шесть страниц: про уже пройденный замер сказано до начала")
 
 
@@ -1092,24 +1154,37 @@ def check_conditional_questions() -> None:
         f"число вечеров уехало в запись без самого факта: {facts}"
     ok("восемь фактов: число вечеров без отмеченного факта в запись не уходит")
 
-    # Важность областей — раз в год, и решает это бот.
-    assert not [s for s in steps_of("state_domains", search="?u=tg_777")
-                if s["key"].startswith("imp_")], \
-        "важность спрашивается без разрешения бота"
-    assert len([s for s in steps_of("state_domains", search="?u=tg_777&imp=1")
-                if s["key"].startswith("imp_")]) == 8, \
-        "бот попросил важность, а вопросов про неё нет"
-    ok("области жизни: важность спрашивается только когда пора")
+    # ПЕРЕПИСАНО 10.08.2026, спека 023 (FR-006, FR-007). Было: «важность — раз в
+    # год, и решает это бот». Отменено. 10.08.2026 решение бота и вопрос человеку
+    # разошлись: страница не спросила ни одной важности, а в запись уехали восемь
+    # десяток. По разрыву «важно минус устраивает» выбирается область работы —
+    # значит выбор шёл по цифрам, которых человек не называл.
+    #
+    # Стало: шестнадцать вопросов всегда, без вариантов и без флага в адресе.
+    imp = [s for s in steps_of("state_domains", search="?u=tg_777")
+           if s["key"].startswith("imp_")]
+    assert len(imp) == 8, \
+        f"важность спрашивается не всегда: вопросов про неё {len(imp)}"
+    # Флаг в адресе ничего не меняет: параметра больше нет, и подсунуть его
+    # снаружи нельзя — иначе вернулась бы вторая копия правила.
+    with_flag = [s for s in steps_of("state_domains", search="?u=tg_777&imp=0")
+                 if s["key"].startswith("imp_")]
+    assert len(with_flag) == 8, \
+        f"флаг в адресе всё ещё убирает вопросы про важность: {len(with_flag)}"
+    assert "imp" not in inline_script("state-domains/app.html").split("flags")[0] \
+        or "flags.imp" not in inline_script("state-domains/app.html"), \
+        "страница снова читает флаг важности из адреса"
+    ok("области жизни: важность спрашивается всегда, флаг в адресе не действует")
 
-    # Честная длина меняется вместе с числом вопросов.
-    short = visible(page("state_domains", "  OUT.screen = screen();",
-                         search="?u=tg_777")["screen"])
-    long_ = visible(page("state_domains", "  OUT.screen = screen();",
-                         search="?u=tg_777&imp=1")["screen"])
-    assert "8 вопросов" in short, f"области: длина на входе не та: {short[:160]}"
-    assert "16 вопросов" in long_, \
-        f"области: с важностью длина не изменилась: {long_[:160]}"
-    ok("области жизни: обещанная длина меняется вместе с числом вопросов")
+    # Честная длина одна и та же всегда: шестнадцать вопросов, четыре минуты.
+    for search in ("?u=tg_777", "?u=tg_777&imp=0", "?u=tg_777&imp=1"):
+        text = visible(page("state_domains", "  OUT.screen = screen();",
+                            search=search)["screen"])
+        assert "16 вопросов" in text, \
+            f"области, адрес «{search}»: обещано не шестнадцать вопросов: {text[:160]}"
+        assert "8 вопросов" not in text, \
+            f"области, адрес «{search}»: длина всё ещё зависит от флага"
+    ok("области жизни: обещанная длина одна и та же — 16 вопросов")
 
 
 def check_signs_reach_record() -> None:

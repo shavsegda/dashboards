@@ -37,7 +37,10 @@ import re
 from typing import Dict, List, Optional
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
-from lib import _node, block_paths, bot, bot_urls, dig, html, inline_script, ok, run, visible
+# `bot_reader` — читающая часть бота: правило «одна точка за период» с
+# 10.08.2026 живёт там, а не на странице (спека 023, FR-002).
+from lib import (_node, block_paths, bot, bot_reader, bot_urls, dig, html,
+                 inline_script, ok, run, visible)
 
 # ---- Три страницы. Ключ — блок в базе, значение — файл ----
 PAGES: Dict[str, str] = {
@@ -785,29 +788,54 @@ def check_no_latin_no_authors() -> None:
 # ==========================================================================
 # 7. Одна точка за период, замок, только этот заход
 # ==========================================================================
+# ПЕРЕПИСАНО 10.08.2026, спека 023 «Замер сохраняется».
+#
+# Было: два прохода за период дают ОДНУ строку — повтор правит существующую.
+# Отменено. Ключ страниц умеет только вставлять: правка меняла ноль строк, и
+# повтор оборачивался красной строкой «Не удалось сохранить». Теперь каждый заход
+# кладёт свою строку, а «одна точка за период» держится на чтении: бот берёт из
+# периода запись с самым поздним `completed_at`.
 def check_one_point_per_period() -> None:
-    """16. Одна точка за период — при ритмах полгода и год тоже."""
+    """16. Повтор за период сохраняется, а в линии остаётся последняя запись."""
+    R = bot_reader()
     for block in PAGES:
         got = page(block, "  startCard();\n  " + FULL[block] +
-                   "\n  await finish();\n  startCard();\n  " + FULL[block] +
-                   "\n  await finish();\n  OUT.n = globalThis.DB.rows.length;")
-        assert got["n"] == 1, \
-            f"{PAGES[block]}: два прохода дали {got['n']} точек, ждали одну"
-    ok("16. два прохода за период дают одну точку")
+                   "\n  await finish();\n"
+                   "  await new Promise(function (r) { setTimeout(r, 5); });\n"
+                   "  startCard();\n  " + FULL[block] +
+                   "\n  await finish();\n"
+                   "  OUT.n = globalThis.DB.rows.length;\n"
+                   "  OUT.fail = globalThis.__APP.innerHTML.indexOf('Не удалось') >= 0;")
+        assert got["n"] == 2, \
+            f"{PAGES[block]}: два прохода дали {got['n']} строк — повтор не записался"
+        assert not got["fail"], \
+            f"{PAGES[block]}: повтор за период показал «Не удалось сохранить»"
+
+        # Строк две, точка обязана остаться одна — и это ПОСЛЕДНЯЯ.
+        rows = got["rows"]
+        days = R["CARD_DAYS"].get(block)
+        assert days, f"у карточки «{block}» нет срока — период не посчитать"
+        keys = {R["period_key"](r["completed_at"], days) for r in rows}
+        assert len(keys) == 1, \
+            f"{PAGES[block]}: два прохода подряд попали в разные периоды: {keys}"
+        best = R["latest_per_period"](rows, days)
+        assert len(best) == 1, \
+            f"{PAGES[block]}: за период осталось {len(best)} точек, а не одна"
+        latest = max(r["completed_at"] for r in rows)
+        assert best[0]["completed_at"] == latest, \
+            f"{PAGES[block]}: в линии не последняя запись периода"
+    ok("16. повтор сохраняется, а в линии за период остаётся последняя запись")
 
     # Номер записи считается от периода: полгода и год делятся, а не сливаются.
     got = page("state_finwell", """
   OUT.h1 = periodKey('2026-02-10T00:00:00.000Z');
   OUT.h2 = periodKey('2026-08-10T00:00:00.000Z');
   OUT.h3 = periodKey('2026-03-01T00:00:00.000Z');
-  OUT.w = periodWindow('2026-08-10T00:00:00.000Z');
 """)
     assert got["h1"] != got["h2"], \
         f"две половины года попали в один период: {got['h1']} и {got['h2']}"
     assert got["h1"] == got["h3"], \
         f"февраль и март попали в разные полугодия: {got['h1']} и {got['h3']}"
-    assert got["w"]["from"] < "2026-08-10" < got["w"]["to"], \
-        f"окно полугодия не накрывает свою дату: {got['w']}"
     ok("16. полугодие считается полугодием, а не кварталом")
 
     got = page("pair_faces", """
@@ -821,22 +849,26 @@ def check_one_point_per_period() -> None:
         f"два разных года слились в один период: {got['y1']}, {got['y3']}"
     ok("16. год считается годом")
 
-    # Номер записи обязан различать периоды. Без этого границы посчитаны верно, а
-    # замер за второе полугодие затирает первое: номер у них один.
+    # Номер записи больше не считается ни от кого: каждый заход берёт свежий
+    # случайный. Раньше он считался от человека и периода, и на повторе база
+    # отвечала «номер занят» — отсюда и брался молчаливый отказ.
     for block in PAGES:
         got = page(block, """
-  OUT.same = idKeyString(777, 'P1') === idKeyString(777, 'P2');
-  OUT.hasPk = idKeyString(777, 'МЕТКА').indexOf('МЕТКА') >= 0;
-  OUT.hasUser = idKeyString(777, 'P1').indexOf('777') >= 0;
+  OUT.a = newRecordId();
+  OUT.b = newRecordId();
 """)
-        assert got["hasPk"], \
-            f"{PAGES[block]}: номер записи не зависит от периода — второй замер " \
-            "затрёт первый"
-        assert got["hasUser"], \
-            f"{PAGES[block]}: номер записи не зависит от человека"
-        assert not got["same"], \
-            f"{PAGES[block]}: у двух разных периодов один номер записи"
-    ok("16. номер записи различает и человека, и период")
+        assert got["a"] != got["b"], \
+            f"{PAGES[block]}: два захода подряд получили один номер записи"
+        parts = got["a"].split("-")
+        assert [len(x) for x in parts] == [8, 4, 4, 4, 12] and parts[2][0] == "4", \
+            f"{PAGES[block]}: номер записи не случайный uuid — «{got['a']}»"
+        src = inline_script(PAGES[block])
+        back = [n for n in ("recordIdFor", "idKeyString", "fnvBytes", "patchById",
+                            "patchWindow", "countRows", "periodWindow",
+                            "decideWrite", "postThenPatch") if n in src]
+        assert not back, \
+            f"{PAGES[block]}: вернулась механика правки по номеру: {back}"
+    ok("16. номер записи свежий на каждый заход, механика правки не вернулась")
 
 
 def check_submit_lock() -> None:
@@ -959,8 +991,15 @@ def check_says_already_filled() -> None:
         text = visible(got["intro"]).lower()
         assert "уже есть" in text, \
             f"{PAGES[block]}: про пройденный период не сказано до начала"
-        assert "втор" in text and "не появится" in text, \
-            f"{PAGES[block]}: не сказано, что вторая точка не появится"
+        # ПЕРЕПИСАНО 10.08.2026 (023, FR-005). Было: «вторая точка не появится».
+        # Так и не происходило: повтор просто не записывался. Теперь честно —
+        # запишем ещё раз, а в линии останется последняя запись.
+        assert "запишем ещё раз" in text or "запишем еще раз" in text, \
+            f"{PAGES[block]}: не сказано, что повтор запишется ещё раз"
+        assert "последняя запись" in text, \
+            f"{PAGES[block]}: не сказано, что в линии останется последняя запись"
+        assert "не появится" not in text and "заменят" not in text, \
+            f"{PAGES[block]}: обещано то, чего не происходит — замена прежних"
         got = page(block, "  OUT.intro = screen();")
         assert "уже есть" not in visible(got["intro"]).lower(), \
             f"{PAGES[block]}: говорит «уже есть» тому, кто не проходил"

@@ -23,6 +23,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -536,6 +537,43 @@ def bot_urls() -> Dict:
     ns: Dict = {"os": os, "Dict": Dict, "List": List, "Optional": Optional,
                 "Set": Set, "Tuple": Tuple}
     exec(compile(ast.Module(body=picked, type_ignores=[]), "<bot-urls>", "exec"), ns)
+    return ns
+
+
+# Читающая часть бота. Понадобилась 10.08.2026 (спека 023): правило «одна точка
+# за период» переехало с записи на чтение, и проверять его теперь надо там же,
+# где оно живёт, — в `line_series`, `latest_per_period` и `period_key`.
+def bot_reader() -> Dict:
+    """Читающая часть бота: `period_key`, `latest_per_period`, `line_series`.
+
+    Только чтение, разбором AST. Импортировать бота нельзя — при импорте он тянет
+    токены и сеть. Берём ровно те функции, которыми строится «Динамика»: правило
+    «одна точка за период» с 10.08.2026 живёт в них, а не на странице.
+    """
+    wanted = {"LIFE_CONTAINERS", "CARD_META", "STATE_BLOCKS_META", "COVERAGE_MAP",
+              "CARD_DAYS", "STATE_BLOCK_LINES", "INSTRUMENT_PAST_BLOCKS",
+              "LINE_FIELD_ALIASES", "line_blocks", "_dig",
+              "period_key", "latest_per_period", "line_series"}
+    tree = ast.parse(BOT.read_text(encoding="utf-8"))
+    picked, found = [], set()
+    for node in tree.body:
+        name = None
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            name = node.name
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name):
+            name = node.targets[0].id
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            name = node.target.id
+        if name in wanted:
+            picked.append(node)
+            found.add(name)
+    missing = wanted - found
+    assert not missing, f"в bot.py не нашёл читающих кусков: {sorted(missing)}"
+    ns: Dict = {"Dict": Dict, "List": List, "Optional": Optional, "Set": Set,
+                "Tuple": Tuple, "datetime": datetime, "timezone": timezone}
+    exec(compile(ast.Module(body=picked, type_ignores=[]), "<bot-read>", "exec"),
+         ns)
     return ns
 
 

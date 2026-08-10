@@ -52,7 +52,7 @@ from typing import Dict, List, Optional, Tuple
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
 import polgoda_god as P
 import zamery_v_miniappe as Z
-from lib import (NODE_STUBS, ROOT, TAP_DOM, _node, catalog, html,
+from lib import (NODE_STUBS, ROOT, TAP_DOM, _node, bot_reader, catalog, html,
                  inline_script, ok, run, tg_stub, visible)
 
 CHECKS = Path(__file__).resolve().parent
@@ -719,20 +719,37 @@ def check_records_unchanged() -> None:
                 f"«{block}»: поле {field} в дорожке другое:\n{a[field]}\n{b[field]}"
     ok(f"на всех {len(PAGES)} страницах запись в дорожке та же, что без неё")
 
-    # Одна точка за период: дорожка не создаёт второй записи, даже если человек
-    # прошёл замер внутри дорожки после того, как проходил его сам.
+    # ПЕРЕПИСАНО 10.08.2026, спека 023. Было: два захода внутри дорожки дают одну
+    # строку. Отменено: страницы больше не правят существующую строку — ключ
+    # умеет только вставлять, и правка оборачивалась молчаливым отказом.
+    #
+    # Дорожка тут ни при чём и не должна ничего решать: её дело — довести
+    # человека до следующего замера. Проверяем, что она не мешает записи и не
+    # добавляет от себя ни одного лишнего запроса, а «одна точка за период»
+    # держится на чтении.
     twice = page_run("state_move", """
   startCard();
 """ + FULL["state_move"] + """
   await finish();
+  await new Promise(function (r) { setTimeout(r, 5); });
   startCard();
 """ + FULL["state_move"] + """
   await finish();
   OUT.went = went();
+  OUT.posts = globalThis.CALLS.filter(function (c) { return c.method === 'POST'; }).length;
+  OUT.other = globalThis.CALLS.filter(function (c) { return c.method !== 'POST'; }).length;
 """, record=rec([leg("state_move", "Движение", "Тело")]))
-    assert len(twice["rows"]) == 1, \
-        f"два захода внутри дорожки дали {len(twice['rows'])} точек"
-    ok("две отправки внутри дорожки — одна точка за период")
+    assert len(twice["rows"]) == 2, \
+        f"два захода внутри дорожки дали {len(twice['rows'])} строк, а не две"
+    assert twice["posts"] == 2 and twice["other"] == 0, \
+        f"дорожка добавила свои запросы: вставок {twice['posts']}, прочих {twice['other']}"
+    R = bot_reader()
+    best = R["latest_per_period"](twice["rows"], R["CARD_DAYS"].get("state_move"))
+    assert len(best) == 1, \
+        f"за период осталось {len(best)} точек, а не одна"
+    assert best[0]["completed_at"] == max(r["completed_at"] for r in twice["rows"]), \
+        "в линии не последняя запись периода"
+    ok("два захода внутри дорожки: две строки, а в линии одна — последняя")
 
     # Дорожка ничего не дописывает в scores: панели читают те же ключи.
     one = pass_in_track("state_move", rec([leg("state_move", "Движение", "Тело")]))

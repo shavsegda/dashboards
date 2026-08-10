@@ -130,6 +130,24 @@ textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
 .res-row { padding: 14px 18px; border-bottom: 1px solid var(--graphite-08); font-size: 15px; line-height: 1.45; }
 .res-row:last-child { border-bottom: 0; }
 
+/* Разрыв между «сейчас» и «важно». Сводного балла нет и не будет: восемь пар
+   остаются восемью парами, их просто раскладывают по длине промежутка. */
+.gap-row { padding: 12px 18px 16px; border-bottom: 1px solid var(--graphite-08); }
+.gap-row:last-child { border-bottom: 0; }
+.gap-row.top { background: var(--terracotta-tint); }
+.gap-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.gap-name { font-size: 15px; line-height: 1.3; }
+.gap-row.top .gap-name { color: var(--terracotta); }
+.gap-num { font-family: var(--font-mono); font-size: 12px; color: var(--graphite-50); white-space: nowrap; }
+.gap-track { position: relative; height: 14px; margin: 0 6px; }
+.gap-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--graphite-15); }
+.gap-span { position: absolute; top: 50%; height: 3px; margin-top: -1px; background: var(--terracotta); opacity: 0.35; }
+.gap-row.top .gap-span { opacity: 1; }
+.gap-dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; }
+.gap-dot.now { background: var(--terracotta); }
+.gap-dot.imp { background: var(--paper); border: 1.5px solid var(--graphite-50); }
+.gap-legend { padding: 14px 18px; font-size: 13px; line-height: 1.5; color: var(--graphite-65); border-bottom: 1px solid var(--graphite-08); }
+
 /* Выход из замера — тихой строкой, не кнопкой в один ряд с ответами */
 .outs { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--graphite-08); display: flex; gap: 18px; flex-wrap: wrap; }
 .outs button { background: transparent; color: var(--graphite-50); border: none; padding: 6px 0; font-size: 13px; text-decoration: underline; font-weight: 400; }
@@ -1349,8 +1367,8 @@ function renderResult() {
     '<div class="res-card">' +
       gapRowsHtml(answers) +
       '<div class="gap-legend">Длинный промежуток — туда стоит идти, там усилие даст больше всего. ' +
-      'Точки сошлись высоко — держишь, не трогай. Обе низко — это просто не твоя тема, ' +
-      'и чинить нечего.</div>' +
+      'Точки сошлись у правого края — держишь, не трогай. Обе у левого края — это просто ' +
+      'не твоя тема, и чинить нечего.</div>' +
       lines.map(function (t) {
         return '<div class="res-row">' + esc(t) + "</div>";
       }).join("") + "</div>" +
