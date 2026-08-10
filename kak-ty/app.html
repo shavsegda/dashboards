@@ -69,6 +69,17 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .ask .card { border-bottom: none; }
 .ask .card-name { font-size: 20px; }
 
+/* Замер, на который бот не приглашает: тихий блок ниже просьбы. Не карточка —
+   карточка на первом экране читается как просьба, а просьба одна (спека 020) */
+.mine { margin-top: 26px; }
+.mine-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); padding-bottom: 8px; border-bottom: 1px solid var(--graphite-08); }
+.mine-open { display: block; text-decoration: none; color: inherit; padding-top: 13px; -webkit-tap-highlight-color: transparent; }
+.mine-name { font-size: 16px; font-weight: 500; }
+.mine-open:hover .mine-name { color: var(--terracotta); }
+.mine-sub { font-size: 13px; color: var(--graphite-65); margin-top: 3px; }
+.mine-size { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); margin-top: 9px; }
+.mine-why { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
+
 /* Вход в дорожку «несколько за раз». Отдельная ссылка, не главная просьба */
 .runall { margin-top: 30px; }
 .runall a { display: inline-block; font-size: 15px; font-weight: 500; color: var(--graphite); text-decoration: none; -webkit-tap-highlight-color: transparent; }
@@ -114,6 +125,9 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .chat-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
 /* То же самое одной строкой — для списка, где карточек два десятка */
 .chat-line { font-size: 12px; color: var(--graphite-50); margin-top: 6px; }
+/* Карточка, у которой своей кнопки нет: она запускается следом за другим
+   замером. Приглушённое имя — чтобы она не выглядела кнопкой (спека 020) */
+.card-noopen .card-name { color: var(--graphite-50); font-weight: 400; }
 button.act, a.act { display: inline-block; background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; text-decoration: none; }
 button.act:hover, a.act:hover { background: var(--terracotta); }
 button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 10px 16px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); }
@@ -207,6 +221,10 @@ var ONCE_RHYTHM = { id: "once", name: "Один раз" };
 //                следующий замер. Не умеет — в очередь не берём, иначе цепочка
 //                оборвётся на ней и человек застрянет (011, История 3)
 //   phrase     — точный текст кнопки бота, если замер проходится в разговоре
+//   need       — что человеку нужно принести, чтобы замер имел смысл: "pair" —
+//                второй человек, "group" — группа, "labs" — PDF анализов. Стоит
+//                только у карточек без своей страницы: им и предупреждать
+//                (спека 020)
 //   cond       — условие показа: "clinical" — только когда сработал недельный
 //                датчик (приходит `cl=1`); "team" — пока человек прямо не
 //                сказал, что команды нет (приходит `tm=0`)
@@ -280,6 +298,7 @@ var REGISTRY = [
     what: "насколько хорошо вам двоим сейчас",
     containers: ["Семья"], area: "Семья",
     size: "7 вопросов",
+    need: "pair",
     phrase: "🫂 Как я в наших отношениях"
   },
   {
@@ -287,6 +306,7 @@ var REGISTRY = [
     what: "маркеры напряжения за неделю",
     containers: ["Семья"], area: "Семья",
     size: "24 маркера · минута",
+    need: "pair",
     phrase: "🌡 Детектор взрыва"
   },
   {
@@ -294,6 +314,7 @@ var REGISTRY = [
     what: "ясность, энергия, продвижение, напряжение",
     containers: ["Круг"], area: "Круг",
     size: "4 шкалы",
+    need: "group",
     phrase: "👥 Встреча форум-группы"
   },
   {
@@ -302,6 +323,7 @@ var REGISTRY = [
     what: "сколько вы вместе, дети и быт",
     containers: ["Семья"], area: "Семья",
     size: "5 вопросов · один раз",
+    need: "pair",
     phrase: "👨‍👩‍👧 Про нас",
     once: true
   },
@@ -353,6 +375,7 @@ var REGISTRY = [
     what: "насколько связь надёжна",
     containers: ["Семья"], area: "Семья",
     size: "15 утверждений",
+    need: "pair",
     phrase: "🧭 Надёжна ли связь"
   },
   {
@@ -360,6 +383,7 @@ var REGISTRY = [
     what: "кто сколько несёт по дому",
     containers: ["Семья"], area: "Семья",
     size: "3 вопроса",
+    need: "pair",
     phrase: "⚖️ Нагрузка"
   },
   {
@@ -405,6 +429,7 @@ var REGISTRY = [
     what: "дефициты — частая причина упадка сил",
     containers: ["Тело"], area: "Тело",
     size: "PDF анализов, вопросов нет",
+    need: "labs",
     phrase: "🩸 Анализы"
   },
   {
@@ -467,6 +492,45 @@ var REGISTRY = [
 // «Как я устроен». Список нужен проверке — она следит, чтобы пересечение
 // множеств двух кнопок было пустым (FR-002f).
 var NOT_HERE = ["level", "ztpi", "stressrisk"];
+
+/* ---- Замер, на который бот не приглашает (спека 020, История 4) ----
+ *
+ * Дефект 10.08.2026: владелец не нашёл «Спокойствие с деньгами». Бот про деньги
+ * не спрашивает сам — так решено сознательно, деньги чувствительная тема. Но
+ * следствие вышло обратное задуманному: до таких замеров невозможно дойти.
+ * Просьба на экране одна, и она никогда не про них, а в списке карточка лежит в
+ * разделе «Полгода», куда владелец не добрался.
+ *
+ * Поэтому на первом экране стоит один такой замер. Не просьба и не задание: одна
+ * строка про то, что сюда никто не позовёт, и сам замер под ней. Счётчика и
+ * долга тут быть не может — заполнение как долг превращает замеры в обязанность.
+ */
+
+// Перенос из bot.py, `OBS_ASK_SKIP`: карточки, которые бот в просьбу не берёт
+// никогда. Список сверяется проверкой — своей выдумки тут нет.
+var NO_INVITE = ["forum_scales", "state_finwell"];
+
+// Почему этого замера у человека ещё не было. Ни «пора», ни «нужно»: факт и всё.
+var NO_INVITE_WHY = "Этого замера у тебя ещё не было. Сам про это не спрашиваю — тема твоя.";
+
+/**
+ * Один замер, на который никто не позовёт.
+ *
+ * Берём только тот, до которого человек дойдёт сам: у него есть своя страница и
+ * не нужен второй человек. Иначе блок предложил бы групповой замер, который в
+ * одиночку не про то. Свежий не берём — про него сказать нечего. Нет такого —
+ * null, и блока не будет вовсе.
+ */
+function pickNoInvite(cards) {
+  for (var i = 0; i < (cards || []).length; i++) {
+    var c = cards[i];
+    if (NO_INVITE.indexOf(c.key) < 0) continue;
+    if (!c.url || c.need) continue;
+    if (c.state === "fresh") continue;
+    return c;
+  }
+  return null;
+}
 
 // ---- Наблюдение и просьба ----
 // Их обе присылает бот параметрами адреса. Мини-апп не считает наблюдение сам
@@ -580,6 +644,58 @@ function alsoText(card) {
   return rest.length > 2 ? "ещё: другие области жизни" : "ещё: " + rest.join(" · ");
 }
 
+/* ---- Что будет, если нажать карточку без своей страницы (спека 020) ----
+ *
+ * Живой дефект 10.08.2026. Владелец нажал в каталоге «Нагрузка по дому» —
+ * мини-апп закрылся, внизу развернулась клавиатура бота, никакой диагностики он
+ * не получил и не понял, что произошло.
+ *
+ * Так работает Телеграм: замер-разговор открывается через `sendData`, а он
+ * закрывает мини-апп. Ошибки тут нет — есть молчание карточки. Она не говорила
+ * ни того, что экран закроется, ни того, что парный замер в одиночку не про то.
+ *
+ * Поэтому карточка говорит это сама, ДО нажатия. Только факты: где пойдёт замер,
+ * что случится с экраном и что нужно принести. Ни балла, ни названия шкалы, ни
+ * оценочного слова — правила мини-аппов, часть 4.
+ */
+var CHAT_OPENS = "Замер идёт в переписке с ботом: нажмёшь — мини-апп закроется.";
+
+// Что нужно принести. Ключ — поле `need` карточки. Новое значение обязано
+// появиться здесь: иначе карточка молча останется без своей строки.
+var NEED_SAY = {
+  pair: "Нужен второй человек: замер про вас двоих, не про тебя одного.",
+  group: "Нужна группа: цифры заполняются на встрече, не в одиночку.",
+  // «Вопросов нет» уже стоит строкой выше, в честной длине замера. Повторять её
+  // тут значит писать одно и то же дважды подряд.
+  labs: "Нужен PDF анализов: пришлёшь файл — бот прочитает его сам."
+};
+
+/** Название замера по ключу. Второго списка имён не держим: разъедется. */
+function labelOf(key) {
+  for (var i = 0; i < REGISTRY.length; i++) {
+    if (REGISTRY[i].key === key) return REGISTRY[i].label;
+  }
+  return "";
+}
+
+/**
+ * Одна строка про то, что будет при нажатии.
+ *
+ * Пусто — значит нажимать безопасно: у карточки есть своя страница, и ничего не
+ * закрывается. Пустую строку рисовать не надо, места она не занимает.
+ */
+function chatWarn(card) {
+  if (!card) return "";
+  // Своей кнопки нет вовсе: замер запускается следом за другим. Про такую
+  // карточку честно говорится, что она не кнопка (спека 020, История 2).
+  if (!card.url && !card.phrase && card.after) {
+    return "Своей кнопки нет: открывается сразу после замера «" + labelOf(card.after) + "».";
+  }
+  if (card.url || !card.phrase) return "";
+  var need = NEED_SAY[card.need];
+  return need ? CHAT_OPENS + " " + need : CHAT_OPENS;
+}
+
 // ---- Когда замер был ----
 // Считается по СУТКАМ, а не по часам: разница часовых поясов не важна.
 // Сутки берём по UTC — так же, как бот группирует точки в базе.
@@ -669,6 +785,9 @@ function buildCards(registry, lastDates, nowISO, known) {
       key: r.key, label: r.label, what: r.what, group: r.group, days: r.days,
       section: r.section, containers: r.containers, area: r.area, size: r.size,
       url: r.url, phrase: r.phrase, after: r.after, once: r.once, track: r.track,
+      // Что нужно принести (спека 020). Без переноса карточка на экране молчала
+      // бы про второго человека: сюда попадает то, что видит человек.
+      need: r.need,
       state: f.state, daysAgo: f.daysAgo
     };
   }).filter(function (c) {
@@ -697,6 +816,31 @@ function parseFreshParam(s) {
     out[m[1]] = m[2];
   });
   return out;
+}
+
+/**
+ * Достать из строки истории запись одной карточки (019).
+ *
+ * Контракт с ботом:
+ *   h      = запись ("~" запись)*
+ *   запись = ключ "!" ключи_линий "!" точка ("!" точка)*
+ *
+ * Каталог тут ПОСРЕДНИК, как и с флагами: он не толкует и не додумывает, а
+ * отдаёт странице ровно её запись. Чужие записи страница всё равно не читает, а
+ * длину адреса тратят — а адрес и так тесный.
+ *
+ * Записи нет — пустая строка. Обломок отдавать нельзя: страница разобрала бы его
+ * как настоящие данные.
+ */
+function histPick(s, card) {
+  var want = String(card == null ? "" : card) + "!";
+  var parts = String(s == null ? "" : s).split("~");
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].indexOf(want) === 0 && parts[i].split("!").length >= 3) {
+      return parts[i];
+    }
+  }
+  return "";
 }
 
 /* ---- Флаги, которые каталог передаёт страницам замеров (011) ----
@@ -1184,6 +1328,10 @@ var BOT_NAME = params.get("b") || BOT_FALLBACK;
 var APP_V = params.get("v") || "";
 // Флаги для страниц: собираются один раз, дальше только подставляются.
 var PAGE_FLAGS = pageFlags(params);
+// История замеров от бота (019). Каталог её не читает для себя — он передаёт её
+// дальше, в адрес страницы, записью нужной карточки. Страница не может прочитать
+// базу: у публичного ключа есть право только на вставку, и это не изменится.
+var HIST_RAW = params.get("h") || "";
 
 // ---- Supabase ----
 var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -1272,6 +1420,9 @@ function esc(s) {
  * `d=1` — единственный флаг, который каталог добавляет сам: он и так знает,
  * свежий ли замер, а страница должна сказать «за этот период уже есть» ДО
  * начала, а не после отправки.
+ *
+ * `h=` — история этой карточки от бота (019). Только своя запись, а не вся
+ * строка: остальные записи страница не читает, а длину адреса тратят.
  */
 function cardHref(card) {
   if (!card.url) return null;
@@ -1280,6 +1431,8 @@ function cardHref(card) {
     (APP_V ? "v=" + encodeURIComponent(APP_V) + "&" : "") +
     "u=tg_" + USER_ID + PAGE_FLAGS;
   if (card.state === "fresh") url += "&d=1";
+  var hist = histPick(HIST_RAW, card.key);
+  if (hist) url += "&h=" + encodeURIComponent(hist);
   return url;
 }
 
@@ -1344,12 +1497,17 @@ function cardHtml(card, inList) {
     openable = '<a class="card-open" href="' + esc(chatLink) + '"' + send + ">" +
       head + "</a>";
   } else {
-    openable = "<div>" + head + "</div>";
+    // Ни страницы, ни фразы: нажимать нечего. Свой класс, чтобы это было видно
+    // по разметке, а не только по тексту (спека 020, История 2).
+    openable = '<div class="card-noopen">' + head + "</div>";
   }
 
+  // Предупреждение про то, что будет при нажатии (спека 020). Одна строка — и в
+  // списке, и на карточке просьбы: человек обязан знать это ДО нажатия. В
+  // просьбе строка стоит внутри блока с фразой, там же где запасной путь.
   var chat = "";
   if (chatLink && inList) {
-    chat = '<div class="chat-line">идёт разговором — нажми, бот начнёт сам</div>';
+    chat = '<div class="chat-line">' + esc(chatWarn(card)) + "</div>";
   } else if (chatLink) {
     chat =
       '<div class="chat">' +
@@ -1358,12 +1516,11 @@ function cardHtml(card, inList) {
           '<a class="act" href="' + esc(chatLink) + '"' + send + ">Открыть разговор</a>" +
           '<button class="ghost" data-copy="' + esc(card.phrase) + '">Скопировать фразу</button>' +
         "</div>" +
-        '<div class="chat-hint">Этот замер идёт разговором, не формой. Нажми — бот начнёт сам. ' +
+        '<div class="chat-hint">' + esc(chatWarn(card)) + " " +
         "Если ничего не произошло, скопируй фразу и отправь её в чат.</div>" +
       "</div>";
-  }
-  if (!href && !card.phrase && card.after) {
-    chat = '<div class="chat-line">идёт следом за квартальным замером, сразу после него</div>';
+  } else if (!href && card.after) {
+    chat = '<div class="chat-line">' + esc(chatWarn(card)) + "</div>";
   }
 
   return '<div class="card">' + openable +
@@ -1418,6 +1575,26 @@ function firstScreenHtml(obs, ask, blind) {
   }
 
   return out;
+}
+
+/**
+ * Блок про замер, на который бот не приглашает (спека 020, История 4).
+ *
+ * Стоит ниже просьбы: сначала то, о чём попросили, потом остальное. Свои классы,
+ * а не класс карточки: карточка на первом экране читается как просьба, а просьба
+ * ровно одна. Кандидата нет — блока нет, пустой рамки не остаётся.
+ */
+function noInviteHtml(card) {
+  if (!card) return "";
+  return '<div class="mine">' +
+    '<div class="mine-head">Сюда я не приглашаю</div>' +
+    '<a class="mine-open" href="' + esc(cardHref(card)) + '">' +
+      '<div class="mine-name">' + esc(card.label) + "</div>" +
+      '<div class="mine-sub">' + esc(card.what) + "</div>" +
+    "</a>" +
+    '<div class="mine-size">' + esc(card.size) + "</div>" +
+    '<div class="mine-why">' + esc(NO_INVITE_WHY) + "</div>" +
+  "</div>";
 }
 
 /**
@@ -1575,6 +1752,7 @@ function render() {
   app.innerHTML =
     "<h1>Что со мной?</h1>" +
     firstScreenHtml(OBSERVATION, ask, BLIND_SPOT) +
+    noInviteHtml(pickNoInvite(cards)) +
     trackResumeHtml() +
     runAllHtml(cards) +
     allHtml(cards);

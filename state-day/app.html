@@ -130,6 +130,17 @@ button.ghost:disabled { color: var(--graphite-30); border-color: var(--graphite-
 .status { margin-top: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terracotta); min-height: 16px; }
 .status.error { color: var(--alert); }
 
+/* Блок «Что было раньше». Линия по каждому показателю отдельно: одна линия — один
+   показатель, иначе получается клубок, из которого ничего не читается.
+   Цифр на оси нет ни одной — только подписи словами сверху и снизу. */
+.hist { margin-bottom: 24px; padding-bottom: 4px; border-bottom: 1px solid var(--graphite-08); }
+.hist .note { margin-bottom: 8px; }
+.hist-prev { font-size: 15px; color: var(--graphite-75); margin-bottom: 16px; }
+.hist-line { padding: 10px 0; }
+.spark-wrap { display: flex; flex-direction: column; gap: 3px; }
+.spark { width: 100%; height: 48px; display: block; }
+.spark-side { font-size: 11px; color: var(--graphite-30); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
 .recap { border: 1px solid var(--graphite-08); }
 .recap-row { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 16px; border-bottom: 1px solid var(--graphite-08); }
 .recap-row:last-child { border-bottom: 0; }
@@ -474,15 +485,25 @@ function parseUserId(u) {
   return m ? m[1] : null;
 }
 
-/** Читаемая сводка записанного — то же, что бот отвечает строкой «Записал: …». */
-function recapRows(scores) {
+/** Читаемая сводка записанного — то же, что бот отвечает строкой «Записал: …».
+ *
+ * `prev` — значения прошлой отметки. Есть — к строке приписывается изменение его
+ * же словами: «выше», «ниже», «как в прошлый раз». Это разрешённый способ
+ * говорить о сдвиге; баллов и норм здесь нет и быть не может.
+ */
+function recapRows(scores, prev) {
   var rows = [];
-  if (scores.sleep_hours !== undefined) rows.push(["Сон", scores.sleep_hours + " ч"]);
-  if (scores.sleep_quality !== undefined) rows.push(["Качество сна", String(scores.sleep_quality)]);
-  if (scores.tonus !== undefined) rows.push(["Тонус", String(scores.tonus)]);
-  if (scores.mood !== undefined) rows.push(["Настроение", String(scores.mood)]);
+  var p = prev || {};
+  function tail(key) {
+    var w = changeWord(scores[key], p[key]);
+    return w ? " · " + w : "";
+  }
+  if (scores.sleep_hours !== undefined) rows.push(["Сон", scores.sleep_hours + " ч" + tail("sleep_hours")]);
+  if (scores.sleep_quality !== undefined) rows.push(["Качество сна", String(scores.sleep_quality) + tail("sleep_quality")]);
+  if (scores.tonus !== undefined) rows.push(["Тонус", String(scores.tonus) + tail("tonus")]);
+  if (scores.mood !== undefined) rows.push(["Настроение", String(scores.mood) + tail("mood")]);
   if (scores.practice_min !== undefined) {
-    rows.push(["Практика", scores.practice_min + " мин" + (scores.practice_kind ? " · " + scores.practice_kind : "")]);
+    rows.push(["Практика внимания", scores.practice_min + " мин" + (scores.practice_kind ? " · " + scores.practice_kind : "") + tail("practice_min")]);
   }
   if (scores.resting_hr !== undefined) rows.push(["Пульс покоя", String(scores.resting_hr)]);
   if (scores.battery !== undefined) rows.push(["Заряд", String(scores.battery)]);
@@ -525,6 +546,144 @@ function draftHasWork(d) {
   return Object.keys(f).some(function (k) {
     return f[k] !== null && f[k] !== undefined && f[k] !== "" && f[k] !== "unmarked";
   });
+}
+
+/* ---- История замера: её привозит бот (019) ----
+ *
+ * Дефект живого человека 10.08.2026, дословно: «я открыл сутки и кажется, что
+ * сегодня проходил уже и раньше проходил, а историю не вижу».
+ *
+ * Данные были целы — четыре точки в базе. Страница их не видела, потому что
+ * «прошлый раз» знала ТОЛЬКО из памяти телефона, а Телеграм-кэш человек почистил.
+ *
+ * Почему страница не читает базу сама и не будет. У публичного ключа есть право
+ * только на вставку: адрес страницы не секрет, и право читать `passport` означало
+ * бы право читать чужие замеры. Историю привозит бот — он единственный со
+ * служебным ключом.
+ *
+ * Приоритет источников жёсткий: АДРЕС сильнее памяти телефона. Бот читает базу,
+ * телефон после чистки кэша врёт. Память остаётся запасным путём — только когда
+ * параметра нет вовсе (давняя ссылка из старого сообщения).
+ *
+ * И главное: прочитанное из адреса НИКУДА не подставляется в поля формы. В базу
+ * уходит только то, что человек дал в этом заходе (011, FR-004). Показать историю
+ * можно, записать её нельзя.
+ */
+
+// Чья это история. Ключ тот же, что блок базы и что ключ карточки у бота.
+var HIST_CARD = "state_day";
+
+// Как линия называется человеку и какими словами подписаны концы графика.
+// Ни одного названия шкалы: у суточного замера их нет — это цифры, которые
+// человек ставит сам. Слов «мало», «много», «плохо», «низко», «высоко» здесь нет
+// и быть не может: график не судья.
+var HIST_META = [
+  { key: "tonus", name: "Тонус", unit: "", lo: 0, hi: 10,
+    up: "больше сил", down: "меньше сил" },
+  { key: "mood", name: "Настроение", unit: "", lo: 0, hi: 10,
+    up: "легче", down: "тяжелее" },
+  { key: "sleep_quality", name: "Качество сна", unit: "", lo: 0, hi: 10,
+    up: "выспался", down: "разбит" },
+  { key: "sleep_hours", name: "Сон", unit: " ч", lo: 3, hi: 12,
+    up: "спал дольше", down: "спал меньше" },
+  { key: "practice_min", name: "Практика внимания", unit: " мин", lo: 0, hi: 60,
+    up: "дольше", down: "короче" }
+];
+
+/**
+ * Разобрать историю от бота. Контракт:
+ *   h      = запись ("~" запись)*
+ *   запись = ключ "!" ключи_линий "!" точка ("!" точка)*
+ *   точка  = ГГММДД ":" значения через запятую, в порядке ключей линий
+ *
+ * Пустое место между запятыми — «не отмечено», а не нуль: три состояния, как
+ * везде. Мусор отбрасывается молча: половина параметра не должна становиться
+ * данными.
+ */
+function parseHist(s) {
+  var out = {};
+  String(s == null ? "" : s).split("~").forEach(function (entry) {
+    var parts = entry.split("!").filter(function (p) { return p !== ""; });
+    if (parts.length < 3) return;
+    var card = parts[0];
+    var keys = parts[1].split(",");
+    var pts = [];
+    parts.slice(2).forEach(function (raw) {
+      var i = raw.indexOf(":");
+      if (i < 0) return;
+      var day = raw.slice(0, i);
+      if (!/^\d{6}$/.test(day)) return;
+      var cells = raw.slice(i + 1).split(",");
+      var vals = {};
+      keys.forEach(function (k, n) {
+        if (n >= cells.length || cells[n] === "") return;
+        var v = parseFloat(cells[n]);
+        if (isFinite(v)) vals[k] = v;
+      });
+      pts.push({ day: day, vals: vals });
+    });
+    if (pts.length) out[card] = { lines: keys, points: pts };
+  });
+  return out;
+}
+
+/** «260809» → «2026-08-09». Не дата — пустая строка, а не догадка. */
+function histDayKey(day) {
+  var m = /^(\d{2})(\d{2})(\d{2})$/.exec(String(day == null ? "" : day));
+  return m ? "20" + m[1] + "-" + m[2] + "-" + m[3] : "";
+}
+
+/** Точки ПРОШЛЫХ заходов: всё, что раньше этих суток. Сегодня — не история. */
+function histBefore(rec, todayKey) {
+  var stop = String(todayKey || "9999-99-99");
+  return ((rec || {}).points || []).filter(function (p) {
+    var d = histDayKey(p.day);
+    return d !== "" && d < stop;
+  });
+}
+
+/** Серия по линии. Пропуск остаётся пропуском: сглаживать его значит врать. */
+function histSeries(points, key) {
+  return (points || []).map(function (p) {
+    var v = (p.vals || {})[key];
+    return (typeof v === "number" && isFinite(v)) ? v : null;
+  });
+}
+
+/** Изменение его же словами. Разрешено 015: «выше», «ниже», «как в прошлый раз». */
+function changeWord(now, prev) {
+  if (typeof now !== "number" || typeof prev !== "number") return "";
+  if (!isFinite(now) || !isFinite(prev)) return "";
+  if (now - prev > 1e-9) return "выше";
+  if (prev - now > 1e-9) return "ниже";
+  return "как в прошлый раз";
+}
+
+/**
+ * Отрезки линии для графика. Пропуск РВЁТ линию, а не сглаживается через
+ * отсутствующее значение: иначе график показывал бы день, которого не было.
+ *
+ * Цифр здесь не считается вовсе — только координаты. На оси графика чисел нет и
+ * не будет: человек читает подписи словами.
+ */
+function sparkSegments(vals, lo, hi, w, h) {
+  var list = vals || [];
+  var n = Math.max(list.length - 1, 1);
+  var span = (hi - lo) || 1;
+  var segs = [];
+  var cur = [];
+  list.forEach(function (v, i) {
+    if (v === null || v === undefined) {
+      if (cur.length > 1) segs.push(cur);
+      cur = [];
+      return;
+    }
+    var x = Math.round(i / n * w * 10) / 10;
+    var y = Math.round((h - (Math.max(lo, Math.min(hi, v)) - lo) / span * h) * 10) / 10;
+    cur.push(x + "," + y);
+  });
+  if (cur.length > 1) segs.push(cur);
+  return segs;
 }
 
 /* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
@@ -632,6 +791,10 @@ var HAS_GOAL = params.get("g") === "1";
 var GOAL_ACTION = (params.get("a") || "").slice(0, 120);
 var BOT_SAYS_FILLED = params.get("d") === "1";
 
+// История от бота (019). Параметра нет — переменная пустая, и дальше работает
+// запасной путь через память телефона.
+var HIST_REC = parseHist(params.get("h") || "")[HIST_CARD] || null;
+
 // ---- Supabase ----
 var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
@@ -702,7 +865,44 @@ function clearDraft() {
 var todayKey = utcDayKey(new Date().toISOString());
 var local = loadLocal();
 var localFilledToday = local.dayKey === todayKey && !!local.savedAt;
-var knownExisting = BOT_SAYS_FILLED || localFilledToday;
+// Точка за сегодня в истории от бота — тот же факт, что `d=1`, только приехавший
+// вместе с данными. Держим оба: адрес от бота всегда сильнее памяти телефона.
+var histFilledToday = !!(HIST_REC && (HIST_REC.points || []).some(function (p) {
+  return histDayKey(p.day) === todayKey;
+}));
+var knownExisting = BOT_SAYS_FILLED || histFilledToday || localFilledToday;
+
+/* ---- Прошлые заходы ----
+ *
+ * Источник один и приоритет жёсткий: сначала история от бота, и только если её
+ * нет вовсе — память телефона. Бот читает базу; телефон после чистки кэша
+ * показывает пустоту и выдаёт её за «ты тут впервые» — ровно этот дефект и
+ * чинится.
+ *
+ * Память телефона помнит одну прошлую отправку и только её значения. Линии из
+ * одной точки не бывает, поэтому запасной путь даёт строку «в прошлый раз» и не
+ * даёт графика. Это честно: линию привозит бот.
+ */
+var HIST_PREV = [];
+var HIST_FROM_BOT = false;
+(function () {
+  if (HIST_REC) {
+    HIST_PREV = histBefore(HIST_REC, todayKey);
+    HIST_FROM_BOT = true;
+    return;
+  }
+  if (!local.dayKey || local.dayKey === todayKey || !local.form) return;
+  var vals = {};
+  HIST_META.forEach(function (m) {
+    var src = { tonus: "tonus", mood: "mood", sleep_quality: "sleepQuality",
+                sleep_hours: "sleepHours", practice_min: "practiceMin" }[m.key];
+    var v = local.form[src];
+    if (typeof v === "number" && isFinite(v)) vals[m.key] = v;
+  });
+  if (Object.keys(vals).length) {
+    HIST_PREV = [{ day: local.dayKey.slice(2).replace(/-/g, ""), vals: vals }];
+  }
+})();
 
 var form = {
   sleepHours: null, sleepQuality: null, tonus: null, mood: null,
@@ -762,6 +962,77 @@ function hoursLabel(h) {
   return hh + ":" + (mm < 10 ? "0" + mm : mm);
 }
 
+/** Число в короткую запись: «7», «7.5». Нужна и графику, и строке «в прошлый раз». */
+function numLabel(v) {
+  if (typeof v !== "number" || !isFinite(v)) return "";
+  return String(Math.round(v * 100) / 100);
+}
+
+/**
+ * График одной линии. Одна линия на показатель — не всё в одном клубке.
+ *
+ * На оси НЕТ ни одной цифры. Подписи словами: сверху «больше сил», снизу
+ * «меньше сил». Так человек читает направление, а не оценку своего балла — балла
+ * тут и нет вовсе.
+ */
+function sparkHtml(vals, meta) {
+  var segs = sparkSegments(vals, meta.lo, meta.hi, 560, 48);
+  if (!segs.length) return "";
+  var lines = segs.map(function (sg) {
+    return '<polyline points="' + sg.join(" ") + '" fill="none" ' +
+      'stroke="var(--terracotta)" stroke-width="2" stroke-linejoin="round" ' +
+      'stroke-linecap="round"/>';
+  }).join("");
+  return '<div class="spark-wrap">' +
+    '<div class="spark-side">' + esc(meta.up) + "</div>" +
+    '<svg class="spark" viewBox="0 0 560 48" preserveAspectRatio="none" ' +
+    'role="img" aria-label="' + esc(meta.name) + '">' + lines + "</svg>" +
+    '<div class="spark-side">' + esc(meta.down) + "</div>" +
+    "</div>";
+}
+
+/**
+ * Блок «Что было раньше». Истории нет — блока нет вовсе: пустое место человек
+ * прочитал бы как факт про себя.
+ *
+ * Две части. Строка «в прошлый раз» его же ответами — она закрывает работу и
+ * сама по себе. И линия по каждому показателю, у которого есть хотя бы две точки:
+ * из одной точки линии не бывает, и рисовать её значит выдумывать.
+ */
+function historyHtml() {
+  if (!HIST_PREV.length) return "";
+  var last = HIST_PREV[HIST_PREV.length - 1].vals || {};
+  var said = [];
+  HIST_META.forEach(function (m) {
+    var v = last[m.key];
+    if (typeof v === "number") {
+      said.push(m.name.toLowerCase() + " " + numLabel(v) + m.unit);
+    }
+  });
+  if (!said.length) return "";
+
+  var charts = "";
+  HIST_META.forEach(function (m) {
+    var vals = histSeries(HIST_PREV, m.key);
+    var real = vals.filter(function (v) { return v !== null; });
+    if (real.length < 2) return;
+    var svg = sparkHtml(vals, m);
+    if (!svg) return;
+    charts +=
+      '<div class="hist-line">' +
+        '<div class="field-head"><div class="field-name">' + esc(m.name) + "</div>" +
+        '<div class="field-val">' + esc(numLabel(real[real.length - 1]) + m.unit) + "</div></div>" +
+        svg +
+      "</div>";
+  });
+
+  return '<section class="hist">' +
+    '<div class="note">Что было раньше</div>' +
+    '<p class="hist-prev">В прошлый раз: ' + esc(said.join(" · ")) + ".</p>" +
+    charts +
+    "</section>";
+}
+
 function renderForm() {
   var banner = knownExisting
     ? '<div class="banner"><strong>Сутки за сегодня уже заполнены.</strong> Можно исправить — новые значения заменят прежние, вторая точка не появится. Или выйти и оставить как есть.</div>'
@@ -793,6 +1064,7 @@ function renderForm() {
     '<p class="lead">Сон, тонус, настроение, практика. Полминуты — и точка встала на линию.</p>' +
     banner +
     draftLine +
+    historyHtml() +
 
     '<div class="field">' +
       '<div class="field-head"><div class="field-name">Сколько спал</div>' +
@@ -818,9 +1090,16 @@ function renderForm() {
       scaleRow("mood") +
     "</div>" +
 
+    /* Поле практики. Дефект живого человека 10.08.2026, дословно: «не понятно
+       что за практика, я поэтому ставлю 0». Три дня подряд в базе стоял нуль — и
+       это факт про формулировку, а не про его жизнь.
+       Поэтому: имя называет ЧТО именно считается, примеры и исключение стоят ДО
+       ввода, а не после выбора минут, и нуль назван нормальным ответом. Без
+       оценок: ни «мало», ни «хотя бы», ни «всего». */
     '<div class="field">' +
-      '<div class="field-head"><div class="field-name">Практика</div>' +
+      '<div class="field-head"><div class="field-name">Практика внимания</div>' +
       '<div class="field-hint">минут</div></div>' +
+      '<p class="field-hint" style="margin-bottom:10px">Медитация, дыхание, сканирование тела. Бег и зал — не сюда, им своё место. Ноль — практики не было, это тоже ответ.</p>' +
       '<div class="chips">' +
         PRACTICE_STEPS.map(function (n) {
           return '<div class="chip' + (form.practiceMin === n ? " on" : "") + '" data-practice="' + n + '">' + n + "</div>";
@@ -1041,6 +1320,9 @@ async function submit() {
     draftRestored = false;
     knownExisting = true;
     lock.release();
+    // Сигнал боту — последним действием. Если он ушёл, мини-апп закрывается, и
+    // вывод человек читает в чате; не ушёл — рисуем результат сами.
+    if (signalSaved()) return;
     renderDone();
   } catch (e) {
     // Сеть могла отвалиться уже после записи. Отметку не ставим, поэтому
@@ -1080,8 +1362,51 @@ async function postThenPatch(dayKey, payload) {
   return false;
 }
 
+/* ---- Сигнал боту: запись прошла (019) ----
+ *
+ * Дословный запрос Алексея: «хочется чтобы бот сразу прислал какой-то вывод по
+ * замеру суточному с вопросом в конце». Связи «страница → бот» другой нет:
+ * ссылка со старт-параметром до бота не доезжает, если чат с ним уже есть.
+ *
+ * Про запрет `sendData` в правилах мини-аппов. Он верный и остаётся: sendData
+ * закрывает страницу мгновенно и обрывает незавершённый запрос в базу. Поэтому
+ * здесь он вызывается ПОСЛЕДНИМ действием — после ответа сервера и после очистки
+ * черновика. Обрывать нечего: запись подтверждена, копий терять не осталось.
+ *
+ * Доступность считается по документированному признаку, тому же, что в каталоге:
+ * `sendData` работает только у мини-аппов, открытых кнопкой обычной клавиатуры, а
+ * у такого запуска init-данные пустые. Открыли иначе — сигнала нет, и результат
+ * показывает сама страница. Тишины человек не получает ни в одном случае.
+ *
+ * Ровно один сигнал за отправку: два сообщения от бота на одну кнопку человек
+ * читает как поломку.
+ */
+var SIGNAL_SENT = false;
+
+function canSendData() {
+  return !!(tg && typeof tg.sendData === "function" && !(tg.initData || ""));
+}
+
+function signalSaved() {
+  if (SIGNAL_SENT || !canSendData()) return false;
+  SIGNAL_SENT = true;
+  // Подтверждение выхода снимаем сами: работа сделана, и держать человека
+  // вопросом «точно уйти?» на закрытии, которое затеяли мы, нечестно.
+  try { tg.disableClosingConfirmation(); } catch (e) {}
+  try {
+    tg.sendData(JSON.stringify({ action: "state_saved", block: HIST_CARD }));
+    return true;
+  } catch (e) {
+    SIGNAL_SENT = false;
+    return false;
+  }
+}
+
 function renderDone() {
-  var rows = recapRows(lastSaved || {});
+  // Прошлая отметка — из истории от бота, а её нет — из памяти телефона. Строки
+  // итога получают «выше», «ниже», «как в прошлый раз» его же словами.
+  var prev = HIST_PREV.length ? (HIST_PREV[HIST_PREV.length - 1].vals || {}) : {};
+  var rows = recapRows(lastSaved || {}, prev);
   app.innerHTML =
     "<h1>Записал</h1>" +
     '<p class="lead">Одна точка за сутки. Один замер ничего не значит — смысл появится на линии, смотри в «📈 Динамика».</p>' +

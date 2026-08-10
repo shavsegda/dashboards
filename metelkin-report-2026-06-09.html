@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренировка / 2026-06-09</title>
+<script>
+(function() {
+  var PASSWORD = "metelkin27";
+  var KEY = "metelkin-2026-06-09-auth";
+  if (sessionStorage.getItem(KEY) === "ok") return;
+  document.documentElement.style.visibility = "hidden";
+  function ask() {
+    var input = window.prompt("Пароль для открытия репорта:");
+    if (input === null) {
+      document.documentElement.innerHTML = "<body style='font-family:sans-serif;padding:32px;color:#444;'>Доступ только по паролю. Перезагрузите страницу, чтобы ввести пароль снова.</body>";
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+    if (input === PASSWORD) {
+      sessionStorage.setItem(KEY, "ok");
+      document.documentElement.style.visibility = "visible";
+    } else {
+      window.alert("Неверный пароль");
+      ask();
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ask);
+  } else {
+    ask();
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f0f; --fg:#e8e8e8; --muted:#8a8a8a; --line:#2a2a2a;
+    --accent:#d9d9d9; --card:#161616;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:"JetBrains Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    line-height:1.6; padding:48px 20px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  .top{display:flex;justify-content:space-between;align-items:baseline;
+    border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+  .top .label{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+  h1{font-size:22px;font-weight:600;margin:24px 0 4px;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:32px}
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:8px;
+    padding:18px 20px;margin-bottom:14px;
+  }
+  section h2{
+    font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
+    margin-bottom:10px;font-weight:600;
+  }
+  section p{font-size:15px}
+  .quote{
+    border-left:2px solid var(--accent);padding-left:14px;
+    color:var(--fg);font-style:normal;
+  }
+  .cats{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .cats span{
+    border:1px solid var(--line);border-radius:4px;padding:3px 10px;
+    font-size:13px;color:var(--muted);
+  }
+  .btn{
+    position:fixed;right:20px;bottom:20px;
+    background:var(--accent);color:#0f0f0f;border:none;border-radius:6px;
+    padding:12px 18px;font-family:inherit;font-size:13px;font-weight:600;
+    cursor:pointer;letter-spacing:.5px;
+  }
+  .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}
+  @media print{
+    body{background:#fff;color:#111;padding:0}
+    .btn{display:none}
+    section{background:#fff;border:1px solid #ddd;break-inside:avoid}
+    section h2,.sub,.top .label,.cats span{color:#666}
+    .quote{border-left-color:#111}
+    :root{--fg:#111;--muted:#666;--line:#ddd}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="label">Тренировка · Квартал</span>
+    <span class="label">09.06.2026</span>
+  </div>
+  <h1>Первая встреча квартала</h1>
+  <div class="sub">Договорились, как работаем, и собрали первую карту — почему практики, которые ведут тебя к глубине, не выполняются регулярно.</div>
+
+  <section>
+    <h2>1 · Цель квартала (твоими словами)</h2>
+    <p>Чтобы практики, которые ведут к состоянию глубины и росту внутренней доброты, просто выполнялись. Регулярно.</p>
+    <div class="cats">
+      <span>медитация</span><span>психотерапия</span><span>занятия со мной</span>
+      <span>чтение</span><span>доброта</span><span>холотроп</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · Моя роль</h2>
+    <p>Систематизировать твой рост и держать движение по всем веткам.</p>
+  </section>
+
+  <section>
+    <h2>3 · Как меряем глубину (твои признаки)</h2>
+    <p>Идёшь куда надо. Вещи очаровывают. Внутри что-то срастается. Что-то вспоминается и звучит как истина.</p>
+  </section>
+
+  <section>
+    <h2>4 · Что вскрылось</h2>
+    <p>Практики стоят в конце очереди по времени. Впереди — семья, спорт, работа, дорога. Холотроп и терапия пока только идея, без единого действия. Общий ответ — «времени не хватает»: вроде есть, а объективно нет.</p>
+  </section>
+
+  <section>
+    <h2>5 · Ключевой инсайт</h2>
+    <p>Ты уверен на 8 из 10: будь у тебя время — практики бы пошли. Значит не надо спорить с собой. Надо посмотреть на время честно, в цифрах.</p>
+  </section>
+
+  <section>
+    <h2>6 · Решение</h2>
+    <p>Сделать квартал экспериментом. Сначала увидеть, куда реально уходит время. Потом решать, что менять.</p>
+  </section>
+
+  <section>
+    <h2>7 · Первый шаг</h2>
+    <p>Каждый вечер неделю записывать часы по категориям: семья, работа-рутина, работа-проект, спорт, дорога, практики, прочее. Форму дошлифуешь за первые дни. Пришлёшь мне эксель.</p>
+  </section>
+
+  <section>
+    <h2>8 · Критерий результата</h2>
+    <p>Через неделю у тебя на руках объективная картина в цифрах — куда уходит время. Не «кажется», а факт.</p>
+  </section>
+
+  <section>
+    <h2>9 · Что забираешь со встречи</h2>
+    <p class="quote">«План на следующую неделю.»</p>
+  </section>
+
+  <div class="foot">Тренерская · Алексей Шаповалов</div>
+</div>
+<button class="btn" onclick="window.print()">Сохранить PDF</button>
+</body>
+</html>
