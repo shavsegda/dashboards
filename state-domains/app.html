@@ -512,13 +512,56 @@ function composeRaw(a, f) {
     .map(function (d) { return d.key + ":" + pwi[d.key]; }).join(", ");
 }
 
+/**
+ * Разрыв между «сейчас» и «важно», восемь строк, самый длинный сверху.
+ *
+ * Почему не среднее и не взвешенный балл. Человек с ровными семёрками и человек
+ * с провалом в одной области при девятках в остальных дадут одно и то же число.
+ * Складывать области — потерять ровно ту разницу, ради которой замер делается.
+ * Здесь агрегата нет: те же восемь пар, просто разложены по длине промежутка.
+ */
+function gapRows(a) {
+  var sat = satOf(a), imp = impOf(a);
+  var rows = [];
+  PWI_DOMAINS.forEach(function (d) {
+    var now = sat[d.key], w = imp[d.key];
+    if (now === undefined) return;                 // без ответа — строки нет
+    now = Math.round(Number(now));
+    w = (w === undefined) ? null : Math.round(Number(w));
+    rows.push({ name: d.name, now: now, imp: w,
+                gap: (w === null) ? -1 : Math.max(0, w - now) });
+  });
+  rows.sort(function (x, y) { return y.gap - x.gap; });
+  return rows;
+}
+
+function gapRowsHtml(a) {
+  var rows = gapRows(a);
+  if (!rows.length) return "";
+  return rows.map(function (r, i) {
+    var lo = Math.min(r.now, r.imp === null ? r.now : r.imp);
+    var hi = Math.max(r.now, r.imp === null ? r.now : r.imp);
+    var span = (r.imp === null || hi === lo) ? ""
+      : '<div class="gap-span" style="left:' + (lo * 10) + '%;width:' + ((hi - lo) * 10) + '%"></div>';
+    var impDot = (r.imp === null) ? ""
+      : '<div class="gap-dot imp" style="left:' + (r.imp * 10) + '%"></div>';
+    var nums = (r.imp === null) ? ("сейчас " + r.now)
+      : ("сейчас " + r.now + " · важно " + r.imp);
+    // Верхняя строка выделяется только если разрыв реальный: у ровного профиля
+    // подсвечивать нечего, и врать про «вот сюда иди» нельзя.
+    var top = (i === 0 && r.gap > 0) ? " top" : "";
+    return '<div class="gap-row' + top + '">' +
+      '<div class="gap-head"><span class="gap-name">' + esc(r.name) + "</span>" +
+      '<span class="gap-num">' + esc(nums) + "</span></div>" +
+      '<div class="gap-track"><div class="gap-line"></div>' + span +
+      '<div class="gap-dot now" style="left:' + (r.now * 10) + '%"></div>' + impDot +
+      "</div></div>";
+  }).join("");
+}
+
 function resultLines(a, f) {
   var sat = satOf(a), imp = impOf(a);
   var out = [];
-  PWI_DOMAINS.forEach(function (d) {
-    var v = sat[d.key];
-    out.push(d.name + " — " + (v === undefined ? "без ответа" : Math.round(Number(v))));
-  });
   var thin = pwiThinnest(sat, imp);
   if (thin) {
     var w = imp[thin];
@@ -1303,9 +1346,14 @@ function renderResult() {
       : (state.sync === "error" ? SEND_FAIL_TITLE : SEND_WAIT_TITLE)) + "</h1>" +
     '<div class="sub">' + esc(state.sync === "ok" ? RESULT_SUB
       : (state.sync === "error" ? SEND_FAIL_SUB : SEND_WAIT_SUB)) + "</div>" +
-    '<div class="res-card">' + lines.map(function (t) {
-      return '<div class="res-row">' + esc(t) + "</div>";
-    }).join("") + "</div>" +
+    '<div class="res-card">' +
+      gapRowsHtml(answers) +
+      '<div class="gap-legend">Длинный промежуток — туда стоит идти, там усилие даст больше всего. ' +
+      'Точки сошлись высоко — держишь, не трогай. Обе низко — это просто не твоя тема, ' +
+      'и чинить нечего.</div>' +
+      lines.map(function (t) {
+        return '<div class="res-row">' + esc(t) + "</div>";
+      }).join("") + "</div>" +
     '<div class="res-h">С прошлым разом</div>' +
     '<div class="res-card">' + shifts.map(function (t) {
       return '<div class="res-row">' + esc(t) + "</div>";
