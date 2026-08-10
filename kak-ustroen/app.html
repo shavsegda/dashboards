@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Как я устроен</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Цвета. Каждый — из темы Телеграма, запасное значение — палитра Алексея
+   paper/graphite/terracotta. Тема есть — идём за клиентом; темы нет (браузер,
+   проверки) — экран выглядит как остальные страницы.
+   Полупрозрачные оттенки собраны из триплета --ink-rgb: добавить альфу к чужому
+   цвету средствами CSS нельзя, поэтому триплет считает скрипт и обновляет по
+   themeChanged. */
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --ink-rgb: 26,26,26;
+  --graphite-65: rgba(var(--ink-rgb),0.65);
+  --graphite-50: rgba(var(--ink-rgb),0.5);
+  --graphite-30: rgba(var(--ink-rgb),0.3);
+  --graphite-15: rgba(var(--ink-rgb),0.15);
+  --graphite-08: rgba(var(--ink-rgb),0.08);
+  /* Акцент свой: в теме Телеграма аналога нет — button_color у каждого клиента
+     свой и рвёт вид страницы. На тёмном фоне терракота не читается, поэтому
+     ниже для тёмной темы задан более светлый оттенок. */
+  --terracotta: #B85C38;
+  --accent-rgb: 184,92,56;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* Телеграма нет, а система в тёмной теме: держим страницу тёмной целиком,
+   иначе получится светлый лист в тёмном окне. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: var(--tg-theme-bg_color, #17171A);
+    --stone: var(--tg-theme-secondary_bg_color, #202024);
+    --graphite: var(--tg-theme-text_color, #F0EEE8);
+    --ink-rgb: 240,238,232;
+    --terracotta: #E08A63;
+    --accent-rgb: 224,138,99;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--paper); color: var(--graphite); line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Высота — стабильная высота окна Телеграма: её ставит скрипт из
+   viewportStableHeight. У viewportHeight она меняется во время жестов, и низ
+   страницы прыгает под пальцем. */
+body { min-height: var(--tg-vh, 100vh); }
+
+/* Безопасные зоны Телеграма: без них верх уезжает под вырез, а низ под панель */
+main {
+  max-width: 560px; margin: 0 auto;
+  padding-top: calc(28px + var(--tg-content-safe-area-inset-top, 0px));
+  padding-bottom: calc(44px + var(--tg-safe-area-inset-bottom, 0px));
+  padding-left: calc(20px + var(--tg-safe-area-inset-left, 0px));
+  padding-right: calc(20px + var(--tg-safe-area-inset-right, 0px));
+}
+h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 22px; }
+.note { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); }
+
+/* Что уже известно — главное на экране. Отдаём раньше, чем просим */
+.obs { margin-bottom: 26px; }
+.obs-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terracotta); padding-bottom: 8px; border-bottom: 1px solid var(--terracotta); }
+.obs-text { font-size: 19px; line-height: 1.4; padding-top: 14px; }
+
+/* Честная строка, когда данных нет или просьбы нет */
+.honest { font-size: 17px; line-height: 1.45; margin-bottom: 22px; }
+.honest .quiet { display: block; font-size: 15px; color: var(--graphite-65); margin-top: 8px; }
+
+/* Просьба — ровно одна */
+.ask-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); padding-bottom: 8px; border-bottom: 1px solid var(--graphite-15); }
+
+/* Карточка замера */
+.card { padding: 15px 0; border-bottom: 1px solid var(--graphite-08); }
+.card-open { display: block; text-decoration: none; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.card-name { font-size: 16px; font-weight: 500; }
+.card-open:hover .card-name { color: var(--terracotta); }
+.card-sub { font-size: 13px; color: var(--graphite-65); margin-top: 3px; }
+.card-when { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); margin-top: 6px; }
+.card-due { color: var(--terracotta); }
+.card-size { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-50); margin-top: 9px; }
+.ask .card { border-bottom: none; }
+.ask .card-name { font-size: 20px; }
+
+/* Замер, который идёт разговором с ботом, а не экраном */
+.chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; }
+.chat-phrase { font-family: var(--font-mono); font-size: 14px; padding: 9px 11px; background: var(--stone); word-break: break-word; }
+.chat-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.chat-hint { font-size: 12px; color: var(--graphite-50); margin-top: 8px; }
+/* То же одной строкой — для списка, где карточек четырнадцать */
+.chat-line { font-size: 12px; color: var(--graphite-50); margin-top: 6px; }
+button.act, a.act { display: inline-block; background: var(--graphite); color: var(--paper); padding: 11px 18px; border: none; font-size: 14px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; text-decoration: none; }
+button.act:hover, a.act:hover { background: var(--terracotta); }
+button.ghost { background: transparent; color: var(--graphite); border: 1px solid var(--graphite-30); padding: 10px 16px; font-size: 14px; cursor: pointer; font-family: var(--font-sans); }
+button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); }
+
+/* Полный список — за одним нажатием */
+.all { margin-top: 30px; border-top: 1px solid var(--graphite-15); }
+.all > summary { list-style: none; cursor: pointer; padding: 16px 0; font-size: 15px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+.all > summary::-webkit-details-marker { display: none; }
+.all > summary::after { content: " →"; color: var(--graphite-30); }
+.all[open] > summary::after { content: " ↑"; }
+.all > summary:hover { color: var(--terracotta); }
+.all-lead { font-size: 14px; color: var(--graphite-65); margin-bottom: 6px; }
+
+/* Группа по смыслу — свёрнутая строка. На первом развороте списка человек видит
+   пять строк со структурой, а не четырнадцать карточек подряд */
+.grp { margin-top: 0; }
+.grp-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--graphite-15); list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.grp-head::-webkit-details-marker { display: none; }
+.grp-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); flex: 1; }
+/* Знак «раскрыть»: без него свёрнутая строка не выглядит нажимаемой */
+.grp-head::after { content: "+"; font-family: var(--font-mono); font-size: 13px; line-height: 1; color: var(--graphite-30); }
+.grp[open] > .grp-head::after { content: "–"; }
+.grp[open] > .grp-head .grp-name { color: var(--terracotta); }
+.grp-head:hover .grp-name { color: var(--terracotta); }
+.grp-lead { font-size: 13px; color: var(--graphite-65); padding: 10px 0 2px; }
+.grp-cards { padding-bottom: 12px; }
+
+.foot { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--graphite-08); font-size: 13px; color: var(--graphite-50); }
+
+@media (max-width: 380px) {
+  h1 { font-size: 26px; }
+  .obs-text { font-size: 17px; }
+  .card-name { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* ==== ЧИСТАЯ ЛОГИКА: НАЧАЛО ====
+   Всё внутри этих границ не трогает DOM и не ходит в сеть.
+   Скрипт проверок вырезает этот блок и прогоняет функции на выдуманных данных.
+   Менять только вместе с проверками. */
+
+/* ---- Группы по смыслу, а не по ритму ----
+ *
+ * В подвижном слое («Что со мной?») список сгруппирован по областям жизни, и
+ * рядом с каждым замером стоит период: сутки, неделя, месяц. Здесь так нельзя.
+ * Эти замеры РАЗОВЫЕ или очень редкие: личность, нейротип, интересы и ДНК
+ * меняются годами или не меняются вовсе. Группировать их сроком значит подсунуть
+ * человеку календарь там, где календаря нет.
+ *
+ * Поэтому группа отвечает на вопрос «про что это», а не «как часто».
+ * Правило одно и жёсткое: КАРТОЧКА ЛЕЖИТ РОВНО В ОДНОЙ ГРУППЕ. Иначе список
+ * читается как свалка, а человек видит один и тот же замер по три раза.
+ */
+var GROUP_ORDER = [
+  { id: "sklad", name: "Из чего сложен",
+    lead: "с чем ты пришёл и что почти не меняется" },
+  { id: "vedet", name: "Что ведёт",
+    lead: "ради чего живёшь и куда тянет само" },
+  { id: "reshaesh", name: "Как решаешь",
+    lead: "как выбираешь и как смотришь на время" },
+  { id: "davlenie", name: "Под давлением",
+    lead: "что срабатывает, когда жмёт, и как ты тогда с близкими" },
+  { id: "telo", name: "Тело и гены",
+    lead: "то, что задано, и то, что важно знать до разговора о нагрузке" }
+];
+
+/* ---- Реестр блоков ----
+ * Перенос из bot.py, PASSPORT_BLOCKS_META и COVERAGE_MAP. Каталог ничего не
+ * добавляет от себя: новых замеров нет, новых вопросов нет, сводных чисел нет
+ * (конституция, принцип IV).
+ *
+ *   key         — ключ блока в таблице passport, буквально как в боте
+ *   label       — название, как его видит человек; буквально из реестра бота
+ *   what        — что это даст, одной строкой; из COVERAGE_MAP бота
+ *   items       — настоящее число пунктов каждой части замера. Служебное поле:
+ *                 по нему проверка сверяет честную длину с самим опросником
+ *   size        — честная длина словами. Числа в ней — из `items`
+ *   group       — ОДНА группа по смыслу. Только по ней карточка встаёт в список,
+ *                 и поэтому она стоит там ровно один раз
+ *   shelfMonths — срок годности в МЕСЯЦАХ, как `shelf` в реестре бота.
+ *                 null — разовый замер, пересдавать нечего
+ *   url         — адрес страницы; перенос из констант *_MINI_APP_URL в bot.py
+ *   phrase      — точный текст кнопки бота, если замер идёт разговором
+ *
+ * Чего здесь СОЗНАТЕЛЬНО нет:
+ *   · всего подвижного слоя — тонус, самочувствие, области жизни, анализы,
+ *     «свою жизнь живёшь». Они спрашивают «как мне сейчас», а не «какой я», и
+ *     живут за кнопкой «🌤 Как ты?». Один замер не бывает за двумя дверями;
+ *   · самооценки. В боте её кнопка появляется только вместе со своей страницей
+ *     (`card_split`), а страницы нет: адрес до сих пор ведёт на общую форму
+ *     квартального замера. Вести человека с карточки «Самооценка» на форму из
+ *     68 вопросов хуже, чем не вести никуда;
+ *   · физической формы. Она квартальная, живёт в подвижном слое.
+ */
+var REGISTRY = [
+  // --- Из чего сложен ---
+  {
+    key: "personality", label: "Личность", group: "sklad", shelfMonths: 60,
+    what: "как ты вообще себя ведёшь — в работе, в стрессе, с людьми",
+    items: [240], size: "240 вопросов · минут двадцать пять",
+    url: "https://shapovalov-aleksey.ru/personality-hexaco/app8.html"
+  },
+  {
+    // Пять частей внутри, и они проходятся по отдельности. Обещать «249
+    // вопросов» было бы неправдой в обе стороны: столько подряд никто не идёт,
+    // а одна часть — это восемнадцать вопросов.
+    key: "neurotype", label: "Нейротип", group: "sklad", shelfMonths: 60,
+    what: "как устроено внимание, чувствительность, ритм дня",
+    items: [18, 50, 27, 19, 135],
+    size: "5 частей, от 18 до 135 вопросов · можно по одной",
+    url: "https://shapovalov-aleksey.ru/neurotype/app11.html"
+  },
+  {
+    key: "nervsystem", label: "Нервная система", group: "sklad", shelfMonths: 60,
+    what: "какой темп и объём нагрузки ты выдерживаешь",
+    items: [134], size: "134 вопроса",
+    url: "https://shapovalov-aleksey.ru/nervsystem/app2.html"
+  },
+  // --- Что ведёт ---
+  {
+    key: "values", label: "Ценности", group: "vedet", shelfMonths: 24,
+    what: "что для тебя свято и где будут ценностные столкновения",
+    items: [32, 57], size: "2 части, 32 и 57 вопросов",
+    url: "https://shapovalov-aleksey.ru/values/app8.html"
+  },
+  {
+    key: "motivators", label: "Мотиваторы", group: "vedet", shelfMonths: 24,
+    what: "что движет тебя к действию",
+    items: [11, 36], size: "2 части, 11 и 36 вопросов",
+    url: "https://shapovalov-aleksey.ru/motivators/app10.html"
+  },
+  {
+    key: "interests", label: "Интересы", group: "vedet", shelfMonths: 60,
+    what: "к какой работе тянет по складу, а какая сушит",
+    items: [60], size: "60 занятий",
+    url: "https://shapovalov-aleksey.ru/interests/app.html"
+  },
+  // --- Как решаешь ---
+  {
+    key: "decisions", label: "Решения и конфликт", group: "reshaesh",
+    shelfMonths: 24,
+    what: "как ты выбираешь и что делаешь при столкновении интересов",
+    items: [40, 11, 20], size: "3 части, от 11 до 40 вопросов",
+    url: "https://shapovalov-aleksey.ru/decisions/app2.html"
+  },
+  {
+    key: "ztpi", label: "Ощущение времени", group: "reshaesh", shelfMonths: 6,
+    what: "как ты переживаешь прошлое, настоящее и будущее",
+    items: [56], size: "56 утверждений",
+    url: "https://shapovalov-aleksey.ru/ztpi/"
+  },
+  {
+    // Идёт разговором, а не экраном: фразы человек дописывает своими словами, и
+    // форма тут не помогла бы. Срок годности — год, из COVERAGE_MAP бота.
+    key: "level", label: "Уровень мышления", group: "reshaesh", shelfMonths: 12,
+    what: "меняешь ли ты саму рамку или улучшаешь внутри неё",
+    items: [18], size: "18 фраз · минут пятнадцать, идёт разговором",
+    phrase: "🪜 Уровень мышления"
+  },
+  // --- Под давлением ---
+  {
+    key: "vulnerabilities", label: "Уязвимости", group: "davlenie",
+    shelfMonths: 12,
+    what: "что срабатывает под давлением, где ставить предохранители",
+    items: [28, 25, 35], size: "3 части, от 25 до 35 вопросов",
+    url: "https://shapovalov-aleksey.ru/vulnerabilities/app2.html"
+  },
+  {
+    key: "stressrisk", label: "Стресс и риск", group: "davlenie", shelfMonths: 6,
+    what: "как справляешься под давлением и на что готов ставить",
+    items: [28, 30, 12], size: "3 части, от 12 до 30 вопросов",
+    url: "https://shapovalov-aleksey.ru/stressrisk/app2.html"
+  },
+  {
+    key: "attachment", label: "Привязанность", group: "davlenie", shelfMonths: 24,
+    what: "как ты в близких отношениях: тянешься или закрываешься",
+    items: [36], size: "36 утверждений",
+    url: "https://shapovalov-aleksey.ru/attachment/app2.html"
+  },
+  // --- Тело и гены ---
+  {
+    // Разовый: гены не меняются, пересдавать нечего.
+    key: "dna", label: "ДНК", group: "telo", shelfMonths: null,
+    what: "врождённые предрасположенности: кофеин, витамины, обмен веществ",
+    items: [], size: "файл отчёта · вопросов нет",
+    phrase: "🧬 ДНК"
+  },
+  {
+    // Разовый и про безопасность: бот говорит про сон, тонус и нагрузку, а без
+    // диагнозов и лекарств такие разговоры бывают вредными.
+    key: "body_base", label: "Тело: базовое", group: "telo", shelfMonths: null,
+    what: "диагнозы, лекарства и твоя личная база — без них разговор о нагрузке небезопасен",
+    items: [6], size: "6 вопросов · один раз, идёт разговором",
+    phrase: "🩺 Тело: базовое"
+  }
+];
+
+/* ---- Что приезжает от бота параметрами адреса ----
+ *
+ *   o=   что уже известно про устройство человека, urlencoded, до 400 символов
+ *   ask= ключ ровно одной предложенной карточки
+ *   f=   даты последних замеров: «ключ:ГГГГ-ММ-ДД» через запятую
+ *
+ * Каталог ничего из этого не считает сам и не догадывается: базу он читать не
+ * может, а догадка — это уже толкование. Нет `o` — говорим честно, что не знаем.
+ * Нет `ask` — просьбы нет вовсе.
+ */
+var OBS_LIMIT = 400;
+
+/** Текст от бота к показу: пусто и пробелы — «нет текста», длинное режется. */
+function trimTo(raw, limit) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (!s) return null;
+  return s.length > limit ? s.slice(0, limit) : s;
+}
+
+/**
+ * Что уже известно про устройство человека. Показывается КАК ЕСТЬ: ни слова от
+ * каталога. Пусто или пробелы — значит не известно ничего, а не «пустой текст».
+ */
+function parseObservation(raw) {
+  return trimTo(raw, OBS_LIMIT);
+}
+
+/**
+ * Карточка просьбы по ключу от бота. Ключа нет среди карточек — значит просьбы
+ * нет. Ни пустой рамки, ни подмены на «похожую»: догадок не строим.
+ */
+function pickAsk(cards, key) {
+  var k = String(key == null ? "" : key).trim();
+  if (!k) return null;
+  for (var i = 0; i < cards.length; i++) {
+    if (cards[i].key === k) return cards[i];
+  }
+  return null;
+}
+
+/**
+ * Какой из четырёх экранов собирать:
+ *   observation_ask  — известно что-то и есть просьба
+ *   observation_only — известно что-то, просьбы нет
+ *   first_step       — не известно ничего: сказать честно и предложить первый шаг
+ *   quiet            — нет ни того, ни другого
+ */
+function screenState(obs, ask) {
+  if (obs && ask) return "observation_ask";
+  if (obs) return "observation_only";
+  if (ask) return "first_step";
+  return "quiet";
+}
+
+/**
+ * Разложить карточки по группам смысла. Одна карточка — одна группа, по полю
+ * `group`. Пустая группа не показывается: строка «тут ничего нет» человеку
+ * пользы не даёт.
+ */
+function byGroup(cards) {
+  return GROUP_ORDER.map(function (g) {
+    return {
+      id: g.id, name: g.name, lead: g.lead,
+      cards: cards.filter(function (c) { return c.group === g.id; })
+    };
+  }).filter(function (g) { return g.cards.length > 0; });
+}
+
+/* ---- Когда замер был ----
+ * Считается МЕСЯЦАМИ, ровно как в боте (`_months_since`): устойчивый слой живёт
+ * годами, и разница в днях тут ничего не значит. Делитель тот же — 30.44.
+ */
+var DAYS_IN_MONTH = 30.44;
+
+function monthsSince(iso, nowISO) {
+  var a = new Date(iso), b = new Date(nowISO);
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return null;
+  return (b.getTime() - a.getTime()) / 86400000 / DAYS_IN_MONTH;
+}
+
+/**
+ * Что известно про один блок: когда он был и не вышел ли срок.
+ *
+ *   never   — не проходил ни разу. Ни упрёка, ни «пора» — просто можно пройти
+ *   fresh   — пройден, и пересдавать пока нечего
+ *   due     — пройден, но срок вышел: интересно увидеть, что сдвинулось
+ *   unknown — даты не приехали. Человеку это то же, что «можно пройти»
+ *
+ * РАЗОВЫЙ ЗАМЕР (shelfMonths === null) никогда не бывает `due`. ДНК не меняется,
+ * базовое про тело спрашивают один раз. Сказать им «пора пересдать» значило бы
+ * выдумать долг из ничего.
+ */
+function freshness(lastISO, shelfMonths, nowISO, known) {
+  if (known === false) return { state: "unknown", monthsAgo: null };
+  if (lastISO === null || lastISO === undefined || lastISO === "") {
+    return { state: "never", monthsAgo: null };
+  }
+  var m = monthsSince(lastISO, nowISO);
+  if (m === null) return { state: "unknown", monthsAgo: null };
+  if (m < 0) m = 0;                       // дата из будущего — считаем «сейчас»
+  if (shelfMonths === null || shelfMonths === undefined) {
+    return { state: "fresh", monthsAgo: m };
+  }
+  // Граница ровно как у бота: `months >= shelf` — срок вышел.
+  return { state: m >= shelfMonths ? "due" : "fresh", monthsAgo: m };
+}
+
+/** «меньше месяца назад» · «7 мес назад» · «2.3 года назад» — словами бота. */
+function agoText(monthsAgo) {
+  if (monthsAgo === null || monthsAgo === undefined) return "";
+  if (monthsAgo < 1) return "меньше месяца назад";
+  if (monthsAgo < 12) return Math.round(monthsAgo) + " мес назад";
+  return (monthsAgo / 12).toFixed(1).replace(/\.0$/, "") + " года назад";
+}
+
+/** Собрать карточки и добавить к ним, когда замер был. lastDates — {ключ: ISO}. */
+function buildCards(registry, lastDates, nowISO, known) {
+  var d = lastDates || {};
+  return (registry || []).map(function (r) {
+    var f = freshness(d[r.key] === undefined ? null : d[r.key],
+                      r.shelfMonths, nowISO, known);
+    return {
+      key: r.key, label: r.label, what: r.what, size: r.size, items: r.items,
+      group: r.group, shelfMonths: r.shelfMonths, url: r.url, phrase: r.phrase,
+      state: f.state, monthsAgo: f.monthsAgo
+    };
+  });
+}
+
+/** Разобрать «tg_121202001» в число. Мусор — null, читать нечем. */
+function parseUserId(u) {
+  var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
+  return m ? m[1] : null;
+}
+
+/**
+ * Разобрать даты замеров от бота: «personality:2026-08-06,dna:2024-01-11».
+ * Бот читает базу сервисным ключом и знает даты, которых каталог не видит.
+ * Ключа в строке нет — значит блок не проходили ни разу.
+ */
+function parseFreshParam(s) {
+  var raw = String(s == null ? "" : s).trim();
+  if (!raw) return null;
+  var out = {};
+  raw.split(",").forEach(function (part) {
+    var m = /^([a-z_]+)[:=](\d{4}-\d{2}-\d{2}(?:[T ][^,]*)?)$/.exec(part.trim());
+    if (!m) return;
+    out[m[1]] = m[2];
+  });
+  return out;
+}
+
+/** Самая свежая дата по каждому блоку из строк passport. */
+function lastDatesFromRows(rows) {
+  var out = {};
+  (rows || []).forEach(function (r) {
+    var b = r && r.block, c = r && r.completed_at;
+    if (!b || !c) return;
+    if (!out[b] || String(c) > String(out[b])) out[b] = c;
+  });
+  return out;
+}
+
+/* ---- Кнопка назад: уровни держим стеком ----
+ *
+ * Дефект, из-за которого правило вообще появилось: зашёл в список — назад пути
+ * нет, только закрыть мини-апп целиком.
+ *
+ * `[]` — первый экран, `['lvl-all']` — открыт список, `['lvl-all','lvl-g-telo']`
+ * — внутри списка открыта группа. Назад закрывает САМЫЙ ВНУТРЕННИЙ уровень, а не
+ * всё сразу: человек хотел выйти из группы, а не потерять экран.
+ */
+function navPush(stack, id) {
+  var out = (stack || []).slice();
+  if (out[out.length - 1] === id) return out;   // повторный вход не копит стек
+  out.push(id);
+  return out;
+}
+
+function navPop(stack) {
+  var out = (stack || []).slice();
+  out.pop();                                    // на пустом стеке безопасно
+  return out;
+}
+
+/** Убрать уровень, который человек закрыл сам, своим нажатием. */
+function navDrop(stack, id) {
+  return (stack || []).filter(function (x) { return x !== id; });
+}
+
+function navTop(stack) {
+  return (stack && stack.length) ? stack[stack.length - 1] : null;
+}
+
+function navDepth(stack) { return (stack || []).length; }
+
+/** Кнопка назад нужна только там, откуда есть куда возвращаться. */
+function backVisible(stack) { return navDepth(stack) > 0; }
+
+/* ==== ЧИСТАЯ ЛОГИКА: КОНЕЦ ==== */
+
+// ---- Telegram ----
+var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+/* ---- Тема Телеграма, безопасные зоны и высота ----
+ *
+ * Правило из «мини-аппы-правила.md»: цвета брать из темы клиента и слушать
+ * themeChanged. Без этого у человека с тёмной темой экран светит белым листом.
+ *
+ * Без Телеграма за вид отвечает CSS, с Телеграмом — этот код: он берёт цвета у
+ * клиента и доставляет то, чего в CSS не выразить, — полупрозрачные оттенки от
+ * чужого цвета текста. Акцент остаётся своим: в теме Телеграма аналога нет.
+ */
+(function () {
+  var t = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (!t) return;                    // браузер: остаёмся на палитре из CSS
+  var root = document.documentElement;
+  if (!root || !root.style || !root.style.setProperty) return;
+
+  var LIGHT = { paper: "#F4F2EC", stone: "#E8E5DC", ink: "#1A1A1A",
+                inkRgb: "26,26,26", accent: "#B85C38", accentRgb: "184,92,56" };
+  var DARK = { paper: "#17171A", stone: "#202024", ink: "#F0EEE8",
+               inkRgb: "240,238,232", accent: "#E08A63", accentRgb: "224,138,99" };
+
+  /** «#1A1A1A» → «26,26,26». Не цвет — ничего не отдаём, возьмётся запасное. */
+  function trio(hex) {
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex == null ? "" : hex).trim());
+    if (!m) return null;
+    var h = m[1];
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16),
+            parseInt(h.slice(4, 6), 16)].join(",");
+  }
+
+  /** Светлый ли цвет. Не цвет — null: догадка тут хуже, чем «не знаю». */
+  function bright(hex) {
+    var c = trio(hex);
+    if (!c) return null;
+    var p = c.split(",");
+    return (Number(p[0]) * 299 + Number(p[1]) * 587 + Number(p[2]) * 114) / 1000 > 140;
+  }
+
+  function set(name, value) { root.style.setProperty(name, value); }
+
+  function paintTheme() {
+    var p = t.themeParams || {};
+    var dark = (t.colorScheme === "dark") || (bright(p.bg_color) === false);
+    var pal = dark ? DARK : LIGHT;
+    set("--paper", p.bg_color || pal.paper);
+    set("--stone", p.secondary_bg_color || pal.stone);
+    set("--graphite", p.text_color || pal.ink);
+    set("--ink-rgb", trio(p.text_color) || pal.inkRgb);
+    set("--terracotta", pal.accent);
+    set("--accent-rgb", pal.accentRgb);
+    // Шапка и фон окна того же цвета, что страница: иначе виден чужой кант.
+    try { t.setHeaderColor("bg_color"); } catch (e) {}
+    try { t.setBackgroundColor("bg_color"); } catch (e) {}
+  }
+
+  function measureHeight() {
+    var h = t.viewportStableHeight;
+    if (typeof h === "number" && h > 0) set("--tg-vh", h + "px");
+  }
+
+  paintTheme();
+  measureHeight();
+  try { t.onEvent("themeChanged", paintTheme); } catch (e) {}
+  try { t.onEvent("viewportChanged", measureHeight); } catch (e) {}
+})();
+
+var params = new URLSearchParams(window.location.search);
+var USER_ID = parseUserId(params.get("u")) ||
+  parseUserId(tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null);
+
+var OBSERVATION = parseObservation(params.get("o"));
+var ASK_KEY = params.get("ask");
+var FRESH_PARAM = parseFreshParam(params.get("f"));
+// Версия страниц — та же, что у каталога. Прибитая цифра означала бы, что
+// версия страницы из каталога не поднимается никогда, и Телеграм отдаёт человеку
+// старый экран из кэша.
+var APP_V = params.get("v") || "";
+// Имя бота для ссылки в переписку. Своего имени мини-апп не знает: Телеграм его
+// не отдаёт. Не приехало — берём запасное.
+var BOT_FALLBACK = "vslukh_shapovalov_bot";
+var BOT_NAME = params.get("b") || BOT_FALLBACK;
+
+// ---- Supabase ----
+var SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+
+function sbHeaders() {
+  return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY };
+}
+
+/**
+ * Даты из таблицы passport. Работает, только если у публичного ключа есть право
+ * читать: сейчас его нет, база отдаёт пустой список. Поэтому это ДОПОЛНЕНИЕ к
+ * параметру `f` от бота, а не замена ему.
+ */
+async function fetchPassportDates() {
+  if (!USER_ID) return null;
+  try {
+    var url = SUPABASE_URL + "/rest/v1/passport?user_id=eq." + encodeURIComponent(USER_ID) +
+      "&select=block,completed_at&order=completed_at.desc&limit=500";
+    var r = await fetch(url, { headers: sbHeaders() });
+    if (r.status >= 300) return null;
+    var rows = await r.json();
+    if (!rows || !rows.length) return null;
+    return lastDatesFromRows(rows);
+  } catch (e) { return null; }
+}
+
+// ---- Состояние экрана ----
+var lastDates = {};
+var dataKnown = false;
+var app = document.getElementById("app");
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+/** Адрес страницы замера с подставленным человеком: иначе запись некуда положить. */
+function cardHref(card) {
+  if (!card.url) return null;
+  var sep = card.url.indexOf("?") >= 0 ? "&" : "?";
+  return card.url + sep +
+    (APP_V ? "v=" + encodeURIComponent(APP_V) + "&" : "") +
+    "u=tg_" + USER_ID;
+}
+
+/** Ссылка на переписку с ботом. Имя бота приходит от бота же, мусор чистится. */
+function botLink(botName) {
+  var name = String(botName == null ? "" : botName).replace(/[^A-Za-z0-9_]/g, "");
+  return "https://t.me/" + (name || BOT_FALLBACK);
+}
+
+/**
+ * Служебная строка карточки: когда замер был и не пора ли пересдать.
+ *
+ * Не проходил — строки нет вовсе. Ни «не пройден», ни «осталось»: пустое место
+ * тут честнее упрёка. Разовый замер не получает «пора пересдать» никогда.
+ */
+function whenHtml(card) {
+  if (card.state === "never" || card.state === "unknown") return "";
+  var text = "пройдено · " + agoText(card.monthsAgo);
+  if (card.state === "due") {
+    return '<div class="card-when card-due">' + esc(text) +
+      " · пора пересдать</div>";
+  }
+  return '<div class="card-when">' + esc(text) + "</div>";
+}
+
+/**
+ * Карточка блока. `inList` — карточка стоит в полном списке, а не в просьбе.
+ *
+ * Разница сознательная. В просьбе карточка одна, и ей можно дать всё: фразу для
+ * чата, кнопку и объяснение. В списке карточек четырнадцать — там подробная
+ * подсказка три раза подряд превращается в шум, остаётся одна строка.
+ */
+function cardHtml(card, inList) {
+  var href = cardHref(card);
+  var head =
+    '<div class="card-name">' + esc(card.label) + "</div>" +
+    '<div class="card-sub">' + esc(card.what) + "</div>" +
+    whenHtml(card);
+
+  // Замер-разговор. `sendData` тут не зовём сознательно: бот умеет открывать по
+  // такому сообщению только карточки подвижного слоя, и эти три ключа увели бы
+  // человека в чужую дверь. Пока не появится вход со стороны бота, честный путь
+  // — фраза, которую человек отправляет в чат сам.
+  var chatLink = (!href && card.phrase) ? botLink(BOT_NAME) : null;
+
+  var openable;
+  if (href) {
+    openable = '<a class="card-open" href="' + esc(href) + '">' + head + "</a>";
+  } else if (chatLink) {
+    openable = '<a class="card-open" href="' + esc(chatLink) + '" data-tglink="' +
+      esc(chatLink) + '">' + head + "</a>";
+  } else {
+    openable = "<div>" + head + "</div>";
+  }
+
+  var chat = "";
+  if (chatLink && inList) {
+    chat = '<div class="chat-line">идёт разговором — отправь боту фразу «' +
+      esc(card.phrase) + "»</div>";
+  } else if (chatLink) {
+    chat =
+      '<div class="chat">' +
+        '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
+        '<div class="chat-acts">' +
+          '<a class="act" href="' + esc(chatLink) + '" data-tglink="' +
+            esc(chatLink) + '">Открыть переписку</a>' +
+          '<button class="ghost" data-copy="' + esc(card.phrase) + '">Скопировать фразу</button>' +
+        "</div>" +
+        '<div class="chat-hint">Этот замер идёт разговором, не формой. ' +
+        "Скопируй фразу и отправь её боту — он начнёт.</div>" +
+      "</div>";
+  }
+
+  return '<div class="card">' + openable +
+    '<div class="card-size">' + esc(card.size) + "</div>" +
+    chat + "</div>";
+}
+
+/** Что уже известно. Текст бота — как есть, вокруг только подпись. */
+function obsHtml(text) {
+  return '<div class="obs">' +
+    '<div class="obs-head">Что про твоё устройство уже известно</div>' +
+    '<div class="obs-text">' + esc(text) + "</div></div>";
+}
+
+/**
+ * Первый экран: сначала отдали, потом попросили. И попросили ровно одно.
+ *
+ * Порядок здесь — не вкус. Человек нажал кнопку, чтобы что-то узнать про себя;
+ * список из четырнадцати штук в ответ читается как «сначала заполни». Поэтому
+ * возвращается `give + ask`, и только в этом порядке.
+ */
+function firstScreenHtml(obs, ask) {
+  var state = screenState(obs, ask);
+  var give = "";
+  var askBlock = "";
+
+  if (state === "observation_ask" || state === "observation_only") {
+    give += obsHtml(obs);
+  } else {
+    give += '<div class="honest">Про то, как ты устроен, я пока ничего не знаю.';
+    if (state === "quiet") {
+      give += '<span class="quiet">Просьбы сейчас тоже нет. Открой список ниже ' +
+        "и выбери сам — то, про что интересно.</span>";
+    }
+    give += "</div>";
+  }
+
+  if (state === "observation_ask") {
+    askBlock = '<div class="ask"><div class="ask-head">Чтобы сказать точнее, не хватает одного</div>' +
+      cardHtml(ask, false) + "</div>";
+  } else if (state === "first_step") {
+    askBlock = '<div class="ask"><div class="ask-head">Начни с этого — оно открывает больше всего</div>' +
+      cardHtml(ask, false) + "</div>";
+  } else if (state === "observation_only") {
+    askBlock = '<div class="honest">Сейчас я ничего не прошу. Открой список ниже, ' +
+      "если захочется добавить.</div>";
+  }
+
+  return give + askBlock;
+}
+
+/**
+ * Одна группа смысла в полном списке — СВЁРНУТАЯ.
+ *
+ * Человек открывает список и видит пять строк со структурой, а не четырнадцать
+ * карточек подряд. Нужную группу раскрывает сам. Ничего не отнимаем: все замеры
+ * на месте, просто их не выливают все сразу.
+ *
+ * Счётчика внутри группы нет: он читался бы как «сколько ты должен».
+ */
+function groupHtml(group) {
+  return '<details class="grp" id="lvl-g-' + esc(group.id) + '">' +
+    '<summary class="grp-head">' +
+    '<span class="grp-name">' + esc(group.name) + "</span></summary>" +
+    '<div class="grp-lead">' + esc(group.lead) + "</div>" +
+    '<div class="grp-cards">' +
+    group.cards.map(function (c) { return cardHtml(c, true); }).join("") +
+    "</div></details>";
+}
+
+/** Полный список — за одним нажатием, по смыслу. */
+function allHtml(cards) {
+  return '<details id="lvl-all" class="all"><summary>Посмотреть всё</summary>' +
+    '<p class="all-lead">Всё, из чего ты устроен. Это не список дел: ' +
+    "проходи то, про что самому интересно.</p>" +
+    byGroup(cards).map(groupHtml).join("") +
+    '<div class="foot">Одного числа на всё нет и не будет: разные замеры мерят ' +
+    "разное, складывать их — терять то, ради чего мерили." +
+    "<br><br>Это карта склонностей, а не диагноз. Живут блоки по-разному: гены не " +
+    "меняются никогда, склад — годами, а стресс и ощущение времени ходят вместе " +
+    "с жизнью." +
+    "<br><br>Здесь только устройство: какой ты. Как тебе сейчас — тонус, сон, " +
+    "самочувствие, области жизни — за кнопкой «🌤 Как ты?». Один замер не бывает " +
+    "за двумя дверями.</div>" +
+    "</details>";
+}
+
+/** Карточки на сейчас: то, что видит человек с его датами. */
+function screenCards() {
+  return buildCards(REGISTRY, lastDates, new Date().toISOString(), dataKnown);
+}
+
+function render() {
+  var cards = screenCards();
+  var ask = pickAsk(cards, ASK_KEY);
+
+  app.innerHTML =
+    "<h1>Как я устроен</h1>" +
+    firstScreenHtml(OBSERVATION, ask) +
+    allHtml(cards);
+
+  bind();
+  bindBack();
+}
+
+/* ---- Кнопка назад: проводка ----
+ *
+ * Уровни в разметке — это `<details>`: список «Посмотреть всё» и группы внутри
+ * него. Стек ведём сами и обновляем по событию `toggle`, которое приходит и от
+ * своего нажатия, и от чужого. Так стек не расходится с тем, что человек видит.
+ *
+ * Обработчик кнопки навешиваем ОДИН раз за жизнь страницы: render() зовётся
+ * повторно, когда догоняют даты из базы, а второй обработчик дал бы двойной шаг.
+ */
+var NAV = [];
+var backBound = false;
+
+function levelId(el) {
+  return String((el && el.getAttribute && el.getAttribute("id")) || "");
+}
+
+/** Уровень открылся или закрылся — своим нажатием или нашей рукой. */
+function onLevelToggle(el) {
+  var id = levelId(el);
+  if (!id) return;
+  NAV = el.open ? navPush(NAV, id) : navDrop(NAV, id);
+  syncBack();
+}
+
+/** Нажали назад: закрываем самый внутренний уровень, остальное остаётся. */
+function onBack() {
+  var id = navTop(NAV);
+  if (!id) return;
+  var el = app.querySelector("#" + id);
+  if (el) el.open = false;
+  NAV = navPop(NAV);
+  syncBack();
+}
+
+function syncBack() {
+  if (!tg || !tg.BackButton) return;
+  if (!backBound) {
+    try { tg.BackButton.onClick(onBack); } catch (e) {}
+    backBound = true;
+  }
+  try {
+    if (backVisible(NAV)) tg.BackButton.show();
+    else tg.BackButton.hide();
+  } catch (e) {}
+}
+
+function bindBack() {
+  // Разметка пересобрана — прежние уровни закрыты, стек начинается заново.
+  NAV = [];
+  app.querySelectorAll("details").forEach(function (d) {
+    d.addEventListener("toggle", function () { onLevelToggle(d); });
+    if (d.open) onLevelToggle(d);
+  });
+  syncBack();
+}
+
+function bind() {
+  // Открыть переписку с ботом. В Телеграме это `openTelegramLink`, в браузере —
+  // обычная ссылка.
+  app.querySelectorAll("[data-tglink]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      if (!tg || typeof tg.openTelegramLink !== "function") return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      try { tg.openTelegramLink(el.getAttribute("data-tglink")); } catch (e) {}
+    });
+  });
+
+  app.querySelectorAll("[data-copy]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var text = el.getAttribute("data-copy");
+      var done = function () { el.textContent = "Скопировано"; };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+        } else { fallbackCopy(text, done); }
+      } catch (e) { fallbackCopy(text, done); }
+    });
+  });
+}
+
+function fallbackCopy(text, done) {
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    done();
+  } catch (e) {}
+}
+
+// ---- Старт ----
+async function start() {
+  // Сначала показываем экран: то, что известно, и просьба уже приехали в адресе.
+  // Даты замеров догоняют — они нужны только полному списку.
+  if (FRESH_PARAM) { lastDates = FRESH_PARAM; dataKnown = true; }
+  render();
+
+  var fromDb = await fetchPassportDates();
+  if (fromDb) {
+    Object.keys(fromDb).forEach(function (k) { lastDates[k] = fromDb[k]; });
+    dataKnown = true;
+    render();
+  }
+}
+
+if (!USER_ID) {
+  app.innerHTML =
+    "<h1>Как я устроен</h1>" +
+    '<p class="honest">Этот экран открывается из бота — так он знает, чьи это ' +
+    "замеры и что по ним уже известно.</p>" +
+    '<p class="note">Если открыл ссылку из браузера, вернись в Телеграм.</p>';
+} else {
+  start();
+}
+</script>
+</body>
+</html>

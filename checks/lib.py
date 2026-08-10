@@ -448,7 +448,11 @@ const OUT = {
     key: r.key, label: r.label, days: r.days, section: r.section,
     containers: r.containers, group: r.group, what: r.what, size: r.size,
     url: r.url || null, phrase: r.phrase || null, cond: r.cond || null,
-    once: !!r.once, after: r.after || null
+    once: !!r.once, after: r.after || null,
+    // Область жизни как ОДНА метка на карточке. Появилась 10.08.2026, когда
+    // список переехал с группировки по областям на группировку по ритмам:
+    // заголовками стали ритмы, а область осталась подписью у карточки.
+    area: r.area || null
   }))
 };
 """ + extra_js + r"""

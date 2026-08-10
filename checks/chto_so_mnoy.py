@@ -4,7 +4,9 @@
 Задача. Раньше экран открывался каталогом из тринадцати замеров — то есть
 списком долгов. Теперь он открывается тем, что бот уже про человека видит, и
 ровно одной просьбой. Список остаётся, но за одним нажатием и сгруппирован по
-областям жизни, а не по срокам.
+РИТМАМ — сутки, неделя, месяц, квартал, полгода, год, — а область жизни
+стоит меткой на карточке (правка 10.08.2026, решение Алексея после живого
+использования: по областям он не находил, что ему пора пройти).
 
 Контракт с ботом (соблюдается буквально):
   · `o=`   — текст наблюдения, urlencoded, до 400 символов. Показывается как
@@ -261,32 +263,52 @@ def check_ask_link_intact() -> None:
     ok("все ключи карточек по-прежнему сходятся с реестром бота")
 
 
-def check_list_by_life_areas() -> None:
-    """8. Полный список сгруппирован по областям жизни, а не по срокам."""
+def check_list_by_rhythms() -> None:
+    """8. Полный список сгруппирован по РИТМАМ, а область — метка на карточке.
+
+    Правка от 10.08.2026, решение Алексея после живого использования кнопки:
+    «мне неудобно сейчас пользоваться этой кнопкой, мне бы было удобно поделить
+    замеры на: ежедневно, еженедельно, ежемесячно, квартально, полгода, год».
+    Подтвердил: шесть ритмов, одинаково для всех.
+
+    Что было и почему поменялось. Требование FR-010 велело группировать список по
+    областям жизни — под работу нового человека «что со мной вообще». Но у
+    вернувшегося работа другая: «что мне пора пройти», и по областям он этого не
+    находит. Группировка по областям закрывала первую работу и убивала вторую.
+
+    Утверждение не ослаблено, а переехало: раздел теперь ритм, а область
+    обязана быть видна МЕТКОЙ на карточке — это держит `spisok_ritmami.py`,
+    проверка 5. Здесь сторожим обратное: области больше не заголовки, и порядок
+    ритмов идёт от частого к редкому, а не как получилось.
+    """
     _, rest = screens(link(FRESH))
     text = visible(rest)
-    seen = [(text.index(a), a) for a in AREAS if a in text]
-    assert len(seen) == len(AREAS), \
-        f"в списке нет областей: {sorted(set(AREAS) - {a for _i, a in seen})}"
-    assert [a for _i, a in sorted(seen)] == AREAS, \
-        f"области идут не в том порядке: {[a for _i, a in sorted(seen)]}"
-    ok("семь областей жизни, в порядке спеки")
 
-    for head in BY_PERIOD_HEADS:
-        assert head not in text, f"в списке остался раздел по сроку: «{head}»"
-    ok("ни одного раздела по сроку")
+    c = catalog("OUT.heads = RHYTHMS.map(function (r) { return r.name; });\n"
+                "OUT.once = ONCE_RHYTHM.name;\n")
+    heads = c["heads"]
+    assert len(heads) == 6, f"ритмов должно быть шесть, а их {len(heads)}: {heads}"
 
-    c = catalog("""
-OUT.areaOrder = AREA_ORDER;
-OUT.groups = byArea(buildCards(REGISTRY, {}, "2026-08-07T10:00:00Z", true))
-  .map(function (g) { return { area: g.area, n: g.cards.length }; });
+    seen = [(text.index(h), h) for h in heads if h in text]
+    assert len(seen) == len(heads), \
+        f"в списке нет ритмов: {[h for h in heads if h not in text]}"
+    assert [h for _i, h in sorted(seen)] == heads, \
+        f"ритмы идут не в том порядке: {[h for _i, h in sorted(seen)]}"
+    ok(f"шесть ритмов от частого к редкому: {' · '.join(heads)}")
+
+    # Области жизни в списке остаются, но НЕ как заголовки разделов.
+    for area in AREAS:
+        assert f'>{area}<' not in rest.replace('class="card-when">', 'class="card-when">\n'), \
+            f"область «{area}» снова стала заголовком раздела"
+    ok("ни одна область не работает заголовком раздела")
+
+    c2 = catalog("""
+OUT.groups = byRhythm(buildCards(REGISTRY, {}, "2026-08-07T10:00:00Z", true))
+  .map(function (g) { return { name: g.name, n: g.cards.length }; });
 """)
-    assert c["areaOrder"] == AREAS, f"порядок областей в коде: {c['areaOrder']}"
-    assert sorted(c["areaOrder"]) == sorted(c["containers"]), \
-        "список областей разошёлся с переносом LIFE_CONTAINERS из бота"
-    for g in c["groups"]:
-        assert g["n"] > 0, f"область «{g['area']}» попала в список пустой"
-    ok("порядок областей задан явно и сходится с переносом из бота")
+    for g in c2["groups"]:
+        assert g["n"] > 0, f"ритм «{g['name']}» попал в список пустым"
+    ok("пустых разделов в списке нет")
 
 
 def check_fresh_visible_not_a_task() -> None:
@@ -363,7 +385,7 @@ if __name__ == "__main__":
     raise SystemExit(run([
         check_button_name, check_four_states_pure, check_four_states_on_screen,
         check_observation_above_cards, check_observation_verbatim,
-        check_exactly_one_ask, check_ask_link_intact, check_list_by_life_areas,
+        check_exactly_one_ask, check_ask_link_intact, check_list_by_rhythms,
         check_fresh_visible_not_a_task, check_noise_gone,
         check_no_scores_no_scales,
     ]))

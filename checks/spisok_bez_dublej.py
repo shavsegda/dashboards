@@ -44,8 +44,8 @@ var CARDS = buildCards(REGISTRY, {}, "2026-08-07T10:00:00Z", true);
 OUT.main = REGISTRY.map(function (r) {
   return { key: r.key, area: r.area, containers: r.containers, what: r.what };
 });
-OUT.groups = byArea(CARDS).map(function (g) {
-  return { area: g.area, keys: g.cards.map(function (c) { return c.key; }) };
+OUT.groups = byRhythm(CARDS).map(function (g) {
+  return { area: g.name, keys: g.cards.map(function (c) { return c.key; }) };
 });
 OUT.also = {
   none:  alsoText({ area: "Я сам", containers: ["Я сам"] }),
@@ -70,7 +70,10 @@ def label_count(rest: str, label: str) -> int:
 
 
 def check_one_card_one_area() -> None:
-    """1. Одна карточка — одна область: в раскладке ни одного повтора."""
+    """1. Одна карточка — один раздел: в раскладке ни одного повтора.
+
+    Правка 10.08.2026: разделы — ритмы. Дубли запрещены так же строго.
+    """
     c = areas_js()
     keys = [k for g in c["groups"] for k in g["keys"]]
     dupes = sorted({k for k in keys if keys.count(k) > 1})
@@ -113,31 +116,42 @@ def check_main_area_is_honest() -> None:
 
     # Все семь областей по-прежнему живые: иначе дверь в область пропала.
     got = [g["area"] for g in c["groups"]]
-    assert got == AREAS, f"области в списке: {got}"
+    heads = catalog("OUT.heads = RHYTHMS.map(function (r) { return r.name; });\n"
+                    "OUT.once = ONCE_RHYTHM.name;\n")
+    want = heads["heads"] + [heads["once"]]
+    assert got == [g for g in want if g in got], f"разделы в списке: {got}"
     ok("все семь областей остались непустыми и в порядке спеки")
 
 
 def check_areas_collapsed() -> None:
-    """3. Области свёрнуты: на первом развороте — структура, а не карточки."""
+    """3. Разделы свёрнуты: на первом развороте — структура, а не карточки.
+
+    Правка 10.08.2026: разделами стали РИТМЫ, а не области жизни. Решение
+    Алексея после живого использования — по областям он не находил, что пора
+    пройти. Утверждение то же: на развороте видна структура, карточки внутри.
+    """
     _, rest = screens(link(FRESH))
-    opened = re.findall(r"<details[^>]*\bclass=\"area\"[^>]*\bopen", rest)
+    opened = re.findall(r"<details[^>]*\bclass=\"rhythm\"[^>]*\bopen", rest)
     assert not opened, "область раскрыта заранее — список снова вываливается целиком"
-    assert rest.count('<details class="area">') == len(AREAS), \
-        "не все области собраны свёрнутыми блоками"
-    ok("семь областей, все свёрнуты")
+    heads = catalog("OUT.heads = RHYTHMS.map(function (r) { return r.name; })\n"
+                    ";OUT.once = ONCE_RHYTHM.name;\n")
+    n_groups = rest.count('<details class="rhythm">')
+    assert 1 <= n_groups <= len(heads["heads"]) + 1, \
+        f"разделов-ритмов {n_groups}, а ритмов всего {len(heads['heads'])} плюс «один раз»"
+    ok(f"{n_groups} разделов-ритмов, все свёрнуты")
 
     rows = len(re.findall(r"<summary", rest)) - 1   # минус сам «Посмотреть всё»
     cards = cards_in_list(rest)
-    assert rows == len(AREAS), f"на первом развороте {rows} строк, а не семь"
+    assert rows == n_groups, f"строк на развороте {rows}, а разделов {n_groups}"
     assert rows < cards, \
         f"видимых элементов {rows}, карточек {cards} — экономии нет"
     ok(f"на первом развороте {rows} строк против {cards} карточек")
 
     # Карточка не может лежать выше первой области: иначе она видна сразу.
-    i_first_area = rest.index('<details class="area">')
+    i_first_area = rest.index('<details class="rhythm">')
     assert 'class="card"' not in rest[:i_first_area], \
-        "карточка стоит выше свёрнутых областей и видна на первом развороте"
-    ok("ни одной карточки выше свёрнутых областей")
+        "карточка стоит выше свёрнутых разделов и видна на первом развороте"
+    ok("ни одной карточки выше свёрнутых разделов")
 
 
 def check_nothing_lost() -> None:
@@ -160,9 +174,9 @@ def check_nothing_lost() -> None:
     # Счётчик у области считает то, что в ней лежит, а не что-то своё.
     for area, count, keys in [(g["area"], None, g["keys"]) for g in areas_js()["groups"]]:
         block = re.search(
-            r'<summary class="area-head"><span class="area-name">'
-            + re.escape(area) + r'</span><span class="area-count">(\d+)</span>', rest)
-        assert block, f"у области «{area}» нет строки со счётчиком"
+            r'<summary class="rhythm-head"><span class="rhythm-name">'
+            + re.escape(area) + r'</span><span class="rhythm-count">(\d+)</span>', rest)
+        assert block, f"у раздела «{area}» нет строки со счётчиком"
         shown = int(block.group(1))
         alive = [k for k in keys if reg[k]["cond"] != "clinical"]
         assert shown == len(alive), \
@@ -208,7 +222,7 @@ def check_also_label() -> None:
     assert row, "служебной строки карточки нет вовсе"
     assert rest.count('class="card-when"') <= cards_in_list(rest), \
         "служебных строк больше, чем карточек — карточка стала выше"
-    assert re.search(r'<div class="card-when">последний замер [^<]* · ещё: ', rest), \
+    assert re.search(r'<div class="card-when">[^<]*последний замер [^<]* · ещё: ', rest), \
         "«когда был» и «ещё» разъехались на две строки"
     ok("«последний замер … · ещё: …» — одна строка")
 

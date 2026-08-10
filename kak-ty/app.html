@@ -93,19 +93,19 @@ h1 { font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1
 .all > summary:hover { color: var(--terracotta); }
 .all-lead { font-size: 14px; color: var(--graphite-65); margin-bottom: 6px; }
 
-/* Область жизни — свёрнутая строка. На первом развороте списка человек видит
-   семь строк со структурой, а не двадцать три карточки подряд */
-.area { margin-top: 0; }
-.area-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--graphite-15); list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.area-head::-webkit-details-marker { display: none; }
-.area-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); flex: 1; }
-.area-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
+/* Ритм — свёрнутая строка. На первом развороте списка человек видит строки со
+   структурой, а не двадцать три карточки подряд */
+.rhythm { margin-top: 0; }
+.rhythm-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--graphite-15); list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.rhythm-head::-webkit-details-marker { display: none; }
+.rhythm-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite-50); flex: 1; }
+.rhythm-count { font-family: var(--font-mono); font-size: 11px; color: var(--graphite-30); }
 /* Знак «раскрыть»: без него свёрнутая строка не выглядит нажимаемой */
-.area-head::after { content: "+"; font-family: var(--font-mono); font-size: 13px; line-height: 1; color: var(--graphite-30); }
-.area[open] > .area-head::after { content: "–"; }
-.area[open] > .area-head .area-name { color: var(--terracotta); }
-.area-head:hover .area-name { color: var(--terracotta); }
-.area-cards { padding-bottom: 12px; }
+.rhythm-head::after { content: "+"; font-family: var(--font-mono); font-size: 13px; line-height: 1; color: var(--graphite-30); }
+.rhythm[open] > .rhythm-head::after { content: "–"; }
+.rhythm[open] > .rhythm-head .rhythm-name { color: var(--terracotta); }
+.rhythm-head:hover .rhythm-name { color: var(--terracotta); }
+.rhythm-cards { padding-bottom: 12px; }
 
 /* Замер, который проходится в разговоре с ботом, а не в мини-аппе */
 .chat { margin-top: 10px; border: 1px solid var(--graphite-15); padding: 12px; }
@@ -141,24 +141,42 @@ button.ghost:hover { color: var(--terracotta); border-color: var(--terracotta); 
 // Закрытый список из семи, перенос из bot.py (LIFE_CONTAINERS) один в один.
 var LIFE_CONTAINERS = ["Семья", "Работа", "Тело", "Деньги", "Я сам", "Круг", "Время на себя"];
 
-// Порядок областей жизни на экране (007, FR-010). Тот же набор, что выше, но
-// свой порядок: список читается сверху вниз и начинается с себя.
-// Проверка следит, чтобы это была та же семёрка, а не новая таксономия.
+// Порядок областей жизни. С 10.08.2026 список по ним больше не группируется —
+// область стала меткой на карточке. Порядок остаётся нужен дорожке: по нему она
+// решает, какую область закрывать раньше. Проверка следит, чтобы это была та же
+// семёрка из bot.py, а не новая таксономия.
 var AREA_ORDER = ["Я сам", "Тело", "Семья", "Круг", "Работа", "Деньги", "Время на себя"];
 
 // ---- Ритмы ----
-// Сроки замеров. Человеку они больше не показываются: он не приходит с
-// периодом, он приходит с вопросом про себя (007, «Что убирается как шум»).
-// Список остаётся как перенос из bot.py — по нему проверка сверяет поле
-// `section` каждой карточки с реестром бота. Это служебные данные, не экран.
+//
+// ПРАВКА 10.08.2026, решение Алексея. Список внутри «Посмотреть всё» идёт
+// РИТМАМИ, а не областями жизни. Дословно: «мне неудобно сейчас пользоваться
+// этой кнопкой, мне бы было удобно поделить замеры на: ежедневно, еженедельно,
+// ежемесячно, квартально, полгода, год». Шесть ритмов, для всех людей одни и те
+// же, в порядке от частого к редкому.
+//
+// Почему так. У человека, который пришёл впервые, работа одна — «что со мной
+// вообще», и её закрывает первый экран. У вернувшегося работа другая — «что мне
+// пора пройти», и по областям жизни он этого не находит: ему нужен срок, а не
+// тема. Спека 007 (FR-010) убрала ритмы совсем и вместе с первой работой убила
+// вторую. Теперь обе на месте: список идёт ритмами, область видна меткой на
+// карточке.
+//
+// Идентификаторы — перенос поля `section` из CARD_META бота, один в один.
+// Название — то, что видит человек.
 var RHYTHMS = [
-  { id: "day",     name: "День",     sub: "сутки" },
-  { id: "week",    name: "Неделя",   sub: "семь дней" },
-  { id: "month",   name: "Месяц",    sub: "тридцать дней" },
-  { id: "quarter", name: "Квартал",  sub: "тринадцать недель" },
-  { id: "rare",    name: "Реже",     sub: "полгода" },
-  { id: "year",    name: "Раз в год", sub: "двенадцать месяцев" }
+  { id: "day",     name: "Сутки" },
+  { id: "week",    name: "Неделя" },
+  { id: "month",   name: "Месяц" },
+  { id: "quarter", name: "Квартал" },
+  { id: "rare",    name: "Полгода" },
+  { id: "year",    name: "Год" }
 ];
+
+// Разовый замер — не ритм: он проходится один раз и уходит. Поэтому он стоит
+// последним отдельным блоком и назван по-честному, а не приписан к сроку,
+// которого у него нет. В CARD_META бота у него та же метка — `once`.
+var ONCE_RHYTHM = { id: "once", name: "Один раз" };
 
 // ---- Реестр замеров ----
 // Перенос из bot.py, COVERAGE_MAP: замеры состояния, список из FR-002a.
@@ -176,12 +194,13 @@ var RHYTHMS = [
 //   what       — что это даст, одной строкой (пятое поле COVERAGE_MAP)
 //   group      — группа из COVERAGE_MAP: Состояние / Пара / Группа
 //   days       — срок годности в днях, null — разовый
-//   section    — срок из реестра бота; служебное поле, на экране его нет
+//   section    — РИТМ замера, перенос из CARD_META бота. С 10.08.2026 по нему
+//                карточка встаёт в список, и поэтому стоит там ровно один раз
 //   containers — области жизни, которые замер задевает; перенос из CARD_META
 //                бота один в один (FR-020, FR-021). Служебное поле: по нему
 //                бот считает покрытие. Место карточки в списке — не по нему
-//   area       — ОДНА главная область по смыслу замера. Только по ней карточка
-//                встаёт в список, и поэтому она стоит там ровно один раз
+//   area       — ОДНА главная область по смыслу замера. Метка на карточке и
+//                порядок дорожки. Место в списке задаёт ритм, не она
 //   size       — честная длина; посчитано по самим замерам, не придумано
 //   url        — адрес мини-аппа; перенос из констант *_MINI_APP_URL в bot.py
 //   track      — страница умеет дорожку «несколько за раз»: сама открывает
@@ -524,22 +543,24 @@ function screenState(obs, ask) {
 }
 
 /**
- * Разложить карточки по областям жизни (007, FR-010).
+ * Разложить карточки по РИТМАМ (правка 10.08.2026).
  *
- * ОДНА карточка — ОДНА область, по полю `area`. Раньше карточка попадала в
- * каждую свою область: «Восемь фактов» стояли во всех семи, «Области жизни» в
- * шести, и в «Я сам» набиралось девять карточек из двадцати трёх. Список
- * читался как свалка, а человек одни и те же замеры видел по пять раз.
- * Про остальные области карточка говорит одной короткой строкой внутри себя.
+ * ОДНА карточка — ОДИН ритм, по полю `section`. Это её собственный ритм из
+ * CARD_META бота: срок годности замера, а не наша выдумка. Поэтому дублей нет
+ * физически — карточка не может стоять в двух ритмах сразу.
  *
- * Пустая область не показывается вовсе: строка «тут для тебя ничего нет»
- * пользы человеку не даёт, это карта покрытия для владельца.
+ * Порядок ритмов — от частого к редкому: сутки · неделя · месяц · квартал ·
+ * полгода · год. Разовые замеры идут последним блоком: ритма у них нет.
+ *
+ * Пустой ритм не показывается вовсе: строка «тут для тебя ничего нет» пользы
+ * человеку не даёт, это карта покрытия для владельца.
  */
-function byArea(cards) {
-  return AREA_ORDER.map(function (area) {
+function byRhythm(cards) {
+  return RHYTHMS.concat([ONCE_RHYTHM]).map(function (r) {
     return {
-      area: area,
-      cards: cards.filter(function (c) { return c.area === area; })
+      id: r.id,
+      name: r.name,
+      cards: (cards || []).filter(function (c) { return c.section === r.id; })
     };
   }).filter(function (g) { return g.cards.length > 0; });
 }
@@ -1263,14 +1284,20 @@ function cardHref(card) {
 }
 
 /**
- * Служебная строка карточки в списке: когда замер был и какие ещё области он
- * задевает. Обе части в ОДНОЙ строке — карточка от них не становится выше.
+ * Служебная строка карточки в списке: какую область жизни замер трогает, когда
+ * он был и какие ещё области задевает. Всё в ОДНОЙ строке — карточка от них не
+ * становится выше.
+ *
+ * Метка области стоит первой. До 10.08.2026 область была заголовком раздела;
+ * теперь разделы — ритмы, и область переехала на карточку. Так закрыты обе
+ * работы разом: видно, что пора, и видно, чего это касается.
  *
  * Про «когда был» — только это, и только если знаем. Ни «пора», ни
  * «просрочено»: сроки — забота бота, а не упрёк человеку.
  */
 function metaHtml(card) {
   var parts = [];
+  if (card.area) parts.push(card.area);
   if (card.daysAgo || card.daysAgo === 0) {
     parts.push("последний замер " + agoText(card.daysAgo));
   }
@@ -1488,27 +1515,28 @@ function trackDoneHtml() {
 }
 
 /**
- * Одна область жизни в полном списке — СВЁРНУТАЯ.
+ * Один ритм в полном списке — СВЁРНУТЫЙ.
  *
- * Человек открывает список и видит семь строк со структурой, а не двадцать три
- * карточки подряд. Нужную область раскрывает сам. Ничего не отнимаем: все
- * замеры на месте, просто их не выливают все сразу.
+ * Человек открывает список и видит строки со структурой, а не двадцать три
+ * карточки подряд. Нужный ритм раскрывает сам. Ничего не отнимаем: все замеры
+ * на месте, просто их не выливают все сразу.
  */
-function areaHtml(group) {
-  return '<details class="area"><summary class="area-head">' +
-    '<span class="area-name">' + esc(group.area) + "</span>" +
-    '<span class="area-count">' + group.cards.length + "</span></summary>" +
-    '<div class="area-cards">' +
+function rhythmHtml(group) {
+  return '<details class="rhythm"><summary class="rhythm-head">' +
+    '<span class="rhythm-name">' + esc(group.name) + "</span>" +
+    '<span class="rhythm-count">' + group.cards.length + "</span></summary>" +
+    '<div class="rhythm-cards">' +
     group.cards.map(function (c) { return cardHtml(c, true); }).join("") +
     "</div></details>";
 }
 
-/** Полный список — за одним нажатием, по областям жизни. */
+/** Полный список — за одним нажатием, по ритмам. */
 function allHtml(cards) {
   return '<details id="all" class="all"><summary>Посмотреть всё</summary>' +
-    '<p class="all-lead">Всё, что можно про себя померить, по областям жизни. ' +
-    "Это не список дел: проходи то, про что самому интересно.</p>" +
-    byArea(cards).map(areaHtml).join("") +
+    '<p class="all-lead">Всё, что можно про себя померить, по ритмам — как часто ' +
+    "это стоит проходить. Область жизни видна на карточке. Это не список дел: " +
+    "проходи то, про что самому интересно.</p>" +
+    byRhythm(cards).map(rhythmHtml).join("") +
     '<div class="foot">Одного числа на всё нет и не будет: разные замеры мерят разное, ' +
     "складывать их — терять то, ради чего мерили." +
     "<br><br>Здесь только состояние: как тебе сейчас. Из чего ты устроен — личность, нейротип, " +
@@ -1602,9 +1630,9 @@ function bindTrack() {
 
 /* ---- Кнопка назад: проводка (спека 012) ----
  *
- * Уровни в разметке — это `<details>`: список «Посмотреть всё» и области внутри
+ * Уровни в разметке — это `<details>`: список «Посмотреть всё» и ритмы внутри
  * него. Стек пересобираем из DOM, а не храним отдельно: тогда он не разъедётся
- * с тем, что человек видит, даже если он открыл область своим нажатием.
+ * с тем, что человек видит, даже если он открыл ритм своим нажатием.
  *
  * Обработчик навешиваем ОДИН раз за жизнь страницы: render() зовётся повторно,
  * когда догоняют даты из базы, а второй обработчик дал бы двойной шаг назад.
@@ -1616,9 +1644,9 @@ function openLevels() {
   var all = app.querySelector("#all");
   if (all && all.open) {
     out.push("all");
-    var areas = all.querySelectorAll("details.area");
-    for (var i = 0; i < areas.length; i++) {
-      if (areas[i].open) out.push("area:" + i);
+    var groups = all.querySelectorAll("details.rhythm");
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i].open) out.push("rhythm:" + i);
     }
   }
   return out;
@@ -1627,10 +1655,10 @@ function openLevels() {
 function onBack() {
   var all = app.querySelector("#all");
   if (!all || !all.open) return;
-  var areas = all.querySelectorAll("details.area");
-  for (var i = areas.length - 1; i >= 0; i--) {   // самый внутренний уровень
-    if (areas[i].open) {
-      areas[i].open = false;
+  var groups = all.querySelectorAll("details.rhythm");
+  for (var i = groups.length - 1; i >= 0; i--) {   // самый внутренний уровень
+    if (groups[i].open) {
+      groups[i].open = false;
       syncBack();
       return;
     }
