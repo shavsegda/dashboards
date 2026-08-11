@@ -27,11 +27,13 @@ body { margin: 0; background: var(--paper); color: var(--graphite);
 main { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
 .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
   text-transform: uppercase; color: var(--graphite-50); margin-bottom: 40px; }
-.tile { border: 1px solid var(--graphite-15); padding: 34px 30px 30px; }
+.tile { border: 1px solid var(--graphite-15); padding: 34px 30px 30px;
+  margin-bottom: 18px; }
 .tile-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
   text-transform: uppercase; color: var(--graphite-50); margin-bottom: 14px; }
 .tile-value { font-size: 84px; line-height: 1; font-weight: 600;
   letter-spacing: -0.03em; color: var(--terracotta); }
+.tile.second .tile-value { font-size: 60px; }
 .tile-sub { margin-top: 16px; font-size: 15px; line-height: 1.5;
   color: var(--graphite-65); }
 .foot { margin-top: 34px; font-family: var(--mono); font-size: 11px;
@@ -50,7 +52,13 @@ main { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
     <div class="tile-value">72</div>
     <div class="tile-sub">Из них 49 прошли хотя бы один замер.</div>
   </div>
-  <div class="foot">Обновлено 11.08.2026 16:42</div>
+  <div class="tile second">
+    <div class="tile-label">Прошли личность</div>
+    <div class="tile-value">17</div>
+    <div class="tile-sub">240 вопросов, двадцать пять минут. Столько людей
+      дошли до конца.</div>
+  </div>
+  <div class="foot">Обновлено 11.08.2026 16:55</div>
 </main>
 </body>
 </html>
