@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Панель — Вслух</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #faf8f5; --graphite: #2b2b2b; --graphite-65: #6f6f6f;
+  --graphite-50: #8f8f8f; --graphite-15: #dedad4; --graphite-08: #ebe7e1;
+  --terracotta: #c96f4a;
+  --font: 'Inter', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1c1b1a; --graphite: #ece9e4; --graphite-65: #a09b94;
+    --graphite-50: #837e77; --graphite-15: #3a3835; --graphite-08: #2a2826;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--graphite);
+  font-family: var(--font); -webkit-font-smoothing: antialiased; }
+main { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
+.kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--graphite-50); margin-bottom: 40px; }
+.tile { border: 1px solid var(--graphite-15); padding: 34px 30px 30px; }
+.tile-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--graphite-50); margin-bottom: 14px; }
+.tile-value { font-size: 84px; line-height: 1; font-weight: 600;
+  letter-spacing: -0.03em; color: var(--terracotta); }
+.tile-sub { margin-top: 16px; font-size: 15px; line-height: 1.5;
+  color: var(--graphite-65); }
+.foot { margin-top: 34px; font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); }
+@media (max-width: 600px) {
+  main { padding: 36px 18px 60px; }
+  .tile-value { font-size: 62px; }
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Вслух · панель</div>
+  <div class="tile">
+    <div class="tile-label">Людей в боте</div>
+    <div class="tile-value">72</div>
+    <div class="tile-sub">Из них 49 прошли хотя бы один замер.</div>
+  </div>
+  <div class="foot">Обновлено 11.08.2026 16:42</div>
+</main>
+</body>
+</html>
