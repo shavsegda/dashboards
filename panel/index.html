@@ -36,8 +36,24 @@ main { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
 .tile.second .tile-value { font-size: 60px; }
 .tile-sub { margin-top: 16px; font-size: 15px; line-height: 1.5;
   color: var(--graphite-65); }
+.sec { margin-top: 44px; }
+.sec-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--graphite-50); margin-bottom: 6px; }
+.sec-lead { font-size: 14px; color: var(--graphite-65); margin-bottom: 22px; }
+.grp { border-top: 1px solid var(--graphite-15); padding: 18px 0 6px; }
+.grp-name { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.row { display: grid; grid-template-columns: 1fr 2fr 36px; align-items: center;
+  gap: 12px; margin-bottom: 10px; }
+.row-name { font-size: 14px; color: var(--graphite-65); }
+.row-bar { height: 6px; background: var(--graphite-08); }
+.row-bar i { display: block; height: 6px; background: var(--terracotta); }
+.row-num { font-family: var(--mono); font-size: 13px; text-align: right; }
 .foot { margin-top: 34px; font-family: var(--mono); font-size: 11px;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite-50); }
+@media (max-width: 600px) {
+  .row { grid-template-columns: 1fr 1.2fr 30px; gap: 8px; }
+  .row-name { font-size: 13px; }
+}
 @media (max-width: 600px) {
   main { padding: 36px 18px 60px; }
   .tile-value { font-size: 62px; }
@@ -58,7 +74,13 @@ main { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
     <div class="tile-sub">240 вопросов, двадцать пять минут. Столько людей
       дошли до конца.</div>
   </div>
-  <div class="foot">Обновлено 11.08.2026 16:55</div>
+  <div class="sec">
+    <div class="sec-title">Как я устроен · по блокам</div>
+    <div class="sec-lead">Сколько человек прошли каждый блок. Группы и порядок —
+      как человек видит их в мини-аппе.</div>
+    <div class="grp"><div class="grp-name">Из чего сложен</div><div class="row"><div class="row-name">Личность</div><div class="row-bar"><i style="width:35%"></i></div><div class="row-num">17</div></div><div class="row"><div class="row-name">Нейротип</div><div class="row-bar"><i style="width:37%"></i></div><div class="row-num">18</div></div><div class="row"><div class="row-name">Нервная система</div><div class="row-bar"><i style="width:29%"></i></div><div class="row-num">14</div></div></div><div class="grp"><div class="grp-name">Что ведёт</div><div class="row"><div class="row-name">Ценности</div><div class="row-bar"><i style="width:29%"></i></div><div class="row-num">14</div></div><div class="row"><div class="row-name">Мотиваторы</div><div class="row-bar"><i style="width:35%"></i></div><div class="row-num">17</div></div><div class="row"><div class="row-name">Интересы</div><div class="row-bar"><i style="width:22%"></i></div><div class="row-num">11</div></div></div><div class="grp"><div class="grp-name">Как решаешь</div><div class="row"><div class="row-name">Решения и конфликт</div><div class="row-bar"><i style="width:18%"></i></div><div class="row-num">9</div></div><div class="row"><div class="row-name">Ощущение времени</div><div class="row-bar"><i style="width:0%"></i></div><div class="row-num">0</div></div><div class="row"><div class="row-name">Уровень мышления</div><div class="row-bar"><i style="width:12%"></i></div><div class="row-num">6</div></div></div><div class="grp"><div class="grp-name">Под давлением</div><div class="row"><div class="row-name">Уязвимости</div><div class="row-bar"><i style="width:27%"></i></div><div class="row-num">13</div></div><div class="row"><div class="row-name">Стресс и риск</div><div class="row-bar"><i style="width:16%"></i></div><div class="row-num">8</div></div><div class="row"><div class="row-name">Привязанность</div><div class="row-bar"><i style="width:24%"></i></div><div class="row-num">12</div></div></div><div class="grp"><div class="grp-name">Тело и гены</div><div class="row"><div class="row-name">ДНК</div><div class="row-bar"><i style="width:2%"></i></div><div class="row-num">1</div></div><div class="row"><div class="row-name">Тело: базовое</div><div class="row-bar"><i style="width:6%"></i></div><div class="row-num">3</div></div></div>
+  </div>
+  <div class="foot">Обновлено 11.08.2026 17:02</div>
 </main>
 </body>
 </html>
