@@ -32,6 +32,7 @@ import ast
 import json
 import re
 import urllib.parse
+from datetime import datetime, timezone
 
 import lib_path  # noqa: F401  — добавляет папку проверок в путь импорта
 from lib import (BOT, ROOT, catalog_render, html, inline_script, ok,
@@ -68,7 +69,12 @@ HIST = ("state_day!tonus,mood,sleep_quality,sleep_hours,practice_min"
         "!260804:5,6,7,7.5,0!260807:7,8,6,8,10!260808:6,7,,8.5,0"
         "!260809:4,9,5,6,15")
 
-TODAY = "2026-08-10"
+# Дата берётся живой, а не прибитой строкой. Прибитая «2026-08-10» пережила
+# ровно один день: 11.08.2026 проверка покраснела на ровном месте — точка,
+# которую она считала сегодняшней, стала вчерашней и законно превратилась в
+# историю. Страница при этом была исправна. День страница считает по UTC
+# (`utcDayKey`), поэтому и здесь UTC, иначе вечером сойдёмся на разных сутках.
+TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 # --------------------------------------------------------------------------

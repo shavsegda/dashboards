@@ -477,9 +477,13 @@ MUTATIONS: List[Tuple[str, str, str, str]] = [
      "  if (false) {",
      "check_chestno_pri_pustyh_datah"),
 
+    # Место мутации пересняли 11.08.2026: спека 025 добавила отправку одним
+    # нажатием, и сборка блока переехала из `return` в переменную `head`.
+    # Утверждение не изменилось: полный разбор остаётся отдельным шагом-ссылкой,
+    # а не разворотом прямо на первом экране.
     ("полный разбор стал разворотом на первом экране",
-     "  return '<div class=\"full\">' +",
-     "  return '<details class=\"full\"><summary>Полный разбор</summary>' +",
+     "  var head = '<div class=\"full\">' +",
+     "  var head = '<details class=\"full\"><summary>Полный разбор</summary>' +",
      "check_polnyj_razbor_ssylkoj"),
 
     ("фраза полного разбора разошлась с ботом",

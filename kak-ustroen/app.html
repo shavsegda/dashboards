@@ -632,6 +632,67 @@ function showFullReport(cards, obs) {
   return countPassed(cards) > 0;
 }
 
+/* ---- Как открыть замер, который идёт разговором (11.08.2026, спека 025) ----
+ *
+ * Живой дефект владельца, дословно: «нажал на уровень мышления и просто минимап
+ * закрылся и ничего не произошло». Карточка вела ссылкой в переписку, а замер
+ * надо было начать руками — отправив фразу в чат. Человек этого не понял и не
+ * должен был.
+ *
+ * Раньше здесь стоял сознательный отказ от `sendData`: бот умел открывать таким
+ * сообщением только карточки подвижного слоя, и эти три ключа увели бы человека
+ * в чужую дверь. Теперь у второй двери своё действие и своё пространство ключей,
+ * и отказ снят.
+ *
+ * Почему `sendData` здесь можно, хотя в правилах он запрещён. Запрет про
+ * страницы-опросники: они пишут результат в базу, а `sendData` мгновенно
+ * закрывает мини-апп и обрывает незавершённую запись. ЭТОТ экран в базу не
+ * пишет ничего. На страницы с записью решение не переносится.
+ */
+
+/** Открыть блок второй двери. Ключи те же, что `KAK_USTROEN_KEYS` в боте. */
+function cardPayload(key) {
+  return JSON.stringify({ action: "passport_card",
+                          key: String(key == null ? "" : key) });
+}
+
+/** Собрать портрет из всех пройденных блоков. */
+var FULL_PAYLOAD = JSON.stringify({ action: "passport_full" });
+
+/**
+ * Можно ли вообще звать `sendData`.
+ *
+ * По документации Телеграма метод доступен ТОЛЬКО мини-аппам, открытым кнопкой
+ * обычной клавиатуры. У такого запуска init-данные пустые: Телеграм не передаёт
+ * в него ни пользователя, ни query_id. Это и есть признак, по которому мы
+ * различаем запуск, — а не догадка по версии клиента.
+ *
+ * Непустые init-данные значат, что мини-апп открыли иначе (кнопка меню, инлайн,
+ * вложение). Там `sendData` молча ничего не сделает, поэтому идём запасным
+ * путём: ссылка на переписку и фраза, которую можно скопировать.
+ */
+function canSendData(tg) {
+  if (!tg || typeof tg.sendData !== "function") return false;
+  return String(tg.initData == null ? "" : tg.initData) === "";
+}
+
+/* Что карточка обязана сказать ДО нажатия. Правило спеки 020: молчание карточки
+ * и есть тот дефект, с которого всё началось. Только факты — где пойдёт замер и
+ * что случится с экраном. Ни балла, ни названия шкалы, ни оценочного слова. */
+var CHAT_CLOSES = "Мини-апп закроется.";
+
+/** Обещание нажатия, когда `sendData` работает. Пройденный блок и непройденный
+ *  обещают РАЗНОЕ: одно нажатие начинает замер, другое показывает записанное. */
+function chatHintSend(card) {
+  return isPassed(card)
+    ? "Нажми — бот покажет, что записано, и даст пройти заново. " + CHAT_CLOSES
+    : "Нажми — бот начнёт замер в переписке. " + CHAT_CLOSES;
+}
+
+/** Обещание, когда `sendData` недоступен: фразу человек отправляет сам. */
+var CHAT_HINT_COPY = "Этот замер идёт разговором, не формой. " +
+  "Скопируй фразу и отправь её боту — он начнёт.";
+
 /** Разобрать «tg_121202001» в число. Мусор — null, читать нечем. */
 function parseUserId(u) {
   var m = /^(?:tg_)?(\d{3,20})$/.exec(String(u == null ? "" : u).trim());
@@ -707,6 +768,28 @@ function backVisible(stack) { return navDepth(stack) > 0; }
 // ---- Telegram ----
 var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+
+/* Считается ОДИН раз и до сборки экрана: разметка обязана знать, какой путь
+ * основной. Иначе карточка обещает одно, а нажатие делает другое — и это ровно
+ * то враньё, которое человек читает как «ничего не произошло». */
+var SEND_OK = canSendData(tg);
+
+/** Что написано под карточкой разговорного замера. Два случая, и оба правда. */
+function chatHint(card) {
+  return SEND_OK ? chatHintSend(card) : CHAT_HINT_COPY;
+}
+
+/**
+ * То же одной строкой — для списка, где карточек четырнадцать.
+ *
+ * На запасном пути строка обязана нести САМУ ФРАЗУ: нажатие там боту ничего не
+ * отправит, и без фразы человеку в списке нечего скопировать. На основном пути
+ * фраза не нужна — нужно обещание того, что произойдёт.
+ */
+function chatLine(card) {
+  if (SEND_OK) return chatHintSend(card);
+  return "идёт разговором — отправь боту фразу «" + card.phrase + "»";
+}
 
 /* ---- Тема Телеграма, безопасные зоны и высота ----
  *
@@ -872,27 +955,35 @@ function cardHtml(card, inList) {
     '<div class="card-sub">' + esc(card.what) + "</div>" +
     whenHtml(card);
 
-  // Замер-разговор. `sendData` тут не зовём сознательно: бот умеет открывать по
-  // такому сообщению только карточки подвижного слоя, и эти три ключа увели бы
-  // человека в чужую дверь. Пока не появится вход со стороны бота, честный путь
-  // — фраза, которую человек отправляет в чат сам.
+  // Замер-разговор (025). Основной путь — `sendData`: боту уходит апдейт
+  // `web_app_data`, и он сам начинает замер или показывает записанное. Ссылка на
+  // переписку остаётся в разметке ЗАПАСНЫМ путём — на случай, когда мини-апп
+  // открыт не кнопкой клавиатуры и `sendData` не работает. Какой путь сработает,
+  // решается в момент нажатия.
   var chatLink = (!href && card.phrase) ? botLink(BOT_NAME) : null;
+  var send = chatLink
+    ? ' data-send="' + esc(cardPayload(card.key)) +
+      '" data-tglink="' + esc(chatLink) + '"'
+    : "";
 
   var openable;
   if (href) {
     openable = '<a class="card-open" href="' + esc(href) + '">' + head + "</a>";
   } else if (chatLink) {
-    openable = '<a class="card-open" href="' + esc(chatLink) + '" data-tglink="' +
-      esc(chatLink) + '">' + head + "</a>";
+    openable = '<a class="card-open" href="' + esc(chatLink) + '"' + send + ">" +
+      head + "</a>";
   } else {
     openable = "<div>" + head + "</div>";
   }
 
+  // Что будет по нажатию — одной строкой и ДО нажатия. В списке карточек
+  // четырнадцать, там строка одна; в просьбе карточка одна, и ей можно больше.
   var chat = "";
   if (chatLink && inList) {
-    chat = '<div class="chat-line">идёт разговором — отправь боту фразу «' +
-      esc(card.phrase) + "»</div>";
-  } else if (chatLink) {
+    chat = '<div class="chat-line">' + esc(chatLine(card)) + "</div>";
+  } else if (chatLink && !SEND_OK) {
+    // Запасной путь: нажатие боту ничего не отправит, значит человеку нужна
+    // сама фраза и способ её скопировать.
     chat =
       '<div class="chat">' +
         '<div class="chat-phrase">' + esc(card.phrase) + "</div>" +
@@ -901,9 +992,12 @@ function cardHtml(card, inList) {
             esc(chatLink) + '">Открыть переписку</a>' +
           '<button class="ghost" data-copy="' + esc(card.phrase) + '">Скопировать фразу</button>' +
         "</div>" +
-        '<div class="chat-hint">Этот замер идёт разговором, не формой. ' +
-        "Скопируй фразу и отправь её боту — он начнёт.</div>" +
+        '<div class="chat-hint">' + esc(chatHint(card)) + "</div>" +
       "</div>";
+  } else if (chatLink) {
+    // Основной путь: копировать нечего, нажатие само всё делает.
+    chat = '<div class="chat"><div class="chat-hint">' + esc(chatHint(card)) +
+      "</div></div>";
   }
 
   return '<div class="card">' + openable +
@@ -954,10 +1048,23 @@ function obsHtml(text) {
 function fullHtml(cards, obs) {
   if (!showFullReport(cards, obs)) return "";
   var link = botLink(BOT_NAME);
-  return '<div class="full">' +
+  var head = '<div class="full">' +
     '<div class="full-head">Полный разбор</div>' +
     '<p class="full-lead">Бот сошьёт пройденные блоки в один портрет и покажет, ' +
-    "где что цепляется. Это отдельный шаг, не здесь.</p>" +
+    "где что цепляется. Это отдельный шаг, не здесь.</p>";
+  // Основной путь — одно нажатие, как и у карточек (025). Фраза и копирование
+  // остаются там, где нажатие боту ничего не отправит.
+  if (SEND_OK) {
+    return head +
+      '<div class="chat-acts">' +
+        '<a class="act" href="' + esc(link) + '" data-send="' +
+          esc(FULL_PAYLOAD) + '" data-tglink="' + esc(link) +
+          '">Собрать портрет</a>' +
+      "</div>" +
+      '<div class="chat-hint">' + esc(CHAT_CLOSES) +
+      " Портрет придёт в переписку.</div></div>";
+  }
+  return head +
     '<div class="chat-phrase">' + esc(FULL_PHRASE) + "</div>" +
     '<div class="chat-acts">' +
       '<a class="act" href="' + esc(link) + '" data-tglink="' + esc(link) +
@@ -1120,10 +1227,25 @@ function bindBack() {
 }
 
 function bind() {
-  // Открыть переписку с ботом. В Телеграме это `openTelegramLink`, в браузере —
-  // обычная ссылка.
+  // Открыть замер-разговор. Три пути, по убыванию надёжности (025):
+  //   1. `sendData` — боту уходит апдейт `web_app_data`, дальше он сам;
+  //   2. `openTelegramLink` — открывает переписку. Замер оттуда человек
+  //      начинает фразой, поэтому это запасной путь, а не основной;
+  //   3. обычная ссылка — так работает в браузере вне Телеграма.
+  //
+  // Слушатель ставится на элементы ТОЛЬКО что собранной разметки: каждый render
+  // делает их заново, поэтому навесить дважды на один элемент нельзя.
   app.querySelectorAll("[data-tglink]").forEach(function (el) {
     el.addEventListener("click", function (ev) {
+      var payload = el.getAttribute("data-send");
+      if (payload && canSendData(tg)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try {
+          tg.sendData(payload);
+          return;
+        } catch (e) {}                  // не ушло — падаем в запасной путь
+      }
       if (!tg || typeof tg.openTelegramLink !== "function") return;
       ev.preventDefault();
       ev.stopPropagation();
