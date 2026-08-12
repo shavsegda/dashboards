@@ -678,21 +678,37 @@ function combinedScores(){
   return out;
 }
 
+// Что уходит в запись. Только полный разбор: у него есть строка с цифрами.
+// Урезанную карту бот присылает адресом, когда полная не влезла, — её в базу
+// писать нельзя: бот собирает блок по всем записям, и неполной копией эту
+// картину можно только испортить. Галочки в списке она при этом ставит честно.
+function pushableScores(){
+  const all=combinedScores(), out={};
+  Object.keys(all).forEach(k=>{ const s=all[k]; if(s && s.nums) out[k]=s; });
+  return out;
+}
+
+let pushing=false;   // замок: одна отправка за раз, пять нажатий — одна запись
 async function pushCombined(){
-  const scores=combinedScores();
-  priorScores=scores;
-  const completed_at=new Date().toISOString();
-  const record={user_id:UID, block:'neurotype', instrument:'ASRS-v1.1', scores, answers, completed_at};
-  await pushToSupabase(record);
-  try{ localStorage.setItem(RESULT_KEY, JSON.stringify({scores,answers,completed_at})); }catch(e){}
-  try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
-  // Облако Telegram: результаты переживают очистку памяти телефона
-  // и подтягиваются при заходе с другого устройства.
+  if(pushing) return;
+  pushing=true;
   try{
-    tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{});
-  }catch(e){}
-  if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'neurotype',scores})); }catch(e){} }
-  save();
+    const scores=pushableScores();
+    priorScores=combinedScores();
+    if(!Object.keys(scores).length) return;
+    const completed_at=new Date().toISOString();
+    const record={user_id:UID, block:'neurotype', instrument:'ASRS-v1.1', scores, answers, completed_at};
+    await pushToSupabase(record);
+    try{ localStorage.setItem(RESULT_KEY, JSON.stringify({scores,answers,completed_at})); }catch(e){}
+    try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
+    // Облако Telegram: результаты переживают очистку памяти телефона
+    // и подтягиваются при заходе с другого устройства.
+    try{
+      tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{});
+    }catch(e){}
+    if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'neurotype',scores})); }catch(e){} }
+    save();
+  } finally { pushing=false; }
 }
 
 function optRow(o, numbered, selected){
@@ -864,6 +880,13 @@ function renderQuestion(){
 }
 
 async function finishTest(t){
+  // Активный опросник закрываем СРАЗУ, до отправки. `tg.sendData` закрывает
+  // мини-апп — экран результата человек не увидит, и незакрытая метка осталась
+  // бы в памяти телефона указывать на последний вопрос. Следующий заход тогда
+  // сам доходил до конца опросника и отправлял всё второй раз: владелец
+  // 12.08.2026 получил от бота два одинаковых ответа. Отправка идёт только по
+  // завершению опросника, а не при открытии.
+  cur=null; save();
   app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
   const data=t.score(answers[t.key]).data;
   await pushCombined();
@@ -903,10 +926,16 @@ if(!savedResult||!savedResult.scores){
   try{ const a=JSON.parse(localStorage.getItem(RESULT_KEY.replace(CLIENT_ID,'anon'))||'null');
     if(a&&a.scores) savedResult=a; }catch(e){}
 }
-// Сеем прошлые результаты (галочки + слияние), если ещё не сохранены
+// Сеем прошлые результаты (галочки + слияние).
+// Прошлое из адреса подкладываем ВСЕГДА, а не только когда своей памяти нет:
+// в памяти телефона бывает один скрин из шести, и раньше он закрывал собой всё,
+// что прислал бот. Своё значение сильнее присланного — оно точно полное.
+if(urlResult&&urlResult.scores){
+  priorScores={...urlResult.scores, ...priorScores};
+  save();
+}
 if(Object.keys(priorScores).length===0){
-  if(urlResult&&urlResult.scores) priorScores={...urlResult.scores};
-  else if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
+  if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
   if(savedResult&&savedResult.answers && Object.keys(answers).length===0) answers={...savedResult.answers};
   save();
 }
@@ -927,7 +956,15 @@ try{
   }
 }catch(e){}
 
-if(cur && typeof cur.ti==='number'){ renderQuestion(); } else { renderHub(); }
+// Вход. Открытие страницы НИКОГДА не отправляет запись: продолжаем опросник
+// только там, где остались неотвеченные вопросы. Метка из прошлого захода может
+// указывать за последний вопрос — тогда её место в списке, а не в отправке.
+function resumable(){
+  if(!cur || typeof cur.ti!=='number') return false;
+  const t=TESTS[cur.ti];
+  return !!t && typeof cur.pos==='number' && cur.pos>=0 && cur.pos<t.items.length;
+}
+if(resumable()){ renderQuestion(); } else { cur=null; save(); renderHub(); }
 </script>
 </body>
 </html>

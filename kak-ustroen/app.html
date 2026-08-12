@@ -911,12 +911,25 @@ function esc(s) {
 }
 
 /** Адрес страницы замера с подставленным человеком: иначе запись некуда положить. */
+// Прошлые результаты блока (029). Каталог их не читает и не показывает — он
+// перекладывает дальше, в адрес страницы блока. Без этого человек, у которого
+// память телефона пуста, проходит один опросник и записывает блок без
+// остальных: страница базу читать не может, а сливать ей не с чем.
+var PREV_PARAMS = (function () {
+  var out = "";
+  ["pv", "pi", "pd", "pr"].forEach(function (n) {
+    var v = params.get(n);
+    if (v) out += "&" + n + "=" + encodeURIComponent(v);
+  });
+  return out;
+})();
+
 function cardHref(card) {
   if (!card.url) return null;
   var sep = card.url.indexOf("?") >= 0 ? "&" : "?";
   return card.url + sep +
     (APP_V ? "v=" + encodeURIComponent(APP_V) + "&" : "") +
-    "u=tg_" + USER_ID;
+    "u=tg_" + USER_ID + PREV_PARAMS;
 }
 
 /** Ссылка на переписку с ботом. Имя бота приходит от бота же, мусор чистится. */
