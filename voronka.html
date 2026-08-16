@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Воронка целиком — 13.08.2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --terracotta:#B85C38; --terracotta-dark:#8F4528;
+  --muted:#6B6862; --line:#D6D2C6;
+  --dead:#A8A399;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--graphite);
+  font-family:Inter,-apple-system,system-ui,sans-serif;line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:48px 20px 80px}
+h1{font-size:34px;line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:15px;margin:0 0 6px}
+.lead{font-size:19px;line-height:1.5;margin:28px 0 40px;padding-left:16px;
+  border-left:3px solid var(--terracotta)}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+  font-weight:600;margin:56px 0 18px}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+
+/* слой */
+.layer{background:#fff;border:1px solid var(--line);border-radius:12px;
+  padding:22px 24px;margin:0}
+.layer.empty{background:repeating-linear-gradient(45deg,var(--stone),var(--stone) 8px,#EFECE3 8px,#EFECE3 16px);
+  border-style:dashed;border-color:var(--dead)}
+.layer-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.tag{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px;background:var(--stone);color:var(--muted)}
+.tag.ok{background:#DCE6DA;color:#3D5A38}
+.tag.bad{background:#F0DAD1;color:var(--terracotta-dark)}
+.layer-title{font-size:21px;font-weight:650;letter-spacing:-.01em}
+.layer-note{color:var(--muted);font-size:14px;margin:2px 0 16px}
+
+/* цифры */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.num{background:#fff;padding:12px 14px}
+.num b{display:block;font-family:'JetBrains Mono',monospace;font-size:22px;
+  font-weight:500;letter-spacing:-.02em;line-height:1.2}
+.num span{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.3}
+.num.zero b{color:var(--terracotta)}
+
+/* переход */
+.gap{display:flex;gap:14px;align-items:flex-start;padding:16px 24px;margin:0}
+.gap .arrow{font-size:20px;line-height:1;color:var(--dead);flex-shrink:0;margin-top:1px}
+.gap-body{flex:1;min-width:0}
+.gap-title{font-weight:600;font-size:15px}
+.gap-desc{font-size:14px;color:var(--muted);margin-top:2px}
+.gap.broken .arrow{color:var(--terracotta)}
+.gap.broken .gap-title{color:var(--terracotta-dark)}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:8px}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);font-weight:600;padding:0 12px 8px 0;border-bottom:1px solid var(--line)}
+td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:none}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.loop{background:#fff;border:1px solid var(--line);border-left:3px solid var(--terracotta);
+  border-radius:8px;padding:16px 18px;margin-bottom:12px}
+.loop-h{font-weight:600;font-size:15px;margin-bottom:4px}
+.loop-p{font-size:14px;color:var(--muted)}
+.loop.off{border-left-color:var(--dead);opacity:.72}
+
+ol.holes{padding-left:0;list-style:none;counter-reset:h;margin:0}
+ol.holes li{counter-increment:h;position:relative;padding:14px 0 14px 44px;
+  border-bottom:1px solid var(--line);font-size:15px}
+ol.holes li:last-child{border-bottom:none}
+ol.holes li::before{content:counter(h);position:absolute;left:0;top:13px;
+  width:26px;height:26px;border-radius:50%;background:var(--terracotta);color:#fff;
+  font-family:'JetBrains Mono',monospace;font-size:13px;display:flex;
+  align-items:center;justify-content:center}
+ol.holes small{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--muted)}
+@media(max-width:600px){h1{font-size:26px}.lead{font-size:17px}.wrap{padding:32px 16px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Воронка целиком</h1>
+<p class="sub mono">13 августа 2026 · собрано из выписки, метрик бота и логов</p>
+
+<p class="lead">Три слоя. Верхний бесплатный и работает. Нижний дорогой и работает.
+Между ними — пусто, и поэтому 41 человек не превращается ни во что.</p>
+
+<h2>Слой 0 · Откуда вообще берутся люди</h2>
+<div class="layer">
+  <div class="layer-head">
+    <span class="layer-title">Вход</span>
+    <span class="tag bad">главный канал выключен</span>
+  </div>
+  <p class="layer-note">По деньгам за всё время — 17,4 млн ₽ от 36 плательщиков. 84% дали семеро.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Канал</th><th>Кто пришёл</th><th class="r">₽</th><th class="r">доля</th><th>Сейчас</th></tr></thead>
+    <tbody>
+      <tr><td>Живые комнаты<br><small style="color:var(--muted)">бизнес-клуб, форум-группа, сигарный клуб</small></td>
+          <td>Ярослав, Дима, Ваня</td><td class="r">7 654 100</td><td class="r">53%</td>
+          <td style="color:var(--terracotta-dark)">выключен с 08.2025</td></tr>
+      <tr><td>Рекомендации и цепочки</td><td>Сергей, Кирилл</td><td class="r">5 272 000</td><td class="r">36%</td>
+          <td style="color:var(--terracotta-dark)">ни разу не просил</td></tr>
+      <tr><td>Личный круг</td><td>Метелкин</td><td class="r">810 000</td><td class="r">6%</td><td>случайный</td></tr>
+      <tr><td>Публичный контент</td><td>Дамир</td><td class="r">800 000</td><td class="r">5%</td><td>работает слабо</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="gap broken">
+  <span class="arrow">↓</span>
+  <div class="gap-body">
+    <div class="gap-title">Разрыв 1 — входящий поток обнулён</div>
+    <div class="gap-desc">Канал на 53% выключен год назад. Ни одного нового крупного клиента из живой комнаты с 2025 года. Медоуз: запас клиентов гасил сигнал, поэтому связь между «перестал ходить» и «выручка встала» не читается — между ними год.</div>
+  </div>
+</div>
+
+<h2>Слой 1 · Бесплатный — бот «Вслух»</h2>
+<div class="layer">
+  <div class="layer-head">
+    <span class="layer-title">Бот</span>
+    <span class="tag ok">работает</span>
+  </div>
+  <p class="layer-note">24 апреля — 12 августа 2026. Люди заходят, разговаривают всерьёз, получают ясность и уходят.</p>
+  <div class="nums">
+    <div class="num"><b>41</b><span>уникальных людей</span></div>
+    <div class="num"><b>25</b><span>дошли до резюме · 61%</span></div>
+    <div class="num"><b>18</b><span>молчат 7+ дней</span></div>
+    <div class="num"><b>9</b><span>из них незнакомые</span></div>
+    <div class="num"><b>2–3</b><span>из них твой сегмент</span></div>
+    <div class="num zero"><b>0</b><span>получили вопрос через неделю</span></div>
+    <div class="num zero"><b>0</b><span>кликов к тебе</span></div>
+    <div class="num zero"><b>0</b><span>заплатили</span></div>
+  </div>
+</div>
+
+<div class="gap broken">
+  <span class="arrow">↓</span>
+  <div class="gap-body">
+    <div class="gap-title">Разрыв 2 — некуда вести</div>
+    <div class="gap-desc">Ноль кликов не потому, что люди холодные. Кликать не на что: платного слоя физически нет. Человек, спросивший «а какой есть платный слой?», не получил ответа — 86 дней назад.</div>
+  </div>
+</div>
+
+<h2>Слой 2 · Платный автоматический</h2>
+<div class="layer empty">
+  <div class="layer-head">
+    <span class="layer-title" style="color:var(--dead)">Пусто</span>
+    <span class="tag bad">не существует</span>
+  </div>
+  <p class="layer-note">Ни продукта, ни цены, ни кнопки. Всё, что человек может получить от тебя без личной встречи, — бесплатно и без конца.</p>
+  <div class="nums">
+    <div class="num zero"><b>0</b><span>продуктов</span></div>
+    <div class="num zero"><b>0 ₽</b><span>цена</span></div>
+    <div class="num zero"><b>0</b><span>покупок</span></div>
+    <div class="num"><b>41</b><span>человек, которым нечего предложить</span></div>
+  </div>
+</div>
+
+<div class="gap broken">
+  <span class="arrow">↓</span>
+  <div class="gap-body">
+    <div class="gap-title">Разрыв 3 — прыжок с нуля на двести тысяч</div>
+    <div class="gap-desc">Вайс, ускоряющая кривая: «Без сознательного проектирования получится тяжёлая левая часть без верхнего конца — или тяжёлый верх без нижнего входа». У тебя и то и другое сразу. Единственный, кто перепрыгнул, — Дамир, и то потому что вы дружили годами и ты лично спросил его через неделю.</div>
+  </div>
+</div>
+
+<h2>Слой 3 · Дорогая персональная работа</h2>
+<div class="layer">
+  <div class="layer-head">
+    <span class="layer-title">Линейка</span>
+    <span class="tag ok">работает и приносит всё</span>
+  </div>
+  <p class="layer-note">Разбор 50к · Портрет 150к · Сборы 350к · Тренировки 200к/мес · Замер 250к/кв</p>
+  <div class="nums">
+    <div class="num"><b>17,4 млн</b><span>всего за два года</span></div>
+    <div class="num"><b>7</b><span>клиентов дали 84%</span></div>
+    <div class="num"><b>3</b><span>активны сейчас</span></div>
+    <div class="num"><b>1</b><span>рекомендация от клиента = 7,44 млн</span></div>
+  </div>
+</div>
+
+<h2>Как слои должны усиливать друг друга</h2>
+
+<div class="loop">
+  <div class="loop-h">↻ Клиент из слоя 3 приводит человека в слой 0 <span class="tag ok">сработало один раз</span></div>
+  <div class="loop-p">Ярослав привёл своего сотрудника Сергея. Один вход — два клиента и 7,44 млн, почти половина всей выручки. Ты этого не просил, оно случилось само. Вайс держит запрошенные рекомендации в списке первоочередного.</div>
+</div>
+
+<div class="loop">
+  <div class="loop-h">↻ Бот держит дорогих клиентов между встречами <span class="tag ok">работает</span></div>
+  <div class="loop-p">Сергей — 147 сообщений, Метелкин — 17. Самые вовлечённые пользователи бота это действующие клиенты, а не новички. Бот уже усиливает слой 3 — просто ты считал это побочным эффектом.</div>
+</div>
+
+<div class="loop off">
+  <div class="loop-h">↻ Бесплатное превращается в платное автоматически <span class="tag bad">нет</span></div>
+  <div class="loop-p">Механизм известен и проверен один раз на Дамире: дал ценность → человек ушёл → через неделю спросил «как продвинулся?» → «не продвинулся» → купил. В коде бота есть <span class="mono">followup_scheduler</span> и поля <span class="mono">followup_at</span>, но согласие не собирается ни у кого, и напоминание не уходит. Шаг написан и выключен.</div>
+</div>
+
+<div class="loop off">
+  <div class="loop-h">↻ Платный автоматический греет и отбирает людей для дорогого <span class="tag bad">нет</span></div>
+  <div class="loop-p">Слоя нет, поэтому нет и петли. Сейчас человек либо ничего тебе не платит, либо сразу двести тысяч в месяц. Между этим нет ступени, на которой можно проверить друг друга.</div>
+</div>
+
+<h2>Четыре дыры, по порядку</h2>
+<ol class="holes">
+  <li>Входящий поток обнулён
+      <small>Живые комнаты давали 53% денег и выключены год. Вернуться членом нельзя — форма входа для консультанта другая: спикер, автор, человек, которого видели в деле.</small></li>
+  <li>Рекомендации не запрашиваются
+      <small>Единственная случайная рекомендация дала 7,44 млн. Явно ты не просил ни разу.</small></li>
+  <li>Нет платного автоматического слоя
+      <small>41 человек прошёл через бота. Предложить им нечего — ни продукта, ни цены.</small></li>
+  <li>Петля обратной связи разомкнута
+      <small>Ни один человек не получил вопроса «как продвинулся?». Механизм есть в коде и не включён.</small></li>
+</ol>
+
+<footer>
+Источники: банковская выписка ИП (160 операций, 35 плательщиков) + наличные · <span class="mono">metrics.csv</span> бота, 24.04–12.08.2026 · логи диалогов · <span class="mono">bot.py</span><br>
+Опора: Вайс «Гравитация рынка» и «Ускоряющая кривая» · Медоуз, точка влияния 6 — информационные потоки · Дроган, лестница развития клиента
+</footer>
+
+</div>
+</body>
+</html>
