@@ -63,15 +63,9 @@
   .qnav .btn{width:auto;padding:11px 18px;margin-top:0;}
   .center{text-align:center;padding:40px 0;}
   .nav{display:flex;gap:10px;margin-top:20px;} .nav .btn{margin-top:0;}
-  .hublist{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
-  .hubrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-    padding:15px 16px;border:1.5px solid var(--rule);border-radius:12px;
-    background:var(--paper);font-family:inherit;cursor:pointer;transition:.12s;}
-  .hubrow:active{transform:scale(.99);}
-  .hb-l{flex:1;display:flex;flex-direction:column;gap:3px;}
-  .hb-l b{font-size:16px;color:var(--graphite);}
-  .hb-s{font-size:12.5px;color:var(--muted);}
-  .hb-b{flex:0 0 auto;font-size:18px;color:var(--terra);font-weight:700;}
+  /* Экран входа: одна кнопка на весь замер. Списка частей больше нет. */
+  .startbar{margin-top:18px;}
+  .startlbl{color:var(--muted);font-size:12.5px;margin-top:6px;}
   .res-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--muted);margin:22px 0 8px;}
   .res-block{margin-bottom:24px;}
@@ -288,34 +282,29 @@ const SCHEMAS = [
   {name:"*Пунитивность (направленная на других)", items:[113, 114, 115, 116], plain:"За ошибку положено наказание — другому. Включается, когда кто-то не тянет свою часть."}
 ];
 
-// Части. Границы частей стоят на границах схем: схему, разорванную между
-// частями, нельзя посчитать, пока не пройдены обе. Каждая часть пишется в базу
-// отдельной строкой — бросил на середине, вернулся, ничего не потерял.
-const PARTS = [
-  {key:"p1", title:"Часть первая", from:0, to:4},
-  {key:"p2", title:"Часть вторая", from:4, to:7},
-  {key:"p3", title:"Часть третья", from:7, to:11},
-  {key:"p4", title:"Часть четвёртая", from:11, to:14},
-  {key:"p5", title:"Часть пятая", from:14, to:17},
-  {key:"p6", title:"Часть шестая", from:17, to:20}
-];
-
-// ---- Сборка тестов из данных ----
-// Один экран — один вопрос. Матриц и таблиц-сеток нет: в решётке человек
-// отвечает столбцом, не читая, и данные портятся.
-const TESTS = PARTS.map(p=>{
-  const sch = SCHEMAS.slice(p.from, p.to);
+// ---- Сборка замера из данных ----
+// ОДИН заход. Замер идёт целиком: 116 утверждений подряд, один экран — одно
+// утверждение. Матриц и таблиц-сеток нет: в решётке человек отвечает столбцом,
+// не читая, и данные портятся.
+//
+// Раньше здесь была разбивка на шесть частей. Её снял владелец 16.08.2026:
+// возвращаться шесть раз неудобно, а длина в этом боте не помеха — соседние
+// замеры идут одним заходом и длиннее («Личность» 240 вопросов, «Нервная
+// система» 134), и разрыва на них нет. Разбивка была перестраховкой сборщика,
+// а не требованием правообладателя.
+const TEST = (function(){
   const nums = [];
-  sch.forEach(s=>s.items.forEach(n=>nums.push(n)));
+  SCHEMAS.forEach(s=>s.items.forEach(n=>nums.push(n)));
   return {
-    key:p.key, title:p.title, nums:nums, schemas:sch,
+    key:"ysq", title:"Что включается само", nums:nums, schemas:SCHEMAS,
     items: nums.map(n=>({t:ITEMS[n]})),
     scale: SCALE,
     what:'что у тебя включается само — в отношениях, в работе, под давлением',
     frame:'Это твои ответы, а не диагноз и не приговор. Здесь нет плохих ответов: '
       + 'то, что включается, когда-то помогало.'
   };
-});
+})();
+const TESTS = [TEST];
 
 // ---- Подсчёт. Арифметика считалки ANIMA, один в один ----
 // Лист «Выраженность схем»:
@@ -325,7 +314,7 @@ const TESTS = PARTS.map(p=>{
 //   выражена          = IF(OR(среднее>=4; доля высоких>=0.5))
 // Своей формулы тут нет ни одной.
 function scorePart(t, ans){
-  const pos = {};                       // номер пункта -> его место в части
+  const pos = {};                       // номер пункта -> его место в списке
   t.nums.forEach((n,i)=>{ pos[n]=i; });
   const rows = t.schemas.map(s=>{
     const n = s.items.length;
@@ -354,7 +343,7 @@ const one = (x)=>(x==null?'—':x.toFixed(1));
 // латинская буква), поэтому ни того, ни другого тут быть не может.
 function bandText(rows){
   const up = rows.filter(r=>r.raised);
-  if(!up.length) return 'В этой части заметно ничего не откликнулось';
+  if(!up.length) return 'Заметно ничего не откликнулось';
   return 'Заметно откликнулось: ' + up.map(r=>r.plain.split('.')[0].toLowerCase()).join('; ');
 }
 
@@ -382,7 +371,7 @@ TESTS.forEach(t=>{
   t.sense = (d)=>{
     const rows = scorePart(t, (answers[t.key]||{}));
     const up = rows.filter(r=>r.raised);
-    if(!up.length) return 'В этой части заметно ничего не набралось. '
+    if(!up.length) return 'Заметно ничего не набралось. '
       + 'Это про твои ответы сегодня, а не про то, какой ты.';
     return up.map(r=>r.plain).join('<br><br>');
   };
@@ -390,18 +379,41 @@ TESTS.forEach(t=>{
 
 const app = document.getElementById('app');
 
-let answers={};        // {ключ части:{номер вопроса:ответ}}
-let priorScores={};    // прошлые части — для галочек и слияния
-let cur=null;          // {ti,pos} активная часть или null (список)
+let answers={};        // {ключ замера:{номер утверждения:ответ}}
+let priorScores={};    // прошлый разбор — для галочки и сдвига
+let cur=null;          // {pos} — где человек остановился, или null (экран входа)
+
+// Переезд со старой разбивки. До 16.08.2026 ответы лежали шестью пачками
+// (`p1`…`p6`), у каждой своя нумерация с нуля. Выбрасывать их нельзя: человек
+// мог остановиться на восьмидесятом утверждении и уйти. Сдвиги — это места, с
+// которых начиналась каждая пачка в общем списке из 116.
+const OLD_OFFSETS = {p1:0, p2:23, p3:43, p4:67, p5:83, p6:101};
+function migrateOld(a){
+  if(!a || typeof a!=='object') return {};
+  if(a[TEST.key]) return a;
+  const flat={};
+  Object.keys(OLD_OFFSETS).forEach(k=>{
+    const part=a[k]; if(!part) return;
+    Object.keys(part).forEach(i=>{
+      const v=part[i];
+      if(v!=null) flat[OLD_OFFSETS[k] + (+i)] = v;
+    });
+  });
+  return Object.keys(flat).length ? {[TEST.key]:flat} : {};
+}
+
 try{ const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-  if(s.answers) answers=s.answers; if(s.priorScores) priorScores=s.priorScores; if(s.cur) cur=s.cur; }catch(e){}
+  if(s.answers) answers=migrateOld(s.answers);
+  if(s.priorScores) priorScores=s.priorScores;
+  // Метку берём, только если она из новой разметки: у старой был номер части.
+  if(s.cur && typeof s.cur.pos==='number' && s.cur.ti==null) cur=s.cur; }catch(e){}
 function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify({answers,priorScores,cur}));}catch(e){} }
 
 function testFullyAnswered(t){ const a=answers[t.key]||{}; return t.items.every((_,i)=>a[i]!=null); }
 function testAnsweredCount(t){ const a=answers[t.key]||{}; return t.items.filter((_,i)=>a[i]!=null).length; }
 
 // Общая картина: свежий разбор там, где отвечено, иначе прошлый. Слияние, а не
-// затирание: часть, пройденная в прошлый заход, никуда не девается.
+// затирание: разбор, собранный в прошлый заход, никуда не девается.
 function combinedScores(){
   const out={};
   TESTS.forEach(t=>{
@@ -439,8 +451,8 @@ async function pushCombined(){
       try{ tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{}); }catch(e){}
     }
     // `tg.sendData` здесь НЕ зовётся сознательно. Он мгновенно закрывает
-    // мини-апп — человек не увидел бы того, ради чего пришёл, а на замере из
-    // шести частей закрытие после каждой означало бы шесть выходов в чат.
+    // мини-апп — человек не увидел бы того, ради чего пришёл, а он только что
+    // ответил на 116 утверждений.
     // Бот подхватывает запись сторожем блока (`ensure_simple_block_synced`).
     save();
   } finally { pushing=false; }
@@ -452,11 +464,11 @@ function optRow(o, selected){
 }
 
 const PAGE_TITLE='Что включается само';
-const PAGE_SUB='шесть частей · проходи по одной';
+const PAGE_SUB='116 утверждений · один заход';
 const PAGE_FRAME='Покажет, что у тебя включается автоматически — в отношениях, в работе '
   + 'и под давлением. Это твои ответы, а не диагноз.';
-const PAGE_LEN='Шестнадцать-двадцать четыре утверждения в части. Можно бросить на середине '
-  + 'и вернуться: ответы сохраняются.';
+const PAGE_LEN='116 утверждений, минут пятнадцать. Можно бросить на середине и вернуться: '
+  + 'ответы сохраняются, замер продолжится с того же места.';
 // Требование правообладателя: авторы и ANIMA названы на странице. Это подпись
 // источника, а не ярлык человеку — в разборе про него самого её нет.
 const PAGE_SRC = 'Опросник YSQ-R: Yalcin, O., Marais, I., Lee, C., &amp; Correia, H. (2022). '
@@ -474,7 +486,7 @@ try{ const p=JSON.parse(localStorage.getItem(PREV_KEY)||'{}');
 function savePrev(){ try{ localStorage.setItem(PREV_KEY,
   JSON.stringify({prev:shiftPrev,words:shiftWords})); }catch(e){} }
 
-// Сдвиг с прошлого раза — словами, без цифр. Сравниваем по схемам части:
+// Сдвиг с прошлого раза — словами, без цифр. Сравниваем по схемам:
 // откликалось и перестало, не откликалось и стало.
 function makeShift(t){
   const rows = scorePart(t, (answers[t.key]||{}));
@@ -518,61 +530,77 @@ function renderTestResult(t){
     <div class="ans-card">${shiftBlock(t)}</div>
     <div class="res-h">Твои ответы</div>
     <div class="ans-card">${answerRows(t)}</div>
-    <div class="nav"><button class="btn ghost" id="tolist">← К списку</button></div>
+    <div class="nav"><button class="btn ghost" id="tolist">← В начало</button></div>
     <p class="src">${PAGE_SRC}</p>`;
-  const b=document.getElementById('tolist'); if(b) b.onclick=()=>renderHub();
+  const b=document.getElementById('tolist'); if(b) b.onclick=()=>renderStart();
   window.scrollTo(0,0);
 }
 
-function renderHub(msg){
+// Первое неотвеченное утверждение — отсюда замер продолжится.
+function firstUnanswered(){
+  const a=answers[TEST.key]||{};
+  for(let i=0;i<TEST.items.length;i++){ if(a[i]==null) return i; }
+  return TEST.items.length;
+}
+
+// Экран входа. Одна кнопка на весь замер: что это даст, честная длина, подпись
+// источника — и «Начать». Бросил на середине — та же кнопка продолжает с места,
+// на котором человек остановился, и говорит, сколько осталось.
+function renderStart(msg){
   cur=null; save();
-  const rows=TESTS.map((t,idx)=>{
-    let status, badge='→';
-    if(testFullyAnswered(t)||priorScores[t.key]){ status='ответы записаны'; badge='✓'; }
-    else { const c=testAnsweredCount(t);
-      status = c>0 ? ('в процессе · '+c+' из '+t.items.length)
-                   : ('не пройдена · '+t.items.length+' утв.'); }
-    return `<button class="hubrow" data-ti="${idx}">
-      <span class="hb-l"><b>${t.title}</b><span class="hb-s">${status}</span></span>
-      <span class="hb-b">${badge}</span></button>`;
-  }).join('');
+  const t=TEST, total=t.items.length;
+  const done=testAnsweredCount(t);
+  const passed=testFullyAnswered(t)||!!priorScores[t.key];
+  let label, progress='';
+  if(passed){ label='Пройти заново'; }
+  else if(done>0){
+    label='Продолжить — осталось '+(total-done);
+    progress=`<div class="startbar"><div class="qbar">`
+      + `<i style="width:${Math.round(done/total*100)}%"></i></div>`
+      + `<div class="startlbl">${done} из ${total} отвечено</div></div>`;
+  }
+  else { label='Начать'; }
   app.innerHTML=`
     <h1>${PAGE_TITLE}</h1>
     <p class="sub">${PAGE_SUB}</p>
     ${msg?`<div class="refer">${msg}</div>`:''}
     <div class="refer">${PAGE_FRAME}</div>
     <div class="qintro">${PAGE_LEN}</div>
-    <div class="hublist">${rows}</div>
+    ${passed?'<div class="qintro">Замер пройден. Ответы записаны.</div>':progress}
+    <button class="btn" id="go">${label}</button>
+    ${(passed&&testFullyAnswered(t))?'<button class="btn ghost" id="see">Посмотреть, что записано</button>':''}
     <p class="src">${PAGE_SRC}</p>`;
-  app.querySelectorAll('.hubrow').forEach(el=>el.onclick=()=>{
-    const idx=+el.dataset.ti, t=TESTS[idx];
-    if(testFullyAnswered(t)||priorScores[t.key]){
-      if(!confirm('«'+t.title+'» уже пройдена. Пройти заново? Прошлый ответ по этой части заменится, остальные не тронутся.')) return;
+  document.getElementById('go').onclick=()=>{
+    if(passed){
+      if(!confirm('Замер уже пройден. Пройти заново? Прошлые ответы заменятся новыми.')) return;
       answers[t.key]={};
     }
-    let p=0; const a=answers[t.key]||{};
-    for(let i=0;i<t.items.length;i++){ if(a[i]==null){ p=i; break; } p=i; }
-    cur={ti:idx,pos:p}; save(); renderQuestion();
-  });
+    cur={pos:firstUnanswered()}; save(); renderQuestion();
+  };
+  const see=document.getElementById('see');
+  if(see) see.onclick=()=>renderTestResult(t);
   window.scrollTo(0,0);
 }
 
 function renderQuestion(){
-  if(!cur){ return renderHub(); }
-  const t=TESTS[cur.ti];
+  if(!cur){ return renderStart(); }
+  const t=TEST, total=t.items.length;
   answers[t.key]=answers[t.key]||{};
   if(cur.pos<0) cur.pos=0;
-  if(cur.pos>=t.items.length){ return finishTest(t); }
+  if(cur.pos>=total){ return finishTest(); }
   const it=t.items[cur.pos];
   const val=answers[t.key][cur.pos];
+  const done=testAnsweredCount(t);
   const intro=(cur.pos===0)?`<div class="qintro">${t.what}</div>`:'';
+  // Прогресс на 116 утверждениях обязателен: человек должен видеть, сколько
+  // осталось, иначе экран без края читается как бесконечный.
   app.innerHTML=`
-    <div class="qbar"><i style="width:${Math.round(cur.pos/t.items.length*100)}%"></i></div>
-    <div class="qmeta">${t.title} · утверждение ${cur.pos+1} из ${t.items.length}</div>
+    <div class="qbar"><i style="width:${Math.round(cur.pos/total*100)}%"></i></div>
+    <div class="qmeta">Утверждение ${cur.pos+1} из ${total} · осталось ${total-done}</div>
     ${intro}
     <div class="qbox"><div class="qtext">${it.t}</div>
       <div class="opts">${t.scale.map(o=>optRow(o,val===o.v)).join('')}</div></div>
-    <div class="qnav"><button class="btn ghost" id="back">← ${cur.pos===0?'К списку':'Назад'}</button></div>`;
+    <div class="qnav"><button class="btn ghost" id="back">← ${cur.pos===0?'В начало':'Назад'}</button></div>`;
   let locked=false;
   app.querySelectorAll('.orow').forEach(el=>el.onclick=()=>{
     if(locked) return; locked=true;
@@ -582,15 +610,16 @@ function renderQuestion(){
     setTimeout(()=>{ cur.pos++; save(); renderQuestion(); }, 160);
   });
   document.getElementById('back').onclick=()=>{
-    if(cur.pos===0){ renderHub(); } else { cur.pos--; save(); renderQuestion(); }
+    if(cur.pos===0){ renderStart(); } else { cur.pos--; save(); renderQuestion(); }
   };
   window.scrollTo(0,0);
 }
 
-async function finishTest(t){
-  // Метку активной части снимаем СРАЗУ, до отправки: незакрытая метка указывает
-  // за последний вопрос, и следующий заход сам дошёл бы до конца и отправил всё
-  // второй раз.
+async function finishTest(){
+  // Метку места снимаем СРАЗУ, до отправки: незакрытая метка указывает за
+  // последнее утверждение, и следующий заход сам дошёл бы до конца и отправил
+  // всё второй раз.
+  const t=TEST;
   cur=null; save();
   app.innerHTML=`<div class="center"><h1>Готово</h1><p class="sub">Сохраняю…</p></div>`;
   await pushCombined();
@@ -603,8 +632,8 @@ let urlResult=null;
 try{ const r=new URLSearchParams(location.search).get('r'); if(r) urlResult=JSON.parse(r); }catch(e){}
 let savedResult=null;
 try{ savedResult=JSON.parse(localStorage.getItem(RESULT_KEY)||'null'); }catch(e){}
-// Прошлое из адреса подкладываем ВСЕГДА: в памяти телефона бывает одна часть из
-// шести, и раньше она закрывала собой всё, что прислал бот. Своё сильнее
+// Прошлое из адреса подкладываем ВСЕГДА: в памяти телефона бывает пусто или
+// частично, и раньше она закрывала собой всё, что прислал бот. Своё сильнее
 // присланного — оно точно полное.
 if(urlResult&&urlResult.scores){
   priorScores={...urlResult.scores, ...priorScores};
@@ -612,7 +641,8 @@ if(urlResult&&urlResult.scores){
 }
 if(Object.keys(priorScores).length===0){
   if(savedResult&&savedResult.scores) priorScores={...savedResult.scores};
-  if(savedResult&&savedResult.answers && Object.keys(answers).length===0) answers={...savedResult.answers};
+  if(savedResult&&savedResult.answers && Object.keys(answers).length===0)
+    answers=migrateOld(savedResult.answers);
   save();
 }
 try{
@@ -624,7 +654,7 @@ try{
         if(o && o.scores && Object.keys(o.scores).length && Object.keys(priorScores).length===0){
           priorScores = {...o.scores};
           save();
-          if(!cur) renderHub('Прошлые части подтянулись из облака Телеграма.');
+          if(!cur) renderStart('Прошлый замер подтянулся из облака Телеграма.');
         }
       }catch(e){}
     });
@@ -634,11 +664,10 @@ try{
 // Открытие страницы НИКОГДА не отправляет запись: продолжаем только там, где
 // остались неотвеченные утверждения.
 function resumable(){
-  if(!cur || typeof cur.ti!=='number') return false;
-  const t=TESTS[cur.ti];
-  return !!t && typeof cur.pos==='number' && cur.pos>=0 && cur.pos<t.items.length;
+  if(!cur || typeof cur.pos!=='number') return false;
+  return cur.pos>=0 && cur.pos<TEST.items.length;
 }
-if(resumable()){ renderQuestion(); } else { cur=null; save(); renderHub(); }
+if(resumable()){ renderQuestion(); } else { cur=null; save(); renderStart(); }
 </script>
 </body>
 </html>
