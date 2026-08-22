@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Карта метрик здоровья · Алексей Шаповалов</title>
+<meta name="description" content="Полная карта метрик здоровья на научных данных: выносливость, сила, функциональные тесты, кровь, сон, питание, связи. Что мерить, какая цель, чем подтверждено.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --graphite-75:rgba(26,26,26,.75); --graphite-65:rgba(26,26,26,.65);
+  --graphite-50:rgba(26,26,26,.5); --graphite-30:rgba(26,26,26,.3);
+  --graphite-15:rgba(26,26,26,.15); --graphite-08:rgba(26,26,26,.08);
+  --terracotta:#B85C38; --terracotta-dark:#8F4528; --terracotta-tint:rgba(184,92,56,.08);
+  --green:#4A7C59; --green-tint:rgba(74,124,89,.1);
+  --amber:#B8873B; --amber-tint:rgba(184,135,59,.1);
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --max:1120px; --gutter:32px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--graphite);font-family:var(--font-sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.container{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--graphite-50)}
+.eyebrow.accent{color:var(--terracotta)}
+.mono{font-family:var(--font-mono)}
+.dot{color:var(--terracotta)}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--graphite-08)}
+.site-header .inner{max-width:var(--max);margin:0 auto;padding:14px var(--gutter);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.site-header .name{font-weight:500;letter-spacing:-.01em}
+.site-header .meta{font-family:var(--font-mono);font-size:11px;color:var(--graphite-50);letter-spacing:.08em}
+
+/* hero */
+.hero{padding:72px 0 40px}
+.hero h1{font-size:clamp(34px,6vw,58px);font-weight:500;letter-spacing:-.03em;line-height:1.03;margin:14px 0 20px}
+.hero .lead{font-size:clamp(17px,2.2vw,20px);color:var(--graphite-75);max-width:64ch;margin:0}
+
+/* nav */
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin:36px 0 8px}
+.nav a{font-family:var(--font-mono);font-size:12px;text-decoration:none;padding:7px 12px;border:1px solid var(--graphite-15);border-radius:100px;color:var(--graphite-65);transition:.15s}
+.nav a:hover{border-color:var(--terracotta);color:var(--terracotta)}
+
+/* section */
+section{padding:44px 0;border-top:1px solid var(--graphite-08)}
+section h2{font-size:clamp(24px,3.4vw,32px);font-weight:500;letter-spacing:-.025em;margin:10px 0 8px;line-height:1.1}
+section .sub{color:var(--graphite-65);max-width:62ch;margin:0 0 26px}
+
+/* table */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 22px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th{text-align:left;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--graphite-50);font-weight:400;padding:0 14px 10px 0;border-bottom:1px solid var(--graphite-15);white-space:nowrap}
+td{padding:13px 14px 13px 0;border-bottom:1px solid var(--graphite-08);vertical-align:top}
+td:first-child{font-weight:500;min-width:150px}
+tr:last-child td{border-bottom:none}
+
+/* badge */
+.b{display:inline-block;font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap}
+.b-s{background:var(--green-tint);color:var(--green)}
+.b-m{background:var(--amber-tint);color:var(--amber)}
+.b-o{background:var(--graphite-08);color:var(--graphite-50)}
+
+/* note */
+.note{border-left:2px solid var(--terracotta);padding:2px 0 2px 18px;margin:22px 0;color:var(--graphite-75);max-width:70ch}
+.note strong{color:var(--graphite);font-weight:500}
+.note .n{font-family:var(--font-mono);color:var(--terracotta);font-weight:500}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--graphite-08);border:1px solid var(--graphite-08);margin:26px 0}
+.card{background:var(--paper);padding:24px}
+.card .num{font-family:var(--font-mono);font-size:11px;color:var(--terracotta);letter-spacing:.14em}
+.card h3{font-size:17px;font-weight:500;margin:10px 0 8px;letter-spacing:-.01em}
+.card p{margin:0;font-size:14.5px;color:var(--graphite-65);line-height:1.5}
+.card ul{margin:10px 0 0;padding-left:17px;font-size:14.5px;color:var(--graphite-65)}
+.card li{margin-bottom:5px}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:22px;margin:26px 0 0;font-size:14px;color:var(--graphite-65)}
+.legend div{display:flex;gap:9px;align-items:baseline}
+
+/* sources */
+.src{font-size:13.5px;color:var(--graphite-50);line-height:1.75;columns:2;column-gap:40px}
+.src p{margin:0 0 4px;break-inside:avoid}
+
+footer{padding:52px 0 72px;border-top:1px solid var(--graphite-08);color:var(--graphite-50);font-size:13.5px}
+
+@media(max-width:640px){
+  :root{--gutter:20px}
+  .hero{padding:48px 0 28px}
+  .src{columns:1}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <div class="name">Карта метрик здоровья</div>
+    <div class="meta">22.08.2026 · 45 показателей</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="eyebrow accent">Научные данные, не мнения</div>
+    <h1>Что стоит мерить<span class="dot">.</span></h1>
+    <p class="lead">Метрика попадает в карту, только если есть данные, что она связана со здоровьем или смертностью на больших выборках. «В подкасте сказали» не проходит. Ниже — 45 показателей, целевые значения, чем подтверждены и как часто мерить.</p>
+
+    <div class="legend">
+      <div><span class="b b-s">Сильная</span> крупные когорты и метаанализы</div>
+      <div><span class="b b-m">Средняя</span> выборка ýже или связь косвенная</div>
+      <div><span class="b b-o">Ориентир</span> практика без цифр по смертности</div>
+    </div>
+
+    <nav class="nav">
+      <a href="#start">С чего начать</a>
+      <a href="#endurance">Выносливость</a>
+      <a href="#strength">Сила</a>
+      <a href="#tests">Тесты за минуту</a>
+      <a href="#body">Состав тела</a>
+      <a href="#blood">Кровь</a>
+      <a href="#micro">Микронутриенты</a>
+      <a href="#sleep">Сон</a>
+      <a href="#food">Питание</a>
+      <a href="#move">Движение</a>
+      <a href="#mind">Психика и связи</a>
+      <a href="#calendar">Календарь</a>
+    </nav>
+  </div>
+
+  <section id="start">
+    <div class="eyebrow">Приоритет</div>
+    <h2>С чего начать</h2>
+    <p class="sub">Мерить всё сразу — значит не начать. Порядок такой.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="num">УРОВЕНЬ 1</div>
+        <h3>В ближайший месяц</h3>
+        <ul>
+          <li><strong>Lp(a)</strong> — один раз в жизни, и генетический риск известен навсегда</li>
+          <li><strong>Сила хвата</strong> — динамометр ~2000 ₽, замер 10 секунд</li>
+          <li><strong>Встать с пола</strong> и <strong>стойка на одной ноге</strong> — бесплатно, прямо сейчас</li>
+          <li><strong>Талия ÷ рост</strong> — сантиметр</li>
+          <li><strong>Скрининг апноэ</strong> STOP-BANG</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num">УРОВЕНЬ 2</div>
+        <h3>Панель крови раз в полгода</h3>
+        <p>ApoB, липиды, HbA1c, глюкоза и инсулин, вчСРБ, ферритин, витамин D, B12, омега-3 индекс, ТТГ, общий анализ, печёночные, креатинин.</p>
+      </div>
+      <div class="card">
+        <div class="num">УРОВЕНЬ 3</div>
+        <h3>Собирается само</h3>
+        <p>VO₂max, пульс покоя, HRV, сон, шаги — часы и бот уже пишут это без твоего участия. Остаётся смотреть тренд.</p>
+      </div>
+      <div class="card">
+        <div class="num">УРОВЕНЬ 4</div>
+        <h3>Начать считать руками</h3>
+        <p>Регулярность сна, приёмы еды, разнообразие продуктов, клетчатка, живые контакты за неделю.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="endurance">
+    <div class="eyebrow">Домен 1</div>
+    <h2>Выносливость и сердце</h2>
+    <p class="sub">Самый сильный блок карты. Здесь лежит главная метрика — VO₂max.</p>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Чем мерить</th><th>Как часто</th></tr>
+      <tr><td>VO₂max</td><td>Мужчины 30-39: 44+ хорошо, 49+ отлично. Медиана 39</td><td><span class="b b-s">Сильная</span></td><td>Garmin, лаборатория</td><td>Постоянно</td></tr>
+      <tr><td>Пульс покоя</td><td>Своя база, следить за трендом</td><td><span class="b b-s">Сильная</span></td><td>Garmin утром</td><td>Ежедневно</td></tr>
+      <tr><td>Восстановление пульса за 1 мин</td><td>Больше 12 ударов</td><td><span class="b b-s">Сильная</span></td><td>Секундомер после интервала</td><td>Раз в месяц</td></tr>
+      <tr><td>HRV</td><td>Своя база, важен тренд</td><td><span class="b b-m">Средняя</span></td><td>Garmin</td><td>Ежедневно</td></tr>
+      <tr><td>Аэробный порог (AeT)</td><td>Растёт при том же усилии</td><td><span class="b b-m">Средняя</span></td><td>MAF-тест, лактометр</td><td>Раз в 2-3 мес</td></tr>
+      <tr><td>Разрыв AeT ↔ LT</td><td>Меньше 10%, у элиты 6-7%</td><td><span class="b b-m">Средняя</span></td><td>Два теста подряд</td><td>Раз в 2-3 мес</td></tr>
+      <tr><td>Артериальное давление</td><td>Ниже 120/80</td><td><span class="b b-s">Сильная</span></td><td>Тонометр</td><td>Раз в месяц</td></tr>
+    </table></div>
+    <div class="note"><strong>VO₂max — главная метрика карты.</strong> 122 007 человек, Cleveland Clinic, наблюдение в среднем 8,4 года. У людей с элитной формой риск смерти от всех причин <span class="n">на 80% ниже</span>, чем у людей с низкой. Сильнее курения, диабета и гипертонии. Верхнего предела пользы не нашли.</div>
+    <div class="note"><strong>Восстановление пульса.</strong> Если за первую минуту после нагрузки пульс упал на 12 ударов или меньше — риск смерти выше <span class="n">вчетверо</span> в сыром виде и вдвое после поправок на возраст, пол, препараты и стандартные факторы риска. Отражает работу блуждающего нерва.</div>
+  </section>
+
+  <section id="strength">
+    <div class="eyebrow">Домен 2</div>
+    <h2>Сила и мышцы</h2>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Чем мерить</th><th>Как часто</th></tr>
+      <tr><td>Сила хвата</td><td>Выше — лучше. Каждые −5 кг → +16% риска</td><td><span class="b b-s">Сильная</span></td><td>Кистевой динамометр</td><td>Раз в месяц</td></tr>
+      <tr><td>Отжимания за подход</td><td>40+</td><td><span class="b b-s">Сильная</span></td><td>Пол</td><td>Раз в месяц</td></tr>
+      <tr><td>Мышечная масса</td><td>Своя база, удержание или рост</td><td><span class="b b-m">Средняя</span></td><td>Весы с биоимпедансом</td><td>Раз в месяц</td></tr>
+      <tr><td>Сила ног</td><td>Своя база</td><td><span class="b b-o">Ориентир</span></td><td>Зал</td><td>Раз в цикл</td></tr>
+    </table></div>
+    <div class="note"><strong>Сила хвата — самая недооценённая метрика списка.</strong> PURE: почти 140 000 человек в 17 странах. Каждые 5 кг потери хвата дают <span class="n">+16%</span> к риску смерти от всех причин. Предсказывает лучше, чем систолическое давление. Прибор стоит дешевле кроссовок, замер занимает 10 секунд.</div>
+  </section>
+
+  <section id="tests">
+    <div class="eyebrow">Домен 3</div>
+    <h2>Тесты за минуту</h2>
+    <p class="sub">Без приборов, без денег, без спортзала.</p>
+    <div class="tw"><table>
+      <tr><th>Тест</th><th>Норма</th><th>Сила</th><th>Как делать</th></tr>
+      <tr><td>Встать с пола (sit-to-rise)</td><td>8-10 из 10</td><td><span class="b b-s">Сильная</span></td><td>Сесть на пол и встать. Каждая опора рукой или коленом — минус балл</td></tr>
+      <tr><td>Стойка на одной ноге</td><td>10 секунд без опоры</td><td><span class="b b-s">Сильная</span></td><td>Встать на одну ногу, засечь</td></tr>
+      <tr><td>Скорость ходьбы</td><td>Своя база</td><td><span class="b b-m">Средняя</span></td><td>Garmin считает сам</td></tr>
+    </table></div>
+    <div class="note"><strong>Встать с пола.</strong> 2002 человека 51-80 лет. Смертность за период наблюдения: <span class="n">3,7%</span> в лучшей группе против <span class="n">42,1%</span> в худшей.</div>
+    <div class="note"><strong>Стойка на одной ноге.</strong> 12 лет наблюдения. Неспособность простоять 10 секунд связана с риском смерти выше <span class="n">на 84%</span>. Тест валидировали на людях среднего и старшего возраста — в 33 года это не прогноз, а замер баланса. Но бесплатно.</div>
+  </section>
+
+  <section id="body">
+    <div class="eyebrow">Домен 4</div>
+    <h2>Состав тела</h2>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Чем мерить</th></tr>
+      <tr><td>Талия ÷ рост</td><td>Меньше 0,5</td><td><span class="b b-s">Сильная</span></td><td>Сантиметр</td></tr>
+      <tr><td>Висцеральный жир</td><td>Ниже — лучше</td><td><span class="b b-s">Сильная</span></td><td>Весы с биоимпедансом</td></tr>
+      <tr><td>Процент жира</td><td>Своя база</td><td><span class="b b-m">Средняя</span></td><td>Весы</td></tr>
+      <tr><td>ИМТ</td><td>Слабый показатель у спортивных людей</td><td><span class="b b-m">Средняя</span></td><td>Считается</td></tr>
+    </table></div>
+    <div class="note"><strong>Талия к росту работает лучше ИМТ.</strong> Британский NICE внёс показатель в рекомендации: он применим во всех этнических группах и у обоих полов. Талия должна быть меньше половины роста. <span class="n">При росте 174 см — меньше 87 см.</span> ИМТ у тренированного человека врёт: мышцы тянут его вверх, а риска нет.</div>
+  </section>
+
+  <section id="blood">
+    <div class="eyebrow">Домен 5</div>
+    <h2>Кровь</h2>
+    <p class="sub">Три группы: сосуды, обмен веществ, органы.</p>
+
+    <div class="tw"><table>
+      <tr><th>Сосуды</th><th>Цель</th><th>Сила</th><th>Как часто</th></tr>
+      <tr><td>ApoB</td><td>Ниже 90 мг/дл у здоровых</td><td><span class="b b-s">Сильная</span></td><td>Раз в год</td></tr>
+      <tr><td>Lp(a)</td><td>Ниже 125 нмоль/л (≈50 мг/дл)</td><td><span class="b b-s">Сильная</span></td><td>Один раз в жизни</td></tr>
+      <tr><td>Липидный профиль</td><td>Общий, ЛПНП, ЛПВП, триглицериды</td><td><span class="b b-s">Сильная</span></td><td>Раз в год</td></tr>
+      <tr><td>вчСРБ (hs-CRP)</td><td>Ниже 1 мг/л</td><td><span class="b b-m">Средняя</span></td><td>Раз в год</td></tr>
+    </table></div>
+
+    <div class="note"><strong>Lp(a) — сдать один раз и забыть.</strong> Уровень задан генетически и практически не меняется в течение жизни. Рекомендация 2024 года: измерить однократно каждому взрослому. Выше <span class="n">125 нмоль/л</span> риск существенно выше, и это меняет всю тактику профилактики. Скорее всего, ты его никогда не сдавал.</div>
+    <div class="note"><strong>ApoB информативнее обычного «холестерина».</strong> Он прямо считает число атерогенных частиц, а не количество холестерина внутри них, измеряется напрямую и не зависит от того, натощак ли ты. В американское руководство внесён впервые как рекомендованный замер.</div>
+
+    <div class="tw"><table>
+      <tr><th>Обмен веществ</th><th>Цель</th><th>Сила</th><th>Как часто</th></tr>
+      <tr><td>HbA1c</td><td>Ниже 5,7%</td><td><span class="b b-s">Сильная</span></td><td>Раз в год</td></tr>
+      <tr><td>Глюкоза натощак</td><td>3,9–5,5 ммоль/л</td><td><span class="b b-s">Сильная</span></td><td>Раз в год</td></tr>
+      <tr><td>Инсулин + HOMA-IR</td><td>HOMA-IR ниже 2,5</td><td><span class="b b-m">Средняя</span></td><td>Раз в год</td></tr>
+      <tr><td>Триглицериды ÷ ЛПВП</td><td>Ниже — лучше</td><td><span class="b b-m">Средняя</span></td><td>Из липидного профиля</td></tr>
+      <tr><td>Мочевая кислота</td><td>В референсе</td><td><span class="b b-o">Ориентир</span></td><td>Раз в год</td></tr>
+    </table></div>
+
+    <div class="tw"><table>
+      <tr><th>Органы</th><th>Зачем</th><th>Сила</th><th>Как часто</th></tr>
+      <tr><td>АЛТ, АСТ, ГГТ</td><td>Печень</td><td><span class="b b-o">Ориентир</span></td><td>Раз в год</td></tr>
+      <tr><td>Креатинин + СКФ</td><td>Почки</td><td><span class="b b-o">Ориентир</span></td><td>Раз в год</td></tr>
+      <tr><td>ТТГ</td><td>Щитовидка. Даёт усталость и сонливость</td><td><span class="b b-m">Средняя</span></td><td>Раз в год</td></tr>
+      <tr><td>Общий анализ крови</td><td>Анемия, воспаление</td><td><span class="b b-o">Ориентир</span></td><td>Раз в год</td></tr>
+    </table></div>
+  </section>
+
+  <section id="micro">
+    <div class="eyebrow">Домен 6</div>
+    <h2>Микронутриенты</h2>
+    <div class="tw"><table>
+      <tr><th>Маркер</th><th>Цель</th><th>Сила</th><th>Как часто</th></tr>
+      <tr><td>Витамин D (25-OH)</td><td>30–50 нг/мл</td><td><span class="b b-m">Средняя</span></td><td>2 раза в год</td></tr>
+      <tr><td>B12</td><td>Верхняя половина референса</td><td><span class="b b-m">Средняя</span></td><td>Раз в год</td></tr>
+      <tr><td>Ферритин</td><td>Выше 30–50 нг/мл, у спортсменов выше</td><td><span class="b b-m">Средняя</span></td><td>2 раза в год</td></tr>
+      <tr><td>Омега-3 индекс</td><td>Выше 8%</td><td><span class="b b-s">Сильная</span></td><td>Раз в год</td></tr>
+      <tr><td>Магний, цинк</td><td>В референсе</td><td><span class="b b-o">Ориентир</span></td><td>Раз в год</td></tr>
+    </table></div>
+    <div class="note"><strong>Омега-3 индекс</strong> — доля EPA и DHA в мембранах эритроцитов. Люди в верхней группе (>6,8%) имеют риск смерти от любых причин <span class="n">на 34% ниже</span>, чем в нижней (&lt;4,2%). Целевой диапазон 8–12%, ниже 4% — самый высокий риск.</div>
+  </section>
+
+  <section id="sleep">
+    <div class="eyebrow">Домен 7</div>
+    <h2>Сон</h2>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Чем мерить</th></tr>
+      <tr><td>Регулярность (SRI)</td><td>Одинаковые отбой и подъём</td><td><span class="b b-s">Сильная</span></td><td>Считается из времени сна</td></tr>
+      <tr><td>Длительность</td><td>7–9 часов</td><td><span class="b b-s">Сильная</span></td><td>Garmin</td></tr>
+      <tr><td>Апноэ (AHI)</td><td>Меньше 5</td><td><span class="b b-s">Сильная</span></td><td>Скрининг STOP-BANG, потом исследование</td></tr>
+      <tr><td>Пробуждения за ночь</td><td>Своя база</td><td><span class="b b-m">Средняя</span></td><td>Garmin</td></tr>
+      <tr><td>Латентность засыпания</td><td>10–20 минут</td><td><span class="b b-o">Ориентир</span></td><td>Garmin</td></tr>
+    </table></div>
+    <div class="note"><strong>Регулярность важнее длительности.</strong> UK Biobank, 60 977 человек, 10 миллионов часов акселерометрии. Верхние группы по регулярности — риск смерти от всех причин ниже <span class="n">на 20–48%</span>, от рака — на 16–39%. Регулярность предсказывает сильнее, чем количество часов.</div>
+    <div class="note"><strong>Апноэ пропускают чаще всего.</strong> У мужчин 30–70 лет распространённость лёгкого апноэ с дневной сонливостью — около 14%. До <span class="n">80%</span> случаев умеренного и тяжёлого апноэ остаются недиагностированными. Риск сердечно-сосудистых событий примерно вдвое выше. Скрининг — опросник STOP-BANG: храп, дневная усталость, замеченные остановки дыхания, давление, ИМТ, возраст, окружность шеи, пол.</div>
+  </section>
+
+  <section id="food">
+    <div class="eyebrow">Домен 8</div>
+    <h2>Питание</h2>
+    <p class="sub">Калорий и БЖУ в карте нет. Считать макросы имеет смысл, когда проблема в составе рациона, а не в том, что еда не идёт.</p>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Как считать</th></tr>
+      <tr><td>Клетчатка</td><td>25–30 г в день</td><td><span class="b b-s">Сильная</span></td><td>Приложение или прикидка</td></tr>
+      <tr><td>Ультрапереработанная еда</td><td>Чем меньше, тем лучше</td><td><span class="b b-s">Сильная</span></td><td>Доля от рациона</td></tr>
+      <tr><td>Овощи и фрукты</td><td>5 порций в день</td><td><span class="b b-s">Сильная</span></td><td>Считать порции</td></tr>
+      <tr><td>Алкоголь</td><td>Чем меньше, тем лучше</td><td><span class="b b-s">Сильная</span></td><td>Считать</td></tr>
+      <tr><td>Разнообразие</td><td>Продукты из всех 5 групп</td><td><span class="b b-m">Средняя</span></td><td>Считать продукты за неделю</td></tr>
+      <tr><td>Регулярность приёмов</td><td>Каждые 3–4 часа</td><td><span class="b b-m">Средняя</span></td><td>Считать приёмы</td></tr>
+      <tr><td>Белок</td><td>1,6 г/кг при силовых</td><td><span class="b b-m">Средняя</span></td><td>Прикидка</td></tr>
+    </table></div>
+    <div class="note"><strong>Клетчатка.</strong> Метаанализ 185 проспективных исследований и 58 клинических испытаний, почти 135 миллионов человеко-лет. Максимальная польза при <span class="n">25–29 г в день</span>. Смертность от всех причин у верхней группы ниже на 15–30%.</div>
+    <div class="note"><strong>Ультрапереработанная еда.</strong> 18 исследований, 1,15 миллиона человек. Верхняя группа потребления — риск смерти выше на 15%. Зависимость линейная: каждые <span class="n">+10%</span> доли такой еды в рационе дают <span class="n">+3%</span> к риску.</div>
+  </section>
+
+  <section id="move">
+    <div class="eyebrow">Домен 9</div>
+    <h2>Движение в быту</h2>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th></tr>
+      <tr><td>Шаги в день</td><td>7000, дальше кривая пологая</td><td><span class="b b-s">Сильная</span></td></tr>
+      <tr><td>Время сидя</td><td>Меньше — лучше, но перебивается нагрузкой</td><td><span class="b b-s">Сильная</span></td></tr>
+      <tr><td>Минуты активности</td><td>60–75 мин в день гасят вред сидения</td><td><span class="b b-s">Сильная</span></td></tr>
+    </table></div>
+    <div class="note"><strong>Шаги.</strong> 7000 шагов против 2000 — риск смерти от всех причин ниже <span class="n">на 47%</span>. У людей до 60 лет самый крутой участок кривой приходится на 7000–13000 шагов.</div>
+    <div class="note"><strong>Сидячее время отменяется тренировкой.</strong> Метаанализ на 1 005 791 человека: вред долгого сидения проявляется <span class="n">только у тех, кто мало двигается</span>. У людей с 60–75 минутами активности в день связь между сидением и смертностью исчезает.</div>
+  </section>
+
+  <section id="mind">
+    <div class="eyebrow">Домен 10</div>
+    <h2>Психика и связи</h2>
+    <p class="sub">Этот блок обычно выкидывают из дашбордов здоровья. Зря: по величине эффекта он конкурирует с физическими метриками.</p>
+    <div class="tw"><table>
+      <tr><th>Метрика</th><th>Цель</th><th>Сила</th><th>Чем мерить</th></tr>
+      <tr><td>Социальные связи</td><td>Регулярный живой контакт</td><td><span class="b b-s">Сильная</span></td><td>Считать контакты за неделю</td></tr>
+      <tr><td>Одиночество</td><td>Ниже — лучше</td><td><span class="b b-s">Сильная</span></td><td>Шкала UCLA</td></tr>
+      <tr><td>Ощущение цели в жизни</td><td>Выше — лучше</td><td><span class="b b-s">Сильная</span></td><td>Опросник</td></tr>
+      <tr><td>Депрессия и тревога</td><td>Скрининг</td><td><span class="b b-s">Сильная</span></td><td>PHQ-9, GAD-7</td></tr>
+    </table></div>
+    <div class="note"><strong>Связи.</strong> Метаанализ на 3,4 миллиона человек: социальная изоляция даёт <span class="n">+29%</span> к риску смерти, одиночество <span class="n">+26%</span>, жизнь в одиночку <span class="n">+32%</span>. По силе сопоставимо с курением и больше, чем ожирение в целом.</div>
+    <div class="note"><strong>Ощущение цели в жизни.</strong> Метаанализ: у людей с высоким чувством цели риск смерти и сердечно-сосудистых событий составляет <span class="n">0,83</span> от базового — на 17% ниже. Это не эзотерика, а измеряемый предиктор.</div>
+  </section>
+
+  <section id="calendar">
+    <div class="eyebrow">Ритм</div>
+    <h2>Календарь замеров</h2>
+    <div class="tw"><table>
+      <tr><th>Частота</th><th>Что мерить</th></tr>
+      <tr><td>Ежедневно</td><td>Пульс покоя, HRV, сон (часы, пробуждения, отбой и подъём), шаги, приёмы еды</td></tr>
+      <tr><td>Раз в неделю</td><td>Вес и состав тела, живые контакты, разнообразие продуктов</td></tr>
+      <tr><td>Раз в месяц</td><td>Сила хвата, отжимания, встать с пола, стойка на одной ноге, давление, восстановление пульса, талия</td></tr>
+      <tr><td>Раз в 2–3 месяца</td><td>AeT, разрыв AeT ↔ LT</td></tr>
+      <tr><td>Раз в полгода</td><td>Полная панель крови, витамин D, ферритин</td></tr>
+      <tr><td>Раз в год</td><td>ApoB, омега-3 индекс, ТТГ</td></tr>
+      <tr><td>Один раз в жизни</td><td>Lp(a)</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Опора</div>
+    <h2>Источники</h2>
+    <div class="src">
+      <p>Mandsager et al., JAMA Netw Open 2018 — VO₂max, 122 007 человек</p>
+      <p>Leong et al., Lancet 2015 (PURE) — сила хвата, 140 000 человек</p>
+      <p>Cole et al., NEJM 1999 — восстановление пульса</p>
+      <p>Brito et al., Eur J Prev Cardiol — встать с пола</p>
+      <p>Araujo et al., BJSM 2022 — стойка на одной ноге</p>
+      <p>Yang et al., JAMA Netw Open — отжимания</p>
+      <p>Windred et al., Sleep 2024 (UK Biobank) — регулярность сна, 60 977 человек</p>
+      <p>Reynolds et al., Lancet 2019 — клетчатка, 185 исследований</p>
+      <p>Метаанализ ультрапереработанной еды 2024 — 1,15 млн человек</p>
+      <p>Ekelund et al., Lancet 2016 — сидячее время, 1 005 791 человек</p>
+      <p>Daily steps meta-analysis, Lancet Public Health — шаги</p>
+      <p>Holt-Lunstad et al., 2015 — изоляция и одиночество, 3,4 млн человек</p>
+      <p>Cohen et al., 2016 — ощущение цели в жизни</p>
+      <p>Harris &amp; von Schacky — омега-3 индекс</p>
+      <p>National Lipid Association 2024 — Lp(a) однократно</p>
+      <p>USPSTF — скрининг апноэ</p>
+      <p>NICE — талия к росту</p>
+      <p>ACSM / Cooper Institute — нормы VO₂max по возрасту</p>
+    </div>
+  </section>
+
+  <footer>
+    Карта не заменяет врача. Отклонения в анализах и тревожные симптомы — к специалисту, а не к таблице.<br>
+    Собрано 22 августа 2026.
+  </footer>
+
+</div>
+</body>
+</html>
