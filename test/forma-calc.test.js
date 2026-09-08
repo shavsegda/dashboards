@@ -446,12 +446,24 @@ test('у каждой таблицы норм указан тип данных',
 // ---------------------------------------------------------------------
 // Задача 6: счёт формы, цена провала, слабое звено.
 
+const profile38m = { sex: 'm', age: 38, bodyWeight: 82 };
+
+// pullups и broadjump — badge-тесты ГТО: у них percentile ВСЕГДА null,
+// evaluateTest() никогда не вернёт для них число (см. forma-calc.js).
+// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6: раньше здесь стояли фиктивные
+// percentile: 60 / percentile: 20 — тесты проходили, но не проверяли
+// настоящий путь со знаком, и именно поэтому не поймали баг, из-за
+// которого блок power был структурно не способен стать слабым звеном.
+// Теперь оба результата получены через реальный evaluateTest().
+const pullupsResult = evaluateTest('pullups', 9, profile38m); // 35-39 лет: bronze 4 / silver 7 / gold 11 → серебро
+const broadjumpResult = evaluateTest('broadjump', 180, profile38m); // 35-39 лет: bronze 192 → ниже бронзы
+
 const sample = [
-  { key: 'vo2max',    block: 'endurance', percentile: 80, informational: false },
-  { key: 'pushups',   block: 'strength',  percentile: 75, informational: false },
-  { key: 'pullups',   block: 'strength',  percentile: 60, informational: false },
-  { key: 'deadhang',  block: 'strength',  percentile: null, informational: true },
-  { key: 'broadjump', block: 'power',     percentile: 20, informational: false },
+  { key: 'vo2max', block: 'endurance', percentile: 80, informational: false },
+  { key: 'pushups', block: 'strength', percentile: 75, informational: false },
+  { key: pullupsResult.key, block: pullupsResult.block, badge: pullupsResult.badge, informational: pullupsResult.informational },
+  { key: 'deadhang', block: 'strength', percentile: null, informational: true },
+  { key: broadjumpResult.key, block: broadjumpResult.block, badge: broadjumpResult.badge, informational: broadjumpResult.informational },
 ];
 
 test('счёт формы считает блоки, где больше половины тестов на медиане или выше', () => {
@@ -484,41 +496,125 @@ test('знак ГТО в счёте формы: серебро/золото — 
   assert.equal(belowBronze.byBlock.strength, 'red');
 });
 
-test('карточки риска отсортированы от самого дорогого провала', () => {
-  const cards = riskCards([
+// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6 (критично): блок power состоит ровно из
+// одного теста — прыжок в длину, а он badge-тест без перцентиля. Раньше
+// weakestLink() смотрел только на typeof percentile === 'number' и блок
+// power был структурно не способен стать слабым звеном ни при каком
+// знаке, включая «ниже бронзы». Ниже — прямая проверка через настоящий
+// evaluateTest(), а не фиктивный перцентиль.
+test('блок мощности реально становится слабым звеном через знак ГТО, а не через выдуманный перцентиль', () => {
+  const weakPower = evaluateTest('broadjump', 150, profile38m); // сильно ниже порога бронзы (192 для 35-39)
+  assert.equal(weakPower.percentile, null); // у этого теста перцентиля не бывает вообще
+  assert.equal(weakPower.badge, 'ниже бронзы');
+
+  const results = [
+    { key: 'vo2max', block: 'endurance', percentile: 90, informational: false },
+    { key: 'pushups', block: 'strength', percentile: 85, informational: false },
+    { key: weakPower.key, block: weakPower.block, badge: weakPower.badge, informational: weakPower.informational },
+  ];
+  assert.equal(weakestLink(results).block, 'power');
+});
+
+test('слабое звено сравнивает два блока, где вообще нет перцентилей — только знаки ГТО, по их порядку', () => {
+  const results = [
+    { key: 'pullups', block: 'strength', badge: 'золото', informational: false },
+    { key: 'broadjump', block: 'power', badge: 'бронза', informational: false },
+  ];
+  assert.equal(weakestLink(results).block, 'power'); // бронза хуже золота — чисто по порядку знака
+});
+
+test('карточки риска сгруппированы по исходу и отсортированы внутри группы от самого дорогого провала', () => {
+  const groups = riskCards([
     { key: 'onelegstand', block: 'mobility', percentile: 5, belowThreshold: true },
     { key: 'vo2max', block: 'endurance', percentile: 5 },
   ]);
-  assert.ok(cards[0].hazard >= cards[1].hazard);
+  assert.equal(groups.length, 1); // оба про общую смертность — одна группа
+  assert.equal(groups[0].outcome, 'общая смертность');
+  const [first, second] = groups[0].cards;
+  assert.ok(first.hazard >= second.hazard);
 });
 
-test('в каждой карточке риска сказано, что именно мерили', () => {
-  const cards = riskCards([{ key: 'vo2max', block: 'endurance', percentile: 5 }]);
-  assert.ok(cards[0].outcome.length > 0);
-  assert.ok(cards[0].reference.url);
+test('в каждой карточке риска сказано, что именно мерили, и указан источник', () => {
+  const groups = riskCards([{ key: 'vo2max', block: 'endurance', percentile: 5 }]);
+  const card = groups[0].cards[0];
+  assert.ok(card.outcome.length > 0);
+  assert.ok(card.reference.url);
 });
 
 test('карточка не создаётся для показателя без опубликованного коэффициента', () => {
-  const cards = riskCards([{ key: 'deadhang', block: 'strength', percentile: null, informational: true }]);
-  assert.equal(cards.length, 0);
+  const groups = riskCards([{ key: 'deadhang', block: 'strength', percentile: null, informational: true }]);
+  assert.equal(groups.length, 0);
 });
 
-test('карточка риска, разбитого по полу (талия к росту), берёт цифру своего пола', () => {
-  const men = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'm' }]);
-  const women = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'f' }]);
-  assert.equal(men[0].hazard, NORMS.hazards.waistToHeight.hazard.m);
-  assert.equal(women[0].hazard, NORMS.hazards.waistToHeight.hazard.f);
+test('карточка риска, разбитого по полу (талия к росту), берёт цифру и ДИ своего пола', () => {
+  const menGroups = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'm' }]);
+  const womenGroups = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'f' }]);
+  assert.equal(menGroups[0].cards[0].hazard, NORMS.hazards.waistToHeight.hazard.m);
+  assert.equal(womenGroups[0].cards[0].hazard, NORMS.hazards.waistToHeight.hazard.f);
+  assert.deepEqual(menGroups[0].cards[0].ci, NORMS.hazards.waistToHeight.ci.m);
+  assert.deepEqual(womenGroups[0].cards[0].ci, NORMS.hazards.waistToHeight.ci.f);
 });
 
 test('карточка риска с полом не указан — карточка не создаётся, чтобы не подставлять чужую цифру', () => {
-  const cards = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true }]);
-  assert.equal(cards.length, 0);
+  const groups = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true }]);
+  assert.equal(groups.length, 0);
 });
 
-test('карточка риска различает исход: общая смертность и сердечно-сосудистые события — не одно и то же', () => {
-  const cards = riskCards([{ key: 'pushups', block: 'strength', belowThreshold: true }]);
-  assert.equal(cards[0].outcome, 'сердечно-сосудистые события');
-  assert.notEqual(cards[0].outcome, 'общая смертность');
+test('карточка риска различает исход: сердечно-сосудистые события идут отдельной группой от общей смертности', () => {
+  const groups = riskCards([
+    { key: 'pushups', block: 'strength', belowThreshold: true },
+    { key: 'vo2max', block: 'endurance', percentile: 5 },
+  ]);
+  assert.equal(groups.length, 2);
+  const mortality = groups.find((g) => g.outcome === 'общая смертность');
+  const cvEvents = groups.find((g) => g.outcome === 'сердечно-сосудистые события');
+  assert.ok(mortality, 'должна быть группа "общая смертность"');
+  assert.ok(cvEvents, 'должна быть группа "сердечно-сосудистые события"');
+  assert.equal(cvEvents.cards[0].testKey, 'pushups');
+  assert.equal(mortality.cards[0].testKey, 'vo2max');
+  // группы не сравниваются между собой — у групп нет общего рейтинга,
+  // порядок групп фиксированный (см. OUTCOME_ORDER в forma-calc.js)
+  assert.equal(groups[0].outcome, 'общая смертность');
+  assert.equal(groups[1].outcome, 'сердечно-сосудистые события');
+});
+
+test('карточка риска несёт доверительный интервал и размер когорты там, где источник их даёт, и честно пусто — где нет', () => {
+  const withCi = riskCards([{ key: 'vo2max', block: 'endurance', percentile: 5 }])[0].cards[0];
+  assert.deepEqual(withCi.ci, NORMS.hazards.vo2max.ci);
+  assert.ok(withCi.cohortSize);
+
+  const withoutCi = riskCards([{ key: 'restingHR', block: 'recovery', belowThreshold: true }])[0].cards[0];
+  assert.equal(withoutCi.ci, null); // в собранном файле для этого источника ДИ не приведён — не выдумываем
+});
+
+// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6: раньше условие провала в riskCards не
+// умело смотреть на знак ГТО вообще — как только у badge-теста появился
+// бы коэффициент риска, карточка не создавалась бы никогда, даже при
+// «ниже бронзы». Сейчас ни у одного badge-теста нет реального коэффициента
+// в NORMS.hazards, поэтому проверяем ветку через временную тестовую запись
+// и сразу её убираем.
+test('провал по знаку ГТО тоже создаёт карточку риска — защита от будущей мины', () => {
+  NORMS.hazards.__test_badge_hazard__ = {
+    hazard: 2,
+    ci: null,
+    cohortSize: null,
+    condition: 'тестовое условие',
+    outcome: 'общая смертность',
+    source: { title: 'тест', authors: 'тест', year: 2000, url: 'https://example.com' },
+  };
+  try {
+    const belowBronze = riskCards([{ key: '__test_badge_hazard__', block: 'power', badge: 'ниже бронзы', informational: false }]);
+    assert.equal(belowBronze.length, 1);
+    assert.equal(belowBronze[0].cards[0].hazard, 2);
+
+    const bronze = riskCards([{ key: '__test_badge_hazard__', block: 'power', badge: 'бронза', informational: false }]);
+    assert.equal(bronze.length, 1);
+
+    const gold = riskCards([{ key: '__test_badge_hazard__', block: 'power', badge: 'золото', informational: false }]);
+    assert.equal(gold.length, 0); // золото — не провал, карточки нет
+  } finally {
+    delete NORMS.hazards.__test_badge_hazard__;
+  }
 });
 
 test('слабое звено — блок с самым низким средним перцентилем', () => {
@@ -529,13 +625,21 @@ test('слабое звено не выбирается, когда данных
   assert.equal(weakestLink([]), null);
 });
 
-test('каждый коэффициент риска в NORMS.hazards полностью описан: условие, исход, источник', () => {
+test('каждый коэффициент риска в NORMS.hazards полностью описан: условие, исход, источник, ДИ/когорта корректной формы', () => {
   const allowedOutcomes = ['общая смертность', 'сердечно-сосудистые события'];
+  const isCiShape = (ci) => ci === null || ci === undefined
+    || (typeof ci.low === 'number' && typeof ci.high === 'number');
   for (const [key, h] of Object.entries(NORMS.hazards)) {
     assert.ok(allowedOutcomes.includes(h.outcome), `${key}: неизвестный исход "${h.outcome}"`);
     assert.ok(typeof h.condition === 'string' && h.condition.length > 0, `${key}: нет условия сравнения`);
     assert.ok(h.source && h.source.title && h.source.authors && h.source.year && h.source.url, `${key}: неполный источник`);
     const hazardOk = typeof h.hazard === 'number' || (h.hazard && typeof h.hazard.m === 'number' && typeof h.hazard.f === 'number');
     assert.ok(hazardOk, `${key}: hazard должен быть числом либо объектом {m, f}`);
+    // ci — либо null (в источнике интервала нет), либо {low, high}, либо
+    // {m: {low, high}, f: {low, high}} для показателей, разбитых по полу.
+    const ciOk = h.ci === undefined || h.ci === null || isCiShape(h.ci)
+      || (h.ci && isCiShape(h.ci.m) && isCiShape(h.ci.f));
+    assert.ok(ciOk, `${key}: ci должен быть null, {low, high} либо {m, f} c такой формой`);
+    assert.ok(h.cohortSize === undefined || h.cohortSize === null || typeof h.cohortSize === 'string', `${key}: cohortSize должен быть строкой либо null`);
   }
 });
