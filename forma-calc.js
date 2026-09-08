@@ -1,5 +1,7 @@
 // Чистые функции расчёта. DOM здесь не трогаем.
 
+import { NORMS } from './forma-norms.js';
+
 // Узлы перцентильных таблиц в порядке возрастания
 const NODES = ['p5', 'p10', 'p25', 'p50', 'p75', 'p90', 'p95'];
 
@@ -33,4 +35,35 @@ export function levelFromPercentile(p) {
   if (p < 70) return 'средний';
   if (p < 90) return 'выше среднего';
   return 'продвинутый';
+}
+
+// Age grading: результат в процентах от открытого мирового стандарта
+// для своего пола и возраста (система World Masters Athletics)
+export function ageGrade(sex, age, distanceKm, timeSec) {
+  const entry = NORMS.running[sex][String(distanceKm)];
+  if (!entry) return null; // нет данных по этой дистанции (например, миля — см. отчёт)
+  const factor = nearestFactor(entry.factors, age);
+  if (factor === null) return null;
+  const ageStandard = entry.openStandardSec / factor;
+  return (ageStandard / timeSec) * 100;
+}
+
+// Ищем коэффициент для ближайшего известного возраста снизу
+// (таблица дана по годам от 20 до 80, за пределами берём крайнее значение)
+function nearestFactor(factors, age) {
+  const keys = Object.keys(factors).map(Number).sort((a, b) => a - b);
+  if (keys.length === 0) return null;
+  let chosen = keys[0];
+  for (const k of keys) if (age >= k) chosen = k;
+  return factors[chosen];
+}
+
+// Классификация уровня age grading по шкале WMA/USATF Masters
+export function ageGradeClass(pct) {
+  if (pct < 50) return 'начальный уровень';
+  if (pct < 60) return 'местный уровень';
+  if (pct < 70) return 'региональный уровень';
+  if (pct < 80) return 'национальный уровень';
+  if (pct < 90) return 'мировой уровень';
+  return 'уровень мирового рекорда';
 }
