@@ -72,4 +72,143 @@ export const NORMS = {
     m: { 20: 48.32, 25: 43.79, 30: 39.36, 35: 35.08, 40: 31.03, 45: 27.23, 50: 23.57, 55: 20.00, 60: 16.71, 65: 13.80, 70: 11.19, 75: 8.90, 80: 6.64 },
     f: { 20: 58.37, 25: 53.49, 30: 48.66, 35: 43.90, 40: 39.29, 45: 34.80, 50: 30.41, 55: 26.08, 60: 21.88, 65: 17.88, 70: 14.12, 75: 10.69, 80: 7.64 },
   },
+
+  // Процент жира тела — перцентили по полу и возрасту, метод DXA (реестр NHANES).
+  // Взята подгруппа White — это единственная подгруппа NHANES, для которой в
+  // собранном файле норм есть полные ряды по всем возрастам без пропусков в
+  // хвостах (у Black и Mexican American часть нижних перцентилей у пожилых
+  // групп не считается из-за особенностей LMS-метода). Ограничение подгруппы —
+  // см. отчёт к задаче.
+  bodyFat: {
+    source: {
+      title: 'Dual Energy X-Ray Absorptiometry Body Composition Reference Values from NHANES',
+      authors: 'Kelly T.L., Wilson K.E., Heymsfield S.B.',
+      year: 2009,
+      url: 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0007038',
+    },
+    kind: 'population', // NHANES 1999–2004, репрезентативная выборка США, измерение DXA
+    // ключ — нижняя граница десятилетней возрастной группы
+    m: {
+      20: { p5: 14.3, p10: 16.0, p25: 19.2, p50: 23.4, p75: 28.3, p90: 33.3, p95: 36.6 },
+      30: { p5: 16.6, p10: 18.4, p25: 21.7, p50: 25.7, p75: 30.1, p90: 34.4, p95: 37.2 },
+      40: { p5: 18.8, p10: 20.6, p25: 23.8, p50: 27.5, p75: 31.4, p90: 35.1, p95: 37.4 },
+      50: { p5: 20.5, p10: 22.3, p25: 25.5, p50: 29.0, p75: 32.6, p90: 35.9, p95: 37.9 },
+      60: { p5: 21.9, p10: 23.8, p25: 27.0, p50: 30.5, p75: 34.0, p90: 37.1, p95: 39.0 },
+      70: { p5: 22.7, p10: 24.7, p25: 27.9, p50: 31.4, p75: 34.8, p90: 37.8, p95: 39.6 },
+      80: { p5: 23.1, p10: 25.0, p25: 28.2, p50: 31.6, p75: 34.8, p90: 37.6, p95: 39.3 },
+    },
+    f: {
+      20: { p5: 24.5, p10: 26.6, p25: 30.4, p50: 35.1, p75: 40.2, p90: 45.2, p95: 48.3 },
+      30: { p5: 25.6, p10: 28.0, p25: 32.2, p50: 37.0, p75: 41.9, p90: 46.5, p95: 49.2 },
+      40: { p5: 27.0, p10: 29.7, p25: 34.1, p50: 38.9, p75: 43.5, p90: 47.6, p95: 50.0 },
+      50: { p5: 29.1, p10: 31.9, p25: 36.3, p50: 40.8, p75: 45.0, p90: 48.6, p95: 50.7 },
+      60: { p5: 31.3, p10: 34.1, p25: 38.3, p50: 42.5, p75: 46.3, p90: 49.4, p95: 51.2 },
+      70: { p5: 32.3, p10: 35.1, p25: 39.1, p50: 43.0, p75: 46.4, p90: 49.2, p95: 50.8 },
+      80: { p5: 31.7, p10: 34.6, p25: 38.7, p50: 42.5, p75: 45.7, p90: 48.3, p95: 49.7 },
+    },
+  },
+
+  // Индекс скелетной мышечной массы конечностей (ASM/рост², кг/м²).
+  // Только клинический порог саркопении EWGSOP2 — перцентильных таблиц
+  // Janssen и соавт. в открытом доступе найти не удалось (см. отчёт),
+  // поэтому перцентиль по этому показателю не считаем, только флаг.
+  smi: {
+    source: {
+      title: 'Sarcopenia: revised European consensus on definition and diagnosis (EWGSOP2)',
+      authors: 'Cruz-Jentoft A.J., Bahat G., Bauer J., Boirie Y., Bruyère O., Cederholm T. и др.',
+      year: 2019,
+      url: 'https://doi.org/10.1093/ageing/afy169',
+    },
+    kind: 'clinical', // консенсусный порог экспертной группы, не эмпирическая перцентильная таблица популяции
+    threshold: { m: 7.0, f: 5.5 },
+  },
+
+  // ИМТ — категории ВОЗ (широко тиражируются CDC и другими агентствами)
+  bmi: {
+    source: {
+      title: 'Классификация индекса массы тела для взрослых по критериям ВОЗ',
+      authors: 'World Health Organization (приведено по CDC Adult BMI Calculator)',
+      // Год не указан явно в собранном файле норм — источник даёт только ссылку
+      // на страницу CDC без даты публикации самой классификации ВОЗ. 2000 —
+      // год документа ВОЗ, который ввёл эти пороги (WHO Technical Report
+      // Series 894, «Obesity: Preventing and Managing the Global Epidemic»);
+      // это не число из собранного файла, см. отчёт.
+      year: 2000,
+      url: 'https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html',
+    },
+    kind: 'clinical', // консенсусная классификация ВОЗ, не эмпирическое популяционное распределение
+  },
+
+  // Отношение окружности талии к росту — порог 0,5 (Ashwell)
+  waistToHeight: {
+    source: {
+      title: 'Waist-to-height ratio is a better screening tool than waist circumference and BMI for adult cardiometabolic risk factors: systematic review and meta-analysis',
+      authors: 'Ashwell M., Gunn P., Gibson S.',
+      year: 2012,
+      url: 'https://www.cambridge.org/core/journals/nutrition-research-reviews/article/systematic-review-of-waisttoheight-ratio-as-a-screening-tool-for-the-prediction-of-cardiovascular-disease-and-diabetes-05-could-be-a-suitable-global-boundary-value/',
+    },
+    kind: 'population', // порог — оптимальная точка отсечения по мета-анализу 78 исследований, >300 000 участников
+    threshold: 0.5,
+  },
+
+  // Пульс покоя — возрастные перцентили, NHANES 1999–2008 (CDC)
+  restingHR: {
+    source: {
+      title: 'Resting Pulse Rate Reference Data for Children, Adolescents, and Adults: United States, 1999–2008',
+      authors: 'Ostchega Y., Porter K.S., Hughes J., Dillon C.F., Nwankwo T.',
+      year: 2011,
+      url: 'https://www.cdc.gov/nchs/data/nhsr/nhsr041.pdf',
+    },
+    kind: 'population', // NHANES, репрезентативная выборка США без заболеваний/препаратов, влияющих на пульс
+    // ключ — нижняя граница возрастной группы (в источнике только 4 группы, не по десятилетиям)
+    m: {
+      20: { p5: 52, p10: 56, p25: 61, p50: 69, p75: 76, p90: 84, p95: 89 },
+      40: { p5: 52, p10: 55, p25: 61, p50: 68, p75: 77, p90: 85, p95: 90 },
+      60: { p5: 50, p10: 54, p25: 60, p50: 67, p75: 75, p90: 84, p95: 91 },
+      80: { p5: 51, p10: 54, p25: 61, p50: 68, p75: 78, p90: 86, p95: 94 },
+    },
+    f: {
+      20: { p5: 57, p10: 60, p25: 66, p50: 74, p75: 82, p90: 89, p95: 95 },
+      40: { p5: 56, p10: 59, p25: 64, p50: 71, p75: 79, p90: 86, p95: 92 },
+      60: { p5: 56, p10: 59, p25: 64, p50: 70, p75: 78, p90: 86, p95: 92 },
+      80: { p5: 56, p10: 59, p25: 64, p50: 71, p75: 77, p90: 85, p95: 93 },
+    },
+  },
+
+  // Вариабельность сердечного ритма (rMSSD) — только общий диапазон у здоровых
+  // взрослых, без возрастной разбивки (сама разбивка Nunan и соавт. за платным
+  // доступом, вторичные источники не проверены — см. отчёт). Перцентиль по
+  // этому показателю не считаем.
+  rmssd: {
+    source: {
+      title: 'A Quantitative Systematic Review of Normal Values for Short-Term Heart Rate Variability in Healthy Adults',
+      authors: 'Nunan D., Sandercock G.R.H., Brodie D.A.',
+      year: 2010,
+      url: 'https://onlinelibrary.wiley.com/doi/10.1111/j.1540-8159.2010.02841.x',
+    },
+    kind: 'population', // метаанализ 44 исследований, 21 438 здоровых взрослых, без возрастной стратификации
+    range: { min: 19, max: 75, mean: 42 }, // мс, пятиминутная запись
+  },
+
+  // Регулярность сна — индекс регулярности сна (SRI), когорта UK Biobank.
+  // Важно: в источнике мера — SRI (0–100, из многодневной актиграфии), а НЕ
+  // стандартное отклонение времени отбоя в минутах — такого порога в
+  // собранном файле норм нет, см. отчёт.
+  sleepRegularity: {
+    source: {
+      title: 'Sleep regularity is a stronger predictor of mortality risk than sleep duration: A prospective cohort study',
+      authors: 'Windred D.P., Burns A.C., Lane J.M., Saxena R., Rutter M.K., Cain S.W., Phillips A.J.K.',
+      year: 2024,
+      url: 'https://doi.org/10.1093/sleep/zsad253',
+    },
+    kind: 'population', // UK Biobank, 60 977 участников, 7 дней акселерометрии
+    measure: 'Sleep Regularity Index (SRI), 0-100, минимально скорректированная модель (возраст, пол, этничность)',
+    // референс — самый нерегулярный квинтиль (0-20-й перцентиль SRI)
+    sriBands: [
+      { percentileRange: '80-100', hr: 0.52 },
+      { percentileRange: '60-80', hr: 0.54 },
+      { percentileRange: '40-60', hr: 0.62 },
+      { percentileRange: '20-40', hr: 0.72 },
+    ],
+  },
 };

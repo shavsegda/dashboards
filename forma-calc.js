@@ -145,3 +145,101 @@ export function fitnessAgeNTNU({ sex, age, bmi, restingHR, trainingFreq, trainin
   const estimated = estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration });
   return bodyAgeFromVo2max(estimated, sex);
 }
+
+// Состав тела: четыре показателя, каждый со своим источником и оговорками
+export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMuscleKg, waist }) {
+  const heightM = height / 100;
+
+  const smiValue = limbMuscleKg / (heightM * heightM);
+  const smiThreshold = NORMS.smi.threshold[sex];
+
+  const bmiValue = weight / (heightM * heightM);
+  const wthrValue = waist / height;
+
+  const bodyFatPercentile = percentile(bodyFatPct, NORMS.bodyFat[sex][ageBucket(age, NORMS.bodyFat[sex])]);
+
+  return {
+    bodyFat: {
+      value: bodyFatPct,
+      percentile: bodyFatPercentile,
+      level: bodyFatLevel(bodyFatPercentile), // у процента жира меньше значит лучше
+      note: 'Перцентиль рассчитан по измерениям методом DXA (NHANES). Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
+      reference: NORMS.bodyFat.source,
+    },
+    smi: {
+      value: smiValue,
+      flag: smiValue < smiThreshold ? 'ниже порога саркопении' : 'в норме',
+      reference: NORMS.smi.source,
+    },
+    bmi: {
+      value: bmiValue,
+      category: bmiCategory(bmiValue),
+      note: 'При развитой мускулатуре ИМТ завышает оценку жировой массы. Смотреть вместе с процентом жира.',
+      reference: NORMS.bmi.source,
+    },
+    waistToHeight: {
+      value: wthrValue,
+      flag: wthrValue >= NORMS.waistToHeight.threshold ? 'выше порога' : 'в норме',
+      reference: NORMS.waistToHeight.source,
+    },
+  };
+}
+
+// У процента жира шкала перевёрнута: меньше — лучше. percentile() построен
+// по возрастающей таблице (больше жира — выше перцентиль в таблице), поэтому
+// для уровня инвертируем перцентиль: 100 минус исходное значение.
+function bodyFatLevel(p) {
+  if (p === null || p === undefined) return null;
+  return levelFromPercentile(100 - p);
+}
+
+// Категории ИМТ по ВОЗ
+function bmiCategory(bmi) {
+  if (bmi < 18.5) return 'недостаточный вес';
+  if (bmi < 25) return 'норма';
+  if (bmi < 30) return 'избыточный вес';
+  if (bmi < 35) return 'ожирение I степени';
+  if (bmi < 40) return 'ожирение II степени';
+  return 'ожирение III степени';
+}
+
+// Восстановление: пульс покоя — по возрастной норме, HRV и регулярность сна —
+// без готовой возрастной нормы (см. forma-norms.js), поэтому даём личный тренд
+export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
+  const hrPercentile = percentile(-restingHR, reversed(NORMS.restingHR[sex][ageBucket(age, NORMS.restingHR[sex])]));
+
+  return {
+    restingHR: {
+      value: restingHR,
+      percentile: hrPercentile,
+      level: levelFromPercentile(hrPercentile),
+      reference: NORMS.restingHR.source,
+    },
+    rmssd: {
+      value: rmssd,
+      note: 'Разброс между людьми огромный, а метаанализ Nunan с соавт. не даёт возрастной разбивки — только общий диапазон 19-75 мс у здоровых взрослых. Значение имеет смысл смотреть как личный тренд, а не сравнивать с чужими цифрами.',
+      reference: NORMS.rmssd.source,
+    },
+    sleepRegularity: {
+      value: bedtimeSdMin,
+      flag: null, // порога в минутах в источниках нет — см. note
+      note: 'В источнике (Windred и др., 2024) регулярность сна измеряется индексом SRI (0-100) по многодневной актиграфии, а не стандартным отклонением времени отбоя в минутах. Порога в минутах в собранных источниках нет, поэтому флаг «регулярно/нерегулярно» здесь не рассчитывается — смотрите на динамику времени отбоя.',
+      reference: NORMS.sleepRegularity.source,
+    },
+  };
+}
+
+// У пульса покоя меньше значит лучше. Просто поменять знак нельзя — узлы
+// таблицы должны остаться по возрастанию. Поэтому зеркалим: p5 берём из p95
+// и меняем знак (самый низкий исходный пульс становится верхним перцентилем
+// зеркальной таблицы, самый высокий — нижним), порядок узлов остаётся
+// по возрастанию.
+function reversed(table) {
+  const keys = ['p5', 'p10', 'p25', 'p50', 'p75', 'p90', 'p95'];
+  const out = {};
+  for (const k of keys) {
+    const mirror = `p${100 - Number(k.slice(1))}`;
+    if (typeof table[mirror] === 'number') out[k] = -table[mirror];
+  }
+  return out;
+}

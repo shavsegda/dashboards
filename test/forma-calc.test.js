@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, lifeExpectancy, fitnessAgeNTNU } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery } from '../forma-calc.js';
 import { NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -112,4 +112,56 @@ test('фитнес-возраст NTNU считается без VO2max', () => 
   });
   assert.equal(typeof age, 'number');
   assert.ok(age > 0 && age < 100);
+});
+
+test('состав тела возвращает четыре показателя со ссылками', () => {
+  const r = bodyComposition({ sex: 'm', age: 38, height: 178, weight: 78, bodyFatPct: 14, limbMuscleKg: 27, waist: 82 });
+  for (const key of ['bodyFat', 'smi', 'bmi', 'waistToHeight']) {
+    assert.ok(r[key], `нет показателя ${key}`);
+    assert.ok(r[key].reference.url, `нет ссылки у ${key}`);
+  }
+});
+
+test('индекс мышечной массы считается как мышцы конечностей делить на рост в квадрате', () => {
+  const r = bodyComposition({ sex: 'm', age: 38, height: 200, weight: 100, bodyFatPct: 15, limbMuscleKg: 28, waist: 85 });
+  assert.equal(Math.round(r.smi.value * 100) / 100, 7);
+});
+
+test('индекс мышечной массы ниже порога помечается флагом саркопении', () => {
+  const low = bodyComposition({ sex: 'm', age: 70, height: 178, weight: 60, bodyFatPct: 22, limbMuscleKg: 20, waist: 88 });
+  assert.equal(low.smi.flag, 'ниже порога саркопении');
+});
+
+test('ИМТ всегда идёт с оговоркой про мускулатуру', () => {
+  const r = bodyComposition({ sex: 'm', age: 38, height: 178, weight: 90, bodyFatPct: 12, limbMuscleKg: 32, waist: 84 });
+  assert.match(r.bmi.note, /мускулатур/i);
+});
+
+test('талия к росту сравнивается с порогом ноль пять', () => {
+  const r = bodyComposition({ sex: 'm', age: 38, height: 180, weight: 80, bodyFatPct: 15, limbMuscleKg: 27, waist: 95 });
+  assert.equal(r.waistToHeight.flag, 'выше порога');
+});
+
+test('у процента жира есть предупреждение про бытовые весы', () => {
+  const r = bodyComposition({ sex: 'm', age: 38, height: 178, weight: 78, bodyFatPct: 14, limbMuscleKg: 27, waist: 82 });
+  assert.match(r.bodyFat.note, /биоимпеданс/i);
+});
+
+test('восстановление возвращает пульс покоя, HRV и регулярность сна', () => {
+  const r = recovery({ sex: 'm', age: 38, restingHR: 48, rmssd: 55, bedtimeSdMin: 35 });
+  for (const key of ['restingHR', 'rmssd', 'sleepRegularity']) {
+    assert.ok(r[key], `нет показателя ${key}`);
+  }
+});
+
+test('HRV помечается как показатель личного тренда, а не нормы', () => {
+  const r = recovery({ sex: 'm', age: 38, restingHR: 48, rmssd: 55, bedtimeSdMin: 35 });
+  assert.match(r.rmssd.note, /личн/i);
+});
+
+test('низкий пульс покоя даёт высокий перцентиль, а не низкий (перевёрнутая шкала)', () => {
+  const low = recovery({ sex: 'm', age: 38, restingHR: 48, rmssd: 55, bedtimeSdMin: 35 });
+  const high = recovery({ sex: 'm', age: 38, restingHR: 89, rmssd: 55, bedtimeSdMin: 35 });
+  assert.ok(low.restingHR.percentile > high.restingHR.percentile,
+    `низкий пульс должен давать перцентиль выше: low=${low.restingHR.percentile}, high=${high.restingHR.percentile}`);
 });
