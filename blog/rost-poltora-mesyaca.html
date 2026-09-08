@@ -342,6 +342,32 @@ strong { font-weight: 600; }
   min-height: 16px;
 }
 
+/* подписка на канал */
+.subscribe {
+  margin: 56px 0 0;
+  padding: 28px 26px;
+  border: 1px solid var(--graphite-12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.subscribe-text { max-width: 380px; }
+.subscribe-title { font-weight: 600; font-size: 17px; margin-bottom: 4px; }
+.subscribe-note { font-size: 15px; color: var(--graphite-55); line-height: 1.5; }
+.subscribe-btn {
+  display: inline-block;
+  border: 1px solid var(--terracotta);
+  color: var(--terracotta);
+  text-decoration: none;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.subscribe-btn:hover { background: var(--terracotta); color: var(--paper); }
+
 /* источники */
 .sources {
   margin: 56px 0 0;
@@ -677,6 +703,14 @@ a:focus-visible, .cta-btn:focus-visible {
   </div>
 
   <div class="col">
+    <div class="subscribe">
+      <div class="subscribe-text">
+        <div class="subscribe-title">Новые статьи выходят в канале</div>
+        <div class="subscribe-note">Разборы того, как устроен рост, с опорой на исследования. Без мотивации и цитат великих.</div>
+      </div>
+      <a class="subscribe-btn" href="https://t.me/shapovalov_notes">Подписаться</a>
+    </div>
+
     <div class="sources">
       <p><b>Что здесь эксперимент, а что практика.</b> Данные о распределении интенсивности (Сейлер) и исследования мечты (Эттинген) — измерения с контрольными группами. Различение Боумена и треугольник Голви — обобщённая практика тренеров на тысячах случаев: сильная рабочая модель, но не контролируемый эксперимент.</p>
       <p><b>Источники.</b> Хаус, Джонстон, Жорнет — «Training for the Uphill Athlete». Голви — «Работа как внутренняя игра». Эттинген — «Rethinking Positive Thinking». Румельт — «Хорошая стратегия, плохая стратегия». Фитцпатрик — «Спроси маму».</p>
