@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest } from '../forma-calc.js';
-import { NORMS } from '../forma-norms.js';
+import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
   const t = { p25: 30, p50: 40, p75: 50 };
@@ -203,16 +203,35 @@ test('больше отжиманий — выше перцентиль', () => 
   assert.ok(evaluateTest('pushups', 45, profile).percentile > evaluateTest('pushups', 12, profile).percentile);
 });
 
-test('силовые считаются в долях веса тела', () => {
+test('силовые считаются с учётом веса тела: лёгкий и тяжёлый с одинаковым абсолютным весом получают разные разряды', () => {
   const light = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 60 });
   const heavy = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 110 });
   assert.ok(light.percentile > heavy.percentile);
+});
+
+test('ПРАВКА 2: одинаковая ОТНОСИТЕЛЬНАЯ сила у лёгкого и тяжёлого человека даёт РАЗНЫЕ разряды', () => {
+  // Оба поднимают ровно 1.5×веса тела — но это не одинаково редкое
+  // достижение: у Strength Level относительная сила систематически ниже у
+  // более тяжёлых атлетов (аллометрическое масштабирование). Плоская таблица
+  // «доля от веса тела», которая была раньше (ExRx, одна представительная
+  // строка), не могла отличить эти два случая — теперь может, потому что
+  // сравниваем АБСОЛЮТНЫЙ вес с нужной по весу тела строкой Strength Level.
+  const light = evaluateTest('squat1rm', 90, { sex: 'm', age: 38, bodyWeight: 60 }); // 1.5×BW
+  const heavy = evaluateTest('squat1rm', 165, { sex: 'm', age: 38, bodyWeight: 110 }); // 1.5×BW
+  assert.notEqual(light.percentile, heavy.percentile,
+    `ожидали разные перцентили при одинаковой относительной силе, получили одинаковый ${light.percentile}`);
 });
 
 test('вис на перекладине помечен как справочный и не даёт перцентиля', () => {
   const r = evaluateTest('deadhang', 60, profile);
   assert.equal(r.informational, true);
   assert.equal(r.percentile, null);
+});
+
+test('вис на перекладине честно помечен как источник, которого не существует', () => {
+  const r = evaluateTest('deadhang', 60, profile);
+  assert.equal(r.reference.kind, 'none');
+  assert.match(r.note, /не существ/);
 });
 
 test('стойка на одной ноге отмечает порог десяти секунд', () => {
@@ -230,8 +249,14 @@ test('сила хвата оценивается по популяционным
   assert.equal(r.reference.kind, 'population');
 });
 
-test('прыжок в длину для 40+ возвращает null с пометкой — норматив ГТО отсутствует', () => {
-  const r = evaluateTest('broadjump', 220, { sex: 'm', age: 45, bodyWeight: 78 });
+test('ПРАВКА 3: сила хвата в 90 лет не занимает верхний бакет — вне покрытия источника', () => {
+  const r = evaluateTest('grip', 30, { sex: 'm', age: 90, bodyWeight: 78 });
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('ПРАВКА 3: 75-летний по отжиманиям не занимает бакет 60-69 — вне покрытия CSEP-PATH', () => {
+  const r = evaluateTest('pushups', 20, { sex: 'm', age: 75, bodyWeight: 78 });
   assert.equal(r.percentile, null);
   assert.match(r.note, /не опубликован/);
 });
@@ -242,33 +267,118 @@ test('наклон вперёд сидя для 70+ возвращает null с
   assert.match(r.note, /не опубликован/);
 });
 
+test('ПРАВКА 7: пометка о непокрытом возрасте добавляется к содержательной пометке источника, а не затирает её', () => {
+  // У sitandreach в note лежит содержательная оговорка про диапазон P5-P95 —
+  // она должна остаться видна даже когда возраст вне покрытия (70+).
+  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 75, bodyWeight: 78 });
+  assert.match(r.note, /P5-P95/);
+  assert.match(r.note, /не опубликован/);
+});
+
 test('планка справочная и не участвует в подсчёте перцентиля даже при большом значении', () => {
   const r = evaluateTest('plank', 300, profile);
   assert.equal(r.informational, true);
   assert.equal(r.percentile, null);
 });
 
-// У каждой таблицы норм указан тип данных. Верхнеуровневые таблицы NORMS
-// (running, vo2max, lifeTable, bodyFat, smi, bmi и т.д.) держат kind рядом с
-// source — это установленная в задачах 2-3 конвенция, её не меняем.
-// Отдельные тесты внутри NORMS.tests держат kind ВНУТРИ своего source —
-// именно так его читает evaluateTest() через result.reference.kind (см. тест
-// «сила хвата оценивается по популяционным нормам» выше). Допустимых значений
-// четыре: три из брифа задачи 4 (population/training-classification/
-// occupational) плюс 'clinical', унаследованное из задач 2-3 (NORMS.smi,
-// NORMS.bmi — консенсусные клинические пороги, которые не являются ни
-// популяционным обследованием, ни шкалой для тренирующихся, ни
-// профессиональной выборкой).
-const VALID_KINDS = ['population', 'training-classification', 'occupational', 'clinical'];
+// ПРАВКА 1: подтягивания и прыжок в длину — знак ГТО, а не выдуманный
+// перцентиль. Раньше бронза/серебро/золото были сопоставлены с p50/p75/p90 —
+// у этого сопоставления был явный артефакт: 3 подтягивания давали
+// percentile 0, а 4 подтягивания (ровно бронза) — сразу percentile 50.
+// Теперь оба — просто целые соседние знака, без скачка.
+test('ПРАВКА 1: подтягивания дают знак ГТО, а не перцентиль', () => {
+  const r = evaluateTest('pullups', 12, profile); // мужчина 38 лет — ступень 35-39: бронза 4 / серебро 7 / золото 11
+  assert.equal(r.percentile, null);
+  assert.equal(r.badge, 'золото'); // 12 выше золота (11)
+  assert.equal(r.level, 'золото');
+  assert.equal(r.reference.kind, 'state-standard');
+});
+
+test('ПРАВКА 1: 3 и 4 подтягивания — соседние целые знаки, не артефакт 0/50', () => {
+  const below = evaluateTest('pullups', 3, profile);
+  const atBronze = evaluateTest('pullups', 4, profile);
+  assert.equal(below.percentile, null);
+  assert.equal(atBronze.percentile, null);
+  assert.equal(below.badge, 'ниже бронзы');
+  assert.equal(atBronze.badge, 'бронза');
+});
+
+test('ПРАВКА 1 и 3: подтягивания вне собранных ступеней ГТО (дыра в шкале) дают null, а не чужую ступень', () => {
+  // Ступень 45-49 лет в собранном файле не выгружена дословно — раньше
+  // ageBucket() молча взял бы соседнюю ступень 40-44. Теперь matchAgeRange()
+  // явно возвращает «нет данных».
+  const r = evaluateTest('pullups', 8, { sex: 'm', age: 47, bodyWeight: 78 });
+  assert.equal(r.badge, null);
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('прыжок в длину для 40+ возвращает знак null с пометкой — норматив ГТО отсутствует', () => {
+  const r = evaluateTest('broadjump', 220, { sex: 'm', age: 45, bodyWeight: 78 });
+  assert.equal(r.percentile, null);
+  assert.equal(r.badge, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('прыжок в длину внутри ступени даёт знак ГТО', () => {
+  const r = evaluateTest('broadjump', 220, { sex: 'm', age: 30, bodyWeight: 78 }); // ступень 20-24? нет — 30 попадает в дыру
+  assert.equal(r.badge, null); // возраст 30 не входит ни в одну собранную ступень (20-24, 35-39) — честно null
+  const inRange = evaluateTest('broadjump', 220, { sex: 'm', age: 22, bodyWeight: 78 }); // ступень 20-24: бронза207/серебро228/золото244 — 220 между бронзой и серебром
+  assert.equal(inRange.badge, 'бронза');
+});
+
+// ПРАВКА 4: у TEST_NORMS нет фантомных ключей (раньше 'source'/'kind' лежали
+// прямо в NORMS.tests как «одиннадцать с половиной тестов»)
+test('ПРАВКА 4: в TEST_NORMS только одиннадцать настоящих тестов, никаких фантомных метаданных', () => {
+  const expected = ['pushups', 'pullups', 'plank', 'squat1rm', 'bench1rm', 'deadlift1rm', 'deadhang', 'grip', 'broadjump', 'sitandreach', 'onelegstand'];
+  assert.deepEqual(Object.keys(TEST_NORMS).sort(), expected.sort());
+});
+
+// ПРАВКА 6: защита от нулевого/некорректного веса тела у силовых тестов
+// (indexBy: 'weight'). Раньше здесь было value/profile.bodyWeight без
+// проверки — нулевой вес тела давал Infinity → percentile 100 → «продвинутый».
+test('ПРАВКА 6: силовой тест с нулевым весом тела не считает бесконечность, а честно отдаёт null', () => {
+  const zero = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 0 });
+  assert.equal(zero.percentile, null);
+  assert.notEqual(zero.level, 'продвинутый');
+  assert.match(zero.note, /вес тела/);
+});
+
+test('ПРАВКА 6: силовой тест без веса тела (undefined) тоже отдаёт null, а не NaN-перцентиль', () => {
+  const r = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: undefined });
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /вес тела/);
+});
+
+test('ПРАВКА 6: отрицательный вес тела тоже отклоняется', () => {
+  const r = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: -10 });
+  assert.equal(r.percentile, null);
+});
+
+// У каждой таблицы норм указан тип данных, и у kind — единая конвенция
+// (ПРАВКА 5): kind всегда лежит ВНУТРИ source. Единственное исключение —
+// NORMS.ntnuFormula, где один из 28 неприкасаемых тестов (см. выше, «у
+// формулы NTNU есть источник...») явно проверяет kind СИБЛИНГОМ к source —
+// трогать этот тест нельзя, поэтому там kind оставлен как было. Допустимых
+// значений шесть: три из исходного брифа задачи 4 (population/
+// training-classification/occupational) плюс 'clinical' (клинический
+// консенсус, унаследовано из задач 2-3: NORMS.smi, NORMS.bmi, планка,
+// стойка на одной ноге), 'state-standard' (государственный норматив на
+// присвоение знака ГТО — не обследование населения) и 'none' (опубликованного
+// источника нет вообще — вис на перекладине).
+const VALID_KINDS = ['population', 'training-classification', 'occupational', 'clinical', 'state-standard', 'none'];
 
 test('у каждой таблицы норм указан тип данных', () => {
   for (const [name, entry] of Object.entries(NORMS)) {
-    if (name === 'tests') continue; // это контейнер, проверяется отдельным циклом ниже
     if (!entry || !entry.source) continue;
-    assert.ok(VALID_KINDS.includes(entry.kind), `у таблицы ${name} нет корректного kind`);
+    if (name === 'ntnuFormula') {
+      // исключение см. в комментарии выше — kind рядом с source, не внутри
+      assert.ok(VALID_KINDS.includes(entry.kind), `у таблицы ${name} нет корректного kind`);
+      continue;
+    }
+    assert.ok(VALID_KINDS.includes(entry.source.kind), `у таблицы ${name} нет корректного source.kind`);
   }
-  for (const [name, spec] of Object.entries(NORMS.tests ?? {})) {
-    if (name === 'source' || name === 'kind') continue; // метаданные контейнера, не тест
+  for (const [name, spec] of Object.entries(TEST_NORMS)) {
     assert.ok(VALID_KINDS.includes(spec.source.kind), `у теста ${name} нет корректного source.kind`);
   }
 });

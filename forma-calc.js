@@ -1,9 +1,11 @@
 // Чистые функции расчёта. DOM здесь не трогаем.
 
-import { NORMS } from './forma-norms.js';
+import { NORMS, TEST_NORMS } from './forma-norms.js';
 
-// Узлы перцентильных таблиц в порядке возрастания
-const NODES = ['p5', 'p10', 'p25', 'p50', 'p75', 'p90', 'p95'];
+// Узлы перцентильных таблиц в порядке возрастания. p20/p80 добавлены ради
+// категорий Strength Level (Beginner=p5, Novice=p20, Intermediate=p50,
+// Advanced=p80, Elite=p95) — старые таблицы их не используют и не страдают.
+const NODES = ['p5', 'p10', 'p20', 'p25', 'p50', 'p75', 'p80', 'p90', 'p95'];
 
 // Считаем, на каком перцентиле стоит значение, линейно интерполируя между узлами
 export function percentile(value, table) {
@@ -59,11 +61,15 @@ export function ageGradeClass(pct) {
   return 'уровень мирового рекорда';
 }
 
-// Общий помощник: выбор ближайшего ключа объекта снизу по возрасту.
-// Один помощник на все таблицы, индексированные по возрасту (годы или группы) —
-// коэффициенты age grading, перцентили VO2max, таблица дожития, состав тела,
-// восстановление. За пределами таблицы берём крайнее значение. Для пустого
-// объекта возвращает undefined — вызывающий код должен это проверить сам.
+// Общий помощник: выбор ближайшего ключа объекта снизу по числовому параметру.
+// Один помощник на все таблицы со сплошной (без дыр) шкалой — коэффициенты
+// age grading, перцентили VO2max, таблица дожития, состав тела, восстановление,
+// а с задачи 4 ещё и силовые тесты Strength Level (там ключ — вес тела, не
+// возраст, но алгоритм тот же: ближайший ключ снизу). За пределами таблицы
+// берём крайнее значение. Для пустого объекта возвращает undefined —
+// вызывающий код должен это проверить сам. Для шкал С ДЫРАМИ (ступени ГТО)
+// не подходит — там используется matchAgeRange(), которая умеет возвращать
+// «нет данных», а не подставлять соседний бакет.
 function ageBucket(age, buckets) {
   const keys = Object.keys(buckets).map(Number).sort((a, b) => a - b);
   let chosen = keys[0];
@@ -237,11 +243,38 @@ export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
   };
 }
 
+// Складывает содержательную пометку источника (например, протокол
+// измерения или оговорку про точность) с дополнительной служебной пометкой
+// (например, «нормы не опубликованы») — не затирает одну другой, как было
+// раньше (правка по итогам ревью задачи 4).
+function appendNote(base, extra) {
+  return base ? `${base} ${extra}` : extra;
+}
+
+// Ищет диапазон возраста, в который попадает человек, среди ОПУБЛИКОВАННЫХ
+// диапазонов ступеней ГТО. В отличие от ageBucket() (берёт ближайший ключ
+// СНИЗУ и всегда что-то возвращает — годится для сплошных шкал вроде
+// FRIEND/NHANES), ступени ГТО образуют шкалу С ДЫРАМИ: между собранными
+// ступенями есть возраста, для которых у нас просто нет опубликованных
+// чисел. matchAgeRange() возвращает undefined в дыре — это осознанное
+// отсутствие данных, а не ошибка выбора бакета.
+function matchAgeRange(age, ranges) {
+  return ranges.find((r) => age >= r.ageMin && age <= r.ageMax);
+}
+
+// Знак ГТО по официальным порогам конкретной ступени — не перцентиль.
+function badgeFromThresholds(value, { bronze, silver, gold }) {
+  if (value >= gold) return 'золото';
+  if (value >= silver) return 'серебро';
+  if (value >= bronze) return 'бронза';
+  return 'ниже бронзы';
+}
+
 // Единая оценка простого теста силы/мощности/подвижности по таблицам
-// NORMS.tests. Один движок на все одиннадцать тестов задачи 4 — не плодим
+// TEST_NORMS. Один движок на все одиннадцать тестов задачи 4 — не плодим
 // по функции на тест. profile — { sex, age, bodyWeight }.
 export function evaluateTest(testKey, value, profile) {
-  const spec = NORMS.tests[testKey];
+  const spec = TEST_NORMS[testKey];
   if (!spec) return null; // неизвестный тест — не падаем, отдаём null
 
   const result = {
@@ -252,6 +285,7 @@ export function evaluateTest(testKey, value, profile) {
     value,
     percentile: null,
     level: null,
+    badge: null, // знак ГТО для тестов-badgeTest (pullups, broadjump), иначе null
     informational: Boolean(spec.informational),
     belowThreshold: spec.threshold !== undefined ? value < spec.threshold : null,
     reference: spec.source,
@@ -262,21 +296,55 @@ export function evaluateTest(testKey, value, profile) {
   // опубликованных возрастных норм для них нет.
   if (spec.informational) return result;
 
-  // Тесты, для которых норма опубликована только до определённого возраста
-  // (прыжок в длину ГТО — до 39 лет, наклон вперёд сидя CHMS — до 69).
-  // Дальше — не «неизвестно», а прямо подтверждённое отсутствие норматива.
-  if (spec.maxAge !== undefined && profile.age > spec.maxAge) {
-    result.note = 'нормы для этого возраста не опубликованы';
+  // Тесты-«знаки» ГТО (подтягивания, прыжок в длину): у ГТО нет
+  // перцентильной кривой, есть только три официальных порога на ступень.
+  // Отдаём знак и точную ступень, в которую попал возраст, а не выдуманный
+  // перцентиль поверх этих порогов (правка по итогам ревью задачи 4).
+  if (spec.badgeTest) {
+    const ranges = spec[profile.sex];
+    const range = ranges && matchAgeRange(profile.age, ranges);
+    if (!range) {
+      result.note = appendNote(result.note, 'норматив для этого возраста не опубликован (нет собранной ступени ГТО)');
+      return result;
+    }
+    const badge = badgeFromThresholds(value, range);
+    result.badge = badge;
+    result.level = badge;
     return result;
+  }
+
+  // Тесты, для которых норма опубликована только до определённого возраста
+  // (отжимания CSEP-PATH — до 69, наклон вперёд сидя CHMS — до 69, сила
+  // хвата Wang/JOSPT — до 85, силовые Strength Level — до 90). Дальше —
+  // не «неизвестно», а прямо подтверждённое отсутствие норматива: раньше
+  // возраст вне таблицы молча получал ближайший (чужой) бакет.
+  if (spec.maxAge !== undefined && profile.age > spec.maxAge) {
+    result.note = appendNote(result.note, 'нормы для этого возраста не опубликованы');
+    return result;
+  }
+
+  // Силовые тесты индексируются по весу тела (Strength Level публикует
+  // шкалу по весу тела отдельно от шкалы по возрасту, совмещать их значило
+  // бы придумывать двумерную поверхность, которой источник не даёт — см.
+  // forma-norms.js). Без корректного веса тела оценка невозможна: раньше
+  // здесь было деление на profile.bodyWeight без проверки, и нулевой вес
+  // тела давал Infinity → percentile 100 → «продвинутый». Тихо подставлять
+  // это как разряд нельзя — честно отдаём null с пометкой.
+  if (spec.indexBy === 'weight') {
+    const w = profile.bodyWeight;
+    if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) {
+      result.note = appendNote(result.note, 'нужен вес тела, чтобы оценить этот тест');
+      return result;
+    }
   }
 
   const bySex = spec[profile.sex];
   if (!bySex) return result; // например, onelegstand — нет таблиц вовсе, только порог
 
-  const table = bySex[ageBucket(profile.age, bySex)];
-  const compared = spec.relativeToWeight ? value / profile.bodyWeight : value;
+  const bucketKey = spec.indexBy === 'weight' ? profile.bodyWeight : profile.age;
+  const table = bySex[ageBucket(bucketKey, bySex)]; // ageBucket универсален — «ближайший ключ снизу» работает и для веса, и для возраста
 
-  result.percentile = percentile(compared, table);
+  result.percentile = percentile(value, table);
   result.level = levelFromPercentile(result.percentile);
   return result;
 }
