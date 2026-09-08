@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest } from '../forma-calc.js';
 import { NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -185,4 +185,90 @@ test('низкий пульс покоя даёт высокий перцент�
   const high = recovery({ sex: 'm', age: 38, restingHR: 89, rmssd: 55, bedtimeSdMin: 35 });
   assert.ok(low.restingHR.percentile > high.restingHR.percentile,
     `низкий пульс должен давать перцентиль выше: low=${low.restingHR.percentile}, high=${high.restingHR.percentile}`);
+});
+
+// --- Задача 4: сила, мощность, подвижность ---------------------------------
+
+const profile = { sex: 'm', age: 38, bodyWeight: 78 };
+
+test('оценка теста возвращает перцентиль, уровень и ссылку на источник', () => {
+  const r = evaluateTest('pushups', 35, profile);
+  assert.equal(typeof r.percentile, 'number');
+  assert.equal(typeof r.level, 'string');
+  assert.ok(r.reference.title);
+  assert.ok(r.reference.url);
+});
+
+test('больше отжиманий — выше перцентиль', () => {
+  assert.ok(evaluateTest('pushups', 45, profile).percentile > evaluateTest('pushups', 12, profile).percentile);
+});
+
+test('силовые считаются в долях веса тела', () => {
+  const light = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 60 });
+  const heavy = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 110 });
+  assert.ok(light.percentile > heavy.percentile);
+});
+
+test('вис на перекладине помечен как справочный и не даёт перцентиля', () => {
+  const r = evaluateTest('deadhang', 60, profile);
+  assert.equal(r.informational, true);
+  assert.equal(r.percentile, null);
+});
+
+test('стойка на одной ноге отмечает порог десяти секунд', () => {
+  assert.equal(evaluateTest('onelegstand', 8, profile).belowThreshold, true);
+  assert.equal(evaluateTest('onelegstand', 25, profile).belowThreshold, false);
+});
+
+test('неизвестный тест возвращает null, а не падает', () => {
+  assert.equal(evaluateTest('несуществующий', 10, profile), null);
+});
+
+test('сила хвата оценивается по популяционным нормам', () => {
+  const r = evaluateTest('grip', 45, profile);
+  assert.equal(typeof r.percentile, 'number');
+  assert.equal(r.reference.kind, 'population');
+});
+
+test('прыжок в длину для 40+ возвращает null с пометкой — норматив ГТО отсутствует', () => {
+  const r = evaluateTest('broadjump', 220, { sex: 'm', age: 45, bodyWeight: 78 });
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('наклон вперёд сидя для 70+ возвращает null с пометкой', () => {
+  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 72, bodyWeight: 78 });
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('планка справочная и не участвует в подсчёте перцентиля даже при большом значении', () => {
+  const r = evaluateTest('plank', 300, profile);
+  assert.equal(r.informational, true);
+  assert.equal(r.percentile, null);
+});
+
+// У каждой таблицы норм указан тип данных. Верхнеуровневые таблицы NORMS
+// (running, vo2max, lifeTable, bodyFat, smi, bmi и т.д.) держат kind рядом с
+// source — это установленная в задачах 2-3 конвенция, её не меняем.
+// Отдельные тесты внутри NORMS.tests держат kind ВНУТРИ своего source —
+// именно так его читает evaluateTest() через result.reference.kind (см. тест
+// «сила хвата оценивается по популяционным нормам» выше). Допустимых значений
+// четыре: три из брифа задачи 4 (population/training-classification/
+// occupational) плюс 'clinical', унаследованное из задач 2-3 (NORMS.smi,
+// NORMS.bmi — консенсусные клинические пороги, которые не являются ни
+// популяционным обследованием, ни шкалой для тренирующихся, ни
+// профессиональной выборкой).
+const VALID_KINDS = ['population', 'training-classification', 'occupational', 'clinical'];
+
+test('у каждой таблицы норм указан тип данных', () => {
+  for (const [name, entry] of Object.entries(NORMS)) {
+    if (name === 'tests') continue; // это контейнер, проверяется отдельным циклом ниже
+    if (!entry || !entry.source) continue;
+    assert.ok(VALID_KINDS.includes(entry.kind), `у таблицы ${name} нет корректного kind`);
+  }
+  for (const [name, spec] of Object.entries(NORMS.tests ?? {})) {
+    if (name === 'source' || name === 'kind') continue; // метаданные контейнера, не тест
+    assert.ok(VALID_KINDS.includes(spec.source.kind), `у теста ${name} нет корректного source.kind`);
+  }
 });

@@ -237,6 +237,50 @@ export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
   };
 }
 
+// Единая оценка простого теста силы/мощности/подвижности по таблицам
+// NORMS.tests. Один движок на все одиннадцать тестов задачи 4 — не плодим
+// по функции на тест. profile — { sex, age, bodyWeight }.
+export function evaluateTest(testKey, value, profile) {
+  const spec = NORMS.tests[testKey];
+  if (!spec) return null; // неизвестный тест — не падаем, отдаём null
+
+  const result = {
+    key: testKey,
+    block: spec.block,
+    label: spec.label,
+    unit: spec.unit,
+    value,
+    percentile: null,
+    level: null,
+    informational: Boolean(spec.informational),
+    belowThreshold: spec.threshold !== undefined ? value < spec.threshold : null,
+    reference: spec.source,
+    note: spec.note ?? null,
+  };
+
+  // Справочные тесты (планка, вис на перекладине) — без перцентиля,
+  // опубликованных возрастных норм для них нет.
+  if (spec.informational) return result;
+
+  // Тесты, для которых норма опубликована только до определённого возраста
+  // (прыжок в длину ГТО — до 39 лет, наклон вперёд сидя CHMS — до 69).
+  // Дальше — не «неизвестно», а прямо подтверждённое отсутствие норматива.
+  if (spec.maxAge !== undefined && profile.age > spec.maxAge) {
+    result.note = 'нормы для этого возраста не опубликованы';
+    return result;
+  }
+
+  const bySex = spec[profile.sex];
+  if (!bySex) return result; // например, onelegstand — нет таблиц вовсе, только порог
+
+  const table = bySex[ageBucket(profile.age, bySex)];
+  const compared = spec.relativeToWeight ? value / profile.bodyWeight : value;
+
+  result.percentile = percentile(compared, table);
+  result.level = levelFromPercentile(result.percentile);
+  return result;
+}
+
 // У пульса покоя меньше значит лучше. Просто поменять знак нельзя — узлы
 // таблицы должны остаться по возрастанию. Поэтому зеркалим: p5 берём из p95
 // и меняем знак (самый низкий исходный пульс становится верхним перцентилем
