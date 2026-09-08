@@ -42,20 +42,11 @@ export function levelFromPercentile(p) {
 export function ageGrade(sex, age, distanceKm, timeSec) {
   const entry = NORMS.running[sex][String(distanceKm)];
   if (!entry) return null; // нет данных по этой дистанции (например, миля — см. отчёт)
-  const factor = nearestFactor(entry.factors, age);
-  if (factor === null) return null;
+  const bucket = ageBucket(age, entry.factors);
+  if (bucket === undefined) return null; // пустая таблица коэффициентов
+  const factor = entry.factors[bucket];
   const ageStandard = entry.openStandardSec / factor;
   return (ageStandard / timeSec) * 100;
-}
-
-// Ищем коэффициент для ближайшего известного возраста снизу
-// (таблица дана по годам от 20 до 80, за пределами берём крайнее значение)
-function nearestFactor(factors, age) {
-  const keys = Object.keys(factors).map(Number).sort((a, b) => a - b);
-  if (keys.length === 0) return null;
-  let chosen = keys[0];
-  for (const k of keys) if (age >= k) chosen = k;
-  return factors[chosen];
 }
 
 // Классификация уровня age grading по шкале WMA/USATF Masters
@@ -68,8 +59,11 @@ export function ageGradeClass(pct) {
   return 'уровень мирового рекорда';
 }
 
-// Выбор возрастной группы: берём ближайший ключ таблицы снизу
-// (таблицы даны по группам/шагам возраста, за пределами берём крайнее значение)
+// Общий помощник: выбор ближайшего ключа объекта снизу по возрасту.
+// Один помощник на все таблицы, индексированные по возрасту (годы или группы) —
+// коэффициенты age grading, перцентили VO2max, таблица дожития, состав тела,
+// восстановление. За пределами таблицы берём крайнее значение. Для пустого
+// объекта возвращает undefined — вызывающий код должен это проверить сам.
 function ageBucket(age, buckets) {
   const keys = Object.keys(buckets).map(Number).sort((a, b) => a - b);
   let chosen = keys[0];
@@ -81,6 +75,17 @@ function ageBucket(age, buckets) {
 export function vo2maxTable(sex, age) {
   const bySex = NORMS.vo2max[sex];
   return bySex[ageBucket(age, bySex)];
+}
+
+// Линейная интерполяция возраста между двумя соседними узлами «медиана
+// VO2max → возраст». Если у соседних узлов одинаковая медиана (a.v === b.v),
+// делить не на что — возвращаем возраст левого узла вместо NaN от деления
+// на ноль. Вынесена отдельной экспортированной функцией, чтобы можно было
+// проверить именно эту защиту напрямую, без внешних отсечек по краям таблицы.
+export function interpolateBodyAge(vo2max, a, b) {
+  if (a.v === b.v) return a.age;
+  const share = (a.v - vo2max) / (a.v - b.v);
+  return Math.round(a.age + share * (b.age - a.age));
 }
 
 // Возраст тела: ищем возраст, в котором собственный VO2max человека
@@ -99,8 +104,7 @@ export function bodyAgeFromVo2max(vo2max, sex) {
     const a = medians[i];
     const b = medians[i + 1];
     if (vo2max <= a.v && vo2max >= b.v) {
-      const share = (a.v - vo2max) / (a.v - b.v);
-      return Math.round(a.age + share * (b.age - a.age));
+      return interpolateBodyAge(vo2max, a, b);
     }
   }
   return last.age;
@@ -120,7 +124,8 @@ export function lifeExpectancy(bodyAge, chronoAge, sex) {
 
 // Индекс физической активности (шкала Kurtze, используется в модели Nes/Wisløff,
 // HUNT Study). Частота × интенсивность × продолжительность тренировки.
-// Источник: Bye A. и соавт., PLoS ONE, 2013 — см. normy-vo2max.md, набор 3.
+// Источник программно доступен в NORMS.ntnuFormula.activityIndexSource
+// (Bye A. и соавт., PLoS ONE, 2013 — см. normy-vo2max.md, набор 3).
 function kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration) {
   return trainingFreq * trainingIntensity * trainingDuration;
 }
@@ -130,6 +135,7 @@ function kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration) {
 // талии, подтверждённая дословной цитатой в Jalene S. и соавт., Frontiers in
 // Physiology, 2019 (см. normy-vo2max.md, набор 3). Версия с окружностью талии
 // не подтверждена рецензируемым источником и намеренно не используется.
+// Источник программно доступен в NORMS.ntnuFormula.source.
 function estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
   const pa = kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration);
   if (sex === 'f') {

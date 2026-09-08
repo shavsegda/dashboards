@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery } from '../forma-calc.js';
 import { NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -112,6 +112,27 @@ test('фитнес-возраст NTNU считается без VO2max', () => 
   });
   assert.equal(typeof age, 'number');
   assert.ok(age > 0 && age < 100);
+});
+
+test('интерполяция возраста тела не делит на ноль при равных соседних медианах', () => {
+  // Подсовываем два соседних узла с одинаковой медианой — раньше
+  // (a.v - b.v) в знаменателе давало 0 и результат был NaN.
+  const a = { age: 30, v: 40 };
+  const b = { age: 40, v: 40 };
+  const result = interpolateBodyAge(40, a, b);
+  assert.equal(typeof result, 'number');
+  assert.ok(!Number.isNaN(result), `ожидали число, получили NaN`);
+  assert.equal(result, 30, 'при равных медианах берём возраст левого узла');
+});
+
+test('у формулы NTNU есть источник, доступный программно, а не только в комментарии', () => {
+  const src = NORMS.ntnuFormula.source;
+  assert.ok(src, 'нет поля source у NORMS.ntnuFormula');
+  assert.ok(src.title, 'нет title');
+  assert.ok(src.authors, 'нет authors');
+  assert.ok(src.year, 'нет year');
+  assert.ok(src.url, 'нет url');
+  assert.equal(NORMS.ntnuFormula.kind, 'population', 'формула на популяционной когорте HUNT — kind population');
 });
 
 test('состав тела возвращает четыре показателя со ссылками', () => {

@@ -190,6 +190,28 @@ export const NORMS = {
     range: { min: 19, max: 75, mean: 42 }, // мс, пятиминутная запись
   },
 
+  // Формула фитнес-возраста NTNU (модель Nes/Wisløff, HUNT Study, версия
+  // с ИМТ — версия с окружностью талии не подтверждена рецензируемым
+  // источником, см. normy-vo2max.md). Коэффициенты формулы — в
+  // estimateVo2maxNTNU() в forma-calc.js, здесь источник, чтобы его было
+  // видно программно, а не только в комментарии кода.
+  ntnuFormula: {
+    source: {
+      title: 'Estimated Cardiorespiratory Fitness Is Associated With Reported Depression in College Students (дословно приводит формулу Nes B.M. и соавт., HUNT Study, версия с ИМТ)',
+      authors: 'Jalene S., Pharr J., Shan G., Poston B.',
+      year: 2019,
+      url: 'https://doi.org/10.3389/fphys.2019.01191',
+    },
+    kind: 'population', // формула откалибрована на когорте HUNT3 (Норвегия, 4637 человек), не клинический консенсус
+    // Индекс физической активности (шкала Kurtze), которым пользуется формула — отдельный подтверждённый источник
+    activityIndexSource: {
+      title: 'Circulating microRNAs and aerobic fitness — the HUNT-Study (дословно приводит индекс физической активности Kurtze: частота × интенсивность × продолжительность)',
+      authors: 'Bye A., Røsjø H., Aspenes S.T., Condorelli G., Omland T., Wisløff U.',
+      year: 2013,
+      url: 'https://doi.org/10.1371/journal.pone.0057496',
+    },
+  },
+
   // Регулярность сна — индекс регулярности сна (SRI), когорта UK Biobank.
   // Важно: в источнике мера — SRI (0–100, из многодневной актиграфии), а НЕ
   // стандартное отклонение времени отбоя в минутах — такого порога в
