@@ -132,7 +132,9 @@ test('у формулы NTNU есть источник, доступный пр�
   assert.ok(src.authors, 'нет authors');
   assert.ok(src.year, 'нет year');
   assert.ok(src.url, 'нет url');
-  assert.equal(NORMS.ntnuFormula.kind, 'population', 'формула на популяционной когорте HUNT — kind population');
+  // ПРАВКА ПО ИТОГАМ РЕВЬЮ: kind перенесён внутрь source (единая конвенция
+  // без исключений) — путь проверки поправлен на .source.kind, покрытие то же.
+  assert.equal(NORMS.ntnuFormula.source.kind, 'population', 'формула на популяционной когорте HUNT — kind population');
 });
 
 test('состав тела возвращает четыре показателя со ссылками', () => {
@@ -203,23 +205,40 @@ test('больше отжиманий — выше перцентиль', () => 
   assert.ok(evaluateTest('pushups', 45, profile).percentile > evaluateTest('pushups', 12, profile).percentile);
 });
 
-test('силовые считаются с учётом веса тела: лёгкий и тяжёлый с одинаковым абсолютным весом получают разные разряды', () => {
+// ПРАВКА 1 (второй заход, критично): у силовых тестов основная ось —
+// ВОЗРАСТ, как и у всего остального продукта. Весовая таблица Strength
+// Level, которая раньше ошибочно была основной, вообще не хранит возраст
+// (агрегирована по всем возрастам, откалибрована на плато 25-40 лет) —
+// поэтому при ОДИНАКОВОМ возрасте и ОДИНАКОВОМ абсолютном весе снаряда
+// основной перцентиль теперь не зависит от веса тела вовсе, а зависимость
+// от веса тела переехала во ВТОРОЕ, независимое число (secondaryPercentile).
+test('силовые считаются по возрасту: основной перцентиль не зависит от веса тела при одинаковом возрасте', () => {
   const light = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 60 });
   const heavy = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 110 });
-  assert.ok(light.percentile > heavy.percentile);
+  assert.equal(light.percentile, heavy.percentile, 'основной перцентиль общий — считается по возрасту, не по весу');
+  assert.notEqual(light.secondaryPercentile, heavy.secondaryPercentile, 'а вот вторичное чтение «среди людей твоего веса» у них обязано различаться');
 });
 
-test('ПРАВКА 2: одинаковая ОТНОСИТЕЛЬНАЯ сила у лёгкого и тяжёлого человека даёт РАЗНЫЕ разряды', () => {
-  // Оба поднимают ровно 1.5×веса тела — но это не одинаково редкое
-  // достижение: у Strength Level относительная сила систематически ниже у
-  // более тяжёлых атлетов (аллометрическое масштабирование). Плоская таблица
-  // «доля от веса тела», которая была раньше (ExRx, одна представительная
-  // строка), не могла отличить эти два случая — теперь может, потому что
-  // сравниваем АБСОЛЮТНЫЙ вес с нужной по весу тела строкой Strength Level.
-  const light = evaluateTest('squat1rm', 90, { sex: 'm', age: 38, bodyWeight: 60 }); // 1.5×BW
-  const heavy = evaluateTest('squat1rm', 165, { sex: 'm', age: 38, bodyWeight: 110 }); // 1.5×BW
-  assert.notEqual(light.percentile, heavy.percentile,
-    `ожидали разные перцентили при одинаковой относительной силе, получили одинаковый ${light.percentile}`);
+test('ПРАВКА 1: ключевой пример ревью — мужчина 75 лет весом 70 кг с приседом 71 кг получает осмысленный разряд по возрастной таблице (50-й перцентиль), а не по весовой (10,6-й)', () => {
+  const r = evaluateTest('squat1rm', 71, { sex: 'm', age: 75, bodyWeight: 70 });
+  assert.equal(Math.round(r.percentile), 50);
+  assert.equal(r.level, 'средний');
+  assert.ok(r.secondaryPercentile !== null, 'второе число по весу должно присутствовать');
+  assert.notEqual(Math.round(r.percentile), Math.round(r.secondaryPercentile), 'основной и вторичный разряд не должны совпадать в этом примере');
+  assert.ok(r.secondaryPercentile < 15, `ожидали низкий вторичный перцентиль (около 10,6), получили ${r.secondaryPercentile}`);
+  assert.equal(r.secondaryLabel, 'среди людей твоего веса');
+});
+
+test('ПРАВКА 1: силовой тест вне покрытия возрастной таблицы (95 лет) даёт честный null в основном чтении', () => {
+  const r = evaluateTest('squat1rm', 60, { sex: 'm', age: 95, bodyWeight: 70 });
+  assert.equal(r.percentile, null);
+  assert.match(r.note, /не опубликован/);
+});
+
+test('ПРАВКА 1: в подписи силового теста прямо сказано, что шкала построена на посетителях залов, а не на населении', () => {
+  const r = evaluateTest('squat1rm', 100, profile);
+  assert.match(r.note, /тренирующихся/i);
+  assert.equal(r.reference.kind, 'training-classification');
 });
 
 test('вис на перекладине помечен как справочный и не даёт перцентиля', () => {
@@ -281,16 +300,17 @@ test('планка справочная и не участвует в подсч
   assert.equal(r.percentile, null);
 });
 
-// ПРАВКА 1: подтягивания и прыжок в длину — знак ГТО, а не выдуманный
-// перцентиль. Раньше бронза/серебро/золото были сопоставлены с p50/p75/p90 —
-// у этого сопоставления был явный артефакт: 3 подтягивания давали
-// percentile 0, а 4 подтягивания (ровно бронза) — сразу percentile 50.
-// Теперь оба — просто целые соседние знака, без скачка.
-test('ПРАВКА 1: подтягивания дают знак ГТО, а не перцентиль', () => {
+// ПРАВКА 1 (первый заход) + ПРАВКА 3 (второй заход, добор ступеней ГТО):
+// подтягивания и прыжок в длину — знак ГТО, а не выдуманный перцентиль.
+// Раньше бронза/серебро/золото были сопоставлены с p50/p75/p90 — у этого
+// сопоставления был явный артефакт: 3 подтягивания давали percentile 0, а
+// 4 подтягивания (ровно бронза) — сразу percentile 50. Теперь оба — просто
+// целые соседние знака, без скачка.
+test('ПРАВКА 1: подтягивания дают знак ГТО, а не перцентиль; level в этот знак НЕ дублируется (ПРАВКА 4)', () => {
   const r = evaluateTest('pullups', 12, profile); // мужчина 38 лет — ступень 35-39: бронза 4 / серебро 7 / золото 11
   assert.equal(r.percentile, null);
   assert.equal(r.badge, 'золото'); // 12 выше золота (11)
-  assert.equal(r.level, 'золото');
+  assert.equal(r.level, null, 'знак ГТО живёт только в badge, level остаётся из словаря уровней либо null');
   assert.equal(r.reference.kind, 'state-standard');
 });
 
@@ -303,13 +323,34 @@ test('ПРАВКА 1: 3 и 4 подтягивания — соседние це�
   assert.equal(atBronze.badge, 'бронза');
 });
 
-test('ПРАВКА 1 и 3: подтягивания вне собранных ступеней ГТО (дыра в шкале) дают null, а не чужую ступень', () => {
-  // Ступень 45-49 лет в собранном файле не выгружена дословно — раньше
-  // ageBucket() молча взял бы соседнюю ступень 40-44. Теперь matchAgeRange()
-  // явно возвращает «нет данных».
-  const r = evaluateTest('pullups', 8, { sex: 'm', age: 47, bodyWeight: 78 });
+test('ПРАВКА 3: человек 30 лет получает знак ГТО по СВОЕЙ ступени (30-34), а не по соседней', () => {
+  // Ступень 30-34 (бронза 4 / серебро 8 / золото 13) дособрана по итогам
+  // второго ревью. Значение 10 нарочно выбрано так, чтобы отличать разряд
+  // по своей ступени от разряда по соседней: по 30-34 это «серебро»
+  // (10 >= 8), а по чужой соседней ступени 20-24 (бронза 9/серебро 13/
+  // золото 16) было бы «бронза» (10 < 13) — то есть баг «человек получает
+  // чужую ступень», который правка должна была устранить, дал бы другой
+  // результат и тест бы его поймал.
+  const r = evaluateTest('pullups', 10, { sex: 'm', age: 30, bodyWeight: 78 });
+  assert.equal(r.badge, 'серебро');
+});
+
+test('ПРАВКА 3: диапазон 25-60 лет по подтягиваниям и прыжку в длину закрыт значительно полнее, чем до правки', () => {
+  // До правки было 15 возрастов из 36 (25..60 включительно) по подтягиваниям
+  // у обоих полов. Считаем то же самое после правки — цифры уходят в отчёт.
+  let pullCovered = 0;
+  let jumpCovered = 0;
+  for (let age = 25; age <= 60; age += 1) {
+    if (evaluateTest('pullups', 5, { sex: 'm', age, bodyWeight: 78 }).badge !== null) pullCovered += 1;
+    if (evaluateTest('broadjump', 200, { sex: 'm', age, bodyWeight: 78 }).badge !== null) jumpCovered += 1;
+  }
+  assert.ok(pullCovered > 15, `ожидали рост покрытия подтягиваний выше 15 из 36, получили ${pullCovered}`);
+  assert.ok(jumpCovered > 5, `ожидали рост покрытия прыжка выше исходных 5 из 36, получили ${jumpCovered}`);
+});
+
+test('ПРАВКА 3: ступень 65-69 лет по подтягиваниям осталась честно непокрытой', () => {
+  const r = evaluateTest('pullups', 8, { sex: 'm', age: 67, bodyWeight: 78 });
   assert.equal(r.badge, null);
-  assert.equal(r.percentile, null);
   assert.match(r.note, /не опубликован/);
 });
 
@@ -320,62 +361,70 @@ test('прыжок в длину для 40+ возвращает знак null �
   assert.match(r.note, /не опубликован/);
 });
 
-test('прыжок в длину внутри ступени даёт знак ГТО', () => {
-  const r = evaluateTest('broadjump', 220, { sex: 'm', age: 30, bodyWeight: 78 }); // ступень 20-24? нет — 30 попадает в дыру
-  assert.equal(r.badge, null); // возраст 30 не входит ни в одну собранную ступень (20-24, 35-39) — честно null
+test('прыжок в длину внутри ступени даёт знак ГТО, а не null', () => {
   const inRange = evaluateTest('broadjump', 220, { sex: 'm', age: 22, bodyWeight: 78 }); // ступень 20-24: бронза207/серебро228/золото244 — 220 между бронзой и серебром
   assert.equal(inRange.badge, 'бронза');
+  assert.equal(inRange.level, null); // ПРАВКА 4: знак не дублируется в level
+});
+
+// ПРАВКА 4: level всегда либо словарь levelFromPercentile(), либо null —
+// знак ГТО (бронза/серебро/золото/ниже бронзы) живёт ТОЛЬКО в badge.
+test('ПРАВКА 4: в поле level никогда нет знаков ГТО, а в badge — никогда нет обычных уровней', () => {
+  const LEVEL_WORDS = ['начальный уровень', 'ниже среднего', 'средний', 'выше среднего', 'продвинутый'];
+  const BADGE_WORDS = ['золото', 'серебро', 'бронза', 'ниже бронзы'];
+
+  const pull = evaluateTest('pullups', 12, profile);
+  assert.ok(BADGE_WORDS.includes(pull.badge));
+  assert.ok(pull.level === null || LEVEL_WORDS.includes(pull.level));
+  assert.ok(!BADGE_WORDS.includes(pull.level));
+
+  const push = evaluateTest('pushups', 35, profile);
+  assert.ok(LEVEL_WORDS.includes(push.level));
+  assert.ok(!BADGE_WORDS.includes(push.level));
+  assert.equal(push.badge, null);
 });
 
 // ПРАВКА 4: у TEST_NORMS нет фантомных ключей (раньше 'source'/'kind' лежали
 // прямо в NORMS.tests как «одиннадцать с половиной тестов»)
-test('ПРАВКА 4: в TEST_NORMS только одиннадцать настоящих тестов, никаких фантомных метаданных', () => {
+test('в TEST_NORMS только одиннадцать настоящих тестов, никаких фантомных метаданных', () => {
   const expected = ['pushups', 'pullups', 'plank', 'squat1rm', 'bench1rm', 'deadlift1rm', 'deadhang', 'grip', 'broadjump', 'sitandreach', 'onelegstand'];
   assert.deepEqual(Object.keys(TEST_NORMS).sort(), expected.sort());
 });
 
-// ПРАВКА 6: защита от нулевого/некорректного веса тела у силовых тестов
-// (indexBy: 'weight'). Раньше здесь было value/profile.bodyWeight без
-// проверки — нулевой вес тела давал Infinity → percentile 100 → «продвинутый».
-test('ПРАВКА 6: силовой тест с нулевым весом тела не считает бесконечность, а честно отдаёт null', () => {
+// Защита от нулевого/некорректного веса тела — теперь это касается только
+// ВТОРИЧНОГО чтения (secondaryPercentile), потому что основной перцентиль
+// у силовых тестов больше не зависит от веса тела вообще (ПРАВКА 1).
+test('силовой тест с нулевым весом тела: основной разряд по возрасту всё равно считается, а вторичный честно остаётся null', () => {
   const zero = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: 0 });
-  assert.equal(zero.percentile, null);
-  assert.notEqual(zero.level, 'продвинутый');
-  assert.match(zero.note, /вес тела/);
+  assert.equal(typeof zero.percentile, 'number', 'основной перцентиль по возрасту не должен зависеть от некорректного веса');
+  assert.equal(zero.secondaryPercentile, null);
 });
 
-test('ПРАВКА 6: силовой тест без веса тела (undefined) тоже отдаёт null, а не NaN-перцентиль', () => {
+test('силовой тест без веса тела (undefined) — вторичное чтение null, а не NaN-перцентиль', () => {
   const r = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: undefined });
-  assert.equal(r.percentile, null);
-  assert.match(r.note, /вес тела/);
+  assert.equal(r.secondaryPercentile, null);
+  assert.ok(!Number.isNaN(r.secondaryPercentile));
 });
 
-test('ПРАВКА 6: отрицательный вес тела тоже отклоняется', () => {
+test('силовой тест с отрицательным весом тела — вторичное чтение тоже null', () => {
   const r = evaluateTest('squat1rm', 100, { sex: 'm', age: 38, bodyWeight: -10 });
-  assert.equal(r.percentile, null);
+  assert.equal(r.secondaryPercentile, null);
 });
 
 // У каждой таблицы норм указан тип данных, и у kind — единая конвенция
-// (ПРАВКА 5): kind всегда лежит ВНУТРИ source. Единственное исключение —
-// NORMS.ntnuFormula, где один из 28 неприкасаемых тестов (см. выше, «у
-// формулы NTNU есть источник...») явно проверяет kind СИБЛИНГОМ к source —
-// трогать этот тест нельзя, поэтому там kind оставлен как было. Допустимых
-// значений шесть: три из исходного брифа задачи 4 (population/
-// training-classification/occupational) плюс 'clinical' (клинический
-// консенсус, унаследовано из задач 2-3: NORMS.smi, NORMS.bmi, планка,
-// стойка на одной ноге), 'state-standard' (государственный норматив на
-// присвоение знака ГТО — не обследование населения) и 'none' (опубликованного
-// источника нет вообще — вис на перекладине).
+// (ПРАВКА 5, без исключений после повторного ревью): kind всегда лежит
+// ВНУТРИ source, включая NORMS.ntnuFormula. Допустимых значений шесть: три
+// из исходного брифа задачи 4 (population/training-classification/
+// occupational) плюс 'clinical' (клинический консенсус, унаследовано из
+// задач 2-3: NORMS.smi, NORMS.bmi, планка, стойка на одной ноге),
+// 'state-standard' (государственный норматив на присвоение знака ГТО — не
+// обследование населения) и 'none' (опубликованного источника нет вообще —
+// вис на перекладине).
 const VALID_KINDS = ['population', 'training-classification', 'occupational', 'clinical', 'state-standard', 'none'];
 
 test('у каждой таблицы норм указан тип данных', () => {
   for (const [name, entry] of Object.entries(NORMS)) {
     if (!entry || !entry.source) continue;
-    if (name === 'ntnuFormula') {
-      // исключение см. в комментарии выше — kind рядом с source, не внутри
-      assert.ok(VALID_KINDS.includes(entry.kind), `у таблицы ${name} нет корректного kind`);
-      continue;
-    }
     assert.ok(VALID_KINDS.includes(entry.source.kind), `у таблицы ${name} нет корректного source.kind`);
   }
   for (const [name, spec] of Object.entries(TEST_NORMS)) {

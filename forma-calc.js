@@ -273,6 +273,12 @@ function badgeFromThresholds(value, { bronze, silver, gold }) {
 // Единая оценка простого теста силы/мощности/подвижности по таблицам
 // TEST_NORMS. Один движок на все одиннадцать тестов задачи 4 — не плодим
 // по функции на тест. profile — { sex, age, bodyWeight }.
+//
+// result.level — ВСЕГДА либо словарь levelFromPercentile() («средний»,
+// «выше среднего» и т.д.), либо null. Знак ГТО живёт ТОЛЬКО в result.badge
+// («золото»/«серебро»/«бронза»/«ниже бронзы») — раньше badge дублировался
+// и в level тоже, из-за чего в одном поле жили два разных словаря (правка
+// по итогам повторного ревью задачи 4).
 export function evaluateTest(testKey, value, profile) {
   const spec = TEST_NORMS[testKey];
   if (!spec) return null; // неизвестный тест — не падаем, отдаём null
@@ -285,7 +291,10 @@ export function evaluateTest(testKey, value, profile) {
     value,
     percentile: null,
     level: null,
-    badge: null, // знак ГТО для тестов-badgeTest (pullups, broadjump), иначе null
+    badge: null, // знак ГТО для тестов-badgeTest (pullups, broadjump), иначе null; НЕ дублируется в level
+    secondaryPercentile: null, // второе, независимое чтение того же источника (см. spec.secondary)
+    secondaryLevel: null,
+    secondaryLabel: spec.secondary ? spec.secondary.label : null,
     informational: Boolean(spec.informational),
     belowThreshold: spec.threshold !== undefined ? value < spec.threshold : null,
     reference: spec.source,
@@ -307,45 +316,55 @@ export function evaluateTest(testKey, value, profile) {
       result.note = appendNote(result.note, 'норматив для этого возраста не опубликован (нет собранной ступени ГТО)');
       return result;
     }
-    const badge = badgeFromThresholds(value, range);
-    result.badge = badge;
-    result.level = badge;
+    result.badge = badgeFromThresholds(value, range);
     return result;
   }
 
-  // Тесты, для которых норма опубликована только до определённого возраста
-  // (отжимания CSEP-PATH — до 69, наклон вперёд сидя CHMS — до 69, сила
-  // хвата Wang/JOSPT — до 85, силовые Strength Level — до 90). Дальше —
-  // не «неизвестно», а прямо подтверждённое отсутствие норматива: раньше
-  // возраст вне таблицы молча получал ближайший (чужой) бакет.
-  if (spec.maxAge !== undefined && profile.age > spec.maxAge) {
+  // Основной перцентиль — ВСЕГДА по полу и ВОЗРАСТУ, как и весь остальной
+  // продукт (правка по итогам повторного ревью: раньше силовые тесты
+  // индексировались по весу тела как по основной оси — эта таблица источника
+  // возраст вообще не хранит и откалибрована на плато 25-40 лет, из-за чего
+  // пожилой человек получал сильно завышенный или заниженный разряд вместо
+  // честного «по твоему возрасту»). Тесты, для которых норма опубликована
+  // только до определённого возраста (отжимания CSEP-PATH — до 69, наклон
+  // вперёд сидя CHMS — до 69, сила хвата Wang/JOSPT — до 85, силовые
+  // Strength Level — до 90, это реальный предел ИМЕННО возрастной таблицы),
+  // за пределами дают не «неизвестно», а прямо подтверждённое отсутствие
+  // норматива: раньше возраст вне таблицы молча получал ближайший (чужой) бакет.
+  if (spec.maxAge === undefined || profile.age <= spec.maxAge) {
+    const bySex = spec[profile.sex];
+    if (bySex) {
+      const table = bySex[ageBucket(profile.age, bySex)];
+      result.percentile = percentile(value, table);
+      result.level = levelFromPercentile(result.percentile);
+    }
+  } else {
     result.note = appendNote(result.note, 'нормы для этого возраста не опубликованы');
-    return result;
   }
 
-  // Силовые тесты индексируются по весу тела (Strength Level публикует
-  // шкалу по весу тела отдельно от шкалы по возрасту, совмещать их значило
-  // бы придумывать двумерную поверхность, которой источник не даёт — см.
-  // forma-norms.js). Без корректного веса тела оценка невозможна: раньше
-  // здесь было деление на profile.bodyWeight без проверки, и нулевой вес
-  // тела давал Infinity → percentile 100 → «продвинутый». Тихо подставлять
-  // это как разряд нельзя — честно отдаём null с пометкой.
-  if (spec.indexBy === 'weight') {
+  // Вторичное, независимое чтение — по весу тела (сейчас только у силовых
+  // тестов Strength Level: spec.secondary). Считается НЕЗАВИСИМО от основного
+  // и не участвует в нём — источник публикует таблицу «по весу тела» отдельно
+  // от таблицы «по возрасту», совмещать их значило бы придумывать двумерную
+  // поверхность, которой источник не даёт (та самая самодельная свёртка,
+  // которую в проекте запрещено делать). Работает независимо от возраста и
+  // от maxAge основной таблицы — весовая таблица возраст вообще не хранит.
+  // Без корректного веса тела вторичное чтение просто остаётся null — раньше
+  // здесь было деление на profile.bodyWeight без проверки, и нулевой вес тела
+  // давал Infinity → percentile 100 → «продвинутый»; теперь тихо подставлять
+  // это как разряд нельзя нигде, в том числе во вторичном чтении.
+  if (spec.secondary) {
     const w = profile.bodyWeight;
-    if (typeof w !== 'number' || !Number.isFinite(w) || w <= 0) {
-      result.note = appendNote(result.note, 'нужен вес тела, чтобы оценить этот тест');
-      return result;
+    if (typeof w === 'number' && Number.isFinite(w) && w > 0) {
+      const bySexW = spec.secondary[profile.sex];
+      if (bySexW) {
+        const tableW = bySexW[ageBucket(w, bySexW)];
+        result.secondaryPercentile = percentile(value, tableW);
+        result.secondaryLevel = levelFromPercentile(result.secondaryPercentile);
+      }
     }
   }
 
-  const bySex = spec[profile.sex];
-  if (!bySex) return result; // например, onelegstand — нет таблиц вовсе, только порог
-
-  const bucketKey = spec.indexBy === 'weight' ? profile.bodyWeight : profile.age;
-  const table = bySex[ageBucket(bucketKey, bySex)]; // ageBucket универсален — «ближайший ключ снизу» работает и для веса, и для возраста
-
-  result.percentile = percentile(value, table);
-  result.level = levelFromPercentile(result.percentile);
   return result;
 }
 
