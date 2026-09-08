@@ -368,6 +368,125 @@ export function evaluateTest(testKey, value, profile) {
   return result;
 }
 
+// ---------------------------------------------------------------------
+// Задача 6: счёт формы, цена провала, слабое звено. Три сводки поверх
+// результатов evaluateTest/bodyComposition/recovery — сюда приходит общий
+// плоский список { key, block, percentile, informational, belowThreshold,
+// badge?, sex? } (форма собирает его из результатов прошлых задач).
+
+// Шесть блоков дашборда. Если по блоку вообще нет результатов — блок серый
+// и не участвует ни в счёте формы, ни в поиске слабого звена.
+const BLOCKS = ['endurance', 'strength', 'power', 'mobility', 'body', 'recovery'];
+
+// Годный для счёта результат: не справочный (не informational) и содержит
+// либо перцентиль (числом), либо знак ГТО (badge) — у знака ГТО перцентиля
+// нет и быть не может (это опубликованный разряд, а не позиция в
+// перцентильном распределении), но это не повод выкидывать тест из счёта.
+function isCountable(r) {
+  if (r.informational) return false;
+  return typeof r.percentile === 'number' || typeof r.badge === 'string';
+}
+
+// Тест на медиане или выше. Для знака ГТО перцентиля нет — вместо него
+// используем сам разряд: серебро и золото официально означают «на уровне
+// или выше нормы для этой ступени», бронза и «ниже бронзы» — «не дотянул».
+// Подменять это выдуманным числом перцентиля нельзя, поэтому знак и
+// перцентиль оцениваются каждый по своей логике, а не приводятся к общей
+// шкале.
+function isAtOrAboveMedian(r) {
+  if (typeof r.percentile === 'number') return r.percentile >= 50;
+  if (typeof r.badge === 'string') return r.badge === 'серебро' || r.badge === 'золото';
+  return false;
+}
+
+// Счёт формы: по каждому из шести блоков — зелёный (больше половины тестов
+// блока на медиане или выше), красный (половина или меньше) либо серый
+// (в блоке вообще нет годных результатов). green — сколько блоков зелёных,
+// counted — сколько блоков вообще участвовало в счёте (не серых).
+export function formScore(results) {
+  const byBlock = {};
+  let green = 0;
+  let counted = 0;
+
+  for (const block of BLOCKS) {
+    const items = results.filter((r) => r.block === block && isCountable(r));
+    if (items.length === 0) {
+      byBlock[block] = 'grey';
+      continue;
+    }
+    counted += 1;
+    const atOrAboveMedian = items.filter(isAtOrAboveMedian).length;
+    const isGreen = atOrAboveMedian > items.length / 2;
+    byBlock[block] = isGreen ? 'green' : 'red';
+    if (isGreen) green += 1;
+  }
+
+  return { green, counted, byBlock };
+}
+
+// Достаёт число из hazard-записи для конкретного результата. hazard бывает
+// либо простым числом (одно на всех), либо объектом { m, f } (риск известен
+// раздельно по полу — так у отношения талии к росту, Patel 2025). Если
+// коэффициент разбит по полу, а пол результата не указан — подставлять
+// чужую цифру нельзя (это и есть выдумывание числа), поэтому возвращаем
+// null и карточка для такого результата не создаётся.
+function hazardFor(h, r) {
+  if (typeof h.hazard === 'number') return h.hazard;
+  if (h.hazard && typeof h.hazard === 'object') {
+    const v = h.hazard[r.sex];
+    return typeof v === 'number' ? v : null;
+  }
+  return null;
+}
+
+// Цена провала: карточки риска смертности/сердечно-сосудистых событий.
+// Риски РАЗНЫХ тестов не суммируются — показатели связаны между собой
+// (например, сила хвата и мышечная масса), и сумма дала бы двойной счёт.
+// Каждая карточка живёт отдельно, со своим hazard, своим outcome (общая
+// смертность или сердечно-сосудистые события — это разные вещи, путать их
+// нельзя) и своим источником. Нет опубликованного коэффициента для
+// показателя (NORMS.hazards[key] отсутствует) — карточки для него нет.
+export function riskCards(results) {
+  const cards = [];
+  for (const r of results) {
+    const h = NORMS.hazards[r.key];
+    if (!h) continue; // нет опубликованного коэффициента — не выдумываем
+
+    const hazard = hazardFor(h, r);
+    if (hazard === null) continue; // коэффициент по полу, а пол не указан
+
+    // «Провал» — либо явный флаг по опубликованному порогу (belowThreshold,
+    // как у стойки на одной ноге — там вообще нет перцентильной кривой),
+    // либо нижняя четверть перцентильного распределения.
+    const failed = r.belowThreshold === true || (typeof r.percentile === 'number' && r.percentile < 25);
+    if (!failed) continue;
+
+    cards.push({
+      testKey: r.key,
+      label: TEST_NORMS[r.key]?.label ?? h.label ?? r.key,
+      hazard,
+      condition: h.condition,
+      outcome: h.outcome,
+      reference: h.source,
+    });
+  }
+  return cards.sort((a, b) => b.hazard - a.hazard);
+}
+
+// Слабое звено: блок с самым низким средним перцентилем среди блоков,
+// где вообще есть числовые перцентили (справочные тесты и знаки ГТО без
+// перцентиля в среднее не входят — усреднять с ними нечего).
+export function weakestLink(results) {
+  let worst = null;
+  for (const block of BLOCKS) {
+    const items = results.filter((r) => r.block === block && !r.informational && typeof r.percentile === 'number');
+    if (items.length === 0) continue;
+    const average = items.reduce((s, r) => s + r.percentile, 0) / items.length;
+    if (worst === null || average < worst.average) worst = { block, average, items };
+  }
+  return worst;
+}
+
 // У пульса покоя меньше значит лучше. Просто поменять знак нельзя — узлы
 // таблицы должны остаться по возрастанию. Поэтому зеркалим: p5 берём из p95
 // и меняем знак (самый низкий исходный пульс становится верхним перцентилем

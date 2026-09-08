@@ -256,6 +256,155 @@ export const NORMS = {
     ],
   },
 
+  // Задача 6: коэффициенты риска смертности/сердечно-сосудистых событий.
+  // Числа взяты дословно из сводной таблицы в
+  // .superpowers/sdd/plan-forma/normy-telo-riski.md (часть В). Каждая
+  // запись — ОДИН показатель, ОДИН источник, ОДИН исход. Риски разных
+  // показателей НЕ СУММИРУЮТСЯ — это делает riskCards() (forma-calc.js):
+  // карточки просто перечисляются рядом, каждая со своим hazard и своим
+  // outcome. Нет коэффициента — нет и записи здесь (см. bodyFat, bmi,
+  // rmssd, plank, deadhang, sitandreach — по ним источник риска смертности
+  // найти не удалось, карточек для них не будет).
+  //
+  // outcome обязателен и бывает ровно двух видов — их нельзя смешивать:
+  //   'общая смертность'            — умер по любой причине
+  //   'сердечно-сосудистые события' — инфаркт/инсульт/реваскуляризация и т.п.,
+  //                                    НЕ то же самое, что смертность
+  hazards: {
+    // Mandsager 2018 — единственный источник по VO2max, выбирать не из чего.
+    vo2max: {
+      hazard: 5.04, // HR, 95% ДИ 4,10–6,20
+      condition: 'нижняя группа кардиореспираторной выносливости против высокой (элитной), с поправкой на возраст и пол',
+      outcome: 'общая смертность',
+      label: 'Кардиореспираторная выносливость (VO2max)',
+      source: {
+        title: 'Association of Cardiorespiratory Fitness With Long-term Mortality Among Adults Undergoing Exercise Treadmill Testing',
+        authors: 'Mandsager K., Harb S., Cremer P., Phelan D., Nissen S.E., Jaber W.',
+        year: 2018,
+        url: 'https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2707428',
+        kind: 'clinical', // когорта направленных на нагрузочный тредмил-тест в клинике, не случайная выборка населения
+      },
+    },
+    // Yang 2019 — единственный источник по отжиманиям. В источнике IRR=0,04
+    // (риск группы >40 отжиманий против группы <10 ниже в 25 раз). Здесь
+    // храним ОБРАТНОЕ число — «во сколько раз риск группы <10 выше группы
+    // >40» (1/0,04=25) — это тот же самый факт, записанный в направлении
+    // «риск провала», в котором читаются остальные карточки. Число не
+    // придумано, это математически то же самое сравнение из того же источника.
+    pushups: {
+      hazard: 25, // 1 / IRR(0,04), 95% ДИ IRR 0,01–0,36
+      condition: 'меньше 10 отжиманий за подход против больше 40 (активные мужчины)',
+      outcome: 'сердечно-сосудистые события', // НЕ общая смертность — когорта пожарных, 10-летнее наблюдение
+      source: {
+        title: 'Association Between Push-up Exercise Capacity and Future Cardiovascular Events Among Active Adult Men',
+        authors: 'Yang J., Christophi C.A., Farioli A., Baur D.M., Moffatt S., Zollinger T.W., Kales S.N.',
+        year: 2019,
+        url: 'https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2724778',
+        kind: 'occupational', // 1104 активных мужчины-пожарных, Индиана — не население в целом
+      },
+    },
+    // Araújo 2022 — единственный источник по стойке на одной ноге. Берём
+    // модель 3 (самую консервативную, с поправкой на возраст, пол, ИМТ и
+    // сопутствующие болезни), как основную оценку исследования.
+    onelegstand: {
+      hazard: 1.84, // HR, модель 3, 95% ДИ 1,22–2,77
+      condition: 'не удержал 10-секундную стойку на одной ноге против удержал, с поправкой на возраст, пол, ИМТ и сопутствующие болезни',
+      outcome: 'общая смертность',
+      source: {
+        title: 'Successful 10-second one-legged stance performance predicts survival in middle-aged and older individuals',
+        authors: 'Araújo C.G., de Souza e Silva C.G., Laukkanen J.A. и соавт.',
+        year: 2022,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/35728834/',
+        kind: 'clinical', // проспективная когорта клиники спортивной медицины CLINIMEX, не случайная выборка населения
+      },
+    },
+    // Пульс покоя. В источнике данных найдены ДВА метаанализа с разными
+    // цифрами (CMAJ 2016, RR=1,09, 46 исследований vs NMCD 2017, RR=1,17,
+    // 87 исследований). Правило проекта — брать более поздний И более
+    // крупный: NMCD 2017 выигрывает по обоим критериям. CMAJ 2016 в отчёте
+    // к задаче указан как альтернативная оценка, в код не подставлен.
+    restingHR: {
+      hazard: 1.17, // RR на каждые +10 уд/мин, общая смертность
+      condition: 'на каждые +10 ударов в минуту пульса покоя',
+      outcome: 'общая смертность',
+      label: 'Пульс покоя',
+      source: {
+        title: 'Resting heart rate and the risk of cardiovascular disease, total cancer, and all-cause mortality — A systematic review and dose-response meta-analysis of prospective studies',
+        authors: "Aune D., Sen A., ó'Hartaigh B., Janszky I., Romundstad P.R., Tonstad S., Vatten L.J.",
+        year: 2017,
+        url: 'https://pubmed.ncbi.nlm.nih.gov/28552551/',
+        kind: 'population', // метаанализ 87 проспективных когортных исследований
+      },
+    },
+    // Саркопения — Wang 2023, единственный источник, где риск смертности
+    // (а не просто порог ASM/рост², как в NORMS.smi выше) подтверждён числом.
+    smi: {
+      hazard: 1.57, // RR, 95% ДИ 1,25–1,96
+      condition: 'самая низкая категория индекса скелетной мышечной массы против нормальной',
+      outcome: 'общая смертность',
+      label: 'Индекс скелетной мышечной массы (саркопения)',
+      source: {
+        title: 'Low skeletal muscle mass index and all-cause mortality risk in adults: A systematic review and meta-analysis of prospective cohort studies',
+        authors: 'Wang Y., Luo D., Liu J., Song Y., Jiang B., Jiang H.',
+        year: 2023,
+        url: 'https://doi.org/10.1371/journal.pone.0286745',
+        kind: 'population', // метаанализ 16 проспективных когортных исследований, 81 358 участников
+      },
+    },
+    // Нерегулярность сна — Windred 2024 (те же данные, что в
+    // NORMS.sleepRegularity.sriBands выше). Источник публикует ЗАЩИТНЫЙ HR
+    // самого регулярного квинтиля против САМОГО НЕРЕГУЛЯРНОГО (референс).
+    // Чтобы показать «во сколько раз риск нерегулярного сна ВЫШЕ», как и
+    // у остальных карточек, берём обратное число: 1/0,52. Это то же самое
+    // сравнение из того же источника, просто в другую сторону.
+    sleepRegularity: {
+      hazard: 1.92, // 1 / HR(0,52) самого регулярного квинтиля (округлено с 1,923)
+      condition: 'самый нерегулярный квинтиль сна (SRI) против самого регулярного (80–100-й перцентиль)',
+      outcome: 'общая смертность',
+      label: 'Регулярность сна',
+      source: {
+        title: 'Sleep regularity is a stronger predictor of mortality risk than sleep duration: A prospective cohort study',
+        authors: 'Windred D.P., Burns A.C., Lane J.M., Saxena R., Rutter M.K., Cain S.W., Phillips A.J.K.',
+        year: 2024,
+        url: 'https://doi.org/10.1093/sleep/zsad253',
+        kind: 'population', // UK Biobank, 60 977 участников, 7 дней акселерометрии
+      },
+    },
+    // Отношение талии к росту — риск смертности зависит от пола (Patel 2025),
+    // это ДРУГОЙ источник, чем порог 0,5 в NORMS.waistToHeight (Ashwell —
+    // порог кардиометаболического риска, не смертности). hazard хранится
+    // отдельно по полу — смешивать мужскую и женскую цифру в одну было бы
+    // придумыванием числа, которого источник не даёт.
+    waistToHeight: {
+      hazard: { m: 1.11, f: 1.23 }, // RR, ≥0,55 против <0,50, с поправкой на ИМТ
+      condition: 'отношение талии к росту 0,55 и выше против менее 0,50',
+      outcome: 'общая смертность',
+      label: 'Отношение талии к росту',
+      source: {
+        title: 'Is waist to height ratio better at assessing cause-specific mortality risk than body mass index or waist circumference? A prospective analysis in a large U.S.-based cohort',
+        authors: 'Patel A.V., Faw K., Rees-Punia E., Heltemes B., Bodelon C., Peoples A., McCullough L.E., Teras L.R.',
+        year: 2025,
+        url: 'https://doi.org/10.1371/journal.pone.0328760',
+        kind: 'population',
+      },
+    },
+    // Сила хвата — PURE study, единственный источник. В сводке есть ещё
+    // сердечно-сосудистая/несердечно-сосудистая смертность, инфаркт, инсульт —
+    // берём именно общую смертность как основной, наиболее общий исход.
+    grip: {
+      hazard: 1.16, // HR на каждые −5 кг силы хвата, 95% ДИ 1,13–1,20
+      condition: 'на каждые −5 кг силы хвата (ведущая рука)',
+      outcome: 'общая смертность',
+      source: {
+        title: 'Prognostic value of grip strength: findings from the Prospective Urban Rural Epidemiology (PURE) study',
+        authors: 'Leong D.P., Teo K.K., Rangarajan S., Lopez-Jaramillo P., Avezum A. Jr, Orlandini A. и соавт.',
+        year: 2015,
+        url: 'https://doi.org/10.1016/S0140-6736(14)62000-6',
+        kind: 'population', // 139 691 участник, 17 стран
+      },
+    },
+  },
+
 };
 
 // ---------------------------------------------------------------------

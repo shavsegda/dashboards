@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink } from '../forma-calc.js';
 import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -70,6 +70,17 @@ test('у таблицы беговых норм есть источник с н�
 
 test('у каждой таблицы норм указан источник', () => {
   for (const [name, entry] of Object.entries(NORMS)) {
+    // NORMS.hazards — коллекция из задачи 6, как когда-то TEST_NORMS внутри
+    // NORMS.tests: у неё самой не может быть ОДНОГО source, потому что внутри
+    // много независимых показателей с разными источниками (Mandsager 2018,
+    // Yang 2019, Araújo 2022 и т.д. — см. отдельный тест на entries hazards
+    // ниже). Общий source на всю коллекцию был бы придуманной атрибуцией —
+    // именно поэтому TEST_NORMS в своё время вынесли из NORMS отдельным
+    // экспортом. Здесь коллекция маленькая и специфичная для одной задачи,
+    // выносить наружу отдельным экспортом ради неё избыточно — достаточно
+    // пропустить её в этой общей проверке и полностью проверить отдельным
+    // тестом на completeness каждой записи (см. ниже, задача 6).
+    if (name === 'hazards') continue;
     assert.ok(entry.source, `нет поля source у таблицы ${name}`);
     assert.ok(entry.source.title, `нет названия источника у ${name}`);
     assert.ok(entry.source.year, `нет года у ${name}`);
@@ -429,5 +440,102 @@ test('у каждой таблицы норм указан тип данных',
   }
   for (const [name, spec] of Object.entries(TEST_NORMS)) {
     assert.ok(VALID_KINDS.includes(spec.source.kind), `у теста ${name} нет корректного source.kind`);
+  }
+});
+
+// ---------------------------------------------------------------------
+// Задача 6: счёт формы, цена провала, слабое звено.
+
+const sample = [
+  { key: 'vo2max',    block: 'endurance', percentile: 80, informational: false },
+  { key: 'pushups',   block: 'strength',  percentile: 75, informational: false },
+  { key: 'pullups',   block: 'strength',  percentile: 60, informational: false },
+  { key: 'deadhang',  block: 'strength',  percentile: null, informational: true },
+  { key: 'broadjump', block: 'power',     percentile: 20, informational: false },
+];
+
+test('счёт формы считает блоки, где больше половины тестов на медиане или выше', () => {
+  const s = formScore(sample);
+  assert.equal(s.byBlock.endurance, 'green');
+  assert.equal(s.byBlock.strength, 'green');
+  assert.equal(s.byBlock.power, 'red');
+  assert.equal(s.green, 2);
+});
+
+test('справочные тесты в счёт не идут', () => {
+  const onlyInfo = [{ key: 'deadhang', block: 'strength', percentile: null, informational: true }];
+  assert.equal(formScore(onlyInfo).byBlock.strength, 'grey');
+});
+
+test('блок без данных серый и не считается ни зелёным, ни красным', () => {
+  const s = formScore(sample);
+  assert.equal(s.byBlock.mobility, 'grey');
+  assert.equal(s.counted, 3);
+});
+
+test('знак ГТО в счёте формы: серебро/золото — зелёный, бронза и ниже — красный', () => {
+  const gold = formScore([{ key: 'pullups', block: 'strength', badge: 'золото', informational: false }]);
+  assert.equal(gold.byBlock.strength, 'green');
+  const silver = formScore([{ key: 'pullups', block: 'strength', badge: 'серебро', informational: false }]);
+  assert.equal(silver.byBlock.strength, 'green');
+  const bronze = formScore([{ key: 'pullups', block: 'strength', badge: 'бронза', informational: false }]);
+  assert.equal(bronze.byBlock.strength, 'red');
+  const belowBronze = formScore([{ key: 'pullups', block: 'strength', badge: 'ниже бронзы', informational: false }]);
+  assert.equal(belowBronze.byBlock.strength, 'red');
+});
+
+test('карточки риска отсортированы от самого дорогого провала', () => {
+  const cards = riskCards([
+    { key: 'onelegstand', block: 'mobility', percentile: 5, belowThreshold: true },
+    { key: 'vo2max', block: 'endurance', percentile: 5 },
+  ]);
+  assert.ok(cards[0].hazard >= cards[1].hazard);
+});
+
+test('в каждой карточке риска сказано, что именно мерили', () => {
+  const cards = riskCards([{ key: 'vo2max', block: 'endurance', percentile: 5 }]);
+  assert.ok(cards[0].outcome.length > 0);
+  assert.ok(cards[0].reference.url);
+});
+
+test('карточка не создаётся для показателя без опубликованного коэффициента', () => {
+  const cards = riskCards([{ key: 'deadhang', block: 'strength', percentile: null, informational: true }]);
+  assert.equal(cards.length, 0);
+});
+
+test('карточка риска, разбитого по полу (талия к росту), берёт цифру своего пола', () => {
+  const men = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'm' }]);
+  const women = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true, sex: 'f' }]);
+  assert.equal(men[0].hazard, NORMS.hazards.waistToHeight.hazard.m);
+  assert.equal(women[0].hazard, NORMS.hazards.waistToHeight.hazard.f);
+});
+
+test('карточка риска с полом не указан — карточка не создаётся, чтобы не подставлять чужую цифру', () => {
+  const cards = riskCards([{ key: 'waistToHeight', block: 'body', belowThreshold: true }]);
+  assert.equal(cards.length, 0);
+});
+
+test('карточка риска различает исход: общая смертность и сердечно-сосудистые события — не одно и то же', () => {
+  const cards = riskCards([{ key: 'pushups', block: 'strength', belowThreshold: true }]);
+  assert.equal(cards[0].outcome, 'сердечно-сосудистые события');
+  assert.notEqual(cards[0].outcome, 'общая смертность');
+});
+
+test('слабое звено — блок с самым низким средним перцентилем', () => {
+  assert.equal(weakestLink(sample).block, 'power');
+});
+
+test('слабое звено не выбирается, когда данных нет совсем', () => {
+  assert.equal(weakestLink([]), null);
+});
+
+test('каждый коэффициент риска в NORMS.hazards полностью описан: условие, исход, источник', () => {
+  const allowedOutcomes = ['общая смертность', 'сердечно-сосудистые события'];
+  for (const [key, h] of Object.entries(NORMS.hazards)) {
+    assert.ok(allowedOutcomes.includes(h.outcome), `${key}: неизвестный исход "${h.outcome}"`);
+    assert.ok(typeof h.condition === 'string' && h.condition.length > 0, `${key}: нет условия сравнения`);
+    assert.ok(h.source && h.source.title && h.source.authors && h.source.year && h.source.url, `${key}: неполный источник`);
+    const hazardOk = typeof h.hazard === 'number' || (h.hazard && typeof h.hazard.m === 'number' && typeof h.hazard.f === 'number');
+    assert.ok(hazardOk, `${key}: hazard должен быть числом либо объектом {m, f}`);
   }
 });
