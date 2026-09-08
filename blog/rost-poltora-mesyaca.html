@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Почему рост всегда заканчивается через полтора месяца · Алексей Шаповалов</title>
+<meta name="description" content="Профессионалы 80% времени работают легко. Почему подъём длится полтора месяца, чем любительский подход отличается от профессионального и семь вопросов, чтобы понять, где вы.">
+<meta property="og:title" content="Почему рост всегда заканчивается через полтора месяца">
+<meta property="og:description" content="Профессионалы 80% времени работают легко. Почему подъём длится полтора месяца и семь вопросов, чтобы понять, где вы.">
+<meta property="og:type" content="article">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-12: rgba(26,26,26,0.12);
+  --paper-70: rgba(244,242,236,0.7);
+  --paper-45: rgba(244,242,236,0.45);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --col: 680px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--terracotta); }
+
+/* прогресс чтения */
+.progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--terracotta);
+  z-index: 50;
+}
+
+/* шапка */
+.site-header {
+  border-bottom: 1px solid var(--graphite-12);
+  background: var(--paper);
+}
+.site-header .inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 18px var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--graphite);
+  letter-spacing: -0.01em;
+}
+.nav-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--graphite-55);
+}
+.nav-link:hover { color: var(--terracotta); }
+
+/* колонка */
+.col {
+  max-width: var(--col);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+article { padding: 64px 0 32px; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-55);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: clamp(32px, 5.5vw, 46px);
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin: 0 0 24px;
+  text-wrap: balance;
+}
+
+.lead {
+  font-size: 21px;
+  line-height: 1.55;
+  color: var(--graphite-75);
+  margin: 0 0 40px;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--graphite-55);
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--graphite-12);
+  margin-bottom: 40px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+h2 {
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 56px 0 20px;
+  text-wrap: balance;
+}
+
+p { margin: 0 0 22px; }
+
+strong { font-weight: 600; }
+
+/* выносные цифры */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 32px 0 36px;
+  border-top: 1px solid var(--graphite-12);
+  border-bottom: 1px solid var(--graphite-12);
+  padding: 24px 0;
+}
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--terracotta);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--graphite-75);
+  margin-top: 10px;
+}
+
+/* формула */
+.formula {
+  margin: 32px 0;
+  padding: 28px 24px;
+  background: var(--stone);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+
+/* определение в две строки */
+.define {
+  margin: 32px 0;
+  padding-left: 20px;
+  border-left: 2px solid var(--terracotta);
+  font-size: 17px;
+  line-height: 1.6;
+}
+.define div + div { margin-top: 10px; }
+.define b { font-weight: 600; }
+
+/* блок вопроса */
+.q {
+  padding: 20px 0;
+  border-top: 1px solid var(--graphite-12);
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 4px 12px;
+}
+.q:last-of-type { border-bottom: 1px solid var(--graphite-12); }
+.q-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--terracotta);
+  padding-top: 3px;
+}
+.q-text { font-weight: 600; font-size: 18px; }
+.q-note {
+  grid-column: 2;
+  font-size: 16px;
+  color: var(--graphite-75);
+  line-height: 1.55;
+}
+
+/* шкала */
+.scale { margin: 28px 0 36px; }
+.scale-row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--graphite-12);
+  align-items: start;
+}
+.scale-row:last-child { border-bottom: 1px solid var(--graphite-12); }
+.scale-key {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--terracotta);
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.scale-val { font-size: 17px; line-height: 1.55; }
+.scale-val b { display: block; font-weight: 600; margin-bottom: 4px; }
+
+/* шаги */
+.step { margin: 0 0 22px; }
+.step b { font-weight: 600; }
+
+/* финальный блок */
+.cta {
+  background: var(--graphite);
+  color: var(--paper);
+  margin-top: 72px;
+  padding: 56px 0;
+}
+.cta h2 {
+  color: var(--paper);
+  margin-top: 0;
+}
+.cta p { color: var(--paper-70); }
+.cta ol {
+  color: var(--paper-70);
+  padding-left: 22px;
+  margin: 0 0 26px;
+}
+.cta li { margin-bottom: 8px; }
+.cta-btn {
+  display: inline-block;
+  background: var(--terracotta);
+  color: var(--paper);
+  text-decoration: none;
+  padding: 15px 28px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+.cta-btn:hover { background: var(--terracotta-dark); }
+.cta-note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--paper-45);
+  margin-top: 16px;
+}
+
+/* признаки со стороны */
+.signs { margin: 28px 0 36px; }
+.sign {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 6px 12px;
+  padding: 20px 0;
+  border-top: 1px solid var(--graphite-12);
+}
+.sign:last-child { border-bottom: 1px solid var(--graphite-12); }
+.sign-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--terracotta);
+  padding-top: 4px;
+}
+.sign-title { font-weight: 600; font-size: 17px; }
+.sign-body { grid-column: 2; font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+.sign-body em { font-style: normal; color: var(--graphite); }
+
+.callout {
+  margin: 32px 0;
+  padding: 22px 24px;
+  background: var(--stone);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.callout p:last-child { margin-bottom: 0; }
+
+/* форма */
+.form { margin-top: 28px; display: grid; gap: 18px; }
+.field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-45);
+  margin-bottom: 8px;
+}
+.form input, .form textarea {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(244,242,236,0.25);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  padding: 12px 14px;
+  line-height: 1.5;
+}
+.form textarea { resize: vertical; min-height: 62px; }
+.form input:focus, .form textarea:focus {
+  outline: none;
+  border-color: var(--terracotta);
+}
+.form input::placeholder, .form textarea::placeholder { color: rgba(244,242,236,0.35); }
+.form-status {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--terracotta);
+  min-height: 16px;
+}
+
+/* источники */
+.sources {
+  margin: 56px 0 0;
+  padding-top: 28px;
+  border-top: 1px solid var(--graphite-12);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--graphite-55);
+}
+.sources b { color: var(--graphite-75); font-weight: 500; }
+.sources p { margin-bottom: 14px; }
+
+.site-footer {
+  border-top: 1px solid var(--graphite-12);
+  margin-top: 64px;
+}
+.site-footer .inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--graphite-55);
+}
+.site-footer a { text-decoration: none; }
+
+a:focus-visible, .cta-btn:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  .stats { grid-template-columns: 1fr; gap: 20px; }
+  .stat-num { font-size: 26px; }
+  article { padding-top: 44px; }
+  .lead { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="/blog/">Блог</a>
+  </div>
+</header>
+
+<article>
+  <div class="col">
+    <div class="eyebrow">Подход к делу</div>
+    <h1>Почему рост всегда заканчивается через полтора месяца</h1>
+    <p class="lead">Полтора месяца — столько длится подъём, если взяться всерьёз: новый режим, новая система, новые инструменты и вложенные усилия. Первые недели видно результат, ещё есть энергия и всё подтверждается. Но позже рост замедляется, потом останавливается, а потом вообще откатывается назад.</p>
+    <div class="meta">
+      <span>8 сентября 2026</span>
+      <span>12 минут чтения</span>
+    </div>
+
+    <p>Дальше людям свойственно делать одно и то же: прибавлять. Больше часов, больше нагрузки, больше денег. Логика понятная, раньше же работало.</p>
+
+    <p>В спорте эту ситуацию изучают уже сорок лет. Вывод там простой: прибавлять — худшее из возможных решений. Плато возникает не от нехватки усилий.</p>
+
+    <h2>Профессионалы 80% времени работают легко</h2>
+
+    <p>Стивен Сейлер посмотрел, как реально распределяют нагрузку элитные спортсмены выносливости. Не как советуют в книгах, а как есть на самом деле. Опубликовал в 2010 году:</p>
+
+    <div class="stats">
+      <div>
+        <div class="stat-num">80%</div>
+        <div class="stat-label">времени — низкая интенсивность</div>
+      </div>
+      <div>
+        <div class="stat-num">6–8%</div>
+        <div class="stat-label">средняя</div>
+      </div>
+      <div>
+        <div class="stat-num">12–14%</div>
+        <div class="stat-label">высокая</div>
+      </div>
+    </div>
+
+    <p>Килиан Жорнет, один из сильнейших горных бегунов мира, в 2016 году набрал 1300 часов тренировок. Больше половины — лёгкие.</p>
+
+    <p>Люди, для которых это профессия, четыре дня из пяти работают так, что со стороны это выглядит как ничего особенного даже для среднего любителя.</p>
+
+    <p>Любитель же делает наоборот. Каждая «тренировка» ощущается как подвиг: тяжело, значит правильно. Именно поэтому он упирается в потолок за полтора месяца.</p>
+
+    <h2>Лыжнику убрали нагрузку — он побежал на 35% быстрее</h2>
+
+    <p>Лыжник национального уровня с VO2max 90 (то есть с выдающимися врождёнными данными) — два года стоял на плато. Ему не добавили работы, а убрали: перевели на тренировки только на низком пульсе.</p>
+
+    <p>Через четыре месяца он бежал на 35% быстрее при том же субъективном усилии.</p>
+
+    <p>Он не стал упорнее. Просто перестал тратить всё на «сегодняшний» результат.</p>
+
+    <p>То же самое случилось на уровне страны. В 1980-х сборная Германии по лыжным гонкам ушла от подхода «тренируемся на гонках» к «строим базу годами, а стартов 3–4 в сезоне». Через десять лет они выигрывали всё, что можно было выиграть.</p>
+
+    <h2>Две разные работы, которые все путают</h2>
+
+    <p>Боб Боумен, тренер Майкла Фелпса, делит любую тренировку на два типа.</p>
+
+    <p><strong>Работа на потенциал</strong> строит базовые возможности: аэробную систему, силу, технику. Эффект приходит месяцами и держится годами.</p>
+
+    <p><strong>Работа на использование</strong> выжимает максимум из того, что уже построено. Эффект приходит за недели и держится недолго.</p>
+
+    <p>Нужны обе. И всё решает пропорция.</p>
+
+    <p>Тот, кто подходит к делу любительски, почти всё время работает на использование, потому что нужно ощущение результата сегодня. Тот, кто подходит профессионально, строит потенциал и терпеливо ждёт, потому что месяц ничего не происходит.</p>
+
+    <p>Разница не в характере. Первый оптимизирует ближайшие шесть недель, второй — ближайшие три года.</p>
+
+    <h2>В работе то же самое</h2>
+
+    <p>Подставьте вместо тренировок что угодно.</p>
+
+    <p>Предприниматель, который весь год живёт в режиме «закрыть месяц», выжимает существующую модель. После любого нового инструмента у него полтора месяца растёт результат, потом останавливается, а потом и вовсе откатывается назад, и добавляется разочарование в инструменте, который вроде бы работал.</p>
+
+    <p>Руководитель, который каждую неделю тушит пожар и ни одной недели не строит базу, — делает то же самое.</p>
+
+    <p>Человек, который в январе берётся за здоровье на максимальных оборотах, — делает то же самое, только цикл ещё короче.</p>
+
+    <p>Признак один: <strong>всё, что не даёт результата на этой неделе, ощущается как потерянное время.</strong></p>
+
+    <h2>Чем сильнее давишь на результат, тем хуже результат</h2>
+
+    <p>Тимоти Голви тренировал теннис и заметил странный факт. Чем подробнее он объяснял технику, тем хуже ученик играл. А если просто попросить смотреть, куда летит мяч — вверх, вниз, ровно, — удар исправлялся сам за несколько минут.</p>
+
+    <p>Отсюда его формула:</p>
+
+    <div class="formula">Результативность = Потенциал − Вмешательство</div>
+
+    <p>Люди работают только над первым слагаемым: ещё курс, ещё книга, ещё совет. Но результат растёт быстрее, если убрать второе слагаемое — контроль, самокритику и попытки себя заставить.</p>
+
+    <p>Пример из работы Голви. Стоматолог жаловался на очередь в приёмной. Голви не дал ни одной рекомендации. Он предложил сотрудникам каждый день угадывать, сколько пациентов ждали дольше двадцати минут. Через две недели таких стало меньше одного в день. Никто ничего не внедрял. Только пристальное наблюдение за «мячом».</p>
+
+    <p>У любой работы три стороны: <strong>результативность, обучение, удовольствие</strong>. Уберите обучение — результативность упадёт примерно через год. Уберите удовольствие — сначала упадёт обучение, а потом и результативность.</p>
+
+    <p>Ещё один пример. Менеджер по продажам отменил команде планы на квартал. Вместо плана попросил каждого оценивать свою радость от работы по шкале 1–10 и поднимать её. К концу квартала команда обогнала всех коллег по цеху: время с клиентами сократилось на 25%, бумажная работа на 30%, выручка выросла на 40%.</p>
+
+    <p>Отсюда короткое определение:</p>
+
+    <div class="define">
+      <div><b>Любительски:</b> работа — это делание ради результата.</div>
+      <div><b>Профессионально:</b> работа — это развитие способностей в процессе получения результата.</div>
+    </div>
+
+    <h2>Амбиция помогает профессионалу и губит любителя</h2>
+
+    <p>Амбиция сама по себе не хорошая и не плохая. Она множитель: усиливает то, что за ней стоит.</p>
+
+    <p>У человека с профессиональным подходом за амбицией стоит база. Чем больше он хочет, тем длиннее горизонт и тем спокойнее он вкладывается в потенциал: три года работы под одну цель — нормально. Здесь амбиция работает как топливо, и без неё профессионал скучает и уходит из дела.</p>
+
+    <p>У человека с любительским подходом за амбицией не стоит ничего, кроме желания. И тогда она делает единственное, что умеет: заставляет прибавлять. Больше нагрузки, больше вложений, больше риска. Откат от этого наступает не мягче, а жёстче — ставка-то была выше.</p>
+
+    <p>Разница видна по одному признаку: <strong>названо ли препятствие.</strong> У профессионала оно названо всегда — он на него и работает. У любителя вместо препятствия стоит ещё одна формулировка цели.</p>
+
+    <p>Поэтому «просто захотеть сильнее» — самый дорогой из бесплатных советов.</p>
+
+    <h2>Мечта снижает результат</h2>
+
+    <p>Габриэле Эттинген двадцать лет проверяла то, что всем казалось очевидным: если ярко представить желаемое будущее, шансы растут.</p>
+
+    <p>Получилось наоборот. Мозг плохо отличает воображаемое достижение от настоящего. Пофантазировав, он частично закрывает задачу: снижает давление, расслабляется, перестаёт искать информацию, которая мечту оспорит.</p>
+
+    <p>Её первое исследование, 1991 год. 25 женщин в программе снижения веса. Через год те, кто <strong>ожидал</strong> успеха и мог обосновать это прошлым опытом, сбросили в среднем на 12 кг больше. Те, кто ярче <strong>фантазировал</strong> — видел себя стройным, представлял, как легко проходит мимо десерта, — на 11 кг меньше.</p>
+
+    <p>Вывод не «перестать мечтать». Но мечту нельзя оставлять одну. Рядом с ней сразу должно стоять сформулированное препятствие внутри себя. Тогда возникает связка «чтобы получить это — надо снять вот это», и она работает без вашего участия.</p>
+
+    <h2>Любительский подход — не оскорбление</h2>
+
+    <p>У него другая задача: дать ощущение сейчас. Это законно. Человек, который бегает по выходным ради удовольствия, ничего не должен оптимизировать. Предприниматель, которому надо дожить до декабря, тоже.</p>
+
+    <p>Проблема возникает в одном месте: <strong>когда человек хочет профессионального результата, оставаясь в любительском подходе.</strong> Тогда он годами упирается в потолок, добавляет усилия и винит себя — хотя дело не в нём, а в распределении ресурсов.</p>
+
+    <h2>Семь вопросов</h2>
+
+    <p>Одно правило, без которого тест бесполезен. <strong>Отвечайте фактами прошлого, а не намерениями.</strong></p>
+
+    <p>Это принцип Роба Фитцпатрика: люди почти не врут о том, что уже случилось, и охотно врут о том, что собираются делать. «Я готов работать вдолгую» — не ответ. Ответ — что вы делали в марте.</p>
+
+    <div class="q">
+      <div class="q-num">01</div>
+      <div class="q-text">Что вы делали последние три месяца регулярно, не видя результата?</div>
+      <div class="q-note">Профессионально — называете действие и частоту. Любительски — не называете ничего или называете то, что бросили, когда стало скучно.</div>
+    </div>
+    <div class="q">
+      <div class="q-num">02</div>
+      <div class="q-text">Что должно быть через год — и что было год назад?</div>
+      <div class="q-note">Профессионально — две точки и разница. Любительски — только сейчас: сейчас плохо, сейчас надо срочно.</div>
+    </div>
+    <div class="q">
+      <div class="q-num">03</div>
+      <div class="q-text">Что вы уже пробовали и что из этого стоило денег или месяцев?</div>
+      <div class="q-note">Профессионально — суммы и сроки. Любительски — «читал, смотрел, слушал».</div>
+    </div>
+    <div class="q">
+      <div class="q-num">04</div>
+      <div class="q-text">Последний крупный провал — что вы после него изменили в том, <em>как</em> работаете?</div>
+      <div class="q-note">Профессионально — меняете процесс. Любительски — меняете обстоятельства и людей: не тот рынок, не та команда, не тот год.</div>
+    </div>
+    <div class="q">
+      <div class="q-num">05</div>
+      <div class="q-text">Что мешает?</div>
+      <div class="q-note">Профессионально — называете препятствие, на которое можете влиять. Любительски — повторяете цель другими словами.</div>
+    </div>
+    <div class="q">
+      <div class="q-num">06</div>
+      <div class="q-text">Насколько вероятно, что получится, от 0 до 100 — и на чём основана эта цифра?</div>
+      <div class="q-note">Профессионально — на прошлом опыте. Если обосновать нечем, это не оценка, а фантазия. Разница между ними у Эттинген измеряется килограммами и годами.</div>
+    </div>
+    <div class="q">
+      <div class="q-num">07</div>
+      <div class="q-text">Что вы обещали себе сделать к прошлой неделе — и сделали?</div>
+      <div class="q-note">Самый сильный вопрос: это поведение, а не рассказ о себе.</div>
+    </div>
+
+    <h2>Как считать</h2>
+
+    <div class="scale">
+      <div class="scale-row">
+        <div class="scale-key">5–7</div>
+        <div class="scale-val"><b>Профессиональный подход</b>Вам не нужна мотивация, нужны нагрузка и точность. Плато у вас — вопрос метода.</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-key">3–4</div>
+        <div class="scale-val"><b>Переход</b>Подход появляется, но срывается на первом периоде без видимого результата. Помогает внешний ритм — регулярность, которую держит не только ваше настроение.</div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-key">0–2</div>
+        <div class="scale-val"><b>Любительский подход</b>Это не приговор. Это значит, что любой курс и любые вложения дадут вам полтора месяца подъёма и откат. Сначала меняется подход, потом есть смысл вкладываться.</div>
+      </div>
+    </div>
+
+    <h2>Шесть признаков, которые видно со стороны</h2>
+
+    <p>Семь вопросов работают, когда вы отвечаете за себя. Но иногда нужно понять про другого человека — сотрудника, партнёра, клиента, которому собираетесь что-то порекомендовать. Задавать ему тест неудобно, да и незачем.</p>
+
+    <p>Тогда смотрите на то, что видно снаружи, без единого вопроса.</p>
+
+    <div class="signs">
+      <div class="sign">
+        <div class="sign-num">01</div>
+        <div class="sign-title">У него есть записи</div>
+        <div class="sign-body">Дневник, таблица, трекер, цифры за прошлый месяц. Профессионал измеряет, любитель помнит. Если человек не может показать данные о собственной работе — он и не управляет ею.</div>
+      </div>
+      <div class="sign">
+        <div class="sign-num">02</div>
+        <div class="sign-title">В календаре есть повторяющееся, а не только срочное</div>
+        <div class="sign-body">Слоты, которые стоят каждую неделю месяцами и которые он не двигает под «горит». У любителя календарь состоит из разовых событий.</div>
+      </div>
+      <div class="sign">
+        <div class="sign-num">03</div>
+        <div class="sign-title">Он говорит о процессе, а не только о результате</div>
+        <div class="sign-body">«Сейчас я работаю над тем-то» вместо «мне надо выйти на столько-то». Проверяется в первые пять минут любого разговора.</div>
+      </div>
+      <div class="sign">
+        <div class="sign-num">04</div>
+        <div class="sign-title">Он спокойно говорит о том, что сейчас не растёт</div>
+        <div class="sign-body">Плато не вызывает у него паники и смены курса. Любителя плато выбивает: он либо бросает, либо резко меняет метод.</div>
+      </div>
+      <div class="sign">
+        <div class="sign-num">05</div>
+        <div class="sign-title">Он занимается одним и тем же дольше года</div>
+        <div class="sign-body">Тот же метод, тот же тренер, тот же инструмент. Не «каждые два месяца новое». Смена подхода раз в квартал — самый надёжный внешний признак любителя.</div>
+      </div>
+      <div class="sign">
+        <div class="sign-num">06</div>
+        <div class="sign-title">Есть кто-то, перед кем он отчитывается</div>
+        <div class="sign-body">Тренер, партнёр, совет, регулярная встреча. Не потому что заставляют — потому что он сам это устроил. И он приходит вовремя и делает то, о чём договорились.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>Как этим пользоваться.</strong> Четыре признака из шести и выше — человеку есть смысл давать сложные инструменты, он их доведёт. Два и меньше — что бы вы ему ни порекомендовали, через полтора месяца он это бросит, и виноват окажется инструмент.</p>
+      <p>Это не про то, хороший он человек или плохой. Это про то, что ему сейчас подойдёт.</p>
+    </div>
+
+    <h2>Что делать, если насчитали мало</h2>
+
+    <p>Не начинать с интенсивности, а наоборот.</p>
+
+    <p class="step"><b>Одна вещь на три месяца.</b> Выберите то, что будете делать, заранее зная: первые два месяца результата не будет. Одна, не пять. Три коротких раза в неделю сильнее одного героического.</p>
+
+    <p class="step"><b>Препятствие рядом с целью.</b> Не обстоятельство, а то, что делаете или не делаете вы. Без этой строки цель работает как фантазия и разряжает.</p>
+
+    <p class="step"><b>Один вопрос в неделю.</b> Что я узнал за эту неделю через саму работу? Не «выполнил ли план». Именно узнал.</p>
+
+    <p>Через три месяца перепройдите семь вопросов. Это и будет замер — по фактам, а не по ощущениям.</p>
+  </div>
+
+  <div class="cta">
+    <div class="col">
+      <h2>Если вы насчитали 5–7 и всё равно стоите</h2>
+      <p>Тогда полтора месяца — не про вас, и вся эта статья вам не нужна. У вас другая задача: подход есть, а рост всё равно упёрся.</p>
+      <p>Напишите мне в личку четыре строки:</p>
+      <ol>
+        <li>ваш счёт по семи вопросам;</li>
+        <li>какая у вас цель;</li>
+        <li>что вы делаете для её достижения три месяца подряд, не бросая;</li>
+        <li>что мешает — одним предложением.</li>
+      </ol>
+      <p>Четыре строки, не письмо. Я отвечаю всем, кто их написал. Если цель на ближайший год такая, что её неловко произносить вслух, — тем более пишите.</p>
+      <form class="form" id="letter" onsubmit="sendToTelegram(event)">
+        <div>
+          <label class="field-label" for="f-score">01 · Счёт по семи вопросам</label>
+          <input type="text" id="f-score" placeholder="например: 6 из 7" required>
+        </div>
+        <div>
+          <label class="field-label" for="f-goal">02 · Какая у вас цель</label>
+          <textarea id="f-goal" rows="2" placeholder="одно предложение" required></textarea>
+        </div>
+        <div>
+          <label class="field-label" for="f-doing">03 · Что делаете три месяца подряд, не бросая</label>
+          <textarea id="f-doing" rows="2" placeholder="действие и частота" required></textarea>
+        </div>
+        <div>
+          <label class="field-label" for="f-block">04 · Что мешает</label>
+          <textarea id="f-block" rows="2" placeholder="одно предложение" required></textarea>
+        </div>
+        <div>
+          <button type="submit" class="cta-btn">Отправить в Telegram</button>
+          <div class="form-status" id="f-status"></div>
+        </div>
+      </form>
+      <div class="cta-note">Откроется чат @shapovalov_vsegda с готовым текстом. Если текст не подставился — он уже в буфере обмена, вставьте вручную.</div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="sources">
+      <p><b>Что здесь эксперимент, а что практика.</b> Данные о распределении интенсивности (Сейлер) и исследования мечты (Эттинген) — измерения с контрольными группами. Различение Боумена и треугольник Голви — обобщённая практика тренеров на тысячах случаев: сильная рабочая модель, но не контролируемый эксперимент.</p>
+      <p><b>Источники.</b> Хаус, Джонстон, Жорнет — «Training for the Uphill Athlete». Голви — «Работа как внутренняя игра». Эттинген — «Rethinking Positive Thinking». Румельт — «Хорошая стратегия, плохая стратегия». Фитцпатрик — «Спроси маму».</p>
+    </div>
+  </div>
+</article>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_notes">@shapovalov_notes</a>
+  </div>
+</footer>
+
+<script>
+// полоска прогресса чтения
+(function () {
+  var bar = document.getElementById('progress');
+  function update() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+})();
+
+// сборка письма и открытие Telegram
+function sendToTelegram(e) {
+  e.preventDefault();
+  var v = function (id) { return document.getElementById(id).value.trim(); };
+  var msg =
+    'Статья про полтора месяца. Мои четыре строки:\n\n' +
+    '1. Счёт: ' + v('f-score') + '\n' +
+    '2. Цель: ' + v('f-goal') + '\n' +
+    '3. Делаю три месяца подряд: ' + v('f-doing') + '\n' +
+    '4. Мешает: ' + v('f-block');
+
+  var status = document.getElementById('f-status');
+  // кладём в буфер на случай, если Telegram не подставит текст
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(msg).then(function () {
+      status.textContent = 'Текст скопирован. Открываю Telegram…';
+    }, function () {
+      status.textContent = 'Открываю Telegram…';
+    });
+  } else {
+    status.textContent = 'Открываю Telegram…';
+  }
+
+  window.open('https://t.me/shapovalov_vsegda?text=' + encodeURIComponent(msg), '_blank');
+}
+</script>
+
+</body>
+</html>

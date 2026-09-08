@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Блог · Алексей Шаповалов</title>
+<meta name="description" content="Статьи о том, как устроен рост: подход к делу, работа с целями, системное мышление. С опорой на исследования, а не на мотивацию.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-12: rgba(26,26,26,0.12);
+  --terracotta: #B85C38;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--terracotta); }
+.site-header { border-bottom: 1px solid var(--graphite-12); }
+.site-header .inner, .site-footer .inner {
+  max-width: 1000px; margin: 0 auto;
+  padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand { font-weight: 500; font-size: 15px; color: var(--graphite); }
+.nav-link {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--graphite-55);
+}
+main { max-width: 760px; margin: 0 auto; padding: 72px 24px 40px; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--graphite-55); margin-bottom: 18px;
+}
+h1 {
+  font-size: clamp(30px, 5vw, 40px); line-height: 1.15;
+  font-weight: 500; letter-spacing: -0.025em; margin: 0 0 20px;
+}
+.intro { font-size: 19px; color: var(--graphite-75); margin: 0 0 56px; max-width: 560px; }
+.post {
+  display: block; text-decoration: none; color: inherit;
+  padding: 32px 0;
+  border-top: 1px solid var(--graphite-12);
+}
+.post:last-of-type { border-bottom: 1px solid var(--graphite-12); }
+.post-meta {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--graphite-55); margin-bottom: 12px;
+  display: flex; gap: 18px; flex-wrap: wrap;
+}
+.post h2 {
+  font-size: 25px; line-height: 1.25; font-weight: 500;
+  letter-spacing: -0.02em; margin: 0 0 10px; text-wrap: balance;
+}
+.post:hover h2 { color: var(--terracotta); }
+.post p { margin: 0; color: var(--graphite-75); font-size: 16px; }
+.site-footer { border-top: 1px solid var(--graphite-12); margin-top: 72px; }
+.site-footer .inner { font-size: 14px; color: var(--graphite-55); flex-wrap: wrap; }
+.site-footer a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+@media (max-width: 600px) { main { padding-top: 48px; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="https://t.me/shapovalov_notes">Канал</a>
+  </div>
+</header>
+
+<main>
+  <div class="eyebrow">Блог</div>
+  <h1>Как на самом деле устроен рост</h1>
+  <p class="intro">Статьи с опорой на исследования, а не на мотивацию. Про подход к делу, работу с целями и то, почему усилий обычно оказывается недостаточно.</p>
+
+  <a class="post" href="/blog/rost-poltora-mesyaca.html">
+    <div class="post-meta">
+      <span>8 сентября 2026</span>
+      <span>12 минут</span>
+    </div>
+    <h2>Почему рост всегда заканчивается через полтора месяца</h2>
+    <p>Профессионалы 80% времени работают легко. Чем любительский подход отличается от профессионального, при чём тут амбиция и семь вопросов, чтобы понять, где вы.</p>
+  </a>
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a>
+  </div>
+</footer>
+
+</body>
+</html>
