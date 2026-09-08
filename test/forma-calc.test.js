@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, lifeExpectancy, fitnessAgeNTNU } from '../forma-calc.js';
 import { NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -66,4 +66,50 @@ test('у таблицы беговых норм есть источник с н�
   assert.ok(src.authors, 'нет authors');
   assert.ok(src.year, 'нет year');
   assert.ok(src.url, 'нет url');
+});
+
+test('у каждой таблицы норм указан источник', () => {
+  for (const [name, entry] of Object.entries(NORMS)) {
+    assert.ok(entry.source, `нет поля source у таблицы ${name}`);
+    assert.ok(entry.source.title, `нет названия источника у ${name}`);
+    assert.ok(entry.source.year, `нет года у ${name}`);
+    assert.ok(entry.source.url, `нет ссылки у ${name}`);
+  }
+});
+
+test('таблица VO2max подбирается по полу и возрастной группе', () => {
+  const t = vo2maxTable('m', 34);
+  assert.equal(typeof t.p50, 'number');
+  assert.ok(t.p50 > t.p25);
+  assert.ok(t.p95 > t.p50);
+});
+
+test('возраст тела — это возраст, где VO2max человека равен медиане', () => {
+  const sex = 'm';
+  const bodyAge = bodyAgeFromVo2max(vo2maxTable(sex, 45).p50, sex);
+  assert.ok(Math.abs(bodyAge - 45) <= 5, `ожидали около 45, получили ${bodyAge}`);
+});
+
+test('высокий VO2max даёт возраст тела моложе, низкий — старше', () => {
+  const young = bodyAgeFromVo2max(55, 'm');
+  const old = bodyAgeFromVo2max(28, 'm');
+  assert.ok(young < old);
+});
+
+test('при одном паспортном возрасте молодое тело даёт больший итог', () => {
+  assert.ok(lifeExpectancy(30, 45, 'm') > lifeExpectancy(60, 45, 'm'));
+});
+
+test('возраст тела равен паспортному — получается обычная таблица дожития', () => {
+  const v = lifeExpectancy(45, 45, 'm');
+  assert.ok(v > 45 && v < 110, `неправдоподобный итог ${v}`);
+});
+
+test('фитнес-возраст NTNU считается без VO2max', () => {
+  const age = fitnessAgeNTNU({
+    sex: 'm', age: 38, bmi: 24.6, restingHR: 52,
+    trainingFreq: 5, trainingIntensity: 3, trainingDuration: 3,
+  });
+  assert.equal(typeof age, 'number');
+  assert.ok(age > 0 && age < 100);
 });

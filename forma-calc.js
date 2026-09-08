@@ -67,3 +67,81 @@ export function ageGradeClass(pct) {
   if (pct < 90) return 'мировой уровень';
   return 'уровень мирового рекорда';
 }
+
+// Выбор возрастной группы: берём ближайший ключ таблицы снизу
+// (таблицы даны по группам/шагам возраста, за пределами берём крайнее значение)
+function ageBucket(age, buckets) {
+  const keys = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+  let chosen = keys[0];
+  for (const k of keys) if (age >= k) chosen = k;
+  return chosen;
+}
+
+// Таблица перцентилей VO2max (реестр FRIEND) для нужного пола и возраста
+export function vo2maxTable(sex, age) {
+  const bySex = NORMS.vo2max[sex];
+  return bySex[ageBucket(age, bySex)];
+}
+
+// Возраст тела: ищем возраст, в котором собственный VO2max человека
+// является медианой (p50). Между узлами интерполируем линейно,
+// за краями таблицы обрезаем крайним значением.
+export function bodyAgeFromVo2max(vo2max, sex) {
+  const bySex = NORMS.vo2max[sex];
+  const ages = Object.keys(bySex).map(Number).sort((a, b) => a - b);
+  const medians = ages.map((a) => ({ age: a + 5, v: bySex[a].p50 })); // центр десятилетия
+
+  if (vo2max >= medians[0].v) return medians[0].age;
+  const last = medians[medians.length - 1];
+  if (vo2max <= last.v) return last.age;
+
+  for (let i = 0; i < medians.length - 1; i += 1) {
+    const a = medians[i];
+    const b = medians[i + 1];
+    if (vo2max <= a.v && vo2max >= b.v) {
+      const share = (a.v - vo2max) / (a.v - b.v);
+      return Math.round(a.age + share * (b.age - a.age));
+    }
+  }
+  return last.age;
+}
+
+// До скольки лет в среднем доживает человек.
+// Важно: к ПАСПОРТНОМУ возрасту прибавляем остаток жизни, ожидаемый у человека
+// с таким ВОЗРАСТОМ ТЕЛА. Прибавлять остаток к возрасту тела нельзя — из-за
+// эффекта дожития получится, что молодое тело живёт меньше старого
+// (у молодого тела остаток жизни исчисляется от малого возраста в таблице
+// смертности, и складывать его с возрастом тела, а не с паспортным, занизит итог).
+export function lifeExpectancy(bodyAge, chronoAge, sex) {
+  const table = NORMS.lifeTable[sex];
+  const remaining = table[ageBucket(bodyAge, table)];
+  return Math.round(chronoAge + remaining);
+}
+
+// Индекс физической активности (шкала Kurtze, используется в модели Nes/Wisløff,
+// HUNT Study). Частота × интенсивность × продолжительность тренировки.
+// Источник: Bye A. и соавт., PLoS ONE, 2013 — см. normy-vo2max.md, набор 3.
+function kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration) {
+  return trainingFreq * trainingIntensity * trainingDuration;
+}
+
+// Оценка VO2peak без нагрузочного теста — формула HUNT/NTNU (Nes, Janszky,
+// Vatten, Nilsen, Aspenes, Wisløff, MSSE, 2011), версия с ИМТ вместо окружности
+// талии, подтверждённая дословной цитатой в Jalene S. и соавт., Frontiers in
+// Physiology, 2019 (см. normy-vo2max.md, набор 3). Версия с окружностью талии
+// не подтверждена рецензируемым источником и намеренно не используется.
+function estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
+  const pa = kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration);
+  if (sex === 'f') {
+    return 70.77 - 0.244 * age - 0.749 * bmi - 0.107 * restingHR + 0.213 * pa;
+  }
+  return 92.05 - 0.327 * age - 0.933 * bmi - 0.167 * restingHR + 0.257 * pa;
+}
+
+// Фитнес-возраст NTNU — запасной путь, когда VO2max неизвестен.
+// Сначала оцениваем VO2peak по неспортивным показателям, потом переводим
+// его в возраст тела через ту же таблицу FRIEND.
+export function fitnessAgeNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
+  const estimated = estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration });
+  return bodyAgeFromVo2max(estimated, sex);
+}
