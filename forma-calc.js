@@ -199,13 +199,15 @@ function bodyFatLevel(p) {
   return levelFromPercentile(100 - p);
 }
 
-// Категории ИМТ по ВОЗ
+// Категории ИМТ по ВОЗ. Пороги — данные, лежат в NORMS.bmi.thresholds
+// (forma-norms.js), здесь только логика сравнения.
 function bmiCategory(bmi) {
-  if (bmi < 18.5) return 'недостаточный вес';
-  if (bmi < 25) return 'норма';
-  if (bmi < 30) return 'избыточный вес';
-  if (bmi < 35) return 'ожирение I степени';
-  if (bmi < 40) return 'ожирение II степени';
+  const { underweight, normal, overweight, obeseI, obeseII } = NORMS.bmi.thresholds;
+  if (bmi < underweight) return 'недостаточный вес';
+  if (bmi < normal) return 'норма';
+  if (bmi < overweight) return 'избыточный вес';
+  if (bmi < obeseI) return 'ожирение I степени';
+  if (bmi < obeseII) return 'ожирение II степени';
   return 'ожирение III степени';
 }
 

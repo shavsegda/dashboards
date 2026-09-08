@@ -123,20 +123,23 @@ export const NORMS = {
     threshold: { m: 7.0, f: 5.5 },
   },
 
-  // ИМТ — категории ВОЗ (широко тиражируются CDC и другими агентствами)
+  // ИМТ — категории ВОЗ. Первоисточник найден и проверен по правке ревью
+  // (WebSearch + WebFetch): WHO Technical Report Series 894, «Obesity:
+  // preventing and managing the global epidemic», WHO, 2000 год — содержит
+  // ровно те же пороги (18,5 / 25 / 30 / 35 / 40), что и в normy-telo-riski.md,
+  // А3. Официальная страница ВОЗ (iris.who.int/handle/10665/42330) отдаёт 403
+  // автоматическим запросам — url ниже ведёт на зеркало PDF, содержимое
+  // которого сверено напрямую (см. отчёт).
   bmi: {
     source: {
-      title: 'Классификация индекса массы тела для взрослых по критериям ВОЗ',
-      authors: 'World Health Organization (приведено по CDC Adult BMI Calculator)',
-      // Год не указан явно в собранном файле норм — источник даёт только ссылку
-      // на страницу CDC без даты публикации самой классификации ВОЗ. 2000 —
-      // год документа ВОЗ, который ввёл эти пороги (WHO Technical Report
-      // Series 894, «Obesity: Preventing and Managing the Global Epidemic»);
-      // это не число из собранного файла, см. отчёт.
+      title: 'Obesity: preventing and managing the global epidemic. Report of a WHO consultation. WHO Technical Report Series 894',
+      authors: 'World Health Organization',
       year: 2000,
-      url: 'https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html',
+      url: 'https://cfmws.ca/CFMWS/media/Kingston/WHO_TRS_894.pdf',
     },
     kind: 'clinical', // консенсусная классификация ВОЗ, не эмпирическое популяционное распределение
+    // пороги ИМТ, кг/м² — границы категорий по возрастанию
+    thresholds: { underweight: 18.5, normal: 25, overweight: 30, obeseI: 35, obeseII: 40 },
   },
 
   // Отношение окружности талии к росту — порог 0,5 (Ashwell)
