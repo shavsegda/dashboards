@@ -44,6 +44,11 @@ export function levelFromPercentile(p) {
 export function ageGrade(sex, age, distanceKm, timeSec) {
   const entry = NORMS.running[sex][String(distanceKm)];
   if (!entry) return null; // нет данных по этой дистанции (например, миля — см. отчёт)
+  if (typeof timeSec !== 'number' || !Number.isFinite(timeSec) || timeSec <= 0) return null;
+  // Результат быстрее открытого мирового стандарта — это опечатка, а не
+  // результат. Раньше «24» в поле пяти километров давало «3332% от мирового
+  // стандарта, уровень мирового рекорда» (правка по ревью задачи 7).
+  if (timeSec < entry.openStandardSec) return null;
   const bucket = ageBucket(age, entry.factors);
   if (bucket === undefined) return null; // пустая таблица коэффициентов
   const factor = entry.factors[bucket];
@@ -116,6 +121,45 @@ export function bodyAgeFromVo2max(vo2max, sex) {
   return last.age;
 }
 
+// Возраст, для которого главную цифру вообще можно считать: пересечение
+// покрытия таблицы FRIEND и таблицы дожития. Границы лежат в данных
+// (forma-norms.js), здесь только пересечение.
+// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 7 (опасно): без этой проверки подросток 14
+// лет получал «доживают до 58», а столетний — «до 111». Формула «паспортный
+// возраст плюс остаток жизни» разваливается за границами таблиц, потому что
+// ageBucket() молча подставляет крайнюю строку.
+export function lifeExpectancyCoverage() {
+  const a = NORMS.vo2max.ageCoverage;
+  const b = NORMS.lifeTable.ageCoverage;
+  return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
+}
+
+export function ageCovered(age) {
+  const c = lifeExpectancyCoverage();
+  return typeof age === 'number' && Number.isFinite(age) && age >= c.min && age <= c.max;
+}
+
+// Границы, между которыми вообще может оказаться возраст тела: центры
+// младшей и старшей возрастных групп таблицы FRIEND. Возраст тела упирается
+// в них — оговорку про пол показываем только когда это действительно так.
+export function bodyAgeBounds(sex) {
+  const bySex = NORMS.vo2max[sex];
+  const ages = Object.keys(bySex).map(Number).sort((a, b) => a - b);
+  return { min: ages[0] + 5, max: ages[ages.length - 1] + 5 };
+}
+
+// Оценка VO2max по тесту Купера. Только для мужчин: выборка оригинала —
+// 115 мужчин-военных, женщин в ней не было, отдельной женской формулы не
+// опубликовано. Применять мужскую к женщинам — то же нарушение, за которое
+// правили силовые нормы. Коэффициенты и список полов — в данных.
+export function vo2maxFromCooper(distanceM, sex) {
+  const spec = NORMS.cooper;
+  if (!spec.applicableSex.includes(sex)) return null;
+  if (typeof distanceM !== 'number' || !Number.isFinite(distanceM) || distanceM <= 0) return null;
+  const value = (distanceM - spec.formula.offsetM) / spec.formula.divisor;
+  return value > 0 ? value : null;
+}
+
 // До скольки лет в среднем доживает человек.
 // Важно: к ПАСПОРТНОМУ возрасту прибавляем остаток жизни, ожидаемый у человека
 // с таким ВОЗРАСТОМ ТЕЛА. Прибавлять остаток к возрасту тела нельзя — из-за
@@ -123,6 +167,7 @@ export function bodyAgeFromVo2max(vo2max, sex) {
 // (у молодого тела остаток жизни исчисляется от малого возраста в таблице
 // смертности, и складывать его с возрастом тела, а не с паспортным, занизит итог).
 export function lifeExpectancy(bodyAge, chronoAge, sex) {
+  if (!ageCovered(chronoAge)) return null; // за границами таблиц не считаем вовсе
   const table = NORMS.lifeTable[sex];
   const remaining = table[ageBucket(bodyAge, table)];
   return Math.round(chronoAge + remaining);
@@ -133,6 +178,11 @@ export function lifeExpectancy(bodyAge, chronoAge, sex) {
 // Источник программно доступен в NORMS.ntnuFormula.activityIndexSource
 // (Bye A. и соавт., PLoS ONE, 2013 — см. normy-vo2max.md, набор 3).
 function kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration) {
+  // Правило анкеты HUNT: при частоте ниже порога («никогда», «реже раза в
+  // неделю») индекс равен нулю независимо от остальных ответов. Сам порог —
+  // в данных, раньше это правило жило в разметке страницы.
+  const zeroBelow = NORMS.ntnuFormula.activityIndex.zeroBelowFrequency;
+  if (typeof trainingFreq !== 'number' || trainingFreq < zeroBelow) return 0;
   return trainingFreq * trainingIntensity * trainingDuration;
 }
 
@@ -175,7 +225,7 @@ export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMusc
       value: bodyFatPct,
       percentile: bodyFatPercentile,
       level: bodyFatLevel(bodyFatPercentile), // у процента жира меньше значит лучше
-      note: 'Перцентиль рассчитан по измерениям методом DXA (NHANES). Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
+      note: 'Перцентиль рассчитан по измерениям методом DXA и по одной этнической подгруппе обследования NHANES (White) — только для неё в источнике есть полные ряды по всем возрастам. Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
       reference: NORMS.bodyFat.source,
     },
     smi: {
@@ -248,7 +298,11 @@ export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
 // (например, «нормы не опубликованы») — не затирает одну другой, как было
 // раньше (правка по итогам ревью задачи 4).
 function appendNote(base, extra) {
-  return base ? `${base} ${extra}` : extra;
+  const addition = extra.charAt(0).toUpperCase() + extra.slice(1);
+  if (!base) return addition;
+  const trimmed = base.trim();
+  const withStop = /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+  return `${withStop} ${addition}`;
 }
 
 // Ищет диапазон возраста, в который попадает человек, среди ОПУБЛИКОВАННЫХ
@@ -268,6 +322,18 @@ function badgeFromThresholds(value, { bronze, silver, gold }) {
   if (value >= silver) return 'серебро';
   if (value >= bronze) return 'бронза';
   return 'ниже бронзы';
+}
+
+// На каком краю таблицы обрезано значение. percentile() отдаёт ровно 0,
+// когда значение ниже самого нижнего узла, и ровно 100, когда выше самого
+// верхнего — узлов p0 и p100 в таблицах нет, поэтому признак надёжный.
+// Разряд при этом присваивается (крайнее значение — тоже информация), но
+// подпись обязана говорить, что это край таблицы, а не «лучше 100% людей».
+export function clampSide(p) {
+  if (typeof p !== 'number') return null;
+  if (p <= 0) return 'below';
+  if (p >= 100) return 'above';
+  return null;
 }
 
 // Единая оценка простого теста силы/мощности/подвижности по таблицам
@@ -294,6 +360,8 @@ export function evaluateTest(testKey, value, profile) {
     badge: null, // знак ГТО для тестов-badgeTest (pullups, broadjump), иначе null; НЕ дублируется в level
     secondaryPercentile: null, // второе, независимое чтение того же источника (см. spec.secondary)
     secondaryLevel: null,
+    clamped: null, // 'below' | 'above' — значение за краем таблицы (см. clampSide)
+    secondaryClamped: null,
     secondaryLabel: spec.secondary ? spec.secondary.label : null,
     informational: Boolean(spec.informational),
     belowThreshold: spec.threshold !== undefined ? value < spec.threshold : null,
@@ -337,6 +405,7 @@ export function evaluateTest(testKey, value, profile) {
       const table = bySex[ageBucket(profile.age, bySex)];
       result.percentile = percentile(value, table);
       result.level = levelFromPercentile(result.percentile);
+      result.clamped = clampSide(result.percentile);
     }
   } else {
     result.note = appendNote(result.note, 'нормы для этого возраста не опубликованы');
@@ -361,6 +430,7 @@ export function evaluateTest(testKey, value, profile) {
         const tableW = bySexW[ageBucket(w, bySexW)];
         result.secondaryPercentile = percentile(value, tableW);
         result.secondaryLevel = levelFromPercentile(result.secondaryPercentile);
+        result.secondaryClamped = clampSide(result.secondaryPercentile);
       }
     }
   }
@@ -450,6 +520,37 @@ function sexSplitOrPlain(value, sex) {
   return value;
 }
 
+// Попал ли человек в ту группу, для которой опубликован коэффициент.
+// Условие берётся из данных (NORMS.hazards[key].trigger), а не собирается
+// на месте из общего правила «нижняя четверть» — иначе карточка приписывает
+// человеку чужое сравнение (правка по ревью задачи 7, критично).
+function hazardApplies(h, r) {
+  const t = h.trigger;
+  if (!t) return false; // условия срабатывания нет — карточки нет
+  switch (t.kind) {
+    case 'gradient':
+      // Градиент «на каждые N единиц» — не персональный множитель.
+      return false;
+    case 'percentileBelow':
+      return typeof r.percentile === 'number' && r.percentile < t.value;
+    case 'valueBelow': {
+      const limit = sexSplitOrPlain(t.value, r.sex);
+      return typeof limit === 'number' && typeof r.value === 'number' && r.value < limit;
+    }
+    case 'valueAtOrAbove': {
+      const limit = sexSplitOrPlain(t.value, r.sex);
+      return typeof limit === 'number' && typeof r.value === 'number' && r.value >= limit;
+    }
+    case 'badgeAtOrBelow': {
+      const rank = BADGE_ORDER[r.badge];
+      const limit = BADGE_ORDER[t.value];
+      return typeof rank === 'number' && typeof limit === 'number' && rank <= limit;
+    }
+    default:
+      return false;
+  }
+}
+
 // Знак ГТО «бронза» или «ниже бронзы» — провал по опубликованному разряду,
 // ровно так же, как нижняя четверть перцентильного распределения. Сейчас ни
 // у одного badge-теста (подтягивания, прыжок в длину) нет записи в
@@ -494,13 +595,9 @@ export function riskCards(results) {
     const hazard = sexSplitOrPlain(h.hazard, r.sex);
     if (typeof hazard !== 'number') continue; // коэффициент по полу, а пол не указан
 
-    // «Провал» — явный флаг по опубликованному порогу (belowThreshold, как
-    // у стойки на одной ноге — там вообще нет перцентильной кривой), нижняя
-    // четверть перцентильного распределения, либо знак ГТО не выше бронзы.
-    const failed = r.belowThreshold === true
-      || (typeof r.percentile === 'number' && r.percentile < 25)
-      || badgeIndicatesFailure(r.badge);
-    if (!failed) continue;
+    // Человек должен реально попасть в группу сравнения источника —
+    // иначе карточки нет, даже если по общему ощущению «показатель плохой».
+    if (!hazardApplies(h, r)) continue;
 
     cards.push({
       testKey: r.key,
@@ -520,6 +617,37 @@ export function riskCards(results) {
     if (inOutcome.length > 0) groups.push({ outcome, cards: inOutcome });
   }
   return groups;
+}
+
+// Коэффициенты-градиенты («на каждые −5 кг силы хвата», «на каждые +10
+// ударов пульса»): показываем их отдельным списком и от третьего лица.
+// Персональной карточкой они быть не могут — чтобы превратить градиент по
+// когорте в личный множитель, нужна точка отсчёта, которой источник не
+// публикует, а посчитать её самим означало бы выдумать число.
+// Возвращаем только те показатели, которые человек действительно заполнил.
+export function riskGradients(results) {
+  const out = [];
+  for (const r of results) {
+    const h = NORMS.hazards[r.key];
+    if (!h || !h.trigger || h.trigger.kind !== 'gradient') continue;
+    if (typeof r.value !== 'number') continue;
+
+    const hazard = sexSplitOrPlain(h.hazard, r.sex);
+    if (typeof hazard !== 'number') continue;
+
+    out.push({
+      testKey: r.key,
+      label: TEST_NORMS[r.key]?.label ?? h.label ?? r.key,
+      hazard,
+      step: h.trigger.step,
+      condition: h.condition,
+      outcome: h.outcome,
+      ci: sexSplitOrPlain(h.ci ?? null, r.sex),
+      cohortSize: h.cohortSize ?? null,
+      reference: h.source,
+    });
+  }
+  return out;
 }
 
 // Слабое звено — два разных утверждения, и смешивать их в одно число
