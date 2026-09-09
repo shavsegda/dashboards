@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Форма — дашборд физической формы · Алексей Шаповалов</title>
+<meta name="description" content="Внеси свои замеры и посмотри: возраст тела по выносливости, разряд по каждому тесту для своего пола и возраста, цена провала со ссылкой на исследование и одно слабое звено.">
+
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* Дизайн-система Алексея — та же основа, что в sbor.html */
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-90: rgba(26,26,26,0.9);
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.10);
+  /* Зелёный для плашек блоков — приглушённый, в тон бумаге */
+  --moss: #4F6B3A;
+  --moss-tint: rgba(79,107,58,0.20);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --max: 880px;
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  font-weight: 400;
+}
+.eyebrow.accent { color: var(--terracotta); }
+.mono { font-family: var(--font-mono); }
+.dot { color: var(--terracotta); }
+
+/* ─────────── Шапка ─────────── */
+.site-header { border-bottom: 1px solid var(--graphite-08); padding: 20px 0; }
+.site-header .name { font-weight: 500; letter-spacing: -0.01em; }
+.site-header .sub { color: var(--graphite-50); font-size: 14px; }
+
+/* ─────────── Интро ─────────── */
+.intro { padding: 40px 0 8px; }
+.intro h1 {
+  font-size: clamp(30px, 7vw, 46px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 12px 0 16px;
+}
+.intro p { margin: 0 0 10px; color: var(--graphite-75); max-width: 62ch; }
+
+/* ─────────── Секции ─────────── */
+section { padding: 32px 0; }
+.section-head { margin-bottom: 18px; }
+.section-head h2 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 6px 0 4px;
+}
+.section-head .hint { color: var(--graphite-50); font-size: 14px; margin: 0; }
+
+/* ─────────── Форма ─────────── */
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 640px) { .fields { grid-template-columns: 1fr; } }
+
+.field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.field .unit { color: var(--graphite-50); font-weight: 400; }
+.field .how { display: block; font-size: 13px; color: var(--graphite-50); line-height: 1.4; margin-bottom: 6px; }
+
+input, select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--graphite);
+  background: #FBFAF7;
+  border: 1px solid var(--graphite-15);
+  border-radius: 2px;
+  appearance: none;
+}
+/* Стрелка у выпадающего списка — рисуем сами, внешних запросов нет */
+select {
+  font-family: var(--font-sans);
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231A1A1A' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+input:focus, select:focus { outline: none; border-color: var(--terracotta); }
+input::placeholder { color: var(--graphite-30); }
+
+.actions { padding: 8px 0 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+button.primary {
+  min-height: 52px;
+  padding: 0 28px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--paper);
+  background: var(--graphite);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+button.primary:hover { background: var(--terracotta); }
+button.ghost {
+  min-height: 52px;
+  padding: 0 20px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--graphite-65);
+  background: none;
+  border: 1px solid var(--graphite-15);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.form-error {
+  margin-top: 14px;
+  color: var(--terracotta-dark);
+  font-size: 15px;
+  border-left: 2px solid var(--terracotta);
+  padding-left: 12px;
+}
+.form-error:empty { display: none; }
+
+/* ─────────── Этаж 1: главная цифра ─────────── */
+.hero { border-top: 1px solid var(--graphite-15); padding-top: 36px; }
+.hero-claim {
+  font-size: clamp(20px, 4.6vw, 27px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  max-width: 34ch;
+  margin: 6px 0 22px;
+}
+.hero-number {
+  font-family: var(--font-mono);
+  font-size: clamp(64px, 17vw, 116px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  display: inline-block;
+  vertical-align: -0.12em;
+  margin: 0 4px;
+}
+.hero-facts { display: flex; flex-wrap: wrap; gap: 26px; margin-bottom: 18px; }
+.fact .k { font-size: 12px; color: var(--graphite-50); letter-spacing: 0.04em; }
+.fact .v { font-family: var(--font-mono); font-size: 24px; line-height: 1.2; }
+.fact .v.accent { color: var(--terracotta); }
+/* Фразы — обычным шрифтом, моноширинный только для чисел */
+.fact .v.text { font-family: var(--font-sans); font-size: 18px; padding-top: 3px; }
+
+.caveat {
+  font-size: 13.5px;
+  color: var(--graphite-65);
+  line-height: 1.5;
+  border-left: 2px solid var(--graphite-15);
+  padding-left: 12px;
+  margin: 12px 0;
+  max-width: 68ch;
+}
+.caveat strong { font-weight: 500; color: var(--graphite); }
+.caveat ul { margin: 6px 0 0; padding-left: 18px; }
+
+.empty-hint {
+  border: 1px dashed var(--graphite-30);
+  border-radius: 3px;
+  padding: 18px;
+  color: var(--graphite-75);
+  font-size: 15px;
+}
+.empty-hint ul { margin: 8px 0 0; padding-left: 18px; }
+
+/* Разница с прошлым замером */
+.delta-box { margin: 18px 0 4px; }
+.delta-box h4 { font-size: 13px; font-weight: 500; margin: 0 0 8px; color: var(--graphite-65); }
+.delta-list { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; }
+.delta-list li { font-size: 14px; }
+.delta-list .d-name { color: var(--graphite-65); }
+.delta-list .d-val { font-family: var(--font-mono); }
+.delta-list .d-move { font-family: var(--font-mono); }
+.delta-list .d-move.worse { color: var(--terracotta-dark); }
+
+/* ─────────── Этаж 2: счёт формы ─────────── */
+.score-number {
+  font-family: var(--font-mono);
+  font-size: clamp(46px, 12vw, 72px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 6px 0 4px;
+}
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+.tile {
+  border: 1px solid var(--graphite-15);
+  border-radius: 2px;
+  padding: 12px;
+  min-height: 76px;
+}
+.tile .t-name { font-size: 14px; font-weight: 500; }
+.tile .t-state { font-size: 12px; color: var(--graphite-50); margin-top: 2px; }
+.tile.green { background: var(--moss-tint); border-color: rgba(79,107,58,0.55); }
+.tile.green .t-state { color: var(--moss); font-weight: 500; }
+.tile.red { background: var(--terracotta-tint); border-color: rgba(184,92,56,0.5); }
+.tile.red .t-state { color: var(--terracotta-dark); font-weight: 500; }
+.tile.grey { background: none; border-style: dashed; border-color: var(--graphite-15); }
+.tile.grey .t-name { color: var(--graphite-50); font-weight: 400; }
+.tile.own {
+  /* Ни фона, ни цвета: зачёта здесь нет, и на телефоне плашка не должна
+     читаться как зелёная. Отличается от «нет данных» сплошной рамкой. */
+  background: none;
+  border-color: var(--graphite-30);
+  border-style: solid;
+}
+.tile.own .t-name { color: var(--graphite-65); }
+.tile.own .t-state { color: var(--graphite-50); }
+
+/* ─────────── Этаж 3: цена провала ─────────── */
+.risk-group { margin-bottom: 26px; }
+.risk-group h3 { font-size: 15px; font-weight: 500; margin: 0 0 4px; }
+.risk-group .g-hint { font-size: 13px; color: var(--graphite-50); margin: 0 0 12px; }
+.risk-card {
+  border: 1px solid var(--graphite-15);
+  border-left: 3px solid var(--terracotta);
+  border-radius: 2px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  background: #FBFAF7;
+}
+.risk-card .r-hazard {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--terracotta-dark);
+  letter-spacing: -0.02em;
+}
+.risk-card .r-label { font-size: 15px; font-weight: 500; margin: 2px 0 6px; }
+.risk-card .r-line { font-size: 13.5px; color: var(--graphite-75); margin: 2px 0; }
+/* Градиенты — тот же формат, но без терракоты: это не личный множитель */
+.risk-card.gradient { border-left-color: var(--graphite-30); }
+.risk-card.gradient .r-hazard { color: var(--graphite); font-size: 17px; line-height: 1.4; }
+
+/* ─────────── Этаж 4: разряды ─────────── */
+.block-group { margin-bottom: 28px; }
+.block-group > h3 {
+  font-size: 13px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  font-weight: 400;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--graphite-15);
+}
+.test { padding: 14px 0; border-bottom: 1px solid var(--graphite-08); }
+.test-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.test-name { font-size: 15px; font-weight: 500; }
+.test-value { font-family: var(--font-mono); font-size: 17px; }
+.test-level { font-size: 14px; margin-top: 4px; }
+.test-level .lv { font-weight: 500; }
+.test-level .lv.low { color: var(--terracotta-dark); }
+.test-level .pp { color: var(--graphite-50); }
+.test-note { font-size: 12.5px; color: var(--graphite-65); margin-top: 6px; line-height: 1.45; max-width: 72ch; }
+
+/* Шкала разрядов */
+.scale { display: flex; gap: 3px; margin: 8px 0 4px; }
+.scale .seg { height: 6px; flex: 1; background: var(--graphite-08); border-radius: 1px; }
+.scale .seg.on { background: var(--graphite); }
+.scale .seg.on.low { background: var(--terracotta); }
+.scale-legend { font-size: 11px; color: var(--graphite-30); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+/* Источник. Ссылка кликается пальцем: не ниже 44 пикселей */
+.src { margin-top: 8px; font-size: 12px; line-height: 1.45; }
+.src a {
+  color: var(--graphite-65);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 44px;
+  padding: 10px 0 4px;
+}
+.src a:hover { color: var(--terracotta); }
+.src .src-meta { color: var(--graphite-50); display: block; }
+.kind {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--graphite-65);
+  background: var(--stone);
+  border-radius: 2px;
+  padding: 2px 6px;
+  margin-right: 6px;
+}
+.kind.none { color: var(--terracotta-dark); background: var(--terracotta-tint); }
+
+/* Расшифровка значков — читается с телефона, без наведения мышью */
+.kind-legend { margin-top: 6px; padding: 16px 18px; background: var(--stone); border-radius: 3px; }
+.kind-legend h4 { font-size: 14px; font-weight: 500; margin: 0 0 10px; }
+.kind-legend dl { margin: 0; font-size: 13px; }
+.kind-legend dt { margin-top: 8px; }
+.kind-legend dd { margin: 2px 0 0; color: var(--graphite-65); }
+
+/* ─────────── Этаж 5: слабое звено ─────────── */
+.weak {
+  border: 1px solid var(--graphite-15);
+  border-top: 3px solid var(--terracotta);
+  border-radius: 3px;
+  padding: 22px;
+  background: #FBFAF7;
+}
+.weak h3 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; margin: 6px 0 4px; }
+.weak .avg { font-family: var(--font-mono); color: var(--graphite-65); font-size: 14px; }
+.weak .do { margin: 14px 0 0; font-size: 16px; }
+.weak ul { margin: 10px 0 0; padding-left: 18px; color: var(--graphite-75); font-size: 14px; }
+
+/* ─────────── Предупреждения ─────────── */
+.warnings { border-top: 1px solid var(--graphite-15); padding: 28px 0 60px; }
+.warnings p { font-size: 13.5px; color: var(--graphite-65); max-width: 72ch; }
+.warnings strong { color: var(--graphite); font-weight: 500; }
+
+#results:empty { display: none; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="name">Форма <span class="dot">·</span> <span class="sub">физические замеры и что они значат</span></div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="intro">
+    <div class="eyebrow accent">Дашборд физической формы</div>
+    <h1>Что говорят твои цифры</h1>
+    <p>Внеси, что знаешь. Пустое поле — просто нет данных, оно ни на что не влияет. Страница работает и на трёх заполненных полях.</p>
+    <p>Ни одной самодельной шкалы: под каждым разрядом и каждым коэффициентом риска стоит ссылка на исследование. Где норм нет — так и написано.</p>
+  </div>
+
+  <!-- Результат появляется здесь, над формой -->
+  <div id="results"></div>
+
+  <form id="form" autocomplete="off" novalidate>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 1</div>
+        <h2>Профиль</h2>
+        <p class="hint">Пол и возраст обязательны: все нормы считаются относительно них.</p>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="sex">Пол</label>
+          <span class="how">Нормы у мужчин и женщин разные, общей таблицы не бывает.</span>
+          <select id="sex">
+            <option value="">не выбран</option>
+            <option value="m">мужской</option>
+            <option value="f">женский</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="age">Возраст <span class="unit">— полных лет</span></label>
+          <span class="how" id="ageHow">Полных лет на сегодня.</span>
+          <input id="age" type="number" inputmode="decimal" min="16" max="100" step="1" placeholder="38">
+        </div>
+        <div class="field">
+          <label for="height">Рост <span class="unit">— см</span></label>
+          <span class="how">Без обуви, утром. Нужен для индекса массы тела и отношения талии к росту.</span>
+          <input id="height" type="number" inputmode="decimal" min="100" max="230" step="0.5" placeholder="178">
+        </div>
+        <div class="field">
+          <label for="weight">Вес <span class="unit">— кг</span></label>
+          <span class="how">Утром натощак. Нужен для индекса массы тела и второго чтения силовых.</span>
+          <input id="weight" type="number" inputmode="decimal" min="30" max="250" step="0.1" placeholder="78">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 2</div>
+        <h2>Выносливость</h2>
+        <p class="hint">Единственный блок, который двигает главную цифру.</p>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="vo2max">VO2max <span class="unit">— мл/кг/мин</span></label>
+          <span class="how">С часов (Garmin, Apple, Polar) или из лабораторного нагрузочного теста.</span>
+          <input id="vo2max" type="number" inputmode="decimal" min="10" max="95" step="0.1" placeholder="52">
+        </div>
+        <div class="field">
+          <label for="cooper">Тест Купера <span class="unit">— м</span></label>
+          <span class="how" id="cooperHow">Максимальная дистанция за 12 минут бега, в метрах.</span>
+          <input id="cooper" type="number" inputmode="decimal" min="500" max="5000" step="10" placeholder="2800">
+        </div>
+        <div class="field">
+          <label for="run5">Бег 5 км <span class="unit">— чч:мм:сс</span></label>
+          <span class="how">Лучший результат за последний год. Оценка — age grading World Masters Athletics.</span>
+          <input id="run5" type="text" inputmode="numeric" pattern="[0-9:]*" placeholder="00:24:30">
+        </div>
+        <div class="field">
+          <label for="run10">Бег 10 км <span class="unit">— чч:мм:сс</span></label>
+          <span class="how">Лучший результат за последний год.</span>
+          <input id="run10" type="text" inputmode="numeric" pattern="[0-9:]*" placeholder="00:51:00">
+        </div>
+        <div class="field">
+          <label for="run21">Полумарафон, 21,1 км <span class="unit">— чч:мм:сс</span></label>
+          <span class="how">Лучший результат за последний год.</span>
+          <input id="run21" type="text" inputmode="numeric" pattern="[0-9:]*" placeholder="01:52:00">
+        </div>
+        <div class="field">
+          <label for="run42">Марафон, 42,2 км <span class="unit">— чч:мм:сс</span></label>
+          <span class="how">Лучший результат за последний год.</span>
+          <input id="run42" type="text" inputmode="numeric" pattern="[0-9:]*" placeholder="04:05:00">
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:26px">
+        <h2 style="font-size:17px">Если VO2max нет</h2>
+        <p class="hint" id="ntnuHint">Три вопроса про тренировки — вместе с ростом, весом и пульсом покоя они дают возраст тела по формуле NTNU (исследование HUNT).</p>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="trFreq">Как часто тренируешься</label>
+          <span class="how">Любые тренировки, не только бег.</span>
+          <select id="trFreq"></select>
+        </div>
+        <div class="field">
+          <label for="trInt">Насколько тяжело даётся</label>
+          <span class="how">Про обычную свою тренировку, не про самую тяжёлую в году.</span>
+          <select id="trInt"></select>
+        </div>
+        <div class="field">
+          <label for="trDur">Сколько длится одна тренировка</label>
+          <span class="how">Чистое время работы.</span>
+          <select id="trDur"></select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 3</div>
+        <h2>Сила</h2>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="pushups">Отжимания <span class="unit">— повторений</span></label>
+          <span class="how" id="pushupsHow">Максимум за один подход без остановки.</span>
+          <input id="pushups" type="number" inputmode="decimal" min="0" max="200" step="1" placeholder="35">
+        </div>
+        <div class="field">
+          <label for="pullups">Подтягивания <span class="unit">— повторений</span></label>
+          <span class="how" id="pullupsHow">Оценка — знак ГТО, не перцентиль.</span>
+          <input id="pullups" type="number" inputmode="decimal" min="0" max="80" step="1" placeholder="12">
+        </div>
+        <div class="field">
+          <label for="plank">Планка на локтях <span class="unit">— секунд</span></label>
+          <span class="how">Удержание до потери формы. Справочно: опубликованных возрастных норм нет.</span>
+          <input id="plank" type="number" inputmode="decimal" min="0" max="1800" step="1" placeholder="120">
+        </div>
+        <div class="field">
+          <label for="deadhang">Вис на перекладине <span class="unit">— секунд</span></label>
+          <span class="how">Прямым хватом, до срыва. Справочно: опубликованных норм не существует.</span>
+          <input id="deadhang" type="number" inputmode="decimal" min="0" max="900" step="1" placeholder="60">
+        </div>
+        <div class="field">
+          <label for="grip">Сила хвата <span class="unit">— кг</span></label>
+          <span class="how" id="gripHow">Кистевой динамометр. Протокол — в примечании к результату.</span>
+          <input id="grip" type="number" inputmode="decimal" min="0" max="120" step="0.1" placeholder="48">
+        </div>
+        <div class="field">
+          <label for="squat1rm">Присед со штангой <span class="unit">— кг, разовый максимум</span></label>
+          <span class="how">Максимальный вес на один повтор в полной амплитуде.</span>
+          <input id="squat1rm" type="number" inputmode="decimal" min="0" max="500" step="0.5" placeholder="120">
+        </div>
+        <div class="field">
+          <label for="bench1rm">Жим лёжа <span class="unit">— кг, разовый максимум</span></label>
+          <span class="how">Максимальный вес на один повтор до касания груди.</span>
+          <input id="bench1rm" type="number" inputmode="decimal" min="0" max="400" step="0.5" placeholder="90">
+        </div>
+        <div class="field">
+          <label for="deadlift1rm">Становая тяга <span class="unit">— кг, разовый максимум</span></label>
+          <span class="how">Максимальный вес на один повтор до полного выпрямления.</span>
+          <input id="deadlift1rm" type="number" inputmode="decimal" min="0" max="500" step="0.5" placeholder="150">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 4</div>
+        <h2>Мощность</h2>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="broadjump">Прыжок в длину с места <span class="unit">— см</span></label>
+          <span class="how" id="broadjumpHow">Толчком двумя ногами, лучшая из трёх попыток. Оценка — знак ГТО.</span>
+          <input id="broadjump" type="number" inputmode="decimal" min="0" max="400" step="1" placeholder="220">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 5</div>
+        <h2>Подвижность и баланс</h2>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="sitandreach">Наклон вперёд сидя <span class="unit">— см</span></label>
+          <span class="how" id="sitandreachHow">Сидя, ноги прямые, тянешься к стопам по линейке. Записывается лучшая из двух попыток.</span>
+          <input id="sitandreach" type="number" inputmode="decimal" min="-30" max="70" step="0.5" placeholder="8">
+        </div>
+        <div class="field">
+          <label for="onelegstand">Стойка на одной ноге <span class="unit">— секунд</span></label>
+          <span class="how" id="onelegHow">Глаза открыты, руки свободно, без опоры.</span>
+          <input id="onelegstand" type="number" inputmode="decimal" min="0" max="300" step="1" placeholder="25">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 6</div>
+        <h2>Состав тела</h2>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="bodyFat">Процент жира <span class="unit">— %</span></label>
+          <span class="how">С весов с биоимпедансом или из DXA. Оговорка про точность — в примечании к результату.</span>
+          <input id="bodyFat" type="number" inputmode="decimal" min="2" max="70" step="0.1" placeholder="14">
+        </div>
+        <div class="field">
+          <label for="limbMuscle">Мышцы рук и ног <span class="unit">— кг</span></label>
+          <span class="how">Именно мышечная масса конечностей (ALM) — отдельная строка в отчёте весов или DXA, не общая мышечная масса.</span>
+          <input id="limbMuscle" type="number" inputmode="decimal" min="5" max="60" step="0.1" placeholder="28">
+        </div>
+        <div class="field">
+          <label for="waist">Окружность талии <span class="unit">— см</span></label>
+          <span class="how">На выдохе, по самой узкой части, лента параллельно полу.</span>
+          <input id="waist" type="number" inputmode="decimal" min="40" max="200" step="0.5" placeholder="82">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Шаг 7</div>
+        <h2>Восстановление</h2>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="restingHR">Пульс покоя <span class="unit">— уд/мин</span></label>
+          <span class="how">Среднее за неделю по часам или замер лёжа сразу после пробуждения.</span>
+          <input id="restingHR" type="number" inputmode="decimal" min="30" max="130" step="1" placeholder="48">
+        </div>
+        <div class="field">
+          <label for="rmssd">HRV, rMSSD <span class="unit">— мс</span></label>
+          <span class="how">Ночное среднее с часов. Разряда нет: разброс между людьми огромный, смысл только в личном тренде.</span>
+          <input id="rmssd" type="number" inputmode="decimal" min="1" max="300" step="0.1" placeholder="45">
+        </div>
+        <div class="field">
+          <label for="bedtimeSd">Разброс времени отбоя <span class="unit">— минут</span></label>
+          <span class="how">Насколько гуляет время отхода ко сну за неделю. Разряда нет: порога в минутах в опубликованных источниках не существует.</span>
+          <input id="bedtimeSd" type="number" inputmode="decimal" min="0" max="600" step="1" placeholder="45">
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="submit" class="primary" id="calc">Посчитать</button>
+      <button type="button" class="ghost" id="resetBtn">Очистить поля</button>
+      <button type="button" class="ghost" id="downloadBtn">Скачать результат</button>
+      <button type="button" class="ghost" id="clearBtn">Очистить историю</button>
+    </div>
+    <div class="form-error" id="formError"></div>
+    <p class="hint" id="historyHint" style="color:var(--graphite-50);font-size:13px;margin-top:12px"></p>
+  </form>
+
+  <div class="warnings">
+    <p><strong>Это не медицинская диагностика.</strong> Страница сравнивает твои замеры с опубликованными таблицами и ничего не лечит. Отклонения показателей — повод сходить к врачу, а не лечиться самостоятельно.</p>
+    <p><strong>Тесты с максимальной нагрузкой опасны без допуска.</strong> Бег на результат, максимум отжиманий, предельные веса, работа до изнеможения — при проблемах с сердцем и давлением сначала допуск врача, потом тест.</p>
+  </div>
+
+</div>
+
+<script type="module">
+import {
+  vo2maxPercentile, levelFromPercentile, bodyAgeFromVo2max,
+  fitnessAgeNTNU, ageGrade, ageGradeClass, bodyComposition, recovery,
+  evaluateTest, formScore, riskCards, riskContext, weakestLink,
+  bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, withinCoverage,
+  riskCoverage, diffWithPrevious,
+} from './forma-calc.js';
+import { NORMS, TEST_NORMS, KIND_POPULATION } from './forma-norms.js';
+
+// ─────────── Мелкие помощники ───────────
+
+const $ = (id) => document.getElementById(id);
+
+// Число из поля. Пустое поле — null, то есть «нет данных», в расчёт не идёт.
+function num(id) {
+  const raw = ($(id).value || '').trim().replace(',', '.');
+  if (raw === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Время в формате чч:мм:сс (или мм:сс) → секунды. Мусор → null.
+function timeSec(id) {
+  const raw = ($(id).value || '').trim();
+  if (raw === '') return null;
+  const parts = raw.split(':').map((p) => Number(p.trim()));
+  if (parts.some((p) => !Number.isFinite(p))) return null;
+  let s = null;
+  if (parts.length === 3) s = parts[0] * 3600 + parts[1] * 60 + parts[2];
+  else if (parts.length === 2) s = parts[0] * 60 + parts[1];
+  else if (parts.length === 1) s = parts[0];
+  return s && s > 0 ? s : null;
+}
+
+function secToTime(sec) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(Math.floor(sec / 3600))}:${pad(Math.floor((sec % 3600) / 60))}:${pad(Math.round(sec % 60))}`;
+}
+
+// Числа по-русски: запятая вместо точки
+function fmt(n, digits = 0) {
+  if (n === null || n === undefined || !Number.isFinite(n)) return '—';
+  return n.toFixed(digits).replace('.', ',');
+}
+const pp = (p) => (typeof p === 'number' ? Math.round(p) : null);
+
+// Склонения
+function plural(n, one, few, many) {
+  if (!Number.isInteger(n)) return few;
+  const abs = Math.abs(n) % 100;
+  if (abs >= 11 && abs <= 14) return many;
+  const last = abs % 10;
+  if (last === 1) return one;
+  if (last >= 2 && last <= 4) return few;
+  return many;
+}
+const times = (n) => plural(n, 'раз', 'раза', 'раз');
+const years = (n) => plural(n, 'год', 'года', 'лет');
+
+// Единицы измерения тоже склоняем: «1 повторение», а не «1 повторений»
+const UNIT_FORMS = {
+  'повторений': ['повторение', 'повторения', 'повторений'],
+  'секунд': ['секунда', 'секунды', 'секунд'],
+  'минут': ['минута', 'минуты', 'минут'],
+};
+function unitText(unit, value) {
+  const forms = UNIT_FORMS[unit];
+  if (!forms || !Number.isInteger(value)) return unit;
+  return plural(value, forms[0], forms[1], forms[2]);
+}
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// Единая подпись к перцентилю. Перцентиль везде ориентирован «больше —
+// лучше»: у процента жира и пульса покоя шкала перевёрнута заранее, поэтому
+// одна и та же формулировка честна для всех показателей. На краях таблицы
+// percentile() обрезает значение до 0 и 100 — писать «лучше, чем у 100%
+// людей» нельзя, это край таблицы, а не место в популяции.
+// С какой популяцией сравнили человека — берём из данных по типу источника,
+// а не собираем в разметке. Шкала для тренирующихся не описывает население.
+function populationFor(ref) {
+  return (ref && KIND_POPULATION[ref.kind]) || 'людей в выборке источника';
+}
+
+function percentileText(p, population) {
+  const side = clampSide(p);
+  if (side === 'above') return 'лучше верхней точки таблицы';
+  if (side === 'below') return 'ниже нижней точки таблицы';
+  return `лучше, чем у ${pp(p)}% ${population || 'людей твоего пола и возраста'}`;
+}
+
+// Тип данных за нормой — короткое слово и расшифровка. Расшифровка выводится
+// отдельным списком под разрядами: подсказка при наведении на телефоне не
+// открывается (правка по ревью).
+const KIND = {
+  'population': ['обследование населения', 'Числа сняты с репрезентативного обследования населения.'],
+  'population-secondary': ['вторичные данные', 'Числа получены не на репрезентативной выборке населения: это реестр лабораторных тестов, уравнение регрессии на добровольцах или компиляция, сведённая третьим лицом. Порядок величин верный, точность конкретной цифры ниже.'],
+  'training-classification': ['шкала для тренирующихся', 'Норма построена на людях, которые тренируются (посетители залов, пользователи приложений), а не на населении в целом.'],
+  'occupational': ['профессиональная выборка', 'Норма получена на конкретной профессиональной группе, а не на населении в целом.'],
+  'state-standard': ['государственный норматив', 'Официальные пороги на присвоение знака отличия. Это не обследование населения.'],
+  'clinical': ['клинический порог', 'Консенсусный порог или клиническая нормативная база, а не перцентили населения.'],
+  'none': ['норм нет', 'Опубликованных норм не существует. Значение показано как справочный ориентир.'],
+};
+
+// Какие значки встретились на экране — чтобы вывести расшифровку только к ним
+const seenKinds = new Set();
+
+function kindWord(ref, noNorms) {
+  // Если по строке не вышло никакого разряда, значок обязан говорить
+  // «норм нет», даже когда сам источник качественный (правка по ревью: у
+  // планки стоял «клинический порог» под строкой «разряда нет»). Там, где
+  // разряд, категория или порог есть, показываем настоящий тип данных.
+  const key = noNorms ? 'none' : (ref && ref.kind);
+  if (!KIND[key]) return null;
+  seenKinds.add(key);
+  return key;
+}
+
+function sourceHtml(ref, noNorms = false) {
+  if (!ref) return '';
+  const key = kindWord(ref, noNorms);
+  const badge = key ? `<span class="kind${key === 'none' ? ' none' : ''}">${esc(KIND[key][0])}</span>` : '';
+  // Зеркало показываем запасной ссылкой там, где каноническая страница
+  // источника не отдаёт файл напрямую (так у отчёта ВОЗ).
+  const mirror = ref.mirrorUrl
+    ? `<span class="src-meta"><a href="${esc(ref.mirrorUrl)}" target="_blank" rel="noopener">запасная ссылка на тот же документ</a></span>`
+    : '';
+  return `<div class="src">
+    ${badge}
+    <a href="${esc(ref.url)}" target="_blank" rel="noopener" title="${esc(ref.title)}">${esc(ref.title)}</a>
+    <span class="src-meta">${esc(ref.authors)}${ref.year ? ', ' + ref.year : ''}</span>
+    ${mirror}
+  </div>`;
+}
+
+// Шкала разрядов. Терракотовый — только на двух нижних ступенях.
+const LEVELS = ['начальный уровень', 'ниже среднего', 'средний', 'выше среднего', 'продвинутый'];
+const BADGES = ['ниже бронзы', 'бронза', 'серебро', 'золото'];
+
+function scaleHtml(steps, activeIndex) {
+  const low = activeIndex <= 1;
+  const segs = steps.map((_, i) => `<div class="seg${i <= activeIndex ? ` on${low ? ' low' : ''}` : ''}"></div>`).join('');
+  return `<div class="scale">${segs}</div>
+    <div class="scale-legend">${esc(steps[0])} → ${esc(steps[steps.length - 1])}</div>`;
+}
+
+// ─────────── Подстановка чисел из данных в форму ───────────
+// Никаких норм и порогов прозой в разметке: всё, что человек читает рядом с
+// полем, берётся из forma-norms.js (правка по ревью задачи 7).
+
+const COVERAGE = bodyAgeCoverage();
+
+function initFromNorms() {
+  // Границы ввода в поле возраста — разумный диапазон для взрослых, а не
+  // норматив. У каждого теста своё покрытие, оно проверяется отдельно.
+  $('ageHow').textContent = `Полных лет на сегодня. Возраст тела считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблица FRIEND не идёт. Остальные тесты работают по своему покрытию.`;
+
+  // У наклона вперёд разряда нет вовсе — предупреждаем сразу у поля, а не
+  // только в карточке результата.
+  if (TEST_NORMS.sitandreach.boundsOnly) {
+    $('sitandreachHow').textContent = 'Сидя, ноги прямые, тянешься к стопам по линейке. Записывается лучшая из двух попыток. Разряда нет: источник публикует только две крайние точки распределения, их и покажем как ориентир.';
+  }
+
+  const stand = TEST_NORMS.onelegstand;
+  $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${stand.threshold} ${unitText('секунд', stand.threshold)}, и он измерен на людях ${stand.thresholdAgeRange.min}-${stand.thresholdAgeRange.max} лет: в другом возрасте вердикта не будет, только время.`;
+
+  const see = NORMS.ntnuFormula.standardError;
+  $('ntnuHint').textContent = `Три вопроса про тренировки — вместе с ростом, весом и пульсом покоя они дают возраст тела по формуле NTNU (исследование HUNT). Ошибка оценки — ${fmt(see.m, 1)} мл/кг/мин у мужчин и ${fmt(see.f, 1)} у женщин, это прикидка, а не замена нагрузочному тесту.`;
+
+  $('cooperHow').textContent = 'Максимальная дистанция за 12 минут бега, в метрах. У мужчин переводится в оценку VO2max, у женщин — нет, объяснение будет в результате.';
+
+  $('gripHow').textContent = `Кистевой динамометр. ${TEST_NORMS.grip.note}`;
+
+  const pu = TEST_NORMS.pushups.protocol;
+  $('pushupsHow').textContent = `Максимум за один подход без остановки. Протокол: мужчины — ${pu.m}, женщины — ${pu.f}.`;
+
+  // Протокол подтягиваний — из данных норматива, включая высоту низкой перекладины
+  const pr = TEST_NORMS.pullups.protocol;
+  $('pullupsHow').textContent = `Мужчины — ${pr.m}, женщины — ${pr.f}. Оценка — знак ГТО, не перцентиль.`;
+
+  // Возраст, с которого прыжок в длину исключён из нормативов, считаем по
+  // самим ступеням ГТО: берём верхнюю границу последней собранной ступени.
+  const jumpRanges = [...TEST_NORMS.broadjump.m, ...TEST_NORMS.broadjump.f];
+  const jumpMaxAge = Math.max(...jumpRanges.map((r) => r.ageMax));
+  $('broadjumpHow').textContent = `Толчком двумя ногами, лучшая из трёх попыток. Оценка — знак ГТО; с ${jumpMaxAge + 1} лет это испытание из нормативов исключено.`;
+
+  const ai = NORMS.ntnuFormula.activityIndex;
+  const fill = (id, options) => {
+    $(id).innerHTML = ['<option value="">нет ответа</option>']
+      .concat(options.map((o) => `<option value="${o.value}">${esc(o.label)}</option>`))
+      .join('');
+  };
+  fill('trFreq', ai.frequency);
+  fill('trInt', ai.intensity);
+  fill('trDur', ai.duration);
+}
+
+// ─────────── История замеров ───────────
+// Хранилище браузера может быть недоступно: приватное окно, запрет хранения
+// данных. Любое чтение и запись обёрнуты — страница обязана работать и без них.
+
+const HISTORY_KEY = 'forma-history';
+const HISTORY_LIMIT = 50;
+
+function readHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return []; // хранилище недоступно или в нём мусор — работаем без истории
+  }
+}
+
+function writeHistory(list) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function lastMeasurement() {
+  const history = readHistory();
+  return history.length ? history[history.length - 1] : null;
+}
+
+// Замеры, которые имеет смысл сравнивать между собой. Ответы про тренировки
+// сюда не идут — это анкета, а не измерение.
+const QUESTIONNAIRE_KEYS = ['trainingFreq', 'trainingIntensity', 'trainingDuration'];
+function measurements(profile, values) {
+  const out = { weight: profile.weight };
+  for (const [key, value] of Object.entries(values)) {
+    if (QUESTIONNAIRE_KEYS.includes(key)) continue;
+    out[key] = value;
+  }
+  return out;
+}
+
+// Названия показателей, которых нет в таблицах тестов
+const EXTRA_LABELS = {
+  weight: 'Вес', vo2max: 'VO2max', cooper: 'Тест Купера',
+  run5: 'Бег 5 км', run10: 'Бег 10 км', run21: 'Полумарафон', run42: 'Марафон',
+  bodyFat: 'Процент жира', limbMuscle: 'Мышцы рук и ног', waist: 'Окружность талии',
+  restingHR: 'Пульс покоя', rmssd: 'HRV (rMSSD)', bedtimeSd: 'Разброс времени отбоя',
+};
+
+// Показатели, у которых меньше — лучше. Направление шкалы, а не норма:
+// у времени на дистанции, пульса покоя, процента жира, талии и разброса
+// времени отбоя рост числа означает ухудшение.
+const LOWER_IS_BETTER = new Set(['restingHR', 'bodyFat', 'waist', 'bedtimeSd', 'run5', 'run10', 'run21', 'run42']);
+const TIME_KEYS = new Set(['run5', 'run10', 'run21', 'run42']);
+
+function saveMeasurement(profile, values) {
+  const history = readHistory();
+  history.push({ date: new Date().toISOString(), profile, values });
+  return writeHistory(history.slice(-HISTORY_LIMIT));
+}
+
+// Подставляем в поля значения последнего замера
+function prefillFromHistory() {
+  const last = lastMeasurement();
+  if (!last) return;
+  const set = (id, value, asTime = false) => {
+    const el = $(id);
+    if (!el || value === null || value === undefined) return;
+    el.value = asTime ? secToTime(value) : String(value);
+  };
+  if (last.profile) {
+    if (last.profile.sex) $('sex').value = last.profile.sex;
+    set('age', last.profile.age);
+    set('height', last.profile.height);
+    set('weight', last.profile.weight);
+  }
+  for (const [key, value] of Object.entries(last.values || {})) {
+    const id = { trainingFreq: 'trFreq', trainingIntensity: 'trInt', trainingDuration: 'trDur' }[key] || key;
+    set(id, value, TIME_KEYS.has(key));
+  }
+}
+
+// ─────────── Сбор формы ───────────
+
+const TEST_KEYS = ['pushups', 'pullups', 'plank', 'squat1rm', 'bench1rm', 'deadlift1rm', 'deadhang', 'grip', 'broadjump', 'onelegstand', 'sitandreach'];
+
+function readForm() {
+  const sexRaw = $('sex').value;
+  const profile = {
+    sex: sexRaw === 'm' || sexRaw === 'f' ? sexRaw : null,
+    age: num('age'),
+    height: num('height'),
+    weight: num('weight'),
+  };
+  profile.bodyWeight = profile.weight; // evaluateTest ждёт bodyWeight
+
+  const values = {};
+  for (const key of TEST_KEYS) values[key] = num(key);
+
+  values.vo2max = num('vo2max');
+  values.cooper = num('cooper');
+  values.run5 = timeSec('run5');
+  values.run10 = timeSec('run10');
+  values.run21 = timeSec('run21');
+  values.run42 = timeSec('run42');
+
+  values.bodyFat = num('bodyFat');
+  values.limbMuscle = num('limbMuscle');
+  values.waist = num('waist');
+
+  values.restingHR = num('restingHR');
+  values.rmssd = num('rmssd');
+  values.bedtimeSd = num('bedtimeSd');
+
+  const sel = (id) => ($(id).value === '' ? null : Number($(id).value));
+  values.trainingFreq = sel('trFreq');
+  values.trainingIntensity = sel('trInt');
+  values.trainingDuration = sel('trDur');
+
+  return { profile, values };
+}
+
+// Приклеить фразу к примечанию так, чтобы получилось предложение, а не
+// склейка через запятую. Тот же приём, что в расчёте.
+function appendNoteText(base, extra) {
+  if (!extra) return base;
+  if (!base) return extra;
+  const trimmed = String(base).trim();
+  return `${/[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`} ${extra}`;
+}
+
+// ─────────── Расчёт ───────────
+
+const RUNS = [
+  { id: 'run5', km: '5', label: 'Бег 5 км' },
+  { id: 'run10', km: '10', label: 'Бег 10 км' },
+  { id: 'run21', km: '21.1', label: 'Полумарафон, 21,1 км' },
+  { id: 'run42', km: '42.2', label: 'Марафон, 42,2 км' },
+];
+
+function compute({ profile, values }) {
+  const results = [];
+  // Пол и возраст кладём в каждый результат: по ним читаются и коэффициенты,
+  // разбитые по полу, и охват когорты источника (пол и возраст участников).
+  const push = (r) => { if (r) results.push({ sex: profile.sex, age: profile.age, ...r }); };
+
+  // 1. Одиннадцать тестов силы, мощности, подвижности — единый движок
+  for (const key of TEST_KEYS) {
+    if (values[key] === null) continue;
+    const r = evaluateTest(key, values[key], profile);
+    if (!r) continue;
+    // Оговорку про непокрытые ступени показываем только тому, кого она
+    // касается: 38-летнему строка про ступень 65-69 ничего не говорит.
+    const spec = TEST_NORMS[key];
+    // Протокол теста — рядом с результатом: женские отжимания считаются с
+    // колен, и в карточке это должно быть сказано, а не только у поля ввода.
+    if (spec.protocol && spec.protocol[profile.sex] && !spec.badgeTest) {
+      r.note = appendNoteText(r.note, `Протокол теста: ${spec.protocol[profile.sex]}`);
+    }
+    if (spec.coverageNote && spec.badgeTest && r.badge === null) {
+      const base = (r.note || '').trim();
+      r.note = base ? `${/[.!?…]$/.test(base) ? base : base + '.'} ${spec.coverageNote}` : spec.coverageNote;
+    }
+    push(r);
+  }
+
+  // 2. Выносливость: VO2max — единственный тест блока с перцентилем
+  let vo2Percentile = null;
+  if (values.vo2max !== null) {
+    vo2Percentile = vo2maxPercentile(values.vo2max, profile.sex, profile.age);
+    push({
+      key: 'vo2max', block: 'endurance', label: 'VO2max', unit: 'мл/кг/мин',
+      value: values.vo2max, percentile: vo2Percentile, level: levelFromPercentile(vo2Percentile),
+      clamped: clampSide(vo2Percentile),
+      badge: null, informational: false, belowThreshold: null,
+      reference: NORMS.vo2max.source,
+      note: vo2Percentile === null
+        ? `Перцентиль для этого возраста не считается: таблица FRIEND покрывает возраст от ${NORMS.vo2max.ageCoverage.min} до ${NORMS.vo2max.ageCoverage.max} лет. Значение показано как есть.`
+        : null,
+    });
+  }
+
+  // Бег: age grading — это процент от мирового стандарта, а не перцентиль
+  // населения. В счёт формы такие строки не идут (своя шкала).
+  const runCovered = withinCoverage(profile.age, NORMS.running.ageCoverage);
+  for (const r of RUNS) {
+    const sec = values[r.id];
+    if (sec === null) continue;
+    const grade = ageGrade(profile.sex, profile.age, r.km, sec);
+    push({
+      key: r.id, block: 'endurance', label: r.label, unit: 'чч:мм:сс',
+      value: sec, displayValue: secToTime(sec),
+      percentile: null, level: null, badge: null, informational: true, belowThreshold: null,
+      ageGrade: grade, ageGradeLevel: grade === null ? null : ageGradeClass(grade),
+      reference: NORMS.running.source,
+      note: grade !== null
+        ? 'Age grading — процент от открытого мирового стандарта для твоего пола и возраста. Это шкала результата, а не перцентиль населения, поэтому в счёт формы строка не входит.'
+        : (runCovered
+          ? 'Результат быстрее открытого мирового стандарта для этой дистанции — так не бывает, проверь, что ввёл. Оценку не считаем.'
+          : `Возрастных коэффициентов для этого возраста в таблицах нет: они идут от ${NORMS.running.ageCoverage.min} до ${NORMS.running.ageCoverage.max} лет. Время показано как есть, оценку не считаем.`),
+    });
+  }
+
+  // Тест Купера: у мужчин даёт оценку VO2max, у женщин — нет вовсе
+  // (в выборке Купера женщин не было, женской формулы не опубликовано).
+  let cooperVo2 = null;
+  if (values.cooper !== null) {
+    cooperVo2 = vo2maxFromCooper(values.cooper, profile.sex, profile.age);
+    push({
+      key: 'cooper', block: 'endurance', label: 'Тест Купера', unit: 'м',
+      value: values.cooper, percentile: null, level: null, badge: null,
+      informational: true, belowThreshold: null,
+      cooperVo2,
+      reference: NORMS.cooper.source,
+      note: cooperVo2 !== null
+        ? NORMS.cooper.note
+        : (NORMS.cooper.applicableSex.includes(profile.sex) ? NORMS.cooper.noteOutOfAge : NORMS.cooper.noteFemale),
+    });
+  }
+
+  // 3. Состав тела
+  if (profile.height !== null && profile.weight !== null) {
+    const bc = bodyComposition({
+      sex: profile.sex, age: profile.age, height: profile.height, weight: profile.weight,
+      bodyFatPct: values.bodyFat, limbMuscleKg: values.limbMuscle, waist: values.waist,
+    });
+
+    push({
+      key: 'bmi', block: 'body', label: 'Индекс массы тела', unit: 'кг/м²',
+      value: bc.bmi.value, percentile: null, level: null, badge: null,
+      informational: true, belowThreshold: null,
+      category: bc.bmi.category, reference: bc.bmi.reference, note: bc.bmi.note,
+    });
+
+    if (values.bodyFat !== null) {
+      // У жира шкала перевёрнута: меньше — лучше. Кладём перевёрнутый
+      // перцентиль (ровно так же считает уровень сам forma-calc.js), тогда
+      // подпись и счёт формы говорят об одном и том же.
+      const raw = bc.bodyFat.percentile;
+      const inverted = raw === null ? null : 100 - raw;
+      push({
+        key: 'bodyFat', block: 'body', label: 'Процент жира', unit: '%',
+        value: bc.bodyFat.value,
+        percentile: inverted,
+        clamped: clampSide(inverted),
+        level: bc.bodyFat.level, badge: null, informational: false, belowThreshold: null,
+        reference: bc.bodyFat.reference, note: bc.bodyFat.note,
+      });
+    }
+
+    if (values.limbMuscle !== null) {
+      push({
+        key: 'smi', block: 'body', label: 'Индекс мышечной массы конечностей', unit: 'кг/м²',
+        value: bc.smi.value, percentile: null, level: null, badge: null, informational: false,
+        belowThreshold: bc.smi.flag === 'ниже порога саркопении',
+        flag: bc.smi.flag, reference: bc.smi.reference,
+        note: `Перцентилей по этому показателю в открытых источниках найти не удалось — есть только клинический порог саркопении: мужчины ниже ${fmt(NORMS.smi.threshold.m, 1)}, женщины ниже ${fmt(NORMS.smi.threshold.f, 1)} кг/м². ${bc.smi.note}`,
+      });
+    }
+
+    if (values.waist !== null) {
+      const w = bc.waistToHeight.value;
+      const wtrTrigger = NORMS.hazards.waistToHeight.trigger;
+      push({
+        key: 'waistToHeight', block: 'body', label: 'Талия к росту', unit: '',
+        value: w, percentile: null, level: null, badge: null, informational: false,
+        belowThreshold: null,
+        flag: bc.waistToHeight.flag, reference: bc.waistToHeight.reference,
+        note: `Порог скрининга — ${fmt(NORMS.waistToHeight.threshold, 1)} (Ashwell). Тот же порог разбирает и вторая работа той же группы: ${NORMS.waistToHeight.alsoSee.authors}, ${NORMS.waistToHeight.alsoSee.year}. Коэффициент риска смертности опубликован для другого сравнения — ${fmt(wtrTrigger.value, 2)} и выше против меньше ${fmt(wtrTrigger.referenceBelow, 2)} (Patel, 2025), поэтому карточка риска появляется только с ${fmt(wtrTrigger.value, 2)}.`,
+      });
+    }
+  }
+
+  // 4. Восстановление
+  if (values.restingHR !== null || values.rmssd !== null || values.bedtimeSd !== null) {
+    const rec = recovery({
+      sex: profile.sex, age: profile.age,
+      restingHR: values.restingHR, rmssd: values.rmssd, bedtimeSdMin: values.bedtimeSd,
+    });
+
+    if (values.restingHR !== null) {
+      push({
+        key: 'restingHR', block: 'recovery', label: 'Пульс покоя', unit: 'уд/мин',
+        value: rec.restingHR.value, percentile: rec.restingHR.percentile,
+        clamped: clampSide(rec.restingHR.percentile),
+        level: rec.restingHR.level, badge: null, informational: false, belowThreshold: null,
+        reference: rec.restingHR.reference,
+        note: rec.restingHR.note || 'Шкала перевёрнута: чем ниже пульс покоя, тем выше перцентиль и разряд.',
+      });
+    }
+    if (values.rmssd !== null) {
+      push({
+        key: 'rmssd', block: 'recovery', label: 'HRV (rMSSD)', unit: 'мс',
+        value: rec.rmssd.value, percentile: null, level: null, badge: null,
+        informational: true, belowThreshold: null,
+        reference: rec.rmssd.reference, note: rec.rmssd.note,
+      });
+    }
+    if (values.bedtimeSd !== null) {
+      push({
+        key: 'sleepRegularity', block: 'recovery', label: 'Разброс времени отбоя', unit: 'минут',
+        value: rec.sleepRegularity.value, percentile: null, level: null, badge: null,
+        informational: true, belowThreshold: null,
+        reference: rec.sleepRegularity.reference, note: rec.sleepRegularity.note,
+      });
+    }
+  }
+
+  // 5. Возраст тела — главная цифра. Порядок источников: измеренный VO2max →
+  // оценка по тесту Купера → формула NTNU.
+  let bodyAge = null;
+  let bodyAgeSource = null;
+  let bodyAgeBlocked = null; // почему главной цифры нет: 'age' — возраст вне покрытия FRIEND
+  const bmiValue = (profile.height !== null && profile.weight !== null)
+    ? profile.weight / ((profile.height / 100) ** 2)
+    : null;
+  const ntnuReady = bmiValue !== null && values.restingHR !== null
+    && values.trainingFreq !== null && values.trainingIntensity !== null && values.trainingDuration !== null;
+
+  if (!ageCovered(profile.age)) {
+    // Возраст вне покрытия таблицы FRIEND: сравнивать человека с чужой
+    // возрастной группой нельзя, поэтому главной цифры просто нет.
+    bodyAgeBlocked = 'age';
+  } else if (values.vo2max !== null) {
+    bodyAge = bodyAgeFromVo2max(values.vo2max, profile.sex);
+    bodyAgeSource = 'vo2max';
+  } else if (cooperVo2 !== null) {
+    bodyAge = bodyAgeFromVo2max(cooperVo2, profile.sex);
+    bodyAgeSource = 'cooper';
+  } else if (ntnuReady) {
+    bodyAge = fitnessAgeNTNU({
+      sex: profile.sex, age: profile.age, bmi: bmiValue, restingHR: values.restingHR,
+      trainingFreq: values.trainingFreq,
+      trainingIntensity: values.trainingIntensity,
+      trainingDuration: values.trainingDuration,
+    });
+    bodyAgeSource = bodyAge === null ? null : 'ntnu';
+    if (bodyAge === null) bodyAgeBlocked = 'ntnu';
+  }
+
+  return {
+    profile,
+    values,
+    results,
+    bodyAge,
+    bodyAgeSource,
+    bodyAgeBlocked,
+    cooperVo2,
+    vo2Percentile,
+    score: formScore(results),
+    risks: riskCards(results),
+    context: riskContext(results),
+    weak: weakestLink(results),
+  };
+}
+
+// ─────────── Отрисовка ───────────
+
+const BLOCK_NAMES = {
+  endurance: 'Выносливость',
+  strength: 'Сила',
+  power: 'Мощность',
+  mobility: 'Подвижность',
+  body: 'Состав тела',
+  recovery: 'Восстановление',
+};
+const BLOCK_ORDER = ['endurance', 'strength', 'power', 'mobility', 'body', 'recovery'];
+
+// Что делать со слабым блоком. Практическая рекомендация, не норматив —
+// так и подписано на экране.
+const ADVICE = {
+  endurance: 'Две-три спокойные аэробные тренировки в неделю по 40-60 минут плюс одна интервальная. Выносливость — единственный блок, который двигает главную цифру.',
+  strength: 'Две силовые в неделю на всё тело: присед, тяга, жим, подтягивание. Начинать с веса, с которым остаётся запас в 2-3 повтора.',
+  power: 'Прыжки и короткие ускорения по 10-15 минут в начале тренировки, пока свежий. Мощность уходит первой и возвращается быстрее всего.',
+  mobility: 'Каждый день 5-10 минут на то, что не гнётся, и стойка на одной ноге по 30 секунд на каждую. Это можно делать без зала.',
+  body: 'Состав тела двигают еда и силовые, не кардио. Смотреть на динамику своих замеров на одних и тех же весах, а не на попадание в перцентиль.',
+  recovery: 'Отбой в одно и то же время и разгрузочная неделя раз в месяц. Пульс покоя падает от объёма лёгкой аэробной работы, а не от тяжёлых тренировок.',
+};
+
+function heroHtml(state) {
+  const { profile, bodyAge, bodyAgeSource, bodyAgeBlocked, vo2Percentile, values, cooperVo2 } = state;
+  const cov = NORMS.vo2max.ageCoverage;
+
+  // Возраст вне покрытия таблицы FRIEND — честный отказ, а не цифра из
+  // чужой возрастной группы.
+  if (bodyAgeBlocked === 'age') {
+    return `<section class="hero">
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
+      <div class="empty-hint" style="margin-top:14px">
+        Возраст тела для ${fmt(profile.age)} ${years(profile.age)} не считаем: таблица FRIEND покрывает возраст от ${cov.min} до ${cov.max} лет. За этими границами человека пришлось бы сравнивать с чужой возрастной группой.
+        <p style="margin:10px 0 0">Остальные этажи работают: каждый тест оценивается по своему покрытию, а где норм для твоего возраста нет — так и написано.</p>
+      </div>
+    </section>`;
+  }
+
+  // Формула NTNU вне своей применимости: возраст за границами когорты HUNT
+  // либо оценка ниже самой низкой опубликованной точки таблицы FRIEND.
+  if (bodyAgeBlocked === 'ntnu') {
+    const ntnu = NORMS.ntnuFormula;
+    return `<section class="hero">
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
+      <div class="empty-hint" style="margin-top:14px">
+        Возраст тела без нагрузочного теста здесь не считаем. Формула NTNU построена на людях ${ntnu.ageCoverage.min}-${ntnu.ageCoverage.max} лет, а её оценка на твоих данных выходит ниже самой низкой опубликованной точки таблицы FRIEND (${fmt(ntnu.minPlausibleVo2max[profile.sex], 1)} мл/кг/мин) — переводить такую оценку в возраст тела не по чему.
+        <p style="margin:10px 0 0">Самый короткий путь к главной цифре — VO2max с часов или из нагрузочного теста.</p>
+      </div>
+    </section>`;
+  }
+
+  if (bodyAge === null) {
+    const missing = [];
+    if (values.vo2max === null) missing.push('VO2max — с часов или из нагрузочного теста, это самый короткий путь');
+    if (profile.sex === 'm' && values.cooper === null) missing.push('или тест Купера — дистанция за 12 минут');
+    if (profile.height === null || profile.weight === null) missing.push('рост и вес');
+    if (values.restingHR === null) missing.push('пульс покоя');
+    if (values.trainingFreq === null || values.trainingIntensity === null || values.trainingDuration === null) {
+      missing.push('три ответа про тренировки — частота, тяжесть, длительность');
+    }
+    return `<section class="hero">
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
+      <div class="empty-hint" style="margin-top:14px">
+        Возраст тела пока не из чего посчитать. Внеси VO2max — или рост, вес, пульс покоя и три ответа про тренировки, тогда он посчитается по формуле NTNU.
+        <ul>${missing.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
+      </div>
+    </section>`;
+  }
+
+  const diff = bodyAge - profile.age;
+  const diffText = diff === 0
+    ? 'как паспортный'
+    : (diff < 0 ? `на ${fmt(Math.abs(diff))} ${years(Math.abs(diff))} моложе` : `на ${fmt(diff)} ${years(diff)} старше`);
+
+  const bounds = bodyAgeBounds(profile.sex);
+  // Подписи возрастных групп таблицы FRIEND собираем из её же ключей
+  const vo2Keys = Object.keys(NORMS.vo2max[profile.sex]).map(Number).sort((a, b) => a - b);
+  const youngestGroup = `${vo2Keys[0]}-${vo2Keys[1] - 1}`;
+  const oldestGroup = `${vo2Keys[vo2Keys.length - 1]}-${cov.max}`;
+  const caveats = [];
+
+  // Оговорка про край таблицы — только когда возраст тела в него упёрся
+  if (bodyAge === bounds.min) {
+    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.min} ${years(bounds.min)}.</strong> Ниже этой отметки таблица FRIEND не идёт — младшая группа в ней ${youngestGroup} лет. Дальше рост виден по перцентилю VO2max, а не по возрасту тела.</div>`);
+  }
+  if (bodyAge === bounds.max) {
+    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.max} ${years(bounds.max)}.</strong> Выше этой отметки таблица FRIEND не идёт — старшая группа в ней ${oldestGroup} лет.</div>`);
+  }
+
+  if (bodyAgeSource === 'ntnu') {
+    const see = NORMS.ntnuFormula.standardError[profile.sex];
+    caveats.push(`<div class="caveat"><strong>Возраст тела оценён без теста.</strong> Формула NTNU (исследование HUNT) считает VO2max по росту, весу, пульсу покоя и трём ответам про тренировки. Ошибка оценки для твоего пола — ${fmt(see, 1)} мл/кг/мин: это прикидка, а не замена нагрузочному тесту.</div>`);
+  }
+  if (bodyAgeSource === 'cooper') {
+    caveats.push(`<div class="caveat"><strong>Возраст тела посчитан по тесту Купера.</strong> ${esc(NORMS.cooper.note)} Оценка VO2max — ${fmt(cooperVo2, 1)} мл/кг/мин.</div>`);
+  }
+
+  const vo2Line = (vo2Percentile === null) ? '' : `
+    <div class="fact">
+      <div class="k">Перцентиль VO2max в своей возрастной группе</div>
+      <div class="v">${pp(vo2Percentile)}</div>
+    </div>`;
+
+  const vo2Note = (vo2Percentile === null) ? '' :
+    `<div class="caveat">VO2max — ${percentileText(vo2Percentile, populationFor(NORMS.vo2max.source))}${bodyAge === bounds.min ? '. И выше медианы младшей группы таблицы' : ''}.</div>`;
+
+  return `<section class="hero">
+    <div class="eyebrow">Этаж 1 — возраст тела</div>
+    <p class="hero-claim">По выносливости ты на уровне человека <span class="hero-number">${fmt(bodyAge)}</span> лет</p>
+    <div class="hero-facts">
+      <div class="fact"><div class="k">Паспортный возраст</div><div class="v">${fmt(profile.age)}</div></div>
+      <div class="fact"><div class="k">Разница</div><div class="v text">${diffText}</div></div>
+      ${vo2Line}
+    </div>
+    ${vo2Note}
+    ${caveats.join('')}
+    <div class="caveat">Как считается: берём твой VO2max и ищем возраст, в котором такой VO2max — медиана своей возрастной группы (таблицы FRIEND). Это сравнение выносливости с медианами возрастных групп, и только оно: не прогноз здоровья, не срок жизни и не оценка организма целиком.</div>
+    ${sourceHtml(NORMS.vo2max.source)}
+    ${bodyAgeSource === 'ntnu' ? sourceHtml(NORMS.ntnuFormula.source) : ''}
+    ${bodyAgeSource === 'cooper' ? sourceHtml(NORMS.cooper.source) : ''}
+  </section>`;
+}
+
+// Состояние плашки блока. formScore() знает только зелёный/красный/серый —
+// «серый» при этом означает и «ничего не заполнено», и «данные есть, но у
+// них своя шкала». Для человека это разные вещи (правка по ревью).
+function tileState(block, state) {
+  const s = state.score.byBlock[block];
+  if (s !== 'grey') return s;
+  return state.results.some((r) => r.block === block) ? 'own' : 'grey';
+}
+
+// Разница с прошлым замером. Только те показатели, что есть в обоих замерах;
+// цветом выделяется одно — ухудшение.
+function deltaHtml(state) {
+  if (!state.diff || !state.diff.length) return '';
+
+  const items = state.diff.map((d) => {
+    const lowerBetter = LOWER_IS_BETTER.has(d.key);
+    const worse = lowerBetter ? d.delta > 0 : d.delta < 0;
+    const isTime = TIME_KEYS.has(d.key);
+    const show = (v) => (isTime ? secToTime(v) : fmt(v, Number.isInteger(v) ? 0 : 1));
+    const move = isTime
+      ? `${d.delta > 0 ? 'плюс' : 'минус'} ${secToTime(Math.abs(d.delta))}`
+      : `${d.delta > 0 ? 'плюс' : 'минус'} ${fmt(Math.abs(d.delta), Number.isInteger(d.delta) ? 0 : 1)}`;
+    if (d.delta === 0) {
+      return `<li><span class="d-name">${esc(d.label)}:</span> <span class="d-val">${show(d.to)}</span> <span class="d-move">без изменений</span></li>`;
+    }
+    return `<li><span class="d-name">${esc(d.label)}:</span> <span class="d-val">${show(d.from)} → ${show(d.to)}</span> <span class="d-move${worse ? ' worse' : ''}">${move}</span></li>`;
+  }).join('');
+
+  const when = state.previousDate ? new Date(state.previousDate).toLocaleDateString('ru-RU') : null;
+  return `<div class="delta-box">
+    <h4>Разница с прошлым замером${when ? ` от ${when}` : ''}</h4>
+    <ul class="delta-list">${items}</ul>
+  </div>`;
+}
+
+// Два правила зачёта — каждое про свою шкалу, и смешивать их нельзя.
+// Перцентильная норма меряет положение в распределении. Знак ГТО не меряет
+// ничего подобного: сколько людей берёт серебро, никто не публикует.
+const PASS_RULE_PERCENTILE = 'Зачёт у перцентильной нормы — медиана своей группы и выше.';
+const PASS_RULE_BADGE = 'У знака ГТО зачёт — серебро или золото: это официальный смысл знака, доли населения за ним нет.';
+
+function scoreHtml(state) {
+  const { score } = state;
+  const word = {
+    green: 'блок зачтён',
+    red: 'блок не зачтён',
+    grey: 'нет данных',
+    own: 'не считается — своя шкала',
+  };
+  const states = BLOCK_ORDER.map((b) => tileState(b, state));
+  const tiles = BLOCK_ORDER.map((b, i) => `
+    <div class="tile ${states[i]}">
+      <div class="t-name">${BLOCK_NAMES[b]}</div>
+      <div class="t-state">${word[states[i]]}</div>
+    </div>`).join('');
+
+  const ownNote = states.includes('own')
+    ? `<div class="caveat"><strong>«Не считается» — это не «нет данных».</strong> В таких блоках замер есть, но у него своя шкала: age grading по бегу — процент от мирового стандарта, категории ВОЗ по ИМТ — не перцентили, справочные тесты норм не имеют, а знак ГТО для некоторых возрастов просто не опубликован. Чтобы выносливость попала в счёт, нужен VO2max.</div>`
+    : '';
+
+  return `<section>
+    <div class="eyebrow">Этаж 2 — счёт формы</div>
+    <div class="score-number">${score.counted === 0 ? '—' : `${score.green} из ${score.counted}`}</div>
+    <p class="hint" style="color:var(--graphite-65);margin:0">${score.counted === 0
+      ? 'Считать пока нечего: ни один блок не дал разряда — заполненные тесты либо со своей шкалой, либо без опубликованной нормы для твоего случая.'
+      : `Знаменатель — блоки, которые удалось посчитать: ${score.counted} из 6, остальные пустые или со своей шкалой. Блок зелёный, если больше половины его тестов зачтено. ${PASS_RULE_PERCENTILE} ${PASS_RULE_BADGE}`}</p>
+    <div class="tiles">${tiles}</div>
+    ${ownNote}
+  </section>`;
+}
+
+function riskHtml(state) {
+  const { risks, context, results } = state;
+
+  // Молчание нельзя подавать как «всё в порядке»: одно дело — проверили и не
+  // попал, другое — проверить было нечем, потому что человек вне охвата
+  // когорт (правка по ревью задачи 7).
+  const coverage = riskCoverage(results);
+
+  if (!coverage.checked.length && !coverage.outOfCohort.length && !context.length) return '';
+
+  const disclaimer = `<div class="caveat"><strong>Риски разных тестов не складываются.</strong> Показатели связаны между собой — например, сила хвата и мышечная масса, — поэтому сумма коэффициентов даёт двойной счёт. Каждая карточка читается отдельно. Группы между собой тоже не сравниваются: общая смертность и сердечно-сосудистые события — разные исходы.</div>`;
+
+  let body = '';
+  if (risks.length) {
+    body += risks.map((g) => {
+      const cards = g.cards.map((c) => `
+        <div class="risk-card">
+          <div class="r-hazard">Риск выше в ${fmt(c.hazard, c.hazard % 1 === 0 ? 0 : 2)} ${times(c.hazard)}</div>
+          <div class="r-label">${esc(c.label)}</div>
+          <div class="r-line">Сравнение: ${esc(c.condition)}</div>
+          <div class="r-line">Что мерили: ${esc(c.outcome)}</div>
+          ${c.ci ? `<div class="r-line">95% доверительный интервал: ${fmt(c.ci.low, 2)} — ${fmt(c.ci.high, 2)}</div>` : '<div class="r-line">Доверительный интервал в источнике не приведён.</div>'}
+          ${c.ciNote ? `<div class="r-line">${esc(c.ciNote)}</div>` : ''}
+          ${c.cohortSize ? `<div class="r-line">Когорта: ${esc(c.cohortSize)}</div>` : ''}
+          ${c.cohortAgeRangeSource ? `<div class="r-line">Возраст участников: ${esc(c.cohortAgeRangeSource)}</div>` : ''}
+          ${sourceHtml(c.reference)}
+        </div>`).join('');
+      return `<div class="risk-group">
+        <h3>${esc(g.outcome)}</h3>
+        <p class="g-hint">Внутри группы карточки отсортированы от самой дорогой потери к самой дешёвой. Карточка появляется, только если ты попал в ту самую группу, которую сравнивало исследование.</p>
+        ${cards}
+      </div>`;
+    }).join('');
+  } else if (coverage.checked.length) {
+    body += '<p style="font-size:17px;margin:10px 0 0">По опубликованным порогам ты ни в одну группу повышенного риска не попал.</p>';
+  }
+
+  // Что проверить было нечем — отдельной строкой, чтобы «мы не знаем» не
+  // читалось как «у тебя всё хорошо».
+  if (coverage.outOfCohort.length) {
+    const list = coverage.outOfCohort
+      .map((c) => `<li>${esc(c.label)} — когорта источника: ${esc(c.cohort)}</li>`)
+      .join('');
+    const head = coverage.checked.length
+      ? 'Часть порогов проверить нечем.'
+      : 'Проверить эти пороги нечем.';
+    body += `<div class="caveat"><strong>${head}</strong> Показатели заполнены, но твой пол или возраст за пределами когорт, на которых эти пороги меряли. Это значит «мы не знаем», а не «всё в порядке».<ul>${list}</ul></div>`;
+  }
+
+  // Как это работает — от третьего лица. Сюда идут и градиенты («на каждые
+  // −5 кг»), и сравнения групп, в которые человека поставить нечем.
+  if (context.length) {
+    const items = context.map((g) => {
+      const headline = g.kind === 'gradient'
+        ? `В исследовании каждые ${esc(g.step)} связаны с ростом показателя «${esc(g.outcome)}» на ${fmt((g.hazard - 1) * 100, 0)}%`
+        : `В исследовании эти группы различались по показателю «${esc(g.outcome)}» в ${fmt(g.hazard, g.hazard % 1 === 0 ? 0 : 2)} ${times(g.hazard)}`;
+      return `
+      <div class="risk-card gradient">
+        <div class="r-hazard">${headline}</div>
+        <div class="r-label">${esc(g.label)}</div>
+        <div class="r-line">Условие источника: ${esc(g.condition)}</div>
+        ${g.ci ? `<div class="r-line">95% доверительный интервал: ${fmt(g.ci.low, 2)} — ${fmt(g.ci.high, 2)}</div>` : '<div class="r-line">Доверительный интервал в источнике не приведён.</div>'}
+        ${g.ciNote ? `<div class="r-line">${esc(g.ciNote)}</div>` : ''}
+        ${g.cohortSize ? `<div class="r-line">Когорта: ${esc(g.cohortSize)}</div>` : ''}
+        ${g.cohortAgeRangeSource ? `<div class="r-line">Возраст участников: ${esc(g.cohortAgeRangeSource)}</div>` : ''}
+        ${sourceHtml(g.reference)}
+      </div>`;
+    }).join('');
+    body += `<div class="risk-group">
+      <h3>Как это работает</h3>
+      <p class="g-hint">Это цифры по когортам исследований, а не твой личный множитель риска: поставить тебя в такую группу нечем — где-то источник не публикует точку отсчёта, где-то граница группы задана не тем, что мы измеряем. Показываем как есть, от третьего лица.</p>
+      ${items}
+    </div>`;
+  }
+
+  return `<section>
+    <div class="eyebrow">Этаж 3 — цена провала</div>
+    <div style="height:14px"></div>
+    ${body}
+    ${disclaimer}
+  </section>`;
+}
+
+function testHtml(r) {
+  const digits = r.key === 'waistToHeight' ? 2 : (Number.isInteger(r.value) ? 0 : 1);
+  const value = r.displayValue !== undefined ? r.displayValue : fmt(r.value, digits);
+  const unit = r.unit ? ` ${esc(unitText(r.unit, r.value))}` : '';
+
+  let body = '';
+  let hasVerdict = true; // вышел ли по строке хоть какой-то разряд, знак, категория или порог
+
+  if (typeof r.badge === 'string') {
+    const idx = BADGES.indexOf(r.badge);
+    body += `<div class="test-level"><span class="lv${idx <= 1 ? ' low' : ''}">${esc(r.badge)}</span> <span class="pp">— знак ГТО, не перцентиль</span></div>`;
+    body += scaleHtml(BADGES, idx);
+  } else if (typeof r.percentile === 'number' && r.level) {
+    const idx = LEVELS.indexOf(r.level);
+    body += `<div class="test-level"><span class="lv${idx <= 1 ? ' low' : ''}">${esc(r.level)}</span> <span class="pp">— ${percentileText(r.percentile, populationFor(r.reference))}</span></div>`;
+    body += scaleHtml(LEVELS, idx);
+  } else if (r.ageGradeLevel) {
+    body += `<div class="test-level"><span class="lv">${esc(r.ageGradeLevel)}</span> <span class="pp">— ${fmt(r.ageGrade, 1)}% от мирового стандарта для твоего возраста</span></div>`;
+  } else if (r.key === 'cooper' && r.cooperVo2 !== null && r.cooperVo2 !== undefined) {
+    body += `<div class="test-level"><span class="lv">оценка VO2max — ${fmt(r.cooperVo2, 1)} мл/кг/мин</span> <span class="pp">— расчёт по формуле, не измерение</span></div>`;
+  } else if (r.bounds) {
+    body += `<div class="test-level"><span class="pp">Разряда нет. Опубликованные точки для твоей группы: 5-й перцентиль — ${fmt(r.bounds.p5, 1)} ${esc(r.unit)}, 95-й — ${fmt(r.bounds.p95, 1)} ${esc(r.unit)}. Это ориентир, а не место в распределении: самого распределения между этими точками источник не даёт.</span></div>`;
+  } else if (r.flag) {
+    const bad = r.flag !== 'в норме';
+    body += `<div class="test-level"><span class="lv${bad ? ' low' : ''}">${esc(r.flag)}</span> <span class="pp">— порог, а не разряд</span></div>`;
+  } else if (r.category) {
+    body += `<div class="test-level"><span class="lv">${esc(r.category)}</span> <span class="pp">— категория ВОЗ, не перцентиль</span></div>`;
+  } else if (r.belowThreshold === true || r.belowThreshold === false) {
+    const bad = r.belowThreshold === true;
+    body += `<div class="test-level"><span class="lv${bad ? ' low' : ''}">${bad ? 'ниже порога' : 'порог пройден'}</span> <span class="pp">— порог из исследования, перцентиля у теста нет</span></div>`;
+  } else {
+    hasVerdict = false;
+    body += `<div class="test-level"><span class="pp">Разряда нет — опубликованной нормы для этого случая не нашлось. Почему — в пояснении ниже.</span></div>`;
+  }
+
+  if (r.secondaryLevel && typeof r.secondaryPercentile === 'number') {
+    body += `<div class="test-level"><span class="pp">${esc(r.secondaryLabel || 'второе чтение')}: <span class="lv">${esc(r.secondaryLevel)}</span> — ${percentileText(r.secondaryPercentile, r.secondaryPopulation)}. Считается независимо от разряда по возрасту, эти два числа не смешиваются.</span></div>`;
+  }
+
+  if (r.note) {
+    // Примечание склеивается из нескольких источников — доводим до вида предложения
+    const note = r.note.trim();
+    body += `<div class="test-note">${esc(/[.!?…]$/.test(note) ? note : note + '.')}</div>`;
+  }
+
+  return `<div class="test">
+    <div class="test-top">
+      <div class="test-name">${esc(r.label || r.key)}</div>
+      <div class="test-value">${value}${unit}</div>
+    </div>
+    ${body}
+    ${sourceHtml(r.reference, !hasVerdict)}
+  </div>`;
+}
+
+function kindLegendHtml() {
+  if (!seenKinds.size) return '';
+  const items = [...seenKinds].map((k) => `<dt><span class="kind${k === 'none' ? ' none' : ''}">${esc(KIND[k][0])}</span></dt><dd>${esc(KIND[k][1])}</dd>`).join('');
+  return `<div class="kind-legend">
+    <h4>Что стоит за значком рядом с источником</h4>
+    <dl>${items}</dl>
+  </div>`;
+}
+
+function blocksHtml(state) {
+  const groups = BLOCK_ORDER.map((b) => {
+    const items = state.results.filter((r) => r.block === b);
+    if (!items.length) return '';
+    return `<div class="block-group">
+      <h3>${BLOCK_NAMES[b]}</h3>
+      ${items.map(testHtml).join('')}
+    </div>`;
+  }).join('');
+
+  if (!groups) return '';
+
+  return `<section>
+    <div class="eyebrow">Этаж 4 — разряды по блокам</div>
+    <div style="height:16px"></div>
+    ${groups}
+    ${kindLegendHtml()}
+  </section>`;
+}
+
+function weakHtml(state) {
+  const w = state.weak;
+  if (!w) return '';
+
+  let inner = '';
+  if (w.primary) {
+    const items = w.primary.items
+      .map((r) => `<li>${esc(r.label || r.key)} — ${esc(r.level || 'без разряда')}, ${percentileText(r.percentile, populationFor(r.reference))}</li>`)
+      .join('');
+    inner += `<div class="eyebrow accent">Слабое звено</div>
+      <h3>${BLOCK_NAMES[w.primary.block]}</h3>
+      <div class="avg">средний перцентиль по блоку — ${pp(w.primary.average)}</div>
+      <ul>${items}</ul>
+      <p class="do">${esc(ADVICE[w.primary.block])}</p>
+      <div class="caveat" style="margin-bottom:0">Что делать — практическая рекомендация, а не норматив из исследования. Сами разряды выше — из опубликованных таблиц.</div>`;
+  } else {
+    inner += `<div class="eyebrow accent">Слабое звено</div>
+      <h3>Пока не определяется</h3>
+      <div class="avg">ни по одному блоку нет настоящих перцентилей — заполни тесты, у которых есть возрастные нормы</div>`;
+  }
+
+  if (w.badgeFailures.length) {
+    const list = w.badgeFailures
+      .map((f) => `<li>${esc(f.label)} — ${esc(f.badge)} (${BLOCK_NAMES[f.block] || f.block})</li>`)
+      .join('');
+    inner += `<div class="caveat" style="margin-top:18px"><strong>Провалы по знаку ГТО.</strong> Это отдельная шкала: у ГТО нет перцентильной кривой, поэтому в сравнение блоков выше эти тесты не входят.<ul>${list}</ul></div>`;
+  }
+
+  return `<section><div class="weak">${inner}</div></section>`;
+}
+
+function render(state) {
+  seenKinds.clear();
+
+  // Ничего не заполнено — не рисуем ни счёт, ни «провалов нет»: пустой
+  // профиль не должен выглядеть как зелёный свет (правка по ревью).
+  const html = state.results.length === 0
+    ? heroHtml(state) + deltaHtml(state) + `<section><div class="empty-hint">Пока считать нечего: заполнено только начало профиля. Внеси хотя бы один замер — любой.</div></section>`
+    // Порядок вызовов важен: blocksHtml собирает значки, легенда печатается внутри него
+    : heroHtml(state) + deltaHtml(state) + scoreHtml(state) + riskHtml(state) + blocksHtml(state) + weakHtml(state);
+
+  $('results').innerHTML = html;
+  $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─────────── События ───────────
+
+initFromNorms();
+prefillFromHistory();
+updateHistoryHint();
+
+$('form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const err = $('formError');
+  const { profile, values } = readForm();
+
+  if (!profile.sex || profile.age === null) {
+    err.textContent = 'Заполни пол и возраст — без них не считается ни одна норма.';
+    $('results').innerHTML = '';
+    return;
+  }
+
+  err.textContent = '';
+
+  // Прошлый замер берём ДО записи нового
+  const previous = lastMeasurement();
+  const state = compute({ profile, values });
+  state.diff = diffWithPrevious(
+    measurements(profile, values),
+    previous ? measurements(previous.profile || {}, previous.values || {}) : null,
+    EXTRA_LABELS,
+  );
+  state.previousDate = previous ? previous.date : null;
+
+  saveMeasurement(profile, values);
+  updateHistoryHint();
+  render(state);
+});
+
+// Сколько замеров лежит в браузере, и лежат ли вообще
+function updateHistoryHint() {
+  const history = readHistory();
+  const el = $('historyHint');
+  if (!history.length) {
+    el.textContent = 'История пока пуста. Замеры сохраняются только в этом браузере, никуда не отправляются.';
+    return;
+  }
+  el.textContent = `В этом браузере сохранено ${history.length} ${plural(history.length, 'замер', 'замера', 'замеров')} (хранятся последние ${HISTORY_LIMIT}). Данные не отправляются никуда.`;
+}
+
+// Выгрузка истории файлом
+$('downloadBtn').addEventListener('click', () => {
+  const history = readHistory();
+  if (!history.length) {
+    $('formError').textContent = 'Скачивать нечего: ни одного замера пока не сохранено.';
+    return;
+  }
+  $('formError').textContent = '';
+  const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `forma-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if (!readHistory().length) {
+    $('formError').textContent = 'История и так пуста.';
+    return;
+  }
+  if (!confirm('Удалить все сохранённые замеры? Отменить это будет нельзя.')) return;
+  try {
+    localStorage.removeItem(HISTORY_KEY);
+  } catch (e) {
+    writeHistory([]);
+  }
+  $('formError').textContent = '';
+  updateHistoryHint();
+});
+
+// Внимание: у формы есть свойства-ярлыки на её же поля, поэтому метод reset
+// вызываем явно через прототип — иначе он может быть перекрыт полем формы.
+$('resetBtn').addEventListener('click', () => {
+  HTMLFormElement.prototype.reset.call($('form'));
+  $('results').innerHTML = '';
+  $('formError').textContent = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+
+</body>
+</html>
