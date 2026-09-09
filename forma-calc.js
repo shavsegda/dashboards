@@ -88,6 +88,14 @@ export function vo2maxTable(sex, age) {
   return bySex[ageBucket(age, bySex)];
 }
 
+// Перцентиль VO2max внутри своей возрастной группы. Вне покрытия таблицы
+// FRIEND возвращает null: подставлять группу двадцатилетних подростку или
+// восьмидесятилетнему нельзя (правка по ревью задачи 7).
+export function vo2maxPercentile(vo2max, sex, age) {
+  if (!withinCoverage(age, NORMS.vo2max.ageCoverage)) return null;
+  return percentile(vo2max, vo2maxTable(sex, age));
+}
+
 // Линейная интерполяция возраста между двумя соседними узлами «медиана
 // VO2max → возраст». Если у соседних узлов одинаковая медиана (a.v === b.v),
 // делить не на что — возвращаем возраст левого узла вместо NaN от деления
@@ -134,6 +142,20 @@ export function lifeExpectancyCoverage() {
   return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
 }
 
+// Попадает ли возраст в покрытие конкретной таблицы. Границы приходят из
+// данных; отсутствующая граница (null) означает открытую группу — например,
+// у пульса покоя верхняя группа источника «80 и старше».
+export function withinCoverage(age, coverage) {
+  if (typeof age !== 'number' || !Number.isFinite(age)) return false;
+  if (!coverage) return true;
+  if (typeof coverage.min === 'number' && age < coverage.min) return false;
+  if (typeof coverage.max === 'number' && age > coverage.max) return false;
+  return true;
+}
+
+// Покрыт ли возраст для ГЛАВНОЙ ЦИФРЫ. Это ограничение только возраста тела
+// и продолжительности жизни: у каждого теста своё покрытие, и вне него
+// отказывает сам тест, а не вся страница.
 export function ageCovered(age) {
   const c = lifeExpectancyCoverage();
   return typeof age === 'number' && Number.isFinite(age) && age >= c.min && age <= c.max;
@@ -218,14 +240,21 @@ export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMusc
   const bmiValue = weight / (heightM * heightM);
   const wthrValue = waist / height;
 
-  const bodyFatPercentile = percentile(bodyFatPct, NORMS.bodyFat[sex][ageBucket(age, NORMS.bodyFat[sex])]);
+  // Вне покрытия таблицы NHANES перцентиля нет — крайнюю группу не подставляем
+  const bodyFatCovered = withinCoverage(age, NORMS.bodyFat.ageCoverage);
+  const bodyFatPercentile = bodyFatCovered
+    ? percentile(bodyFatPct, NORMS.bodyFat[sex][ageBucket(age, NORMS.bodyFat[sex])])
+    : null;
 
   return {
     bodyFat: {
       value: bodyFatPct,
       percentile: bodyFatPercentile,
       level: bodyFatLevel(bodyFatPercentile), // у процента жира меньше значит лучше
-      note: 'Перцентиль рассчитан по измерениям методом DXA и по одной этнической подгруппе обследования NHANES (White) — только для неё в источнике есть полные ряды по всем возрастам. Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
+      note: appendNote(
+        'Перцентиль рассчитан по измерениям методом DXA и по одной этнической подгруппе обследования NHANES (White) — только для неё в источнике есть полные ряды по всем возрастам. Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
+        bodyFatCovered ? '' : 'Для этого возраста перцентилей в источнике нет: таблица покрывает возраст от 20 до 89 лет, поэтому разряда по проценту жира здесь не будет.',
+      ),
       reference: NORMS.bodyFat.source,
     },
     smi: {
@@ -235,8 +264,12 @@ export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMusc
     },
     bmi: {
       value: bmiValue,
-      category: bmiCategory(bmiValue),
-      note: 'При развитой мускулатуре ИМТ завышает оценку жировой массы. Смотреть вместе с процентом жира.',
+      // Категория — только для взрослых: детских кривых ИМТ по возрасту в проекте нет
+      category: withinCoverage(age, NORMS.bmi.ageCoverage) ? bmiCategory(bmiValue) : null,
+      note: appendNote(
+        'При развитой мускулатуре ИМТ завышает оценку жировой массы. Смотреть вместе с процентом жира.',
+        withinCoverage(age, NORMS.bmi.ageCoverage) ? '' : 'Категория ВОЗ здесь не выдаётся: она построена для взрослых, а для детей и подростков ВОЗ публикует отдельные кривые по возрасту — их в собранных нормах нет.',
+      ),
       reference: NORMS.bmi.source,
     },
     waistToHeight: {
@@ -270,13 +303,19 @@ function bmiCategory(bmi) {
 // Восстановление: пульс покоя — по возрастной норме, HRV и регулярность сна —
 // без готовой возрастной нормы (см. forma-norms.js), поэтому даём личный тренд
 export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
-  const hrPercentile = percentile(-restingHR, reversed(NORMS.restingHR[sex][ageBucket(age, NORMS.restingHR[sex])]));
+  // Вне покрытия таблицы NHANES перцентиля нет (нижняя граница — 20 лет,
+  // верхняя группа источника открытая, «80 и старше»)
+  const hrCovered = withinCoverage(age, NORMS.restingHR.ageCoverage);
+  const hrPercentile = hrCovered
+    ? percentile(-restingHR, reversed(NORMS.restingHR[sex][ageBucket(age, NORMS.restingHR[sex])]))
+    : null;
 
   return {
     restingHR: {
       value: restingHR,
       percentile: hrPercentile,
       level: levelFromPercentile(hrPercentile),
+      note: hrCovered ? null : 'Нормы пульса покоя для этого возраста не опубликованы: таблица начинается с 20 лет. Значение показано как есть.',
       reference: NORMS.restingHR.source,
     },
     rmssd: {
@@ -298,6 +337,7 @@ export function recovery({ sex, age, restingHR, rmssd, bedtimeSdMin }) {
 // (например, «нормы не опубликованы») — не затирает одну другой, как было
 // раньше (правка по итогам ревью задачи 4).
 function appendNote(base, extra) {
+  if (!extra) return base;
   const addition = extra.charAt(0).toUpperCase() + extra.slice(1);
   if (!base) return addition;
   const trimmed = base.trim();
@@ -402,10 +442,18 @@ export function evaluateTest(testKey, value, profile) {
   if (spec.maxAge === undefined || profile.age <= spec.maxAge) {
     const bySex = spec[profile.sex];
     if (bySex) {
-      const table = bySex[ageBucket(profile.age, bySex)];
-      result.percentile = percentile(value, table);
-      result.level = levelFromPercentile(result.percentile);
-      result.clamped = clampSide(result.percentile);
+      // Нижняя граница таблицы — её же самый младший ключ. Раньше ageBucket()
+      // подставлял младшую группу всем, кто младше неё: 17-летний получал
+      // разряд по таблице двадцатилетних (правка по ревью задачи 7).
+      const youngest = Math.min(...Object.keys(bySex).map(Number));
+      if (profile.age < youngest) {
+        result.note = appendNote(result.note, `нормы для этого возраста не опубликованы: таблица начинается с ${youngest} лет`);
+      } else {
+        const table = bySex[ageBucket(profile.age, bySex)];
+        result.percentile = percentile(value, table);
+        result.level = levelFromPercentile(result.percentile);
+        result.clamped = clampSide(result.percentile);
+      }
     }
   } else {
     result.note = appendNote(result.note, 'нормы для этого возраста не опубликованы');
@@ -527,6 +575,9 @@ function sexSplitOrPlain(value, sex) {
 function hazardApplies(h, r) {
   const t = h.trigger;
   if (!t) return false; // условия срабатывания нет — карточки нет
+  // Когорта источника бывает только одного пола (отжимания — 1104 мужчины
+  // пожарные): другому полу это сравнение не подходит вовсе.
+  if (Array.isArray(h.applicableSex) && !h.applicableSex.includes(r.sex)) return false;
   switch (t.kind) {
     case 'gradient':
       // Градиент «на каждые N единиц» — не персональный множитель.

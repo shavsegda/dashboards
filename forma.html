@@ -389,7 +389,7 @@ button.ghost {
         <div class="field">
           <label for="age">Возраст <span class="unit">— полных лет</span></label>
           <span class="how" id="ageHow">Полных лет на сегодня.</span>
-          <input id="age" type="number" inputmode="decimal" step="1" placeholder="38">
+          <input id="age" type="number" inputmode="decimal" min="16" max="100" step="1" placeholder="38">
         </div>
         <div class="field">
           <label for="height">Рост <span class="unit">— см</span></label>
@@ -612,7 +612,7 @@ button.ghost {
 
 <script type="module">
 import {
-  percentile, levelFromPercentile, vo2maxTable, bodyAgeFromVo2max, lifeExpectancy,
+  vo2maxPercentile, levelFromPercentile, bodyAgeFromVo2max, lifeExpectancy,
   fitnessAgeNTNU, ageGrade, ageGradeClass, bodyComposition, recovery,
   evaluateTest, formScore, riskCards, riskGradients, weakestLink,
   lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
@@ -751,9 +751,9 @@ function scaleHtml(steps, activeIndex) {
 const COVERAGE = lifeExpectancyCoverage();
 
 function initFromNorms() {
-  $('age').min = COVERAGE.min;
-  $('age').max = COVERAGE.max;
-  $('ageHow').textContent = `Полных лет на сегодня. Собранные нормы покрывают возраст от ${COVERAGE.min} до ${COVERAGE.max} лет.`;
+  // Границы ввода в поле возраста — разумный диапазон для взрослых, а не
+  // норматив. У каждого теста своё покрытие, оно проверяется отдельно.
+  $('ageHow').textContent = `Полных лет на сегодня. Главная цифра считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблицы FRIEND и дожития не идут. Остальные тесты работают по своему покрытию.`;
 
   $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${TEST_NORMS.onelegstand.threshold} ${unitText('секунд', TEST_NORMS.onelegstand.threshold)}.`;
 
@@ -839,7 +839,8 @@ function compute({ profile, values }) {
     // касается: 38-летнему строка про ступень 65-69 ничего не говорит.
     const spec = TEST_NORMS[key];
     if (spec.coverageNote && spec.badgeTest && r.badge === null) {
-      r.note = `${r.note} ${spec.coverageNote}`;
+      const base = (r.note || '').trim();
+      r.note = base ? `${/[.!?…]$/.test(base) ? base : base + '.'} ${spec.coverageNote}` : spec.coverageNote;
     }
     push(r);
   }
@@ -847,13 +848,16 @@ function compute({ profile, values }) {
   // 2. Выносливость: VO2max — единственный тест блока с перцентилем
   let vo2Percentile = null;
   if (values.vo2max !== null) {
-    vo2Percentile = percentile(values.vo2max, vo2maxTable(profile.sex, profile.age));
+    vo2Percentile = vo2maxPercentile(values.vo2max, profile.sex, profile.age);
     push({
       key: 'vo2max', block: 'endurance', label: 'VO2max', unit: 'мл/кг/мин',
       value: values.vo2max, percentile: vo2Percentile, level: levelFromPercentile(vo2Percentile),
       clamped: clampSide(vo2Percentile),
       badge: null, informational: false, belowThreshold: null,
-      reference: NORMS.vo2max.source, note: null,
+      reference: NORMS.vo2max.source,
+      note: vo2Percentile === null
+        ? `Перцентиль для этого возраста не считается: таблица FRIEND покрывает возраст от ${NORMS.vo2max.ageCoverage.min} до ${NORMS.vo2max.ageCoverage.max} лет. Значение показано как есть.`
+        : null,
     });
   }
 
@@ -957,7 +961,7 @@ function compute({ profile, values }) {
         clamped: clampSide(rec.restingHR.percentile),
         level: rec.restingHR.level, badge: null, informational: false, belowThreshold: null,
         reference: rec.restingHR.reference,
-        note: 'Шкала перевёрнута: чем ниже пульс покоя, тем выше перцентиль и разряд.',
+        note: rec.restingHR.note || 'Шкала перевёрнута: чем ниже пульс покоя, тем выше перцентиль и разряд.',
       });
     }
     if (values.rmssd !== null) {
@@ -1044,6 +1048,16 @@ const ADVICE = {
 
 function heroHtml(state) {
   const { profile, bodyAge, livesTo, bodyAgeSource, vo2Percentile, values, cooperVo2 } = state;
+
+  if (livesTo === null && !ageCovered(profile.age)) {
+    return `<section class="hero">
+      <div class="eyebrow">Этаж 1 — до скольки идёшь</div>
+      <div class="empty-hint" style="margin-top:14px">
+        Главную цифру для возраста ${fmt(profile.age)} ${years(profile.age)} не считаем: таблица FRIEND покрывает возраст от ${NORMS.vo2max.ageCoverage.min} до ${NORMS.vo2max.ageCoverage.max} лет, таблица дожития Росстата — от ${NORMS.lifeTable.ageCoverage.min} до ${NORMS.lifeTable.ageCoverage.max}. За этими границами возраст тела и продолжительность жизни пришлось бы считать по чужим нормам.
+        <p style="margin:10px 0 0">Остальные этажи работают: каждый тест оценивается по своему покрытию, а где норм для твоего возраста нет — так и написано.</p>
+      </div>
+    </section>`;
+  }
 
   if (livesTo === null) {
     const missing = [];
@@ -1354,15 +1368,6 @@ $('form').addEventListener('submit', (e) => {
 
   if (!profile.sex || profile.age === null) {
     err.textContent = 'Заполни пол и возраст — без них не считается ни одна норма.';
-    $('results').innerHTML = '';
-    return;
-  }
-
-  // За границами покрытия таблиц не считаем ничего: иначе ageBucket()
-  // подставит крайнюю строку и подросток получит разряды и продолжительность
-  // жизни по таблице двадцатилетних (правка по ревью задачи 7).
-  if (!ageCovered(profile.age)) {
-    err.textContent = `Для возраста ${fmt(profile.age)} ${years(profile.age)} в собранных источниках норм нет: таблицы покрывают возраст от ${COVERAGE.min} до ${COVERAGE.max} лет. Ничего не считаем, чтобы не подставить чужие нормы.`;
     $('results').innerHTML = '';
     return;
   }

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile } from '../forma-calc.js';
 import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -609,7 +609,7 @@ test('карточка риска с полом не указан — карто
 
 test('карточка риска различает исход: сердечно-сосудистые события идут отдельной группой от общей смертности', () => {
   const groups = riskCards([
-    { key: 'pushups', block: 'strength', value: 5 },
+    { key: 'pushups', block: 'strength', value: 5, sex: 'm' },
     { key: 'vo2max', block: 'endurance', value: 22, percentile: 5 },
   ]);
   assert.equal(groups.length, 2);
@@ -744,9 +744,9 @@ test('формула Купера считается только мужчина
 
 test('карточка риска не создаётся, когда человек не попал в группу сравнения', () => {
   // 20 отжиманий: источник сравнивает «меньше 10» с «больше 40» — человек не в группе
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 20, percentile: 10 }]).length, 0);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 20, percentile: 10, sex: 'm' }]).length, 0);
   // 5 отжиманий — в группе, карточка есть
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, percentile: 5 }]).length, 1);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, percentile: 5, sex: 'm' }]).length, 1);
 
   // Стойка на одной ноге: порог 10 секунд
   assert.equal(riskCards([{ key: 'onelegstand', block: 'mobility', value: 12 }]).length, 0);
@@ -862,4 +862,84 @@ test('в клиентские тексты норм не утекли имена
   for (const t of texts) {
     assert.ok(!/secondaryPercentile|belowThreshold|percentile:/.test(t), `имя переменной в тексте: ${t}`);
   }
+});
+
+
+// ---------------------------------------------------------------------
+// Задача 7, вторая правка по ревью: границы 20-79 ограничивают только
+// главную цифру. Каждый тест живёт по своему покрытию.
+
+test('покрытие таблицы читается из данных, открытая верхняя группа не ограничивает', () => {
+  assert.equal(withinCoverage(38, { min: 20, max: 79 }), true);
+  assert.equal(withinCoverage(17, { min: 20, max: 79 }), false);
+  assert.equal(withinCoverage(82, { min: 20, max: 79 }), false);
+  assert.equal(withinCoverage(95, { min: 20, max: null }), true); // «80 и старше» у пульса покоя
+  assert.equal(withinCoverage(null, { min: 20, max: 79 }), false);
+});
+
+test('вне границ главной цифры отдельный тест продолжает считаться внутри своего покрытия', () => {
+  // Женщина 82: главной цифры нет, а сила хвата покрыта до 85 лет
+  assert.equal(ageCovered(82), false);
+  assert.equal(lifeExpectancy(70, 82, 'f'), null);
+
+  const grip = evaluateTest('grip', 20, { sex: 'f', age: 82 });
+  assert.equal(typeof grip.percentile, 'number', 'разряд по хвату в 82 года обязан считаться');
+  assert.ok(grip.level);
+
+  // А тест, чья таблица кончается раньше, честно отказывает
+  const pushups = evaluateTest('pushups', 10, { sex: 'f', age: 82 });
+  assert.equal(pushups.percentile, null);
+  assert.match(pushups.note, /не опубликован/);
+});
+
+test('младше нижней границы таблицы разряд не присваивается', () => {
+  // 17 лет: таблица отжиманий начинается с 20 — раньше ageBucket() молча
+  // подставлял группу двадцатилетних
+  const pushups = evaluateTest('pushups', 30, { sex: 'm', age: 17 });
+  assert.equal(pushups.percentile, null);
+  assert.equal(pushups.level, null);
+  assert.match(pushups.note, /таблица начинается с 20 лет/);
+
+  // Сила хвата покрыта с 18 лет — в 17 тоже отказ, в 18 уже считается
+  assert.equal(evaluateTest('grip', 40, { sex: 'm', age: 17 }).percentile, null);
+  assert.equal(typeof evaluateTest('grip', 40, { sex: 'm', age: 18 }).percentile, 'number');
+
+  // Знак ГТО для 17 лет из собранных ступеней тоже не выдаётся
+  assert.equal(evaluateTest('pullups', 10, { sex: 'm', age: 17 }).badge, null);
+});
+
+test('перцентиль VO2max, процента жира и пульса покоя не берётся из чужой возрастной группы', () => {
+  assert.equal(vo2maxPercentile(55, 'm', 17), null);
+  assert.equal(vo2maxPercentile(30, 'f', 82), null);
+  assert.equal(typeof vo2maxPercentile(52, 'm', 38), 'number');
+
+  const teenFat = bodyComposition({ sex: 'm', age: 17, height: 180, weight: 70, bodyFatPct: 15 });
+  assert.equal(teenFat.bodyFat.percentile, null);
+  assert.equal(teenFat.bodyFat.level, null);
+  assert.match(teenFat.bodyFat.note, /от 20 до 89/);
+
+  const teenHr = recovery({ sex: 'm', age: 17, restingHR: 60 });
+  assert.equal(teenHr.restingHR.percentile, null);
+  assert.match(teenHr.restingHR.note, /не опубликован/);
+
+  // Пожилой человек по пульсу покоя покрыт: верхняя группа источника открытая
+  const oldHr = recovery({ sex: 'f', age: 82, restingHR: 72 });
+  assert.equal(typeof oldHr.restingHR.percentile, 'number');
+});
+
+test('карточка риска не показывается полу, которого не было в когорте источника', () => {
+  // Yang 2019 — «Among Active Adult Men», 1104 мужчины-пожарные
+  assert.deepEqual(NORMS.hazards.pushups.applicableSex, ['m']);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'f' }]).length, 0);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'm' }]).length, 1);
+});
+
+test('категория ИМТ по ВОЗ не выдаётся тем, для кого она не построена', () => {
+  const teen = bodyComposition({ sex: 'm', age: 17, height: 180, weight: 70 });
+  assert.equal(teen.bmi.category, null);
+  assert.match(teen.bmi.note, /для взрослых/);
+  assert.ok(teen.bmi.value > 21 && teen.bmi.value < 22); // само значение считается
+
+  const adult = bodyComposition({ sex: 'm', age: 38, height: 178, weight: 78 });
+  assert.equal(adult.bmi.category, 'норма');
 });
