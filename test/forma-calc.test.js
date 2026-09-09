@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
 import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -992,4 +992,65 @@ test('у каждого коэффициента риска описан охв�
       assert.ok(Array.isArray(h.applicableSex) && h.applicableSex.every((x) => x === 'm' || x === 'f'), `${key}: неверный applicableSex`);
     }
   }
+});
+
+
+// ---------------------------------------------------------------------
+// Задача 8: история замеров и разница с прошлым разом.
+
+test('дельта считается только по показателям, которые есть в обоих замерах', () => {
+  const prev = { vo2max: 48, pushups: 30 };
+  const cur = { vo2max: 52, pullups: 12 };
+  const d = diffWithPrevious(cur, prev);
+  assert.equal(d.length, 1);
+  assert.equal(d[0].key, 'vo2max');
+  assert.equal(d[0].delta, 4);
+});
+
+test('без прошлого замера дельта пустая', () => {
+  assert.deepEqual(diffWithPrevious({ vo2max: 52 }, null), []);
+});
+
+test('дельта несёт откуда, куда и на сколько, а название берёт из таблиц или снаружи', () => {
+  const d = diffWithPrevious({ pushups: 25, vo2max: 50 }, { pushups: 30, vo2max: 48 }, { vo2max: 'VO2max' });
+  const pushups = d.find((x) => x.key === 'pushups');
+  assert.equal(pushups.from, 30);
+  assert.equal(pushups.to, 25);
+  assert.equal(pushups.delta, -5);
+  assert.equal(pushups.label, TEST_NORMS.pushups.label); // название из таблицы теста
+  assert.equal(d.find((x) => x.key === 'vo2max').label, 'VO2max'); // название передано снаружи
+});
+
+test('нечисловые и пустые значения в дельту не попадают', () => {
+  const d = diffWithPrevious({ vo2max: 52, sex: 'm', pushups: null }, { vo2max: 48, sex: 'm', pushups: 30 });
+  assert.equal(d.length, 1);
+  assert.equal(d[0].key, 'vo2max');
+});
+
+test('охват проверки различает «проверили» и «проверить было нечем»', () => {
+  const young = riskCoverage([{ key: 'onelegstand', block: 'mobility', value: 6, age: 38, sex: 'm' }]);
+  assert.equal(young.checked.length, 0);
+  assert.equal(young.outOfCohort.length, 1);
+  assert.match(young.outOfCohort[0].cohort, /51-75/);
+
+  const inCohort = riskCoverage([{ key: 'onelegstand', block: 'mobility', value: 6, age: 60, sex: 'm' }]);
+  assert.equal(inCohort.checked.length, 1);
+  assert.equal(inCohort.outOfCohort.length, 0);
+
+  // Женщина и отжимания: когорта источника — только мужчины
+  const woman = riskCoverage([{ key: 'pushups', block: 'strength', value: 8, age: 40, sex: 'f' }]);
+  assert.equal(woman.outOfCohort.length, 1);
+  assert.match(woman.outOfCohort[0].cohort, /мужчин/);
+
+  // Градиенты и показатели без порога в охват проверки не входят
+  assert.equal(riskCoverage([{ key: 'grip', block: 'strength', value: 25, age: 55, sex: 'm' }]).checked.length, 0);
+  assert.equal(riskCoverage([{ key: 'plank', block: 'strength', value: 60, age: 40, sex: 'm' }]).outOfCohort.length, 0);
+});
+
+test('протокол подтягиваний и обе стороны сравнения талии лежат в данных', () => {
+  assert.equal(TEST_NORMS.pullups.protocol.lowBarHeightCm, 90);
+  assert.ok(TEST_NORMS.pullups.protocol.m.length > 0 && TEST_NORMS.pullups.protocol.f.length > 0);
+  const t = NORMS.hazards.waistToHeight.trigger;
+  assert.equal(t.value, 0.55);
+  assert.equal(t.referenceBelow, 0.5);
 });

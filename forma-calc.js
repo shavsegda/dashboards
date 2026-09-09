@@ -714,6 +714,58 @@ export function riskGradients(results) {
   return out;
 }
 
+// Что удалось проверить по опубликованным порогам, а что нет. Молчание
+// нельзя подавать как «всё в порядке»: человек вне охвата когорты не «прошёл
+// проверку», её просто не на чем было провести (правка по ревью задачи 7).
+// checked — показатели, по которым порог реально применили;
+// outOfCohort — заполненные показатели с опубликованным порогом, которые
+// проверить нечем, с человеческой причиной.
+export function riskCoverage(results) {
+  const checked = [];
+  const outOfCohort = [];
+
+  for (const r of results) {
+    const h = NORMS.hazards[r.key];
+    if (!h || !h.trigger || h.trigger.kind === 'gradient') continue;
+
+    const label = TEST_NORMS[r.key]?.label ?? h.label ?? r.key;
+    if (cohortCovers(h, r)) {
+      checked.push({ testKey: r.key, label });
+      continue;
+    }
+
+    const parts = [];
+    if (Array.isArray(h.applicableSex) && !h.applicableSex.includes(r.sex)) {
+      parts.push(h.applicableSex.includes('m') ? 'только мужчины' : 'только женщины');
+    }
+    if (h.cohortAgeRange && !withinCoverage(r.age, h.cohortAgeRange)) {
+      parts.push(`возраст ${h.cohortAgeRange.min}-${h.cohortAgeRange.max} лет`);
+    }
+    outOfCohort.push({ testKey: r.key, label, cohort: parts.join(', ') });
+  }
+
+  return { checked, outOfCohort };
+}
+
+// Сравнение с прошлым замером: только те показатели, что есть в обоих.
+// Названия можно передать снаружи (у страницы есть свои показатели вроде
+// VO2max и пульса покоя, которых нет в таблицах тестов).
+export function diffWithPrevious(current, previous, labels = {}) {
+  if (!previous) return [];
+  const out = [];
+  for (const key of Object.keys(current)) {
+    if (typeof previous[key] !== 'number' || typeof current[key] !== 'number') continue;
+    out.push({
+      key,
+      label: labels[key] ?? TEST_NORMS[key]?.label ?? key,
+      from: previous[key],
+      to: current[key],
+      delta: current[key] - previous[key],
+    });
+  }
+  return out;
+}
+
 // Слабое звено — два разных утверждения, и смешивать их в одно число
 // нельзя (правка по итогам повторного ревью задачи 6: раньше знак ГТО
 // раскладывался в число 0/33,3/66,7/100 и усреднялся с настоящими

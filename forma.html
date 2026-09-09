@@ -209,6 +209,16 @@ button.ghost {
 }
 .empty-hint ul { margin: 8px 0 0; padding-left: 18px; }
 
+/* Разница с прошлым замером */
+.delta-box { margin: 18px 0 4px; }
+.delta-box h4 { font-size: 13px; font-weight: 500; margin: 0 0 8px; color: var(--graphite-65); }
+.delta-list { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; }
+.delta-list li { font-size: 14px; }
+.delta-list .d-name { color: var(--graphite-65); }
+.delta-list .d-val { font-family: var(--font-mono); }
+.delta-list .d-move { font-family: var(--font-mono); }
+.delta-list .d-move.worse { color: var(--terracotta-dark); }
+
 /* ─────────── Этаж 2: счёт формы ─────────── */
 .score-number {
   font-family: var(--font-mono);
@@ -479,7 +489,7 @@ button.ghost {
         </div>
         <div class="field">
           <label for="pullups">Подтягивания <span class="unit">— повторений</span></label>
-          <span class="how">Мужчины — из виса на высокой перекладине, женщины — из виса лёжа на низкой (90 см). Оценка — знак ГТО, не перцентиль.</span>
+          <span class="how" id="pullupsHow">Оценка — знак ГТО, не перцентиль.</span>
           <input id="pullups" type="number" inputmode="decimal" min="0" max="80" step="1" placeholder="12">
         </div>
         <div class="field">
@@ -523,7 +533,7 @@ button.ghost {
       <div class="fields">
         <div class="field">
           <label for="broadjump">Прыжок в длину с места <span class="unit">— см</span></label>
-          <span class="how">Толчком двумя ногами, лучшая из трёх попыток. Оценка — знак ГТО; с 40 лет это испытание из нормативов исключено.</span>
+          <span class="how" id="broadjumpHow">Толчком двумя ногами, лучшая из трёх попыток. Оценка — знак ГТО.</span>
           <input id="broadjump" type="number" inputmode="decimal" min="0" max="400" step="1" placeholder="220">
         </div>
       </div>
@@ -598,9 +608,12 @@ button.ghost {
 
     <div class="actions">
       <button type="submit" class="primary" id="calc">Посчитать</button>
-      <button type="button" class="ghost" id="resetBtn">Очистить</button>
+      <button type="button" class="ghost" id="resetBtn">Очистить поля</button>
+      <button type="button" class="ghost" id="downloadBtn">Скачать результат</button>
+      <button type="button" class="ghost" id="clearBtn">Очистить историю</button>
     </div>
     <div class="form-error" id="formError"></div>
+    <p class="hint" id="historyHint" style="color:var(--graphite-50);font-size:13px;margin-top:12px"></p>
   </form>
 
   <div class="warnings">
@@ -616,6 +629,7 @@ import {
   fitnessAgeNTNU, ageGrade, ageGradeClass, bodyComposition, recovery,
   evaluateTest, formScore, riskCards, riskGradients, weakestLink,
   lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
+  riskCoverage, diffWithPrevious,
 } from './forma-calc.js';
 import { NORMS, TEST_NORMS } from './forma-norms.js';
 
@@ -764,6 +778,16 @@ function initFromNorms() {
 
   $('gripHow').textContent = `Кистевой динамометр. ${TEST_NORMS.grip.note}`;
 
+  // Протокол подтягиваний — из данных норматива, включая высоту низкой перекладины
+  const pr = TEST_NORMS.pullups.protocol;
+  $('pullupsHow').textContent = `Мужчины — ${pr.m}, женщины — ${pr.f}. Оценка — знак ГТО, не перцентиль.`;
+
+  // Возраст, с которого прыжок в длину исключён из нормативов, считаем по
+  // самим ступеням ГТО: берём верхнюю границу последней собранной ступени.
+  const jumpRanges = [...TEST_NORMS.broadjump.m, ...TEST_NORMS.broadjump.f];
+  const jumpMaxAge = Math.max(...jumpRanges.map((r) => r.ageMax));
+  $('broadjumpHow').textContent = `Толчком двумя ногами, лучшая из трёх попыток. Оценка — знак ГТО; с ${jumpMaxAge + 1} лет это испытание из нормативов исключено.`;
+
   const ai = NORMS.ntnuFormula.activityIndex;
   const fill = (id, options) => {
     $(id).innerHTML = ['<option value="">нет ответа</option>']
@@ -773,6 +797,91 @@ function initFromNorms() {
   fill('trFreq', ai.frequency);
   fill('trInt', ai.intensity);
   fill('trDur', ai.duration);
+}
+
+// ─────────── История замеров ───────────
+// Хранилище браузера может быть недоступно: приватное окно, запрет хранения
+// данных. Любое чтение и запись обёрнуты — страница обязана работать и без них.
+
+const HISTORY_KEY = 'forma-history';
+const HISTORY_LIMIT = 50;
+
+function readHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return []; // хранилище недоступно или в нём мусор — работаем без истории
+  }
+}
+
+function writeHistory(list) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function lastMeasurement() {
+  const history = readHistory();
+  return history.length ? history[history.length - 1] : null;
+}
+
+// Замеры, которые имеет смысл сравнивать между собой. Ответы про тренировки
+// сюда не идут — это анкета, а не измерение.
+const QUESTIONNAIRE_KEYS = ['trainingFreq', 'trainingIntensity', 'trainingDuration'];
+function measurements(profile, values) {
+  const out = { weight: profile.weight };
+  for (const [key, value] of Object.entries(values)) {
+    if (QUESTIONNAIRE_KEYS.includes(key)) continue;
+    out[key] = value;
+  }
+  return out;
+}
+
+// Названия показателей, которых нет в таблицах тестов
+const EXTRA_LABELS = {
+  weight: 'Вес', vo2max: 'VO2max', cooper: 'Тест Купера',
+  run5: 'Бег 5 км', run10: 'Бег 10 км', run21: 'Полумарафон', run42: 'Марафон',
+  bodyFat: 'Процент жира', limbMuscle: 'Мышцы рук и ног', waist: 'Окружность талии',
+  restingHR: 'Пульс покоя', rmssd: 'HRV (rMSSD)', bedtimeSd: 'Разброс времени отбоя',
+};
+
+// Показатели, у которых меньше — лучше. Направление шкалы, а не норма:
+// у времени на дистанции, пульса покоя, процента жира, талии и разброса
+// времени отбоя рост числа означает ухудшение.
+const LOWER_IS_BETTER = new Set(['restingHR', 'bodyFat', 'waist', 'bedtimeSd', 'run5', 'run10', 'run21', 'run42']);
+const TIME_KEYS = new Set(['run5', 'run10', 'run21', 'run42']);
+
+function saveMeasurement(profile, values) {
+  const history = readHistory();
+  history.push({ date: new Date().toISOString(), profile, values });
+  return writeHistory(history.slice(-HISTORY_LIMIT));
+}
+
+// Подставляем в поля значения последнего замера
+function prefillFromHistory() {
+  const last = lastMeasurement();
+  if (!last) return;
+  const set = (id, value, asTime = false) => {
+    const el = $(id);
+    if (!el || value === null || value === undefined) return;
+    el.value = asTime ? secToTime(value) : String(value);
+  };
+  if (last.profile) {
+    if (last.profile.sex) $('sex').value = last.profile.sex;
+    set('age', last.profile.age);
+    set('height', last.profile.height);
+    set('weight', last.profile.weight);
+  }
+  for (const [key, value] of Object.entries(last.values || {})) {
+    const id = { trainingFreq: 'trFreq', trainingIntensity: 'trInt', trainingDuration: 'trDur' }[key] || key;
+    set(id, value, TIME_KEYS.has(key));
+  }
 }
 
 // ─────────── Сбор формы ───────────
@@ -936,13 +1045,13 @@ function compute({ profile, values }) {
 
     if (values.waist !== null) {
       const w = bc.waistToHeight.value;
-      const riskTrigger = NORMS.hazards.waistToHeight.trigger.value;
+      const wtrTrigger = NORMS.hazards.waistToHeight.trigger;
       push({
         key: 'waistToHeight', block: 'body', label: 'Талия к росту', unit: '',
         value: w, percentile: null, level: null, badge: null, informational: false,
         belowThreshold: null,
         flag: bc.waistToHeight.flag, reference: bc.waistToHeight.reference,
-        note: `Порог скрининга — ${fmt(NORMS.waistToHeight.threshold, 1)} (Ashwell). Коэффициент риска смертности опубликован для другого сравнения — ${fmt(riskTrigger, 2)} и выше против меньше 0,50 (Patel, 2025), поэтому карточка риска появляется только с ${fmt(riskTrigger, 2)}.`,
+        note: `Порог скрининга — ${fmt(NORMS.waistToHeight.threshold, 1)} (Ashwell). Коэффициент риска смертности опубликован для другого сравнения — ${fmt(wtrTrigger.value, 2)} и выше против меньше ${fmt(wtrTrigger.referenceBelow, 2)} (Patel, 2025), поэтому карточка риска появляется только с ${fmt(wtrTrigger.value, 2)}.`,
       });
     }
   }
@@ -1083,14 +1192,18 @@ function heroHtml(state) {
     : (diff < 0 ? `на ${fmt(Math.abs(diff))} ${years(Math.abs(diff))} моложе` : `на ${fmt(diff)} ${years(diff)} старше`);
 
   const bounds = bodyAgeBounds(profile.sex);
+  // Подписи возрастных групп таблицы FRIEND собираем из её же ключей
+  const vo2Keys = Object.keys(NORMS.vo2max[profile.sex]).map(Number).sort((a, b) => a - b);
+  const youngestGroup = `${vo2Keys[0]}-${vo2Keys[1] - 1}`;
+  const oldestGroup = `${vo2Keys[vo2Keys.length - 1]}-${NORMS.vo2max.ageCoverage.max}`;
   const caveats = [];
 
   // Оговорка про пол таблицы — только когда возраст тела в него упёрся
   if (bodyAge === bounds.min) {
-    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.min} ${years(bounds.min)}.</strong> Ниже этой отметки таблица FRIEND не идёт — младшая группа в ней ${NORMS.vo2max.ageCoverage.min}-29 лет. Дальше рост виден по перцентилю VO2max, а не по возрасту тела.</div>`);
+    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.min} ${years(bounds.min)}.</strong> Ниже этой отметки таблица FRIEND не идёт — младшая группа в ней ${youngestGroup} лет. Дальше рост виден по перцентилю VO2max, а не по возрасту тела.</div>`);
   }
   if (bodyAge === bounds.max) {
-    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.max} ${years(bounds.max)}.</strong> Выше этой отметки таблица FRIEND не идёт — старшая группа в ней 70-${NORMS.vo2max.ageCoverage.max} лет.</div>`);
+    caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.max} ${years(bounds.max)}.</strong> Выше этой отметки таблица FRIEND не идёт — старшая группа в ней ${oldestGroup} лет.</div>`);
   }
 
   if (bodyAgeSource === 'ntnu') {
@@ -1138,6 +1251,32 @@ function tileState(block, state) {
   return state.results.some((r) => r.block === block) ? 'own' : 'grey';
 }
 
+// Разница с прошлым замером. Только те показатели, что есть в обоих замерах;
+// цветом выделяется одно — ухудшение.
+function deltaHtml(state) {
+  if (!state.diff || !state.diff.length) return '';
+
+  const items = state.diff.map((d) => {
+    const lowerBetter = LOWER_IS_BETTER.has(d.key);
+    const worse = lowerBetter ? d.delta > 0 : d.delta < 0;
+    const isTime = TIME_KEYS.has(d.key);
+    const show = (v) => (isTime ? secToTime(v) : fmt(v, Number.isInteger(v) ? 0 : 1));
+    const move = isTime
+      ? `${d.delta > 0 ? 'плюс' : 'минус'} ${secToTime(Math.abs(d.delta))}`
+      : `${d.delta > 0 ? 'плюс' : 'минус'} ${fmt(Math.abs(d.delta), Number.isInteger(d.delta) ? 0 : 1)}`;
+    if (d.delta === 0) {
+      return `<li><span class="d-name">${esc(d.label)}:</span> <span class="d-val">${show(d.to)}</span> <span class="d-move">без изменений</span></li>`;
+    }
+    return `<li><span class="d-name">${esc(d.label)}:</span> <span class="d-val">${show(d.from)} → ${show(d.to)}</span> <span class="d-move${worse ? ' worse' : ''}">${move}</span></li>`;
+  }).join('');
+
+  const when = state.previousDate ? new Date(state.previousDate).toLocaleDateString('ru-RU') : null;
+  return `<div class="delta-box">
+    <h4>Разница с прошлым замером${when ? ` от ${when}` : ''}</h4>
+    <ul class="delta-list">${items}</ul>
+  </div>`;
+}
+
 function scoreHtml(state) {
   const { score } = state;
   const word = {
@@ -1169,14 +1308,12 @@ function scoreHtml(state) {
 function riskHtml(state) {
   const { risks, gradients, results } = state;
 
-  // Было ли вообще что проверять: есть ли среди заполненного показатель,
-  // у которого опубликован коэффициент с условием срабатывания.
-  const checkable = results.some((r) => {
-    const h = NORMS.hazards[r.key];
-    return h && h.trigger && h.trigger.kind !== 'gradient';
-  });
+  // Молчание нельзя подавать как «всё в порядке»: одно дело — проверили и не
+  // попал, другое — проверить было нечем, потому что человек вне охвата
+  // когорт (правка по ревью задачи 7).
+  const coverage = riskCoverage(results);
 
-  if (!checkable && !gradients.length) return ''; // проверять было нечего — блок не показываем
+  if (!coverage.checked.length && !coverage.outOfCohort.length && !gradients.length) return '';
 
   const disclaimer = `<div class="caveat"><strong>Риски разных тестов не складываются.</strong> Показатели связаны между собой — например, сила хвата и мышечная масса, — поэтому сумма коэффициентов даёт двойной счёт. Каждая карточка читается отдельно. Группы между собой тоже не сравниваются: общая смертность и сердечно-сосудистые события — разные исходы.</div>`;
 
@@ -1199,8 +1336,20 @@ function riskHtml(state) {
         ${cards}
       </div>`;
     }).join('');
-  } else if (checkable) {
+  } else if (coverage.checked.length) {
     body += '<p style="font-size:17px;margin:10px 0 0">По опубликованным порогам ты ни в одну группу повышенного риска не попал.</p>';
+  }
+
+  // Что проверить было нечем — отдельной строкой, чтобы «мы не знаем» не
+  // читалось как «у тебя всё хорошо».
+  if (coverage.outOfCohort.length) {
+    const list = coverage.outOfCohort
+      .map((c) => `<li>${esc(c.label)} — когорта источника: ${esc(c.cohort)}</li>`)
+      .join('');
+    const head = coverage.checked.length
+      ? 'Часть порогов проверить нечем.'
+      : 'Проверить эти пороги нечем.';
+    body += `<div class="caveat"><strong>${head}</strong> Показатели заполнены, но твой пол или возраст за пределами когорт, на которых эти пороги меряли. Это значит «мы не знаем», а не «всё в порядке».<ul>${list}</ul></div>`;
   }
 
   // Градиенты — отдельно и от третьего лица. Личным множителем риска они
@@ -1349,9 +1498,9 @@ function render(state) {
   // Ничего не заполнено — не рисуем ни счёт, ни «провалов нет»: пустой
   // профиль не должен выглядеть как зелёный свет (правка по ревью).
   const html = state.results.length === 0
-    ? heroHtml(state) + `<section><div class="empty-hint">Пока считать нечего: заполнено только начало профиля. Внеси хотя бы один замер — любой.</div></section>`
+    ? heroHtml(state) + deltaHtml(state) + `<section><div class="empty-hint">Пока считать нечего: заполнено только начало профиля. Внеси хотя бы один замер — любой.</div></section>`
     // Порядок вызовов важен: blocksHtml собирает значки, легенда печатается внутри него
-    : heroHtml(state) + scoreHtml(state) + riskHtml(state) + blocksHtml(state) + weakHtml(state);
+    : heroHtml(state) + deltaHtml(state) + scoreHtml(state) + riskHtml(state) + blocksHtml(state) + weakHtml(state);
 
   $('results').innerHTML = html;
   $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1360,6 +1509,8 @@ function render(state) {
 // ─────────── События ───────────
 
 initFromNorms();
+prefillFromHistory();
+updateHistoryHint();
 
 $('form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -1373,7 +1524,65 @@ $('form').addEventListener('submit', (e) => {
   }
 
   err.textContent = '';
-  render(compute({ profile, values }));
+
+  // Прошлый замер берём ДО записи нового
+  const previous = lastMeasurement();
+  const state = compute({ profile, values });
+  state.diff = diffWithPrevious(
+    measurements(profile, values),
+    previous ? measurements(previous.profile || {}, previous.values || {}) : null,
+    EXTRA_LABELS,
+  );
+  state.previousDate = previous ? previous.date : null;
+
+  saveMeasurement(profile, values);
+  updateHistoryHint();
+  render(state);
+});
+
+// Сколько замеров лежит в браузере, и лежат ли вообще
+function updateHistoryHint() {
+  const history = readHistory();
+  const el = $('historyHint');
+  if (!history.length) {
+    el.textContent = 'История пока пуста. Замеры сохраняются только в этом браузере, никуда не отправляются.';
+    return;
+  }
+  el.textContent = `В этом браузере сохранено ${history.length} ${plural(history.length, 'замер', 'замера', 'замеров')} (хранятся последние ${HISTORY_LIMIT}). Данные не отправляются никуда.`;
+}
+
+// Выгрузка истории файлом
+$('downloadBtn').addEventListener('click', () => {
+  const history = readHistory();
+  if (!history.length) {
+    $('formError').textContent = 'Скачивать нечего: ни одного замера пока не сохранено.';
+    return;
+  }
+  $('formError').textContent = '';
+  const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `forma-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if (!readHistory().length) {
+    $('formError').textContent = 'История и так пуста.';
+    return;
+  }
+  if (!confirm('Удалить все сохранённые замеры? Отменить это будет нельзя.')) return;
+  try {
+    localStorage.removeItem(HISTORY_KEY);
+  } catch (e) {
+    writeHistory([]);
+  }
+  $('formError').textContent = '';
+  updateHistoryHint();
 });
 
 // Внимание: у формы есть свойства-ярлыки на её же поля, поэтому метод reset
