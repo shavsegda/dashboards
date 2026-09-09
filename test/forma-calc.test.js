@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink } from '../forma-calc.js';
 import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
@@ -496,13 +497,16 @@ test('знак ГТО в счёте формы: серебро/золото — 
   assert.equal(belowBronze.byBlock.strength, 'red');
 });
 
-// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6 (критично): блок power состоит ровно из
-// одного теста — прыжок в длину, а он badge-тест без перцентиля. Раньше
-// weakestLink() смотрел только на typeof percentile === 'number' и блок
-// power был структурно не способен стать слабым звеном ни при каком
-// знаке, включая «ниже бронзы». Ниже — прямая проверка через настоящий
-// evaluateTest(), а не фиктивный перцентиль.
-test('блок мощности реально становится слабым звеном через знак ГТО, а не через выдуманный перцентиль', () => {
+// ПРАВКА ПО ИТОГАМ ПОВТОРНОГО РЕВЬЮ ЗАДАЧИ 6 (критично): раньше знак ГТО
+// раскладывался в число 0/33,3/66,7/100 и усреднялся с настоящими
+// перцентилями других тестов блока — самодельная шкала, никто не
+// публиковал, что «серебро» соответствует 67-му перцентилю населения.
+// Теперь знак и перцентиль — два разных утверждения в разных полях, как
+// уже честно сделано в isAtOrAboveMedian(). Блок power (единственный
+// тест — прыжок в длину, он всегда badge, не перцентиль) в primary
+// вообще не попадает — там нечего усреднять, а провал уходит в
+// badgeFailures отдельной строкой.
+test('провал по знаку ГТО попадает в badgeFailures, а не подмешивается в primary', () => {
   const weakPower = evaluateTest('broadjump', 150, profile38m); // сильно ниже порога бронзы (192 для 35-39)
   assert.equal(weakPower.percentile, null); // у этого теста перцентиля не бывает вообще
   assert.equal(weakPower.badge, 'ниже бронзы');
@@ -512,15 +516,54 @@ test('блок мощности реально становится слабым
     { key: 'pushups', block: 'strength', percentile: 85, informational: false },
     { key: weakPower.key, block: weakPower.block, badge: weakPower.badge, informational: weakPower.informational },
   ];
-  assert.equal(weakestLink(results).block, 'power');
+  const result = weakestLink(results);
+  // среди блоков с перцентилями хуже endurance (90) блок strength (85) —
+  // power в это сравнение не входит, у него нет ни одного перцентиля
+  assert.equal(result.primary.block, 'strength');
+  assert.equal(result.badgeFailures.length, 1);
+  assert.equal(result.badgeFailures[0].block, 'power');
+  assert.equal(result.badgeFailures[0].testKey, 'broadjump');
+  assert.equal(result.badgeFailures[0].badge, 'ниже бронзы');
 });
 
-test('слабое звено сравнивает два блока, где вообще нет перцентилей — только знаки ГТО, по их порядку', () => {
+test('если перцентилей нигде нет, а провал по знаку есть — primary равен null, badgeFailures заполнен', () => {
   const results = [
     { key: 'pullups', block: 'strength', badge: 'золото', informational: false },
     { key: 'broadjump', block: 'power', badge: 'бронза', informational: false },
   ];
-  assert.equal(weakestLink(results).block, 'power'); // бронза хуже золота — чисто по порядку знака
+  const result = weakestLink(results);
+  assert.notEqual(result, null); // объект возвращается, а не null — данные есть (провал по знаку)
+  assert.equal(result.primary, null); // ни у одного блока нет перцентиля
+  assert.equal(result.badgeFailures.length, 1);
+  assert.equal(result.badgeFailures[0].block, 'power');
+  assert.equal(result.badgeFailures[0].badge, 'бронза');
+});
+
+test('знак «серебро» — не провал, в badgeFailures не попадает', () => {
+  const results = [{ key: 'pullups', block: 'strength', badge: 'серебро', informational: false }];
+  const result = weakestLink(results);
+  // ни перцентилей, ни провалов — данных для weakestLink нет вообще
+  assert.equal(result, null);
+});
+
+test('при наличии и перцентилей, и провала по знаку возвращаются оба поля заполненными', () => {
+  const results = [
+    { key: 'vo2max', block: 'endurance', percentile: 40, informational: false },
+    { key: 'broadjump', block: 'power', badge: 'ниже бронзы', informational: false },
+  ];
+  const result = weakestLink(results);
+  assert.ok(result.primary);
+  assert.equal(result.primary.block, 'endurance');
+  assert.equal(result.badgeFailures.length, 1);
+  assert.equal(result.badgeFailures[0].block, 'power');
+});
+
+test('перевод знака ГТО в число нигде в forma-calc.js не остался', () => {
+  const src = readFileSync(new URL('../forma-calc.js', import.meta.url), 'utf8');
+  // раньше была функция badgeOrdinalPosition() и формула (rank / BADGE_ORDER['золото']) * 100 —
+  // проверяем, что они не вернулись
+  assert.ok(!src.includes('badgeOrdinalPosition'));
+  assert.ok(!/BADGE_ORDER\['золото'\]\)\s*\*\s*100/.test(src));
 });
 
 test('карточки риска сгруппированы по исходу и отсортированы внутри группы от самого дорогого провала', () => {
@@ -617,8 +660,15 @@ test('провал по знаку ГТО тоже создаёт карточк
   }
 });
 
-test('слабое звено — блок с самым низким средним перцентилем', () => {
-  assert.equal(weakestLink(sample).block, 'power');
+test('слабое звено — блок с самым низким средним перцентилем среди блоков с перцентилями, badgeFailures отдельно', () => {
+  const result = weakestLink(sample);
+  // power в primary не участвует: у него в sample только badge ('ниже бронзы'
+  // у broadjump), ни одного перцентиля. Из блоков с перцентилями (endurance
+  // 80, strength — только pushups 75, пуллапы badge в среднее не входят)
+  // хуже strength.
+  assert.equal(result.primary.block, 'strength');
+  assert.equal(result.badgeFailures.length, 1);
+  assert.equal(result.badgeFailures[0].testKey, 'broadjump');
 });
 
 test('слабое звено не выбирается, когда данных нет совсем', () => {

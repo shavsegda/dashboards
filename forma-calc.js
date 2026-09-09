@@ -522,52 +522,49 @@ export function riskCards(results) {
   return groups;
 }
 
-// Переводит знак ГТО в положение на условной шкале 0-100 — ТОЛЬКО чтобы
-// сравнивать блоки между собой при поиске слабого звена. Это НЕ перцентиль:
-// перцентиль — доля людей хуже вас в реальном распределении, а тут просто
-// равномерно растянутые 4 официальные ступени (0/33,3/66,7/100). Знак как
-// был знаком в r.badge, так и остаётся — эта ordinal-позиция существует
-// только внутри weakestLink() и никогда не подставляется в result.percentile.
-function badgeOrdinalPosition(badge) {
-  const rank = BADGE_ORDER[badge];
-  if (rank === undefined) return null;
-  return (rank / BADGE_ORDER['золото']) * 100;
-}
-
-// Единая «позиция» результата для сравнения блоков в поиске слабого звена:
-// настоящий перцентиль, если он есть, иначе — порядковая позиция знака ГТО
-// (см. badgeOrdinalPosition). ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6: раньше здесь
-// участвовал только typeof percentile === 'number', и блок power (в нём
-// ровно один тест — прыжок в длину, а он теперь ВСЕГДА badge, не
-// перцентиль) был структурно не способен стать слабым звеном ни при каком
-// результате, включая «ниже бронзы» — блок просто исключался из сравнения.
-function weakestLinkPosition(r) {
-  if (r.informational) return null;
-  if (typeof r.percentile === 'number') return r.percentile;
-  if (typeof r.badge === 'string') return badgeOrdinalPosition(r.badge);
-  return null;
-}
-
-// Слабое звено: блок с самым низким средним значением weakestLinkPosition
-// среди блоков, где вообще есть результаты (справочные тесты в сравнение
-// не входят — усреднять с ними нечего).
+// Слабое звено — два разных утверждения, и смешивать их в одно число
+// нельзя (правка по итогам повторного ревью задачи 6: раньше знак ГТО
+// раскладывался в число 0/33,3/66,7/100 и усреднялся с настоящими
+// перцентилями — самодельная шкала, которую никто не публиковал). Ровно
+// та же честность, что уже есть у isAtOrAboveMedian(): знак и перцентиль
+// оцениваются каждый по своей логике, а не приводятся к общей шкале.
+//
+// primary — худший блок СРЕДИ ТЕХ, где есть настоящие числовые перцентили.
+// Блоки без перцентилей (например power, где единственный тест —
+// прыжок в длину — всегда badge) в это сравнение не входят.
+//
+// badgeFailures — тесты со знаком «бронза» или «ниже бронзы»: по
+// официальному смыслу норматива это «не дотянул». Серебро и золото сюда
+// не попадают — это не провал, а норма или выше.
+//
+// Возвращает null, только если нет вообще ничего: ни перцентилей, ни
+// провалов по знаку. Если провалы по знаку есть, а блоков с перцентилями
+// нет — возвращает объект с primary: null и заполненным badgeFailures,
+// а не null (иначе провал по знаку молча терялся бы).
 export function weakestLink(results) {
-  let worst = null;
+  let primary = null;
   for (const block of BLOCKS) {
-    const items = [];
-    for (const r of results) {
-      if (r.block !== block) continue;
-      const position = weakestLinkPosition(r);
-      if (position === null) continue;
-      items.push({ r, position });
-    }
+    const items = results.filter(
+      (r) => r.block === block && !r.informational && typeof r.percentile === 'number',
+    );
     if (items.length === 0) continue;
-    const average = items.reduce((s, x) => s + x.position, 0) / items.length;
-    if (worst === null || average < worst.average) {
-      worst = { block, average, items: items.map((x) => x.r) };
+    const average = items.reduce((s, r) => s + r.percentile, 0) / items.length;
+    if (primary === null || average < primary.average) {
+      primary = { block, average, items };
     }
   }
-  return worst;
+
+  const badgeFailures = results
+    .filter((r) => !r.informational && badgeIndicatesFailure(r.badge))
+    .map((r) => ({
+      block: r.block,
+      testKey: r.key,
+      label: r.label ?? TEST_NORMS[r.key]?.label ?? r.key,
+      badge: r.badge,
+    }));
+
+  if (primary === null && badgeFailures.length === 0) return null;
+  return { primary, badgeFailures };
 }
 
 // У пульса покоя меньше значит лучше. Просто поменять знак нельзя — узлы
