@@ -1373,3 +1373,36 @@ test('зачёт блока: перцентиль по медиане, знак 
   assert.equal(s.counted, 2);
   assert.equal(s.green, 2);
 });
+
+test('первоисточник формулы NTNU показан основным, подтверждающая работа — рядом', () => {
+  const spec = NORMS.ntnuFormula;
+  assert.match(spec.source.title, /HUNT Study/);
+  assert.match(spec.source.authors, /^Nes B\.M\./);
+  assert.equal(spec.source.year, 2011);
+  assert.ok(spec.confirmedBy.url && spec.confirmedBy.year === 2019);
+});
+
+test('протокол отжиманий лежит в данных: у женщин он с колен', () => {
+  const p = TEST_NORMS.pushups.protocol;
+  assert.match(p.f, /колен/);
+  assert.ok(p.m.length > 0);
+});
+
+test('мёртвых данных в нормах не осталось', () => {
+  assert.equal(NORMS.sleepRegularity.sriBands, undefined);
+  assert.equal(TEST_NORMS.plank.context, undefined);
+  assert.equal(TEST_NORMS.onelegstand.context60plus, undefined);
+});
+
+test('ссылки ведут туда, куда обещает заголовок', () => {
+  // ВОЗ: каноническая страница основной, зеркало запасным полем
+  assert.match(NORMS.bmi.source.url, /iris\.who\.int/);
+  assert.ok(NORMS.bmi.source.mirrorUrl);
+  // Стойка на одной ноге — DOI, а не поисковая база
+  assert.match(TEST_NORMS.onelegstand.source.url, /^https:\/\/doi\.org\//);
+  assert.match(NORMS.hazards.onelegstand.source.url, /^https:\/\/doi\.org\//);
+  // Талия к росту: заголовок и адрес — от одной работы, вторая рядом
+  assert.match(NORMS.waistToHeight.source.url, /waisttoheight-ratio-as-a-screening-tool/);
+  assert.match(NORMS.waistToHeight.source.title, /^A systematic review of waist-to-height ratio/);
+  assert.ok(NORMS.waistToHeight.alsoSee.title !== NORMS.waistToHeight.source.title);
+});

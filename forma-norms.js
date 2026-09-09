@@ -311,16 +311,28 @@ export const NORMS = {
   // estimateVo2maxNTNU() в forma-calc.js, здесь источник, чтобы его было
   // видно программно, а не только в комментарии кода.
   ntnuFormula: {
+    // ПРАВКА ПЕРЕД ПУБЛИКАЦИЕЙ: основным источником клиенту показывалась
+    // работа про депрессию у студентов — она формулу лишь цитирует. Теперь
+    // основной источник тот, где модель построена, а подтверждающая работа
+    // (в открытом доступе, дословно приводит уравнение) лежит рядом.
     source: {
-      title: 'Estimated Cardiorespiratory Fitness Is Associated With Reported Depression in College Students (дословно приводит формулу Nes B.M. и соавт., HUNT Study, версия с ИМТ)',
-      authors: 'Jalene S., Pharr J., Shan G., Poston B.',
-      year: 2019,
-      url: 'https://doi.org/10.3389/fphys.2019.01191',
+      title: 'Estimating VO2peak from a Nonexercise Prediction Model: The HUNT Study, Norway',
+      authors: 'Nes B.M., Janszky I., Vatten L.J., Nilsen T.I.L., Aspenes S.T., Wisløff U.',
+      year: 2011,
+      url: 'https://doi.org/10.1249/MSS.0b013e31821d3f6f',
       // ПРАВКА ПЕРЕД ПУБЛИКАЦИЕЙ: не 'population'. Это не перцентили
       // обследования, а уравнение регрессии, построенное на добровольцах
       // когорты HUNT3 (Норвегия, 4637 человек) — вторичные данные по
       // конвенции этого файла.
       kind: 'population-secondary',
+    },
+    // Работа в открытом доступе, которая дословно приводит то же уравнение
+    // (версию с ИМТ) со ссылкой на первоисточник — по ней уравнение и сверено.
+    confirmedBy: {
+      title: 'Estimated Cardiorespiratory Fitness Is Associated With Reported Depression in College Students',
+      authors: 'Jalene S., Pharr J., Shan G., Poston B.',
+      year: 2019,
+      url: 'https://doi.org/10.3389/fphys.2019.01191',
     },
     // Ошибка оценки самой формулы (SEE), мл/кг/мин — она разная у мужчин и
     // женщин, и раньше была свёрнута в общий диапазон 5,1-5,7.
@@ -691,6 +703,14 @@ export const TEST_NORMS = {
     label: 'Отжимания за подход',
     unit: 'повторений',
     maxAge: 69, // для 70-79 отдельных норм не найдено — раньше возраст 70+ молча получал бакет 60-69
+    // Протокол теста по стандарту CSEP-PATH: у женщин это модифицированные
+    // отжимания с колен, и норма собрана именно по ним. Раньше это жило
+    // прозой в разметке страницы, а в карточке результата про колени не
+    // говорилось вовсе.
+    protocol: {
+      m: 'из упора лёжа, полная амплитуда',
+      f: 'модифицированные, с колен (стандарт CSEP-PATH для взрослых женщин)',
+    },
     source: {
       title: 'Push-up Test — CSEP-PATH rating categories (реконструированные перцентили), вторичная компиляция',
       authors: 'Payne V.G. et al. (валидация протокола push-up test для CSEP-PATH, 2000); данные сведены FitnessNorms.com со ссылкой на Canada Fitness Survey (n=23 400)',

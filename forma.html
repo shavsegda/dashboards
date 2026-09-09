@@ -492,7 +492,7 @@ button.ghost {
       <div class="fields">
         <div class="field">
           <label for="pushups">Отжимания <span class="unit">— повторений</span></label>
-          <span class="how">Максимум за один подход без остановки. У женщин протокол CSEP — с колен.</span>
+          <span class="how" id="pushupsHow">Максимум за один подход без остановки.</span>
           <input id="pushups" type="number" inputmode="decimal" min="0" max="200" step="1" placeholder="35">
         </div>
         <div class="field">
@@ -793,11 +793,14 @@ function initFromNorms() {
   $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${stand.threshold} ${unitText('секунд', stand.threshold)}, и он измерен на людях ${stand.thresholdAgeRange.min}-${stand.thresholdAgeRange.max} лет: в другом возрасте вердикта не будет, только время.`;
 
   const see = NORMS.ntnuFormula.standardError;
-  $('ntnuHint').textContent = `Три вопроса про тренировки — вместе с ростом, весом и пульсом покоя они дают возраст тела по формуле NTNU (исследование HUNT). Ошибка оценки — ${fmt(see.min, 1)}-${fmt(see.max, 1)} мл/кг/мин, это прикидка, а не замена нагрузочному тесту.`;
+  $('ntnuHint').textContent = `Три вопроса про тренировки — вместе с ростом, весом и пульсом покоя они дают возраст тела по формуле NTNU (исследование HUNT). Ошибка оценки — ${fmt(see.m, 1)} мл/кг/мин у мужчин и ${fmt(see.f, 1)} у женщин, это прикидка, а не замена нагрузочному тесту.`;
 
   $('cooperHow').textContent = 'Максимальная дистанция за 12 минут бега, в метрах. У мужчин переводится в оценку VO2max, у женщин — нет, объяснение будет в результате.';
 
   $('gripHow').textContent = `Кистевой динамометр. ${TEST_NORMS.grip.note}`;
+
+  const pu = TEST_NORMS.pushups.protocol;
+  $('pushupsHow').textContent = `Максимум за один подход без остановки. Протокол: мужчины — ${pu.m}, женщины — ${pu.f}.`;
 
   // Протокол подтягиваний — из данных норматива, включая высоту низкой перекладины
   const pr = TEST_NORMS.pullups.protocol;
@@ -945,6 +948,15 @@ function readForm() {
   return { profile, values };
 }
 
+// Приклеить фразу к примечанию так, чтобы получилось предложение, а не
+// склейка через запятую. Тот же приём, что в расчёте.
+function appendNoteText(base, extra) {
+  if (!extra) return base;
+  if (!base) return extra;
+  const trimmed = String(base).trim();
+  return `${/[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`} ${extra}`;
+}
+
 // ─────────── Расчёт ───────────
 
 const RUNS = [
@@ -968,6 +980,11 @@ function compute({ profile, values }) {
     // Оговорку про непокрытые ступени показываем только тому, кого она
     // касается: 38-летнему строка про ступень 65-69 ничего не говорит.
     const spec = TEST_NORMS[key];
+    // Протокол теста — рядом с результатом: женские отжимания считаются с
+    // колен, и в карточке это должно быть сказано, а не только у поля ввода.
+    if (spec.protocol && spec.protocol[profile.sex] && !spec.badgeTest) {
+      r.note = appendNoteText(r.note, `Протокол теста: ${spec.protocol[profile.sex]}`);
+    }
     if (spec.coverageNote && spec.badgeTest && r.badge === null) {
       const base = (r.note || '').trim();
       r.note = base ? `${/[.!?…]$/.test(base) ? base : base + '.'} ${spec.coverageNote}` : spec.coverageNote;
@@ -1256,8 +1273,8 @@ function heroHtml(state) {
   }
 
   if (bodyAgeSource === 'ntnu') {
-    const see = NORMS.ntnuFormula.standardError;
-    caveats.push(`<div class="caveat"><strong>Возраст тела оценён без теста.</strong> Формула NTNU (исследование HUNT) считает VO2max по росту, весу, пульсу покоя и трём ответам про тренировки. Ошибка оценки — ${fmt(see.min, 1)}-${fmt(see.max, 1)} мл/кг/мин, это прикидка, а не замена нагрузочному тесту.</div>`);
+    const see = NORMS.ntnuFormula.standardError[profile.sex];
+    caveats.push(`<div class="caveat"><strong>Возраст тела оценён без теста.</strong> Формула NTNU (исследование HUNT) считает VO2max по росту, весу, пульсу покоя и трём ответам про тренировки. Ошибка оценки для твоего пола — ${fmt(see, 1)} мл/кг/мин: это прикидка, а не замена нагрузочному тесту.</div>`);
   }
   if (bodyAgeSource === 'cooper') {
     caveats.push(`<div class="caveat"><strong>Возраст тела посчитан по тесту Купера.</strong> ${esc(NORMS.cooper.note)} Оценка VO2max — ${fmt(cooperVo2, 1)} мл/кг/мин.</div>`);
