@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <title>Форма — дашборд физической формы · Алексей Шаповалов</title>
-<meta name="description" content="Внеси свои замеры и посмотри: до скольки в среднем доживают люди в такой форме, разряд по каждому тесту для своего пола и возраста, цена провала со ссылкой на исследование и одно слабое звено.">
+<meta name="description" content="Внеси свои замеры и посмотри: возраст тела по выносливости, разряд по каждому тесту для своего пола и возраста, цена провала со ссылкой на исследование и одно слабое звено.">
 
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -625,10 +625,10 @@ button.ghost {
 
 <script type="module">
 import {
-  vo2maxPercentile, levelFromPercentile, bodyAgeFromVo2max, lifeExpectancy,
+  vo2maxPercentile, levelFromPercentile, bodyAgeFromVo2max,
   fitnessAgeNTNU, ageGrade, ageGradeClass, bodyComposition, recovery,
   evaluateTest, formScore, riskCards, riskGradients, weakestLink,
-  lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
+  bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
   riskCoverage, diffWithPrevious,
 } from './forma-calc.js';
 import { NORMS, TEST_NORMS } from './forma-norms.js';
@@ -702,11 +702,11 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // одна и та же формулировка честна для всех показателей. На краях таблицы
 // percentile() обрезает значение до 0 и 100 — писать «лучше, чем у 100%
 // людей» нельзя, это край таблицы, а не место в популяции.
-function percentileText(p) {
+function percentileText(p, population) {
   const side = clampSide(p);
   if (side === 'above') return 'лучше верхней точки таблицы';
   if (side === 'below') return 'ниже нижней точки таблицы';
-  return `лучше, чем у ${pp(p)}% людей твоего пола и возраста`;
+  return `лучше, чем у ${pp(p)}% ${population || 'людей твоего пола и возраста'}`;
 }
 
 // Тип данных за нормой — короткое слово и расшифровка. Расшифровка выводится
@@ -762,12 +762,12 @@ function scaleHtml(steps, activeIndex) {
 // Никаких норм и порогов прозой в разметке: всё, что человек читает рядом с
 // полем, берётся из forma-norms.js (правка по ревью задачи 7).
 
-const COVERAGE = lifeExpectancyCoverage();
+const COVERAGE = bodyAgeCoverage();
 
 function initFromNorms() {
   // Границы ввода в поле возраста — разумный диапазон для взрослых, а не
   // норматив. У каждого теста своё покрытие, оно проверяется отдельно.
-  $('ageHow').textContent = `Полных лет на сегодня. Главная цифра считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблицы FRIEND и дожития не идут. Остальные тесты работают по своему покрытию.`;
+  $('ageHow').textContent = `Полных лет на сегодня. Возраст тела считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблица FRIEND не идёт. Остальные тесты работают по своему покрытию.`;
 
   $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${TEST_NORMS.onelegstand.threshold} ${unitText('секунд', TEST_NORMS.onelegstand.threshold)}.`;
 
@@ -1091,16 +1091,22 @@ function compute({ profile, values }) {
     }
   }
 
-  // 5. Возраст тела: измеренный VO2max → оценка по Куперу → формула NTNU
+  // 5. Возраст тела — главная цифра. Порядок источников: измеренный VO2max →
+  // оценка по тесту Купера → формула NTNU.
   let bodyAge = null;
   let bodyAgeSource = null;
+  let bodyAgeBlocked = null; // почему главной цифры нет: 'age' — возраст вне покрытия FRIEND
   const bmiValue = (profile.height !== null && profile.weight !== null)
     ? profile.weight / ((profile.height / 100) ** 2)
     : null;
   const ntnuReady = bmiValue !== null && values.restingHR !== null
     && values.trainingFreq !== null && values.trainingIntensity !== null && values.trainingDuration !== null;
 
-  if (values.vo2max !== null) {
+  if (!ageCovered(profile.age)) {
+    // Возраст вне покрытия таблицы FRIEND: сравнивать человека с чужой
+    // возрастной группой нельзя, поэтому главной цифры просто нет.
+    bodyAgeBlocked = 'age';
+  } else if (values.vo2max !== null) {
     bodyAge = bodyAgeFromVo2max(values.vo2max, profile.sex);
     bodyAgeSource = 'vo2max';
   } else if (cooperVo2 !== null) {
@@ -1113,7 +1119,7 @@ function compute({ profile, values }) {
       trainingIntensity: values.trainingIntensity,
       trainingDuration: values.trainingDuration,
     });
-    bodyAgeSource = 'ntnu';
+    bodyAgeSource = bodyAge === null ? null : 'ntnu';
   }
 
   return {
@@ -1122,9 +1128,9 @@ function compute({ profile, values }) {
     results,
     bodyAge,
     bodyAgeSource,
+    bodyAgeBlocked,
     cooperVo2,
     vo2Percentile,
-    livesTo: bodyAge === null ? null : lifeExpectancy(bodyAge, profile.age, profile.sex),
     score: formScore(results),
     risks: riskCards(results),
     gradients: riskGradients(results),
@@ -1156,19 +1162,22 @@ const ADVICE = {
 };
 
 function heroHtml(state) {
-  const { profile, bodyAge, livesTo, bodyAgeSource, vo2Percentile, values, cooperVo2 } = state;
+  const { profile, bodyAge, bodyAgeSource, bodyAgeBlocked, vo2Percentile, values, cooperVo2 } = state;
+  const cov = NORMS.vo2max.ageCoverage;
 
-  if (livesTo === null && !ageCovered(profile.age)) {
+  // Возраст вне покрытия таблицы FRIEND — честный отказ, а не цифра из
+  // чужой возрастной группы.
+  if (bodyAgeBlocked === 'age') {
     return `<section class="hero">
-      <div class="eyebrow">Этаж 1 — до скольки идёшь</div>
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
       <div class="empty-hint" style="margin-top:14px">
-        Главную цифру для возраста ${fmt(profile.age)} ${years(profile.age)} не считаем: таблица FRIEND покрывает возраст от ${NORMS.vo2max.ageCoverage.min} до ${NORMS.vo2max.ageCoverage.max} лет, таблица дожития Росстата — от ${NORMS.lifeTable.ageCoverage.min} до ${NORMS.lifeTable.ageCoverage.max}. За этими границами возраст тела и продолжительность жизни пришлось бы считать по чужим нормам.
+        Возраст тела для ${fmt(profile.age)} ${years(profile.age)} не считаем: таблица FRIEND покрывает возраст от ${cov.min} до ${cov.max} лет. За этими границами человека пришлось бы сравнивать с чужой возрастной группой.
         <p style="margin:10px 0 0">Остальные этажи работают: каждый тест оценивается по своему покрытию, а где норм для твоего возраста нет — так и написано.</p>
       </div>
     </section>`;
   }
 
-  if (livesTo === null) {
+  if (bodyAge === null) {
     const missing = [];
     if (values.vo2max === null) missing.push('VO2max — с часов или из нагрузочного теста, это самый короткий путь');
     if (profile.sex === 'm' && values.cooper === null) missing.push('или тест Купера — дистанция за 12 минут');
@@ -1178,9 +1187,9 @@ function heroHtml(state) {
       missing.push('три ответа про тренировки — частота, тяжесть, длительность');
     }
     return `<section class="hero">
-      <div class="eyebrow">Этаж 1 — до скольки идёшь</div>
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
       <div class="empty-hint" style="margin-top:14px">
-        Главную цифру пока не из чего посчитать. Внеси VO2max — или рост, вес, пульс покоя и три ответа про тренировки, тогда возраст тела посчитается по формуле NTNU.
+        Возраст тела пока не из чего посчитать. Внеси VO2max — или рост, вес, пульс покоя и три ответа про тренировки, тогда он посчитается по формуле NTNU.
         <ul>${missing.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
       </div>
     </section>`;
@@ -1195,10 +1204,10 @@ function heroHtml(state) {
   // Подписи возрастных групп таблицы FRIEND собираем из её же ключей
   const vo2Keys = Object.keys(NORMS.vo2max[profile.sex]).map(Number).sort((a, b) => a - b);
   const youngestGroup = `${vo2Keys[0]}-${vo2Keys[1] - 1}`;
-  const oldestGroup = `${vo2Keys[vo2Keys.length - 1]}-${NORMS.vo2max.ageCoverage.max}`;
+  const oldestGroup = `${vo2Keys[vo2Keys.length - 1]}-${cov.max}`;
   const caveats = [];
 
-  // Оговорка про пол таблицы — только когда возраст тела в него упёрся
+  // Оговорка про край таблицы — только когда возраст тела в него упёрся
   if (bodyAge === bounds.min) {
     caveats.push(`<div class="caveat"><strong>Возраст тела упёрся в ${bounds.min} ${years(bounds.min)}.</strong> Ниже этой отметки таблица FRIEND не идёт — младшая группа в ней ${youngestGroup} лет. Дальше рост виден по перцентилю VO2max, а не по возрасту тела.</div>`);
   }
@@ -1221,22 +1230,20 @@ function heroHtml(state) {
     </div>`;
 
   const vo2Note = (vo2Percentile === null) ? '' :
-    `<div class="caveat">VO2max — ${percentileText(vo2Percentile)}${bodyAge === bounds.min ? '. И лучше, чем медиана двадцатилетних' : ''}.</div>`;
+    `<div class="caveat">VO2max — ${percentileText(vo2Percentile)}${bodyAge === bounds.min ? '. И выше медианы младшей группы таблицы' : ''}.</div>`;
 
   return `<section class="hero">
-    <div class="eyebrow">Этаж 1 — до скольки идёшь</div>
-    <p class="hero-claim">Люди в такой форме в среднем доживают до <span class="hero-number">${livesTo}</span> лет</p>
+    <div class="eyebrow">Этаж 1 — возраст тела</div>
+    <p class="hero-claim">По выносливости ты на уровне человека <span class="hero-number">${fmt(bodyAge)}</span> лет</p>
     <div class="hero-facts">
       <div class="fact"><div class="k">Паспортный возраст</div><div class="v">${fmt(profile.age)}</div></div>
-      <div class="fact"><div class="k">Возраст тела</div><div class="v accent">${fmt(bodyAge)}</div></div>
       <div class="fact"><div class="k">Разница</div><div class="v text">${diffText}</div></div>
       ${vo2Line}
     </div>
     ${vo2Note}
     ${caveats.join('')}
-    <div class="caveat">Как считается: VO2max → возраст, в котором такой VO2max является медианой (таблицы FRIEND) → остаток жизни при таком возрасте тела по таблице дожития Росстата, прибавленный к паспортному возрасту.</div>
+    <div class="caveat">Как считается: берём твой VO2max и ищем возраст, в котором такой VO2max — медиана своей возрастной группы (таблицы FRIEND). Это сравнение выносливости с медианами возрастных групп, и только оно: не прогноз здоровья, не срок жизни и не оценка организма целиком.</div>
     ${sourceHtml(NORMS.vo2max.source)}
-    ${sourceHtml(NORMS.lifeTable.source)}
     ${bodyAgeSource === 'ntnu' ? sourceHtml(NORMS.ntnuFormula.source) : ''}
     ${bodyAgeSource === 'cooper' ? sourceHtml(NORMS.cooper.source) : ''}
   </section>`;

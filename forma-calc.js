@@ -68,7 +68,7 @@ export function ageGradeClass(pct) {
 
 // Общий помощник: выбор ближайшего ключа объекта снизу по числовому параметру.
 // Один помощник на все таблицы со сплошной (без дыр) шкалой — коэффициенты
-// age grading, перцентили VO2max, таблица дожития, состав тела, восстановление,
+// age grading, перцентили VO2max, состав тела, восстановление,
 // а с задачи 4 ещё и силовые тесты Strength Level (там ключ — вес тела, не
 // возраст, но алгоритм тот же: ближайший ключ снизу). За пределами таблицы
 // берём крайнее значение. Для пустого объекта возвращает undefined —
@@ -129,17 +129,11 @@ export function bodyAgeFromVo2max(vo2max, sex) {
   return last.age;
 }
 
-// Возраст, для которого главную цифру вообще можно считать: пересечение
-// покрытия таблицы FRIEND и таблицы дожития. Границы лежат в данных
-// (forma-norms.js), здесь только пересечение.
-// ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 7 (опасно): без этой проверки подросток 14
-// лет получал «доживают до 58», а столетний — «до 111». Формула «паспортный
-// возраст плюс остаток жизни» разваливается за границами таблиц, потому что
-// ageBucket() молча подставляет крайнюю строку.
-export function lifeExpectancyCoverage() {
+// Возраст, для которого главную цифру вообще можно считать: покрытие
+// таблицы FRIEND. Границы лежат в данных (forma-norms.js).
+export function bodyAgeCoverage() {
   const a = NORMS.vo2max.ageCoverage;
-  const b = NORMS.lifeTable.ageCoverage;
-  return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
+  return { min: a.min, max: a.max };
 }
 
 // Попадает ли возраст в покрытие конкретной таблицы. Границы приходят из
@@ -153,11 +147,12 @@ export function withinCoverage(age, coverage) {
   return true;
 }
 
-// Покрыт ли возраст для ГЛАВНОЙ ЦИФРЫ. Это ограничение только возраста тела
-// и продолжительности жизни: у каждого теста своё покрытие, и вне него
-// отказывает сам тест, а не вся страница.
+// Покрыт ли возраст для ГЛАВНОЙ ЦИФРЫ. Это ограничение только возраста тела:
+// у каждого теста своё покрытие, и вне него отказывает сам тест, а не вся
+// страница. Подростку 15 лет возраст тела не считаем: сравнивать его с
+// медианами взрослых возрастных групп FRIEND не на чем.
 export function ageCovered(age) {
-  const c = lifeExpectancyCoverage();
+  const c = bodyAgeCoverage();
   return typeof age === 'number' && Number.isFinite(age) && age >= c.min && age <= c.max;
 }
 
@@ -180,19 +175,6 @@ export function vo2maxFromCooper(distanceM, sex) {
   if (typeof distanceM !== 'number' || !Number.isFinite(distanceM) || distanceM <= 0) return null;
   const value = (distanceM - spec.formula.offsetM) / spec.formula.divisor;
   return value > 0 ? value : null;
-}
-
-// До скольки лет в среднем доживает человек.
-// Важно: к ПАСПОРТНОМУ возрасту прибавляем остаток жизни, ожидаемый у человека
-// с таким ВОЗРАСТОМ ТЕЛА. Прибавлять остаток к возрасту тела нельзя — из-за
-// эффекта дожития получится, что молодое тело живёт меньше старого
-// (у молодого тела остаток жизни исчисляется от малого возраста в таблице
-// смертности, и складывать его с возрастом тела, а не с паспортным, занизит итог).
-export function lifeExpectancy(bodyAge, chronoAge, sex) {
-  if (!ageCovered(chronoAge)) return null; // за границами таблиц не считаем вовсе
-  const table = NORMS.lifeTable[sex];
-  const remaining = table[ageBucket(bodyAge, table)];
-  return Math.round(chronoAge + remaining);
 }
 
 // Индекс физической активности (шкала Kurtze, используется в модели Nes/Wisløff,

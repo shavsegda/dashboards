@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, lifeExpectancy, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, lifeExpectancyCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
+import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
 import { NORMS, TEST_NORMS } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -108,13 +108,17 @@ test('высокий VO2max даёт возраст тела моложе, ни�
   assert.ok(young < old);
 });
 
-test('при одном паспортном возрасте молодое тело даёт больший итог', () => {
-  assert.ok(lifeExpectancy(30, 45, 'm') > lifeExpectancy(60, 45, 'm'));
-});
-
-test('возраст тела равен паспортному — получается обычная таблица дожития', () => {
-  const v = lifeExpectancy(45, 45, 'm');
-  assert.ok(v > 45 && v < 110, `неправдоподобный итог ${v}`);
+test('таблица дожития и показатель «доживают до N лет» удалены из данных и расчёта', () => {
+  // Сцепка «перцентили FRIEND + таблица дожития + паспортный возраст» не
+  // описана ни одним источником и выдавала абсурд (двадцатилетнему в плохой
+  // форме — «до 29 лет»). Главной цифрой стал возраст тела.
+  assert.equal(NORMS.lifeTable, undefined, 'таблица дожития обязана быть удалена целиком');
+  const files = ['../forma-calc.js', '../forma-norms.js', '../forma.html'];
+  for (const f of files) {
+    const src = readFileSync(new URL(f, import.meta.url), 'utf8');
+    assert.ok(!/lifeExpectancy|lifeTable/.test(src), `${f}: остались следы расчёта продолжительности жизни`);
+    assert.ok(!/доживают|продолжительность жизни/i.test(src), `${f}: остался текст про продолжительность жизни`);
+  }
 });
 
 test('фитнес-возраст NTNU считается без VO2max', () => {
@@ -707,22 +711,16 @@ test('каждый коэффициент риска в NORMS.hazards полно
 // ---------------------------------------------------------------------
 // Задача 7, правки по ревью.
 
-test('главная цифра не считается за границами покрытия таблиц', () => {
-  const c = lifeExpectancyCoverage();
-  assert.equal(c.min, Math.max(NORMS.vo2max.ageCoverage.min, NORMS.lifeTable.ageCoverage.min));
-  assert.equal(c.max, Math.min(NORMS.vo2max.ageCoverage.max, NORMS.lifeTable.ageCoverage.max));
+test('главная цифра не считается за границами покрытия таблицы FRIEND', () => {
+  const c = bodyAgeCoverage();
+  assert.equal(c.min, NORMS.vo2max.ageCoverage.min);
+  assert.equal(c.max, NORMS.vo2max.ageCoverage.max);
 
-  // Подростку и столетнему — ничего, а не «доживают до 58» и «до 111»
-  assert.equal(lifeExpectancy(25, 14, 'm'), null);
-  assert.equal(lifeExpectancy(75, 100, 'f'), null);
-  assert.equal(lifeExpectancy(25, c.min - 1, 'm'), null);
-  assert.equal(lifeExpectancy(25, c.max + 1, 'm'), null);
-
-  // Ровно на границах — считается
-  assert.equal(typeof lifeExpectancy(25, c.min, 'm'), 'number');
-  assert.equal(typeof lifeExpectancy(60, c.max, 'm'), 'number');
+  // Ровно на границах — считается, за ними нет
   assert.ok(ageCovered(c.min) && ageCovered(c.max));
   assert.ok(!ageCovered(c.min - 1) && !ageCovered(c.max + 1));
+  assert.ok(!ageCovered(14) && !ageCovered(100));
+  assert.ok(!ageCovered(null));
 });
 
 test('границы возраста тела берутся из таблицы FRIEND, а не из текста', () => {
@@ -880,7 +878,6 @@ test('покрытие таблицы читается из данных, отк
 test('вне границ главной цифры отдельный тест продолжает считаться внутри своего покрытия', () => {
   // Женщина 82: главной цифры нет, а сила хвата покрыта до 85 лет
   assert.equal(ageCovered(82), false);
-  assert.equal(lifeExpectancy(70, 82, 'f'), null);
 
   const grip = evaluateTest('grip', 20, { sex: 'f', age: 82 });
   assert.equal(typeof grip.percentile, 'number', 'разряд по хвату в 82 года обязан считаться');
