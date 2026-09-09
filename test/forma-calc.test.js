@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
-import { NORMS, TEST_NORMS } from '../forma-norms.js';
+import { tableAtAge, percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
+import { NORMS, TEST_NORMS, KIND_POPULATION } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
   const t = { p25: 30, p50: 40, p75: 50 };
@@ -283,9 +283,36 @@ test('вис на перекладине честно помечен как ис
   assert.match(r.note, /не существ/);
 });
 
-test('стойка на одной ноге отмечает порог десяти секунд', () => {
-  assert.equal(evaluateTest('onelegstand', 8, profile).belowThreshold, true);
-  assert.equal(evaluateTest('onelegstand', 25, profile).belowThreshold, false);
+test('порог стойки на одной ноге применяется только внутри когорты 51-75 лет', () => {
+  // Araújo мерил людей 51-75 лет. Раньше 25-летний получал вердикт «порог
+  // пройден» со ссылкой на работу, в которую он не входил, и одновременно
+  // читал этажом выше «этот порог тебе проверить нечем».
+  assert.deepEqual(TEST_NORMS.onelegstand.thresholdAgeRange, { min: 51, max: 75 });
+
+  const inside = evaluateTest('onelegstand', 8, { sex: 'm', age: 60 });
+  assert.equal(inside.belowThreshold, true);
+  assert.equal(evaluateTest('onelegstand', 25, { sex: 'm', age: 60 }).belowThreshold, false);
+
+  // Вне когорты вердикта нет вообще — ни «ниже порога», ни «порог пройден»
+  const young = evaluateTest('onelegstand', 6, { sex: 'm', age: 25 });
+  assert.equal(young.belowThreshold, null);
+  assert.equal(young.value, 6, 'само время обязано остаться на экране');
+  assert.match(young.note, /51-75/);
+
+  const old = evaluateTest('onelegstand', 6, { sex: 'm', age: 80 });
+  assert.equal(old.belowThreshold, null);
+
+  // Ровно на границах когорта работает
+  assert.equal(evaluateTest('onelegstand', 6, { sex: 'm', age: 51 }).belowThreshold, true);
+  assert.equal(evaluateTest('onelegstand', 6, { sex: 'm', age: 75 }).belowThreshold, true);
+});
+
+test('пустое значение стойки не проходит проверку как «порог пройден»', () => {
+  // null < 10 — это false, поэтому раньше пустое поле давало «порог пройден».
+  for (const empty of [null, undefined, NaN, '']) {
+    assert.equal(evaluateTest('onelegstand', empty, { sex: 'm', age: 60 }).belowThreshold, null,
+      `пустое значение ${String(empty)} не должно давать вердикт`);
+  }
 });
 
 test('неизвестный тест возвращает null, а не падает', () => {
@@ -927,7 +954,7 @@ test('перцентиль VO2max, процента жира и пульса п�
   const teenFat = bodyComposition({ sex: 'm', age: 17, height: 180, weight: 70, bodyFatPct: 15 });
   assert.equal(teenFat.bodyFat.percentile, null);
   assert.equal(teenFat.bodyFat.level, null);
-  assert.match(teenFat.bodyFat.note, /от 20 до 89/);
+  assert.match(teenFat.bodyFat.note, /от 20 до 80/);
 
   const teenHr = recovery({ sex: 'm', age: 17, restingHR: 60 });
   assert.equal(teenHr.restingHR.percentile, null);
@@ -1064,4 +1091,148 @@ test('протокол подтягиваний и обе стороны сра�
   const t = NORMS.hazards.waistToHeight.trigger;
   assert.equal(t.value, 0.55);
   assert.equal(t.referenceBelow, 0.5);
+});
+
+
+// ---------------------------------------------------------------------
+// Правки перед публикацией.
+
+test('перцентиль жира считается интерполяцией между возрастными точками источника', () => {
+  // Источник (NHANES/DXA) даёт параметры распределения для точных возрастов
+  // 20, 30, 40... Раньше код читал их как десятилетние группы, и 29-летний
+  // сравнивался с нормой двадцатилетнего.
+  const at20 = bodyComposition({ sex: 'm', age: 20, height: 178, weight: 78, bodyFatPct: 20 }).bodyFat.percentile;
+  const at29 = bodyComposition({ sex: 'm', age: 29, height: 178, weight: 78, bodyFatPct: 20 }).bodyFat.percentile;
+  const at30 = bodyComposition({ sex: 'm', age: 30, height: 178, weight: 78, bodyFatPct: 20 }).bodyFat.percentile;
+
+  assert.notEqual(at29, at20, '29 лет не должен сравниваться с нормой двадцатилетнего');
+  assert.ok(at29 < at20, 'с возрастом медиана жира растёт — тот же процент даёт меньший перцентиль');
+  assert.ok(at29 > at30, 'и 29-летний обязан оказаться между точками 20 и 30');
+  // Ровно на опубликованных точках интерполяция ничего не меняет
+  assert.equal(at20, percentile(20, NORMS.bodyFat.m[20]));
+  assert.equal(at30, percentile(20, NORMS.bodyFat.m[30]));
+});
+
+test('интерполяция таблицы: на узле возвращает узел, между узлами — середину', () => {
+  const byAge = { 20: { p50: 10 }, 30: { p50: 20 } };
+  assert.equal(tableAtAge(20, byAge).p50, 10);
+  assert.equal(tableAtAge(30, byAge).p50, 20);
+  assert.equal(tableAtAge(25, byAge).p50, 15);
+  assert.equal(tableAtAge(10, byAge).p50, 10); // за краем — крайняя точка
+  assert.equal(tableAtAge(90, byAge).p50, 20);
+});
+
+test('верхняя граница покрытия по проценту жира — 80 лет, как в источнике', () => {
+  assert.equal(NORMS.bodyFat.ageCoverage.max, 80);
+  assert.equal(typeof bodyComposition({ sex: 'f', age: 80, height: 160, weight: 60, bodyFatPct: 40 }).bodyFat.percentile, 'number');
+  assert.equal(bodyComposition({ sex: 'f', age: 85, height: 160, weight: 60, bodyFatPct: 40 }).bodyFat.percentile, null);
+});
+
+test('вторичное чтение силовых не выходит за таблицу веса и не живёт без основного разряда', () => {
+  const weights = Object.keys(TEST_NORMS.squat1rm.secondary.m).map(Number).sort((a, b) => a - b);
+  const lightest = weights[0];
+  const heaviest = weights[weights.length - 1];
+
+  // Внутри таблицы — считается
+  const inside = evaluateTest('squat1rm', 120, { sex: 'm', age: 38, bodyWeight: 80 });
+  assert.equal(typeof inside.secondaryPercentile, 'number');
+
+  // Тяжелее и легче таблицы — не считается, и человеку сказано почему
+  const heavy = evaluateTest('squat1rm', 120, { sex: 'm', age: 38, bodyWeight: heaviest + 30 });
+  assert.equal(heavy.secondaryPercentile, null);
+  assert.match(heavy.note, new RegExp(`от ${lightest} до ${heaviest} кг`));
+  const light = evaluateTest('squat1rm', 60, { sex: 'm', age: 38, bodyWeight: lightest - 8 });
+  assert.equal(light.secondaryPercentile, null);
+
+  // Основного разряда нет — вторичного тоже нет: и у подростка, и у 95-летнего
+  const teen = evaluateTest('squat1rm', 100, { sex: 'm', age: 15, bodyWeight: 70 });
+  assert.equal(teen.percentile, null);
+  assert.equal(teen.secondaryPercentile, null);
+  const old = evaluateTest('squat1rm', 60, { sex: 'm', age: 95, bodyWeight: 70 });
+  assert.equal(old.percentile, null);
+  assert.equal(old.secondaryPercentile, null);
+});
+
+test('название популяции лежит в данных рядом с типом источника', () => {
+  assert.equal(KIND_POPULATION['population'], 'людей твоего пола и возраста');
+  assert.equal(KIND_POPULATION['training-classification'], 'тренирующихся твоего пола и возраста');
+  // У знака ГТО и у «норм нет» перцентиля не бывает — популяции тоже
+  assert.equal(KIND_POPULATION['state-standard'], null);
+  assert.equal(KIND_POPULATION['none'], null);
+
+  // Каждый тип данных, встречающийся в нормах, обязан иметь запись
+  const kinds = new Set();
+  for (const entry of Object.values(NORMS)) if (entry && entry.source) kinds.add(entry.source.kind);
+  for (const spec of Object.values(TEST_NORMS)) kinds.add(spec.source.kind);
+  for (const k of kinds) assert.ok(k in KIND_POPULATION, `нет названия популяции для типа ${k}`);
+
+  // Вторичное чтение по весу тела — своя популяция, без возраста
+  const secondary = evaluateTest('squat1rm', 120, { sex: 'm', age: 38, bodyWeight: 80 });
+  assert.equal(secondary.secondaryPopulation, 'людей твоего веса');
+  assert.ok(!/возраст/.test(secondary.secondaryPopulation));
+});
+
+// Тест-страж на утечку служебных текстов. Сканирует ВСЕ клиентские строки во
+// всех трёх файлах: данные норм целиком, строковые литералы расчёта и
+// разметки, а также текст самой страницы вне скрипта.
+const LEAK_PATTERNS = [
+  { re: /[A-Za-z0-9_-]+\.(?:js|md|html)\b/, what: 'имя файла проекта' },
+  { re: /\bforma-(?:calc|norms)\b|\bnormy-[a-z]/i, what: 'имя файла проекта' },
+  { re: /secondaryPercentile|belowThreshold|secondaryLevel|informational|ageBucket|cohortAgeRange|applicableSex|badgeTest|maxAge|percentile\(\)|evaluateTest|TEST_NORMS|NORMS\./, what: 'имя переменной или функции' },
+];
+
+function assertNoLeak(text, where) {
+  for (const { re, what } of LEAK_PATTERNS) {
+    assert.ok(!re.test(text), `${where}: в клиентский текст утёк ${what} — «${text.slice(0, 160)}»`);
+  }
+}
+
+// Все строки из данных норм, кроме адресов ссылок (там точки и латиница —
+// это адрес, а не текст для человека).
+function collectStrings(node, path, out) {
+  if (typeof node === 'string') {
+    out.push({ text: node, path });
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'url' || key === 'mirrorUrl') continue;
+    collectStrings(value, `${path}.${key}`, out);
+  }
+}
+
+// Строковые и шаблонные литералы с кириллицей — то, что реально видит человек.
+function literalsWithCyrillic(source) {
+  const withoutComments = source
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/([^:'"`\\])\/\/[^'"`\n]*$/gm, '$1');
+  const out = [];
+  const re = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
+  let m;
+  while ((m = re.exec(withoutComments)) !== null) {
+    // Подстановки ${...} — это код, а не текст: их содержимое проверяется
+    // отдельно (данные норм) либо является числом. Вырезаем.
+    const text = (m[1] ?? m[2] ?? m[3] ?? '').replace(/\$\{[^{}]*\}/g, '');
+    if (/[а-яё]/i.test(text)) out.push(text);
+  }
+  return out;
+}
+
+test('тест-страж: ни имён файлов, ни имён переменных в клиентских текстах', () => {
+  const fromNorms = [];
+  collectStrings(NORMS, 'NORMS', fromNorms);
+  collectStrings(TEST_NORMS, 'TEST_NORMS', fromNorms);
+  for (const { text, path } of fromNorms) assertNoLeak(text, path);
+
+  for (const file of ['../forma-calc.js', '../forma.html']) {
+    const source = readFileSync(new URL(file, import.meta.url), 'utf8');
+    for (const text of literalsWithCyrillic(source)) assertNoLeak(text, file);
+  }
+
+  // Текст самой страницы вне скрипта — то, что человек читает рядом с полями
+  const html = readFileSync(new URL('../forma.html', import.meta.url), 'utf8');
+  const markup = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
+  for (const line of markup.replace(/<[^>]+>/g, ' ').split('\n')) {
+    if (/[а-яё]/i.test(line)) assertNoLeak(line, 'разметка forma.html');
+  }
 });

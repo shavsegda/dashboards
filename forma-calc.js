@@ -219,6 +219,40 @@ export function fitnessAgeNTNU({ sex, age, bmi, restingHR, trainingFreq, trainin
   return bodyAgeFromVo2max(estimated, sex);
 }
 
+// Перцентильная таблица для точного возраста: линейная интерполяция между
+// двумя соседними возрастными точками источника. Нужна там, где источник
+// публикует параметры распределения ДЛЯ ТОЧНЫХ ВОЗРАСТОВ (20, 30, 40 ...),
+// а не для десятилетних групп — процент жира по NHANES/DXA именно такой.
+// Читать такие точки как группы нельзя: 29-летний сравнивался бы с нормой
+// двадцатилетнего, ошибка доходит до десяти перцентильных пунктов
+// (правка перед публикацией). За краями таблицы берём крайнюю точку —
+// но вызывающий код обязан сначала проверить покрытие возраста.
+export function tableAtAge(age, byAge) {
+  const keys = Object.keys(byAge).map(Number).sort((a, b) => a - b);
+  if (!keys.length) return null;
+  if (age <= keys[0]) return byAge[keys[0]];
+  const last = keys[keys.length - 1];
+  if (age >= last) return byAge[last];
+
+  let lo = keys[0];
+  let hi = last;
+  for (let i = 0; i < keys.length - 1; i += 1) {
+    if (age >= keys[i] && age <= keys[i + 1]) {
+      lo = keys[i];
+      hi = keys[i + 1];
+      break;
+    }
+  }
+  const share = (age - lo) / (hi - lo);
+  const out = {};
+  for (const node of Object.keys(byAge[lo])) {
+    const a = byAge[lo][node];
+    const b = byAge[hi][node];
+    if (typeof a === 'number' && typeof b === 'number') out[node] = a + share * (b - a);
+  }
+  return out;
+}
+
 // Состав тела: четыре показателя, каждый со своим источником и оговорками
 export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMuscleKg, waist }) {
   const heightM = height / 100;
@@ -232,7 +266,7 @@ export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMusc
   // Вне покрытия таблицы NHANES перцентиля нет — крайнюю группу не подставляем
   const bodyFatCovered = withinCoverage(age, NORMS.bodyFat.ageCoverage);
   const bodyFatPercentile = bodyFatCovered
-    ? percentile(bodyFatPct, NORMS.bodyFat[sex][ageBucket(age, NORMS.bodyFat[sex])])
+    ? percentile(bodyFatPct, tableAtAge(age, NORMS.bodyFat[sex]))
     : null;
 
   return {
@@ -242,13 +276,16 @@ export function bodyComposition({ sex, age, height, weight, bodyFatPct, limbMusc
       level: bodyFatLevel(bodyFatPercentile), // у процента жира меньше значит лучше
       note: appendNote(
         'Перцентиль рассчитан по измерениям методом DXA и по одной этнической подгруппе обследования NHANES (White) — только для неё в источнике есть полные ряды по всем возрастам. Бытовые весы с биоимпедансом дают отклонение в среднем 3-4 процентных пункта, иногда больше — направление ошибки зависит от модели весов. Следите за динамикой своих замеров на одних и тех же весах, а не за точным попаданием в перцентиль.',
-        bodyFatCovered ? '' : 'Для этого возраста перцентилей в источнике нет: таблица покрывает возраст от 20 до 89 лет, поэтому разряда по проценту жира здесь не будет.',
+        bodyFatCovered ? '' : `Для этого возраста перцентилей в источнике нет: таблица покрывает возраст от ${NORMS.bodyFat.ageCoverage.min} до ${NORMS.bodyFat.ageCoverage.max} лет, поэтому разряда по проценту жира здесь не будет.`,
       ),
       reference: NORMS.bodyFat.source,
     },
     smi: {
       value: smiValue,
       flag: smiValue < smiThreshold ? 'ниже порога саркопении' : 'в норме',
+      // Оговорка про метод — по образцу процента жира: порог получен на DXA,
+      // а число обычно вводится с бытовых весов с биоимпедансом.
+      note: 'Порог саркопении получен по измерениям методом DXA, а мышечную массу конечностей чаще вводят с бытовых весов с биоимпедансом — они дают другое число. Смотрите на динамику своих замеров на одних и тех же весах, а не на точное попадание в порог.',
       reference: NORMS.smi.source,
     },
     bmi: {
@@ -392,11 +429,26 @@ export function evaluateTest(testKey, value, profile) {
     clamped: null, // 'below' | 'above' — значение за краем таблицы (см. clampSide)
     secondaryClamped: null,
     secondaryLabel: spec.secondary ? spec.secondary.label : null,
+    secondaryPopulation: null, // название популяции для подписи вторичного чтения
     informational: Boolean(spec.informational),
-    belowThreshold: spec.threshold !== undefined ? value < spec.threshold : null,
+    belowThreshold: null, // считается ниже: только для числа и только внутри когорты порога
     reference: spec.source,
     note: spec.note ?? null,
   };
+
+  // Порог из исследования (стойка на одной ноге). Два условия, и оба
+  // обязательны. Первое: значение — настоящее число; пустое поле раньше
+  // проходило проверку как «порог пройден» (null < 10 — это false).
+  // Второе: человек внутри когорты, на которой порог измерен. Araújo мерил
+  // людей 51-75 лет — 25-летнему вердикт по этой работе не полагается,
+  // ему показываем время без вердикта и объясняем почему.
+  if (spec.threshold !== undefined && typeof value === 'number' && Number.isFinite(value)) {
+    if (!spec.thresholdAgeRange || withinCoverage(profile.age, spec.thresholdAgeRange)) {
+      result.belowThreshold = value < spec.threshold;
+    } else {
+      result.note = appendNote(result.note, spec.thresholdCohortNote || 'порог измерен на другой возрастной группе, поэтому вердикта здесь нет');
+    }
+  }
 
   // Справочные тесты (планка, вис на перекладине) — без перцентиля,
   // опубликованных возрастных норм для них нет.
@@ -459,15 +511,27 @@ export function evaluateTest(testKey, value, profile) {
   // здесь было деление на profile.bodyWeight без проверки, и нулевой вес тела
   // давал Infinity → percentile 100 → «продвинутый»; теперь тихо подставлять
   // это как разряд нельзя нигде, в том числе во вторичном чтении.
-  if (spec.secondary) {
+  // ПРАВКА ПЕРЕД ПУБЛИКАЦИЕЙ (критично): вторичное чтение живёт только внутри
+  // покрытия весовой таблицы и только рядом с посчитанным основным разрядом.
+  // Раньше человек 170 кг сравнивался со строкой 140 кг, человек 42 кг — со
+  // строкой 50 кг, а пятнадцатилетний и девяностопятилетний, у которых
+  // основной разряд честно пустой, всё равно получали вторичный по таблице,
+  // откалиброванной на возраст 25-40 лет.
+  if (spec.secondary && typeof result.percentile === 'number') {
     const w = profile.bodyWeight;
-    if (typeof w === 'number' && Number.isFinite(w) && w > 0) {
-      const bySexW = spec.secondary[profile.sex];
-      if (bySexW) {
+    const bySexW = spec.secondary[profile.sex];
+    if (bySexW && typeof w === 'number' && Number.isFinite(w) && w > 0) {
+      const weights = Object.keys(bySexW).map(Number).sort((a, b) => a - b);
+      const lightest = weights[0];
+      const heaviest = weights[weights.length - 1];
+      if (w >= lightest && w <= heaviest) {
         const tableW = bySexW[ageBucket(w, bySexW)];
         result.secondaryPercentile = percentile(value, tableW);
         result.secondaryLevel = levelFromPercentile(result.secondaryPercentile);
         result.secondaryClamped = clampSide(result.secondaryPercentile);
+        result.secondaryPopulation = spec.secondary.population ?? null;
+      } else {
+        result.note = appendNote(result.note, `второе чтение по весу тела здесь не показываем: таблица весов в источнике идёт от ${lightest} до ${heaviest} кг`);
       }
     }
   }

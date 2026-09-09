@@ -631,7 +631,7 @@ import {
   bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
   riskCoverage, diffWithPrevious,
 } from './forma-calc.js';
-import { NORMS, TEST_NORMS } from './forma-norms.js';
+import { NORMS, TEST_NORMS, KIND_POPULATION } from './forma-norms.js';
 
 // ─────────── Мелкие помощники ───────────
 
@@ -702,6 +702,12 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // одна и та же формулировка честна для всех показателей. На краях таблицы
 // percentile() обрезает значение до 0 и 100 — писать «лучше, чем у 100%
 // людей» нельзя, это край таблицы, а не место в популяции.
+// С какой популяцией сравнили человека — берём из данных по типу источника,
+// а не собираем в разметке. Шкала для тренирующихся не описывает население.
+function populationFor(ref) {
+  return (ref && KIND_POPULATION[ref.kind]) || 'людей в выборке источника';
+}
+
 function percentileText(p, population) {
   const side = clampSide(p);
   if (side === 'above') return 'лучше верхней точки таблицы';
@@ -769,7 +775,8 @@ function initFromNorms() {
   // норматив. У каждого теста своё покрытие, оно проверяется отдельно.
   $('ageHow').textContent = `Полных лет на сегодня. Возраст тела считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблица FRIEND не идёт. Остальные тесты работают по своему покрытию.`;
 
-  $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${TEST_NORMS.onelegstand.threshold} ${unitText('секунд', TEST_NORMS.onelegstand.threshold)}.`;
+  const stand = TEST_NORMS.onelegstand;
+  $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${stand.threshold} ${unitText('секунд', stand.threshold)}, и он измерен на людях ${stand.thresholdAgeRange.min}-${stand.thresholdAgeRange.max} лет: в другом возрасте вердикта не будет, только время.`;
 
   const see = NORMS.ntnuFormula.standardError;
   $('ntnuHint').textContent = `Три вопроса про тренировки — вместе с ростом, весом и пульсом покоя они дают возраст тела по формуле NTNU (исследование HUNT). Ошибка оценки — ${fmt(see.min, 1)}-${fmt(see.max, 1)} мл/кг/мин, это прикидка, а не замена нагрузочному тесту.`;
@@ -1039,7 +1046,7 @@ function compute({ profile, values }) {
         value: bc.smi.value, percentile: null, level: null, badge: null, informational: false,
         belowThreshold: bc.smi.flag === 'ниже порога саркопении',
         flag: bc.smi.flag, reference: bc.smi.reference,
-        note: `Перцентилей по этому показателю в открытых источниках найти не удалось — есть только клинический порог саркопении: мужчины ниже ${fmt(NORMS.smi.threshold.m, 1)}, женщины ниже ${fmt(NORMS.smi.threshold.f, 1)} кг/м².`,
+        note: `Перцентилей по этому показателю в открытых источниках найти не удалось — есть только клинический порог саркопении: мужчины ниже ${fmt(NORMS.smi.threshold.m, 1)}, женщины ниже ${fmt(NORMS.smi.threshold.f, 1)} кг/м². ${bc.smi.note}`,
       });
     }
 
@@ -1230,7 +1237,7 @@ function heroHtml(state) {
     </div>`;
 
   const vo2Note = (vo2Percentile === null) ? '' :
-    `<div class="caveat">VO2max — ${percentileText(vo2Percentile)}${bodyAge === bounds.min ? '. И выше медианы младшей группы таблицы' : ''}.</div>`;
+    `<div class="caveat">VO2max — ${percentileText(vo2Percentile, populationFor(NORMS.vo2max.source))}${bodyAge === bounds.min ? '. И выше медианы младшей группы таблицы' : ''}.</div>`;
 
   return `<section class="hero">
     <div class="eyebrow">Этаж 1 — возраст тела</div>
@@ -1400,7 +1407,7 @@ function testHtml(r) {
     body += scaleHtml(BADGES, idx);
   } else if (typeof r.percentile === 'number' && r.level) {
     const idx = LEVELS.indexOf(r.level);
-    body += `<div class="test-level"><span class="lv${idx <= 1 ? ' low' : ''}">${esc(r.level)}</span> <span class="pp">— ${percentileText(r.percentile)}</span></div>`;
+    body += `<div class="test-level"><span class="lv${idx <= 1 ? ' low' : ''}">${esc(r.level)}</span> <span class="pp">— ${percentileText(r.percentile, populationFor(r.reference))}</span></div>`;
     body += scaleHtml(LEVELS, idx);
   } else if (r.ageGradeLevel) {
     body += `<div class="test-level"><span class="lv">${esc(r.ageGradeLevel)}</span> <span class="pp">— ${fmt(r.ageGrade, 1)}% от мирового стандарта для твоего возраста</span></div>`;
@@ -1420,7 +1427,7 @@ function testHtml(r) {
   }
 
   if (r.secondaryLevel && typeof r.secondaryPercentile === 'number') {
-    body += `<div class="test-level"><span class="pp">${esc(r.secondaryLabel || 'второе чтение')}: <span class="lv">${esc(r.secondaryLevel)}</span> — ${percentileText(r.secondaryPercentile)}. Считается независимо от разряда по возрасту, эти два числа не смешиваются.</span></div>`;
+    body += `<div class="test-level"><span class="pp">${esc(r.secondaryLabel || 'второе чтение')}: <span class="lv">${esc(r.secondaryLevel)}</span> — ${percentileText(r.secondaryPercentile, r.secondaryPopulation)}. Считается независимо от разряда по возрасту, эти два числа не смешиваются.</span></div>`;
   }
 
   if (r.note) {
@@ -1475,7 +1482,7 @@ function weakHtml(state) {
   let inner = '';
   if (w.primary) {
     const items = w.primary.items
-      .map((r) => `<li>${esc(r.label || r.key)} — ${esc(r.level || 'без разряда')}, ${percentileText(r.percentile)}</li>`)
+      .map((r) => `<li>${esc(r.label || r.key)} — ${esc(r.level || 'без разряда')}, ${percentileText(r.percentile, populationFor(r.reference))}</li>`)
       .join('');
     inner += `<div class="eyebrow accent">Слабое звено</div>
       <h3>${BLOCK_NAMES[w.primary.block]}</h3>
