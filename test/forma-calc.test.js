@@ -46,13 +46,27 @@ test('с возрастом тот же результат даёт больши
   assert.ok(ageGrade('m', 60, 5, t) > ageGrade('m', 30, 5, t));
 });
 
-test('классы age grading названы по классификации WMA', () => {
+test('классы age grading стоят ровно там, где их ставит источник', () => {
+  // normy-beg.md, раздел 3 (USATF Masters): 60%+ местный, 70%+ региональный,
+  // 80%+ национальный, 90%+ мировой, 100% — уровень мирового рекорда.
   assert.equal(ageGradeClass(45), 'начальный уровень');
-  assert.equal(ageGradeClass(55), 'местный уровень');
-  assert.equal(ageGradeClass(65), 'региональный уровень');
-  assert.equal(ageGradeClass(75), 'национальный уровень');
-  assert.equal(ageGradeClass(85), 'мировой уровень');
-  assert.equal(ageGradeClass(95), 'уровень мирового рекорда');
+  assert.equal(ageGradeClass(59.9), 'начальный уровень');
+  assert.equal(ageGradeClass(60), 'местный уровень');
+  assert.equal(ageGradeClass(65), 'местный уровень');
+  assert.equal(ageGradeClass(70), 'региональный уровень');
+  assert.equal(ageGradeClass(75), 'региональный уровень');
+  assert.equal(ageGradeClass(80), 'национальный уровень');
+  assert.equal(ageGradeClass(85), 'национальный уровень');
+  assert.equal(ageGradeClass(90), 'мировой уровень');
+  assert.equal(ageGradeClass(95), 'мировой уровень');
+  assert.equal(ageGradeClass(100), 'уровень мирового рекорда');
+});
+
+test('контрольный пример самого источника: 68,5% — это местный уровень', () => {
+  // Мужчина 40 лет, 10 км за 40:00 — 68,5% (normy-beg.md, раздел 4).
+  // Раньше код называл этот результат региональным уровнем.
+  const pct = ageGrade('m', 40, 10, 40 * 60);
+  assert.equal(ageGradeClass(pct), 'местный уровень');
 });
 
 test('проверочный пример: мужчина 40 лет, 10 км за 40:00 — около 68.5%', () => {
