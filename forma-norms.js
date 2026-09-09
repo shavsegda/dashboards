@@ -373,6 +373,14 @@ export const NORMS = {
   //   { kind: 'valueAtOrAbove', value }  — значение не ниже порога
   //   { kind: 'percentileBelow', value } — перцентиль ниже границы группы источника
   //   { kind: 'badgeAtOrBelow', value }  — знак ГТО не выше указанного
+  // ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 7 (третий заход): у каждой записи есть
+  // охват когорты — пол (applicableSex) и возраст (cohortAgeRange). Вне
+  // охвата карточка не создаётся: применять коэффициент к возрасту, на
+  // котором его не измеряли, — то же самое, что подставлять чужую норму.
+  // Где диапазон в источнике не назван, cohortAgeRange равен null и
+  // ограничение не применяется; такие случаи перечислены в отчёте задачи 7.
+  // cohortAgeRangeSource говорит, откуда взято число.
+  //
   //   { kind: 'gradient', ... }          — коэффициент-градиент «на каждые N единиц».
   //          Персональной карточки НЕ даёт никогда: чтобы посчитать личный
   //          множитель, нужна точка отсчёта, которой источник не публикует, а
@@ -388,6 +396,11 @@ export const NORMS = {
       // Нижняя группа у Mandsager — нижний квартиль когорты по результату
       // нагрузочного теста, поэтому попадание в неё читается по перцентилю.
       trigger: { kind: 'percentileBelow', value: 25 },
+      // Возрастных границ у когорты нет: «последовательные взрослые пациенты,
+      // направленные на нагрузочный тест», средний возраст 53,4 (SD 12,6),
+      // верхнего и нижнего предела в критериях включения не заявлено.
+      cohortAgeRange: null,
+      cohortAgeRangeSource: 'в источнике диапазон не указан (проверено по полному тексту статьи)',
       outcome: 'общая смертность',
       label: 'Кардиореспираторная выносливость (VO2max)',
       source: {
@@ -423,6 +436,12 @@ export const NORMS = {
       // Active Adult Men», 1104 мужчины-пожарные). Женщине это сравнение не
       // подходит вовсе — карточку ей не показываем.
       applicableSex: ['m'],
+      // Возраст когорты — дословно из раздела Discussion статьи: «men aged 21
+      // to 66 years». Авторы там же прямо пишут, что результат не переносится
+      // на женщин и пожилых: «may not be generalizable to women, older or
+      // nonactive persons» (эта же цитата приведена в normy-sila.md, 1.1).
+      cohortAgeRange: { min: 21, max: 66 },
+      cohortAgeRangeSource: 'Yang J. и соавт., JAMA Network Open, 2019, раздел Discussion: «men aged 21 to 66 years» (сверено по полному тексту: https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2724778)',
       outcome: 'сердечно-сосудистые события', // НЕ общая смертность — когорта пожарных, 10-летнее наблюдение
       source: {
         title: 'Association Between Push-up Exercise Capacity and Future Cardiovascular Events Among Active Adult Men',
@@ -442,6 +461,8 @@ export const NORMS = {
       condition: 'не удержал 10-секундную стойку на одной ноге против удержал, с поправкой на возраст, пол, ИМТ и сопутствующие болезни',
       // Тот же порог 10 секунд, что и в TEST_NORMS.onelegstand.threshold.
       trigger: { kind: 'valueBelow', value: 10 },
+      cohortAgeRange: { min: 51, max: 75 },
+      cohortAgeRangeSource: 'normy-telo-riski.md, В10: «1702 участника (68% мужчины), возраст 51–75 лет, когорта CLINIMEX Exercise»',
       outcome: 'общая смертность',
       source: {
         title: 'Successful 10-second one-legged stance performance predicts survival in middle-aged and older individuals',
@@ -470,6 +491,8 @@ export const NORMS = {
       // Градиент по когорте, а не группа сравнения: личного множителя из него
       // не посчитать без точки отсчёта, которую источник не публикует.
       trigger: { kind: 'gradient', step: '+10 ударов в минуту' },
+      cohortAgeRange: null,
+      cohortAgeRangeSource: 'в источнике диапазон не указан (метаанализ 87 исследований, общего возрастного охвата не приведено)',
       outcome: 'общая смертность',
       label: 'Пульс покоя',
       source: {
@@ -490,6 +513,10 @@ export const NORMS = {
       // «Самая низкая категория» — операционально это порог саркопении
       // EWGSOP2, те же числа, что в NORMS.smi.threshold (мужчины 7,0, женщины 5,5).
       trigger: { kind: 'valueBelow', value: { m: 7.0, f: 5.5 } },
+      // Единого возрастного охвата у пула нет: 16 когорт со средним возрастом
+      // от 43,9 до 93,5 лет, критерия по возрасту авторы не заявляют.
+      cohortAgeRange: null,
+      cohortAgeRangeSource: 'в источнике единый диапазон не указан (метаанализ 16 когорт, средние возрасты 43,9-93,5 года)',
       outcome: 'общая смертность',
       label: 'Индекс скелетной мышечной массы (саркопения)',
       source: {
@@ -522,6 +549,8 @@ export const NORMS = {
       // Разброса времени отбоя в минутах для неё в источниках нет, поэтому
       // определить попадание человека в квинтиль нечем — карточки не будет.
       trigger: null,
+      cohortAgeRange: null,
+      cohortAgeRangeSource: 'в собранном файле норм диапазон не указан (когорта UK Biobank); карточки у этой записи всё равно не бывает — нет условия срабатывания',
       outcome: 'общая смертность',
       label: 'Регулярность сна',
       // Альтернатива (не выбрана): минимально скорректированная модель,
@@ -550,6 +579,10 @@ export const NORMS = {
       // Порог сравнения отдельным числом: раньше 0,55 вычитывали глазами из
       // строки условия и держали в разметке страницы.
       trigger: { kind: 'valueAtOrAbove', value: 0.55 },
+      // Жёсткого диапазона нет: в статье сказано «most participants were age
+      // 50–74 years at enrollment» — это «большинство», а не критерий включения.
+      cohortAgeRange: null,
+      cohortAgeRangeSource: 'в источнике жёсткий диапазон не указан (сказано лишь, что большинство участников на момент включения были 50-74 лет)',
       outcome: 'общая смертность',
       label: 'Отношение талии к росту',
       source: {
@@ -570,6 +603,8 @@ export const NORMS = {
       condition: 'на каждые −5 кг силы хвата (ведущая рука)',
       // Градиент по когорте — персональной карточки не даёт (см. пульс покоя).
       trigger: { kind: 'gradient', step: '−5 кг силы хвата' },
+      cohortAgeRange: { min: 35, max: 70 },
+      cohortAgeRangeSource: 'Leong D.P. и соавт., The Lancet, 2015, критерий включения PURE: «aged 35–70 years» (сверено по полному тексту статьи)',
       outcome: 'общая смертность',
       source: {
         title: 'Prognostic value of grip strength: findings from the Prospective Urban Rural Epidemiology (PURE) study',

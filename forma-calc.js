@@ -572,12 +572,22 @@ function sexSplitOrPlain(value, sex) {
 // Условие берётся из данных (NORMS.hazards[key].trigger), а не собирается
 // на месте из общего правила «нижняя четверть» — иначе карточка приписывает
 // человеку чужое сравнение (правка по ревью задачи 7, критично).
+// Входит ли человек в охват когорты источника — по полу и по возрасту.
+// Применять коэффициент к возрасту, на котором его не измеряли, — то же
+// самое, что подставлять чужую норму (правка по ревью задачи 7).
+// Где охвата в источнике нет, поле пустое и ограничение не применяется.
+// Возраст известен не всегда: если у результата его нет, а у когорты
+// диапазон задан, проверить попадание нечем — коэффициент не показываем.
+function cohortCovers(h, r) {
+  if (Array.isArray(h.applicableSex) && !h.applicableSex.includes(r.sex)) return false;
+  if (h.cohortAgeRange && !withinCoverage(r.age, h.cohortAgeRange)) return false;
+  return true;
+}
+
 function hazardApplies(h, r) {
   const t = h.trigger;
   if (!t) return false; // условия срабатывания нет — карточки нет
-  // Когорта источника бывает только одного пола (отжимания — 1104 мужчины
-  // пожарные): другому полу это сравнение не подходит вовсе.
-  if (Array.isArray(h.applicableSex) && !h.applicableSex.includes(r.sex)) return false;
+  if (!cohortCovers(h, r)) return false;
   switch (t.kind) {
     case 'gradient':
       // Градиент «на каждые N единиц» — не персональный множитель.
@@ -682,6 +692,9 @@ export function riskGradients(results) {
     const h = NORMS.hazards[r.key];
     if (!h || !h.trigger || h.trigger.kind !== 'gradient') continue;
     if (typeof r.value !== 'number') continue;
+    // Тот же охват когорты, что и у карточек: цифру, измеренную на людях
+    // 35-70 лет, восьмидесятилетнему не показываем даже справочно.
+    if (!cohortCovers(h, r)) continue;
 
     const hazard = sexSplitOrPlain(h.hazard, r.sex);
     if (typeof hazard !== 'number') continue;

@@ -572,7 +572,7 @@ test('перевод знака ГТО в число нигде в forma-calc.js
 
 test('карточки риска сгруппированы по исходу и отсортированы внутри группы от самого дорогого провала', () => {
   const groups = riskCards([
-    { key: 'onelegstand', block: 'mobility', value: 6, percentile: 5, belowThreshold: true },
+    { key: 'onelegstand', block: 'mobility', value: 6, percentile: 5, belowThreshold: true, age: 60 },
     { key: 'vo2max', block: 'endurance', value: 22, percentile: 5 },
   ]);
   assert.equal(groups.length, 1); // оба про общую смертность — одна группа
@@ -609,7 +609,7 @@ test('карточка риска с полом не указан — карто
 
 test('карточка риска различает исход: сердечно-сосудистые события идут отдельной группой от общей смертности', () => {
   const groups = riskCards([
-    { key: 'pushups', block: 'strength', value: 5, sex: 'm' },
+    { key: 'pushups', block: 'strength', value: 5, sex: 'm', age: 40 },
     { key: 'vo2max', block: 'endurance', value: 22, percentile: 5 },
   ]);
   assert.equal(groups.length, 2);
@@ -633,7 +633,7 @@ test('карточка риска несёт доверительный инте
   // Пульс покоя — коэффициент-градиент: персональной карточки он не даёт
   // вовсе (правка по ревью задачи 7), поэтому «честно пусто» проверяем на
   // записи из отдельного списка градиентов, где ДИ у источника тоже нет.
-  const gradient = riskGradients([{ key: 'restingHR', block: 'recovery', value: 82, percentile: 16 }])[0];
+  const gradient = riskGradients([{ key: 'restingHR', block: 'recovery', value: 82, percentile: 16, age: 55 }])[0];
   assert.equal(gradient.ci, null); // в собранном файле для этого источника ДИ не приведён — не выдумываем
   assert.ok(gradient.cohortSize);
 });
@@ -744,13 +744,13 @@ test('формула Купера считается только мужчина
 
 test('карточка риска не создаётся, когда человек не попал в группу сравнения', () => {
   // 20 отжиманий: источник сравнивает «меньше 10» с «больше 40» — человек не в группе
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 20, percentile: 10, sex: 'm' }]).length, 0);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 20, percentile: 10, sex: 'm', age: 40 }]).length, 0);
   // 5 отжиманий — в группе, карточка есть
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, percentile: 5, sex: 'm' }]).length, 1);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, percentile: 5, sex: 'm', age: 40 }]).length, 1);
 
   // Стойка на одной ноге: порог 10 секунд
-  assert.equal(riskCards([{ key: 'onelegstand', block: 'mobility', value: 12 }]).length, 0);
-  assert.equal(riskCards([{ key: 'onelegstand', block: 'mobility', value: 6 }]).length, 1);
+  assert.equal(riskCards([{ key: 'onelegstand', block: 'mobility', value: 12, age: 60 }]).length, 0);
+  assert.equal(riskCards([{ key: 'onelegstand', block: 'mobility', value: 6, age: 60 }]).length, 1);
 
   // Талия к росту: сравнение источника — 0,55 и выше
   assert.equal(riskCards([{ key: 'waistToHeight', block: 'body', value: 0.52, sex: 'm' }]).length, 0);
@@ -763,8 +763,8 @@ test('карточка риска не создаётся, когда челов
 
 test('коэффициенты-градиенты не попадают в персональные карточки', () => {
   const results = [
-    { key: 'restingHR', block: 'recovery', value: 82, percentile: 16 },
-    { key: 'grip', block: 'strength', value: 25, percentile: 0 },
+    { key: 'restingHR', block: 'recovery', value: 82, percentile: 16, age: 55 },
+    { key: 'grip', block: 'strength', value: 25, percentile: 0, age: 55 },
   ];
   assert.equal(riskCards(results).length, 0, 'градиент не может быть личным множителем риска');
 
@@ -773,7 +773,7 @@ test('коэффициенты-градиенты не попадают в пе�
   assert.ok(gradients.every((g) => typeof g.step === 'string' && g.step.length > 0));
   assert.ok(gradients.every((g) => g.reference && g.reference.url));
   // Незаполненный показатель в список не попадает
-  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: null }]).length, 0);
+  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: null, age: 55 }]).length, 0);
 });
 
 test('невозможный беговой результат не оценивается', () => {
@@ -930,8 +930,8 @@ test('перцентиль VO2max, процента жира и пульса п�
 test('карточка риска не показывается полу, которого не было в когорте источника', () => {
   // Yang 2019 — «Among Active Adult Men», 1104 мужчины-пожарные
   assert.deepEqual(NORMS.hazards.pushups.applicableSex, ['m']);
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'f' }]).length, 0);
-  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'm' }]).length, 1);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'f', age: 40 }]).length, 0);
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 8, sex: 'm', age: 40 }]).length, 1);
 });
 
 test('категория ИМТ по ВОЗ не выдаётся тем, для кого она не построена', () => {
@@ -942,4 +942,54 @@ test('категория ИМТ по ВОЗ не выдаётся тем, для
 
   const adult = bodyComposition({ sex: 'm', age: 38, height: 178, weight: 78 });
   assert.equal(adult.bmi.category, 'норма');
+});
+
+test('карточка риска не показывается возрасту, которого не было в когорте источника', () => {
+  // Yang 2019: «men aged 21 to 66 years»
+  assert.deepEqual(NORMS.hazards.pushups.cohortAgeRange, { min: 21, max: 66 });
+  const card = (age) => riskCards([{ key: 'pushups', block: 'strength', value: 5, sex: 'm', age }]).length;
+  assert.equal(card(82), 0, 'мужчина 82 лет вне когорты пожарных — карточки быть не должно');
+  assert.equal(card(40), 1, 'мужчина 40 лет внутри когорты — карточка есть');
+  assert.equal(card(21), 1); // ровно на границе
+  assert.equal(card(66), 1);
+  assert.equal(card(20), 0);
+  assert.equal(card(67), 0);
+
+  // Стойка на одной ноге: когорта CLINIMEX 51-75 лет
+  const stand = (age) => riskCards([{ key: 'onelegstand', block: 'mobility', value: 6, age }]).length;
+  assert.equal(stand(38), 0, '38 лет — вне когорты 51-75');
+  assert.equal(stand(60), 1);
+  assert.equal(stand(80), 0);
+
+  // Возраст неизвестен, а охват у когорты задан — проверить нечем, карточки нет
+  assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, sex: 'm' }]).length, 0);
+
+  // Где охвата в источнике нет, ограничение не применяется
+  assert.equal(NORMS.hazards.vo2max.cohortAgeRange, null);
+  assert.equal(riskCards([{ key: 'vo2max', block: 'endurance', value: 22, percentile: 5, age: 82 }]).length, 1);
+});
+
+test('градиент тоже не показывается вне охвата когорты', () => {
+  // PURE: «aged 35–70 years»
+  assert.deepEqual(NORMS.hazards.grip.cohortAgeRange, { min: 35, max: 70 });
+  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: 20, age: 82 }]).length, 0);
+  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: 20, age: 55 }]).length, 1);
+  // У пульса покоя охвата нет — показывается в любом возрасте
+  assert.equal(riskGradients([{ key: 'restingHR', block: 'recovery', value: 72, age: 82 }]).length, 1);
+});
+
+test('у каждого коэффициента риска описан охват когорты и сказано, откуда он взят', () => {
+  for (const [key, h] of Object.entries(NORMS.hazards)) {
+    assert.ok('cohortAgeRange' in h, `${key}: нет поля cohortAgeRange`);
+    assert.ok(typeof h.cohortAgeRangeSource === 'string' && h.cohortAgeRangeSource.length > 0,
+      `${key}: не сказано, откуда взят возрастной охват (или почему его нет)`);
+    if (h.cohortAgeRange !== null) {
+      assert.equal(typeof h.cohortAgeRange.min, 'number');
+      assert.equal(typeof h.cohortAgeRange.max, 'number');
+      assert.ok(h.cohortAgeRange.min < h.cohortAgeRange.max, `${key}: границы охвата перепутаны`);
+    }
+    if (h.applicableSex !== undefined) {
+      assert.ok(Array.isArray(h.applicableSex) && h.applicableSex.every((x) => x === 'm' || x === 'f'), `${key}: неверный applicableSex`);
+    }
+  }
 });
