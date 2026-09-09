@@ -244,7 +244,15 @@ button.ghost {
 .tile.red .t-state { color: var(--terracotta-dark); font-weight: 500; }
 .tile.grey { background: none; border-style: dashed; border-color: var(--graphite-15); }
 .tile.grey .t-name { color: var(--graphite-50); font-weight: 400; }
-.tile.own { background: var(--stone); border-color: var(--graphite-15); }
+.tile.own {
+  /* Ни фона, ни цвета: зачёта здесь нет, и на телефоне плашка не должна
+     читаться как зелёная. Отличается от «нет данных» сплошной рамкой. */
+  background: none;
+  border-color: var(--graphite-30);
+  border-style: solid;
+}
+.tile.own .t-name { color: var(--graphite-65); }
+.tile.own .t-state { color: var(--graphite-50); }
 
 /* ─────────── Этаж 3: цена провала ─────────── */
 .risk-group { margin-bottom: 26px; }
@@ -627,8 +635,8 @@ button.ghost {
 import {
   vo2maxPercentile, levelFromPercentile, bodyAgeFromVo2max,
   fitnessAgeNTNU, ageGrade, ageGradeClass, bodyComposition, recovery,
-  evaluateTest, formScore, riskCards, riskGradients, weakestLink,
-  bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide,
+  evaluateTest, formScore, riskCards, riskContext, weakestLink,
+  bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, withinCoverage,
   riskCoverage, diffWithPrevious,
 } from './forma-calc.js';
 import { NORMS, TEST_NORMS, KIND_POPULATION } from './forma-norms.js';
@@ -720,7 +728,7 @@ function percentileText(p, population) {
 // открывается (правка по ревью).
 const KIND = {
   'population': ['обследование населения', 'Числа сняты с репрезентативного обследования населения.'],
-  'population-secondary': ['вторичная компиляция', 'Числа не сняты с первичной публикации: их реконструировал или свёл кто-то третий. Порядок величин верный, точность конкретной цифры ниже.'],
+  'population-secondary': ['вторичные данные', 'Числа получены не на репрезентативной выборке населения: это реестр лабораторных тестов, уравнение регрессии на добровольцах или компиляция, сведённая третьим лицом. Порядок величин верный, точность конкретной цифры ниже.'],
   'training-classification': ['шкала для тренирующихся', 'Норма построена на людях, которые тренируются (посетители залов, пользователи приложений), а не на населении в целом.'],
   'occupational': ['профессиональная выборка', 'Норма получена на конкретной профессиональной группе, а не на населении в целом.'],
   'state-standard': ['государственный норматив', 'Официальные пороги на присвоение знака отличия. Это не обследование населения.'],
@@ -746,10 +754,16 @@ function sourceHtml(ref, noNorms = false) {
   if (!ref) return '';
   const key = kindWord(ref, noNorms);
   const badge = key ? `<span class="kind${key === 'none' ? ' none' : ''}">${esc(KIND[key][0])}</span>` : '';
+  // Зеркало показываем запасной ссылкой там, где каноническая страница
+  // источника не отдаёт файл напрямую (так у отчёта ВОЗ).
+  const mirror = ref.mirrorUrl
+    ? `<span class="src-meta"><a href="${esc(ref.mirrorUrl)}" target="_blank" rel="noopener">запасная ссылка на тот же документ</a></span>`
+    : '';
   return `<div class="src">
     ${badge}
     <a href="${esc(ref.url)}" target="_blank" rel="noopener" title="${esc(ref.title)}">${esc(ref.title)}</a>
     <span class="src-meta">${esc(ref.authors)}${ref.year ? ', ' + ref.year : ''}</span>
+    ${mirror}
   </div>`;
 }
 
@@ -979,6 +993,7 @@ function compute({ profile, values }) {
 
   // Бег: age grading — это процент от мирового стандарта, а не перцентиль
   // населения. В счёт формы такие строки не идут (своя шкала).
+  const runCovered = withinCoverage(profile.age, NORMS.running.ageCoverage);
   for (const r of RUNS) {
     const sec = values[r.id];
     if (sec === null) continue;
@@ -989,9 +1004,11 @@ function compute({ profile, values }) {
       percentile: null, level: null, badge: null, informational: true, belowThreshold: null,
       ageGrade: grade, ageGradeLevel: grade === null ? null : ageGradeClass(grade),
       reference: NORMS.running.source,
-      note: grade === null
-        ? 'Результат быстрее открытого мирового стандарта для этой дистанции — так не бывает, проверь, что ввёл. Оценку не считаем.'
-        : 'Age grading — процент от открытого мирового стандарта для твоего пола и возраста. Это шкала результата, а не перцентиль населения, поэтому в счёт формы строка не входит.',
+      note: grade !== null
+        ? 'Age grading — процент от открытого мирового стандарта для твоего пола и возраста. Это шкала результата, а не перцентиль населения, поэтому в счёт формы строка не входит.'
+        : (runCovered
+          ? 'Результат быстрее открытого мирового стандарта для этой дистанции — так не бывает, проверь, что ввёл. Оценку не считаем.'
+          : `Возрастных коэффициентов для этого возраста в таблицах нет: они идут от ${NORMS.running.ageCoverage.min} до ${NORMS.running.ageCoverage.max} лет. Время показано как есть, оценку не считаем.`),
     });
   }
 
@@ -999,14 +1016,16 @@ function compute({ profile, values }) {
   // (в выборке Купера женщин не было, женской формулы не опубликовано).
   let cooperVo2 = null;
   if (values.cooper !== null) {
-    cooperVo2 = vo2maxFromCooper(values.cooper, profile.sex);
+    cooperVo2 = vo2maxFromCooper(values.cooper, profile.sex, profile.age);
     push({
       key: 'cooper', block: 'endurance', label: 'Тест Купера', unit: 'м',
       value: values.cooper, percentile: null, level: null, badge: null,
       informational: true, belowThreshold: null,
       cooperVo2,
       reference: NORMS.cooper.source,
-      note: cooperVo2 === null ? NORMS.cooper.noteFemale : NORMS.cooper.note,
+      note: cooperVo2 !== null
+        ? NORMS.cooper.note
+        : (NORMS.cooper.applicableSex.includes(profile.sex) ? NORMS.cooper.noteOutOfAge : NORMS.cooper.noteFemale),
     });
   }
 
@@ -1058,7 +1077,7 @@ function compute({ profile, values }) {
         value: w, percentile: null, level: null, badge: null, informational: false,
         belowThreshold: null,
         flag: bc.waistToHeight.flag, reference: bc.waistToHeight.reference,
-        note: `Порог скрининга — ${fmt(NORMS.waistToHeight.threshold, 1)} (Ashwell). Коэффициент риска смертности опубликован для другого сравнения — ${fmt(wtrTrigger.value, 2)} и выше против меньше ${fmt(wtrTrigger.referenceBelow, 2)} (Patel, 2025), поэтому карточка риска появляется только с ${fmt(wtrTrigger.value, 2)}.`,
+        note: `Порог скрининга — ${fmt(NORMS.waistToHeight.threshold, 1)} (Ashwell). Тот же порог разбирает и вторая работа той же группы: ${NORMS.waistToHeight.alsoSee.authors}, ${NORMS.waistToHeight.alsoSee.year}. Коэффициент риска смертности опубликован для другого сравнения — ${fmt(wtrTrigger.value, 2)} и выше против меньше ${fmt(wtrTrigger.referenceBelow, 2)} (Patel, 2025), поэтому карточка риска появляется только с ${fmt(wtrTrigger.value, 2)}.`,
       });
     }
   }
@@ -1127,6 +1146,7 @@ function compute({ profile, values }) {
       trainingDuration: values.trainingDuration,
     });
     bodyAgeSource = bodyAge === null ? null : 'ntnu';
+    if (bodyAge === null) bodyAgeBlocked = 'ntnu';
   }
 
   return {
@@ -1140,7 +1160,7 @@ function compute({ profile, values }) {
     vo2Percentile,
     score: formScore(results),
     risks: riskCards(results),
-    gradients: riskGradients(results),
+    context: riskContext(results),
     weak: weakestLink(results),
   };
 }
@@ -1180,6 +1200,19 @@ function heroHtml(state) {
       <div class="empty-hint" style="margin-top:14px">
         Возраст тела для ${fmt(profile.age)} ${years(profile.age)} не считаем: таблица FRIEND покрывает возраст от ${cov.min} до ${cov.max} лет. За этими границами человека пришлось бы сравнивать с чужой возрастной группой.
         <p style="margin:10px 0 0">Остальные этажи работают: каждый тест оценивается по своему покрытию, а где норм для твоего возраста нет — так и написано.</p>
+      </div>
+    </section>`;
+  }
+
+  // Формула NTNU вне своей применимости: возраст за границами когорты HUNT
+  // либо оценка ниже самой низкой опубликованной точки таблицы FRIEND.
+  if (bodyAgeBlocked === 'ntnu') {
+    const ntnu = NORMS.ntnuFormula;
+    return `<section class="hero">
+      <div class="eyebrow">Этаж 1 — возраст тела</div>
+      <div class="empty-hint" style="margin-top:14px">
+        Возраст тела без нагрузочного теста здесь не считаем. Формула NTNU построена на людях ${ntnu.ageCoverage.min}-${ntnu.ageCoverage.max} лет, а её оценка на твоих данных выходит ниже самой низкой опубликованной точки таблицы FRIEND (${fmt(ntnu.minPlausibleVo2max[profile.sex], 1)} мл/кг/мин) — переводить такую оценку в возраст тела не по чему.
+        <p style="margin:10px 0 0">Самый короткий путь к главной цифре — VO2max с часов или из нагрузочного теста.</p>
       </div>
     </section>`;
   }
@@ -1291,11 +1324,17 @@ function deltaHtml(state) {
   </div>`;
 }
 
+// Два правила зачёта — каждое про свою шкалу, и смешивать их нельзя.
+// Перцентильная норма меряет положение в распределении. Знак ГТО не меряет
+// ничего подобного: сколько людей берёт серебро, никто не публикует.
+const PASS_RULE_PERCENTILE = 'Зачёт у перцентильной нормы — медиана своей группы и выше.';
+const PASS_RULE_BADGE = 'У знака ГТО зачёт — серебро или золото: это официальный смысл знака, доли населения за ним нет.';
+
 function scoreHtml(state) {
   const { score } = state;
   const word = {
-    green: 'на медиане или выше',
-    red: 'ниже медианы',
+    green: 'блок зачтён',
+    red: 'блок не зачтён',
     grey: 'нет данных',
     own: 'не считается — своя шкала',
   };
@@ -1312,22 +1351,22 @@ function scoreHtml(state) {
 
   return `<section>
     <div class="eyebrow">Этаж 2 — счёт формы</div>
-    <div class="score-number">${score.green} из 6</div>
-    <p class="hint" style="color:var(--graphite-65);margin:0">Блок зелёный, если больше половины его заполненных тестов на медиане для своего пола и возраста или выше. Посчитано блоков: ${score.counted} из 6.</p>
+    <div class="score-number">${score.counted === 0 ? '—' : `${score.green} из ${score.counted}`}</div>
+    <p class="hint" style="color:var(--graphite-65);margin:0">Знаменатель — блоки, которые удалось посчитать: ${score.counted} из 6, остальные пустые или со своей шкалой. Блок зелёный, если больше половины его тестов зачтено. ${PASS_RULE_PERCENTILE} ${PASS_RULE_BADGE}</p>
     <div class="tiles">${tiles}</div>
     ${ownNote}
   </section>`;
 }
 
 function riskHtml(state) {
-  const { risks, gradients, results } = state;
+  const { risks, context, results } = state;
 
   // Молчание нельзя подавать как «всё в порядке»: одно дело — проверили и не
   // попал, другое — проверить было нечем, потому что человек вне охвата
   // когорт (правка по ревью задачи 7).
   const coverage = riskCoverage(results);
 
-  if (!coverage.checked.length && !coverage.outOfCohort.length && !gradients.length) return '';
+  if (!coverage.checked.length && !coverage.outOfCohort.length && !context.length) return '';
 
   const disclaimer = `<div class="caveat"><strong>Риски разных тестов не складываются.</strong> Показатели связаны между собой — например, сила хвата и мышечная масса, — поэтому сумма коэффициентов даёт двойной счёт. Каждая карточка читается отдельно. Группы между собой тоже не сравниваются: общая смертность и сердечно-сосудистые события — разные исходы.</div>`;
 
@@ -1341,7 +1380,9 @@ function riskHtml(state) {
           <div class="r-line">Сравнение: ${esc(c.condition)}</div>
           <div class="r-line">Что мерили: ${esc(c.outcome)}</div>
           ${c.ci ? `<div class="r-line">95% доверительный интервал: ${fmt(c.ci.low, 2)} — ${fmt(c.ci.high, 2)}</div>` : '<div class="r-line">Доверительный интервал в источнике не приведён.</div>'}
+          ${c.ciNote ? `<div class="r-line">${esc(c.ciNote)}</div>` : ''}
           ${c.cohortSize ? `<div class="r-line">Когорта: ${esc(c.cohortSize)}</div>` : ''}
+          ${c.cohortAgeRangeSource ? `<div class="r-line">Возраст участников: ${esc(c.cohortAgeRangeSource)}</div>` : ''}
           ${sourceHtml(c.reference)}
         </div>`).join('');
       return `<div class="risk-group">
@@ -1366,21 +1407,28 @@ function riskHtml(state) {
     body += `<div class="caveat"><strong>${head}</strong> Показатели заполнены, но твой пол или возраст за пределами когорт, на которых эти пороги меряли. Это значит «мы не знаем», а не «всё в порядке».<ul>${list}</ul></div>`;
   }
 
-  // Градиенты — отдельно и от третьего лица. Личным множителем риска они
-  // быть не могут: точки отсчёта источник не публикует.
-  if (gradients.length) {
-    const items = gradients.map((g) => `
+  // Как это работает — от третьего лица. Сюда идут и градиенты («на каждые
+  // −5 кг»), и сравнения групп, в которые человека поставить нечем.
+  if (context.length) {
+    const items = context.map((g) => {
+      const headline = g.kind === 'gradient'
+        ? `В исследовании каждые ${esc(g.step)} связаны с ростом показателя «${esc(g.outcome)}» на ${fmt((g.hazard - 1) * 100, 0)}%`
+        : `В исследовании эти группы различались по показателю «${esc(g.outcome)}» в ${fmt(g.hazard, g.hazard % 1 === 0 ? 0 : 2)} ${times(g.hazard)}`;
+      return `
       <div class="risk-card gradient">
-        <div class="r-hazard">В исследовании каждые ${esc(g.step)} связаны с ростом показателя «${esc(g.outcome)}» на ${fmt((g.hazard - 1) * 100, 0)}%</div>
+        <div class="r-hazard">${headline}</div>
         <div class="r-label">${esc(g.label)}</div>
         <div class="r-line">Условие источника: ${esc(g.condition)}</div>
         ${g.ci ? `<div class="r-line">95% доверительный интервал: ${fmt(g.ci.low, 2)} — ${fmt(g.ci.high, 2)}</div>` : '<div class="r-line">Доверительный интервал в источнике не приведён.</div>'}
+        ${g.ciNote ? `<div class="r-line">${esc(g.ciNote)}</div>` : ''}
         ${g.cohortSize ? `<div class="r-line">Когорта: ${esc(g.cohortSize)}</div>` : ''}
+        ${g.cohortAgeRangeSource ? `<div class="r-line">Возраст участников: ${esc(g.cohortAgeRangeSource)}</div>` : ''}
         ${sourceHtml(g.reference)}
-      </div>`).join('');
+      </div>`;
+    }).join('');
     body += `<div class="risk-group">
       <h3>Как это работает</h3>
-      <p class="g-hint">Это градиенты по когорте, а не твой личный множитель риска: чтобы посчитать личное число, нужна точка отсчёта, которой источник не публикует. Показываем как есть.</p>
+      <p class="g-hint">Это цифры по когортам исследований, а не твой личный множитель риска: поставить тебя в такую группу нечем — где-то источник не публикует точку отсчёта, где-то граница группы задана не тем, что мы измеряем. Показываем как есть, от третьего лица.</p>
       ${items}
     </div>`;
   }
@@ -1413,6 +1461,8 @@ function testHtml(r) {
     body += `<div class="test-level"><span class="lv">${esc(r.ageGradeLevel)}</span> <span class="pp">— ${fmt(r.ageGrade, 1)}% от мирового стандарта для твоего возраста</span></div>`;
   } else if (r.key === 'cooper' && r.cooperVo2 !== null && r.cooperVo2 !== undefined) {
     body += `<div class="test-level"><span class="lv">оценка VO2max — ${fmt(r.cooperVo2, 1)} мл/кг/мин</span> <span class="pp">— расчёт по формуле, не измерение</span></div>`;
+  } else if (r.bounds) {
+    body += `<div class="test-level"><span class="pp">Разряда нет. Опубликованные точки для твоей группы: 5-й перцентиль — ${fmt(r.bounds.p5, 1)} ${esc(r.unit)}, 95-й — ${fmt(r.bounds.p95, 1)} ${esc(r.unit)}. Это ориентир, а не место в распределении: самого распределения между этими точками источник не даёт.</span></div>`;
   } else if (r.flag) {
     const bad = r.flag !== 'в норме';
     body += `<div class="test-level"><span class="lv${bad ? ' low' : ''}">${esc(r.flag)}</span> <span class="pp">— порог, а не разряд</span></div>`;

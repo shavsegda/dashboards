@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tableAtAge, percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskGradients, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
+import { tableAtAge, percentile, levelFromPercentile, ageGrade, ageGradeClass, vo2maxTable, bodyAgeFromVo2max, interpolateBodyAge, fitnessAgeNTNU, bodyComposition, recovery, evaluateTest, formScore, riskCards, weakestLink, bodyAgeCoverage, ageCovered, bodyAgeBounds, vo2maxFromCooper, clampSide, riskContext, estimateVo2maxNTNU, withinCoverage, vo2maxPercentile, riskCoverage, diffWithPrevious } from '../forma-calc.js';
 import { NORMS, TEST_NORMS, KIND_POPULATION } from '../forma-norms.js';
 
 test('перцентиль на узле таблицы возвращает сам узел', () => {
@@ -164,7 +164,11 @@ test('у формулы NTNU есть источник, доступный пр�
   assert.ok(src.url, 'нет url');
   // ПРАВКА ПО ИТОГАМ РЕВЬЮ: kind перенесён внутрь source (единая конвенция
   // без исключений) — путь проверки поправлен на .source.kind, покрытие то же.
-  assert.equal(NORMS.ntnuFormula.source.kind, 'population', 'формула на популяционной когорте HUNT — kind population');
+  // ПРАВКА ПЕРЕД ПУБЛИКАЦИЕЙ: это не обследование населения, а уравнение
+  // регрессии на добровольцах когорты HUNT3 — вторичные данные. То же самое
+  // у реестра FRIEND: лабораторные тесты, а не репрезентативная выборка.
+  assert.equal(NORMS.ntnuFormula.source.kind, 'population-secondary');
+  assert.equal(NORMS.vo2max.source.kind, 'population-secondary');
 });
 
 test('состав тела возвращает четыре показателя со ссылками', () => {
@@ -337,18 +341,26 @@ test('ПРАВКА 3: 75-летний по отжиманиям не заним�
   assert.match(r.note, /не опубликован/);
 });
 
-test('наклон вперёд сидя для 70+ возвращает null с пометкой', () => {
-  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 72, bodyWeight: 78 });
+test('наклон вперёд сидя не даёт перцентиля вовсе — только две опубликованные точки', () => {
+  // Источник даёт только 5-й и 95-й перцентиль. Раньше между ними
+  // достраивалась прямая, и человек читал «средний, 48,8 перцентиля» из
+  // распределения, которого не существует.
+  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 38, bodyWeight: 78 });
   assert.equal(r.percentile, null);
-  assert.match(r.note, /не опубликован/);
+  assert.equal(r.level, null);
+  assert.equal(r.informational, true);
+  assert.equal(r.bounds.p5, TEST_NORMS.sitandreach.m[35].p5);
+  assert.equal(r.bounds.p95, TEST_NORMS.sitandreach.m[35].p95);
+  assert.match(r.note, /Разряда по этому тесту нет/);
 });
 
-test('ПРАВКА 7: пометка о непокрытом возрасте добавляется к содержательной пометке источника, а не затирает её', () => {
-  // У sitandreach в note лежит содержательная оговорка про диапазон P5-P95 —
-  // она должна остаться видна даже когда возраст вне покрытия (70+).
-  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 75, bodyWeight: 78 });
-  assert.match(r.note, /P5-P95/);
+test('наклон вперёд сидя для 70+ не даёт даже точек, и это сказано', () => {
+  const r = evaluateTest('sitandreach', 20, { sex: 'm', age: 72, bodyWeight: 78 });
+  assert.equal(r.percentile, null);
+  assert.equal(r.bounds, null);
   assert.match(r.note, /не опубликован/);
+  // Содержательная оговорка источника при этом никуда не делась
+  assert.match(r.note, /перцентил/);
 });
 
 test('планка справочная и не участвует в подсчёте перцентиля даже при большом значении', () => {
@@ -551,7 +563,7 @@ test('знак ГТО в счёте формы: серебро/золото — 
 // перцентилями других тестов блока — самодельная шкала, никто не
 // публиковал, что «серебро» соответствует 67-му перцентилю населения.
 // Теперь знак и перцентиль — два разных утверждения в разных полях, как
-// уже честно сделано в isAtOrAboveMedian(). Блок power (единственный
+// уже честно сделано в isPass(). Блок power (единственный
 // тест — прыжок в длину, он всегда badge, не перцентиль) в primary
 // вообще не попадает — там нечего усреднять, а провал уходит в
 // badgeFailures отдельной строкой.
@@ -618,7 +630,7 @@ test('перевод знака ГТО в число нигде в forma-calc.js
 test('карточки риска сгруппированы по исходу и отсортированы внутри группы от самого дорогого провала', () => {
   const groups = riskCards([
     { key: 'onelegstand', block: 'mobility', value: 6, percentile: 5, belowThreshold: true, age: 60 },
-    { key: 'vo2max', block: 'endurance', value: 22, percentile: 5 },
+    { key: 'waistToHeight', block: 'body', value: 0.6, sex: 'm', age: 60 },
   ]);
   assert.equal(groups.length, 1); // оба про общую смертность — одна группа
   assert.equal(groups[0].outcome, 'общая смертность');
@@ -627,10 +639,39 @@ test('карточки риска сгруппированы по исходу �
 });
 
 test('в каждой карточке риска сказано, что именно мерили, и указан источник', () => {
-  const groups = riskCards([{ key: 'vo2max', block: 'endurance', value: 22, percentile: 5 }]);
+  const groups = riskCards([{ key: 'onelegstand', block: 'mobility', value: 6, age: 60 }]);
   const card = groups[0].cards[0];
   assert.ok(card.outcome.length > 0);
   assert.ok(card.reference.url);
+});
+
+test('VO2max и саркопения больше не персональные карточки, а сообщение от третьего лица', () => {
+  // VO2max: перцентиль берётся из реестра FRIEND, а группа сравнения
+  // опубликована на когорте другой клиники — сопоставить их нечем.
+  // Саркопения: связки категории метаанализа с порогом EWGSOP2 не публиковал
+  // никто. Обе цифры остаются, но уже без утверждения про человека.
+  assert.equal(NORMS.hazards.vo2max.trigger.kind, 'groupComparison');
+  assert.equal(NORMS.hazards.smi.trigger.kind, 'groupComparison');
+
+  const results = [
+    { key: 'vo2max', block: 'endurance', value: 22, percentile: 5, sex: 'm', age: 38 },
+    { key: 'smi', block: 'body', value: 6.5, sex: 'm', age: 70 },
+  ];
+  assert.equal(riskCards(results).length, 0, 'персональных карточек у них быть не должно');
+
+  const context = riskContext(results);
+  assert.equal(context.length, 2);
+  for (const item of context) {
+    assert.equal(item.kind, 'groupComparison');
+    assert.ok(item.hazard > 1);
+    assert.ok(item.reference.url);
+  }
+
+  // И в охват проверки порогов они не попадают: порога, по которому можно
+  // проверить человека, здесь нет вовсе
+  const coverage = riskCoverage(results);
+  assert.equal(coverage.checked.length, 0);
+  assert.equal(coverage.outOfCohort.length, 0);
 });
 
 test('карточка не создаётся для показателя без опубликованного коэффициента', () => {
@@ -655,7 +696,7 @@ test('карточка риска с полом не указан — карто
 test('карточка риска различает исход: сердечно-сосудистые события идут отдельной группой от общей смертности', () => {
   const groups = riskCards([
     { key: 'pushups', block: 'strength', value: 5, sex: 'm', age: 40 },
-    { key: 'vo2max', block: 'endurance', value: 22, percentile: 5 },
+    { key: 'onelegstand', block: 'mobility', value: 6, sex: 'm', age: 60 },
   ]);
   assert.equal(groups.length, 2);
   const mortality = groups.find((g) => g.outcome === 'общая смертность');
@@ -663,24 +704,37 @@ test('карточка риска различает исход: сердечн�
   assert.ok(mortality, 'должна быть группа "общая смертность"');
   assert.ok(cvEvents, 'должна быть группа "сердечно-сосудистые события"');
   assert.equal(cvEvents.cards[0].testKey, 'pushups');
-  assert.equal(mortality.cards[0].testKey, 'vo2max');
+  assert.equal(mortality.cards[0].testKey, 'onelegstand');
   // группы не сравниваются между собой — у групп нет общего рейтинга,
   // порядок групп фиксированный (см. OUTCOME_ORDER в forma-calc.js)
   assert.equal(groups[0].outcome, 'общая смертность');
   assert.equal(groups[1].outcome, 'сердечно-сосудистые события');
 });
 
-test('карточка риска несёт доверительный интервал и размер когорты там, где источник их даёт, и честно пусто — где нет', () => {
-  const withCi = riskCards([{ key: 'vo2max', block: 'endurance', value: 22, percentile: 5 }])[0].cards[0];
-  assert.deepEqual(withCi.ci, NORMS.hazards.vo2max.ci);
+test('карточка риска несёт доверительный интервал и размер когорты там, где источник их даёт', () => {
+  const withCi = riskCards([{ key: 'onelegstand', block: 'mobility', value: 6, age: 60 }])[0].cards[0];
+  assert.deepEqual(withCi.ci, NORMS.hazards.onelegstand.ci);
   assert.ok(withCi.cohortSize);
 
-  // Пульс покоя — коэффициент-градиент: персональной карточки он не даёт
-  // вовсе (правка по ревью задачи 7), поэтому «честно пусто» проверяем на
-  // записи из отдельного списка градиентов, где ДИ у источника тоже нет.
-  const gradient = riskGradients([{ key: 'restingHR', block: 'recovery', value: 82, percentile: 16, age: 55 }])[0];
-  assert.equal(gradient.ci, null); // в собранном файле для этого источника ДИ не приведён — не выдумываем
-  assert.ok(gradient.cohortSize);
+  // Отжимания: верхняя граница интервала получена из округлённого числа —
+  // это подписано, а не выдаётся за точную величину.
+  const pushups = riskCards([{ key: 'pushups', block: 'strength', value: 5, sex: 'm', age: 40 }])[0].cards[0];
+  assert.equal(pushups.ci.high, 100);
+  assert.match(pushups.ciNote, /округлённого/);
+});
+
+test('пульс покоя: взят коэффициент, который источник подаёт основным, вместе с интервалом', () => {
+  // Раньше стоял 1,17 вообще без интервала, хотя сводная таблица источника
+  // основным даёт 1,09 с интервалом 1,07-1,12.
+  const h = NORMS.hazards.restingHR;
+  assert.equal(h.hazard, 1.09);
+  assert.deepEqual(h.ci, { low: 1.07, high: 1.12 });
+  assert.equal(h.alternative.hazard, 1.17); // вторая оценка не потеряна, но не выбрана
+  assert.ok(h.source.authors && !/не указан/.test(h.source.authors));
+
+  const item = riskContext([{ key: 'restingHR', block: 'recovery', value: 82, percentile: 16, age: 55 }])[0];
+  assert.deepEqual(item.ci, { low: 1.07, high: 1.12 });
+  assert.ok(item.cohortSize);
 });
 
 // ПРАВКА ПО ИТОГАМ РЕВЬЮ ЗАДАЧИ 6: раньше условие провала в riskCards не
@@ -772,13 +826,21 @@ test('границы возраста тела берутся из таблиц�
   assert.equal(bodyAgeFromVo2max(5, 'm'), b.max); // очень низкий — в потолок
 });
 
-test('формула Купера считается только мужчинам', () => {
-  const men = vo2maxFromCooper(2800, 'm');
+test('формула Купера считается только мужчинам и только внутри возрастной когорты', () => {
+  const men = vo2maxFromCooper(2800, 'm', 38);
   assert.ok(Math.abs(men - (2800 - 504.9) / 44.73) < 1e-9);
   assert.ok(men > 50 && men < 52, `ожидали около 51, получили ${men}`);
-  assert.equal(vo2maxFromCooper(2800, 'f'), null); // женщин в выборке Купера не было
-  assert.equal(vo2maxFromCooper(0, 'm'), null);
-  assert.equal(vo2maxFromCooper(400, 'm'), null); // ниже свободного члена — отрицательный VO2max
+  assert.equal(vo2maxFromCooper(2800, 'f', 38), null); // женщин в выборке Купера не было
+  assert.equal(vo2maxFromCooper(0, 'm', 38), null);
+  assert.equal(vo2maxFromCooper(400, 'm', 38), null); // ниже свободного члена — отрицательный VO2max
+
+  // Возрастной охват когорты оригинала — 17-52 года, он назван в источнике
+  assert.deepEqual(NORMS.cooper.ageCoverage, { min: 17, max: 52 });
+  assert.equal(vo2maxFromCooper(2800, 'm', 16), null);
+  assert.equal(vo2maxFromCooper(2800, 'm', 60), null);
+  assert.equal(typeof vo2maxFromCooper(2800, 'm', 17), 'number');
+  assert.equal(typeof vo2maxFromCooper(2800, 'm', 52), 'number');
+  assert.equal(vo2maxFromCooper(2800, 'm', null), null); // без возраста проверить нечем
 });
 
 test('карточка риска не создаётся, когда человек не попал в группу сравнения', () => {
@@ -795,9 +857,8 @@ test('карточка риска не создаётся, когда челов
   assert.equal(riskCards([{ key: 'waistToHeight', block: 'body', value: 0.52, sex: 'm' }]).length, 0);
   assert.equal(riskCards([{ key: 'waistToHeight', block: 'body', value: 0.56, sex: 'm' }]).length, 1);
 
-  // Саркопения: порог по полу
-  assert.equal(riskCards([{ key: 'smi', block: 'body', value: 6.5, sex: 'm' }]).length, 1);
-  assert.equal(riskCards([{ key: 'smi', block: 'body', value: 6.5, sex: 'f' }]).length, 0);
+  // Саркопения и VO2max — не персональные карточки вовсе (см. отдельный тест)
+  assert.equal(riskCards([{ key: 'smi', block: 'body', value: 6.5, sex: 'm' }]).length, 0);
 });
 
 test('коэффициенты-градиенты не попадают в персональные карточки', () => {
@@ -807,12 +868,12 @@ test('коэффициенты-градиенты не попадают в пе�
   ];
   assert.equal(riskCards(results).length, 0, 'градиент не может быть личным множителем риска');
 
-  const gradients = riskGradients(results);
+  const gradients = riskContext(results);
   assert.equal(gradients.length, 2);
   assert.ok(gradients.every((g) => typeof g.step === 'string' && g.step.length > 0));
   assert.ok(gradients.every((g) => g.reference && g.reference.url));
   // Незаполненный показатель в список не попадает
-  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: null, age: 55 }]).length, 0);
+  assert.equal(riskContext([{ key: 'grip', block: 'strength', value: null, age: 55 }]).length, 0);
 });
 
 test('невозможный беговой результат не оценивается', () => {
@@ -828,8 +889,8 @@ test('значение за краем таблицы помечается, но
   assert.equal(clampSide(50), null);
   assert.equal(clampSide(null), null);
 
-  // Наклон вперёд 5 см у мужчины 38 лет — ниже нижнего узла таблицы
-  const r = evaluateTest('sitandreach', 5, { sex: 'm', age: 38 });
+  // Сила хвата 5 кг у мужчины 38 лет — ниже нижнего узла таблицы
+  const r = evaluateTest('grip', 5, { sex: 'm', age: 38 });
   assert.equal(r.percentile, 0);
   assert.equal(r.level, 'начальный уровень'); // разряд всё равно присвоен
   assert.equal(r.clamped, 'below');
@@ -875,7 +936,7 @@ test('перевёрнутые шкалы: у пульса покоя и про�
 });
 
 test('у каждого коэффициента риска есть машиночитаемое условие срабатывания', () => {
-  const kinds = ['valueBelow', 'valueAtOrAbove', 'percentileBelow', 'badgeAtOrBelow', 'gradient'];
+  const kinds = ['valueBelow', 'valueAtOrAbove', 'percentileBelow', 'badgeAtOrBelow', 'gradient', 'groupComparison'];
   for (const [key, h] of Object.entries(NORMS.hazards)) {
     assert.ok('trigger' in h, `${key}: нет поля trigger`);
     if (h.trigger === null) continue; // осознанное «условие определить нечем» (регулярность сна)
@@ -1003,17 +1064,17 @@ test('карточка риска не показывается возрасту
   assert.equal(riskCards([{ key: 'pushups', block: 'strength', value: 5, sex: 'm' }]).length, 0);
 
   // Где охвата в источнике нет, ограничение не применяется
-  assert.equal(NORMS.hazards.vo2max.cohortAgeRange, null);
-  assert.equal(riskCards([{ key: 'vo2max', block: 'endurance', value: 22, percentile: 5, age: 82 }]).length, 1);
+  assert.equal(NORMS.hazards.waistToHeight.cohortAgeRange, null);
+  assert.equal(riskCards([{ key: 'waistToHeight', block: 'body', value: 0.6, sex: 'm', age: 82 }]).length, 1);
 });
 
 test('градиент тоже не показывается вне охвата когорты', () => {
   // PURE: «aged 35–70 years»
   assert.deepEqual(NORMS.hazards.grip.cohortAgeRange, { min: 35, max: 70 });
-  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: 20, age: 82 }]).length, 0);
-  assert.equal(riskGradients([{ key: 'grip', block: 'strength', value: 20, age: 55 }]).length, 1);
+  assert.equal(riskContext([{ key: 'grip', block: 'strength', value: 20, age: 82 }]).length, 0);
+  assert.equal(riskContext([{ key: 'grip', block: 'strength', value: 20, age: 55 }]).length, 1);
   // У пульса покоя охвата нет — показывается в любом возрасте
-  assert.equal(riskGradients([{ key: 'restingHR', block: 'recovery', value: 72, age: 82 }]).length, 1);
+  assert.equal(riskContext([{ key: 'restingHR', block: 'recovery', value: 72, age: 82 }]).length, 1);
 });
 
 test('у каждого коэффициента риска описан охват когорты и сказано, откуда он взят', () => {
@@ -1235,4 +1296,80 @@ test('тест-страж: ни имён файлов, ни имён перем�
   for (const line of markup.replace(/<[^>]+>/g, ' ').split('\n')) {
     if (/[а-яё]/i.test(line)) assertNoLeak(line, 'разметка forma.html');
   }
+});
+
+test('у беговых таблиц есть возрастное покрытие, и вне него оценки нет', () => {
+  // Раньше пятнадцатилетний молча получал коэффициент двадцатилетнего.
+  assert.deepEqual(NORMS.running.ageCoverage, { min: 20, max: 80 });
+  assert.equal(ageGrade('m', 15, 5, 1500), null);
+  assert.equal(ageGrade('m', 85, 5, 1800), null);
+  assert.equal(typeof ageGrade('m', 20, 5, 1500), 'number');
+  assert.equal(typeof ageGrade('m', 80, 5, 2400), 'number');
+});
+
+test('формула NTNU не работает за границами применимости и не отдаёт оценку ниже шкалы', () => {
+  const spec = NORMS.ntnuFormula;
+  assert.deepEqual(spec.ageCoverage, { min: 20, max: 90 });
+
+  // Возраст вне когорты HUNT
+  assert.equal(fitnessAgeNTNU({ sex: 'm', age: 15, bmi: 22, restingHR: 60, trainingFreq: 2.5, trainingIntensity: 2, trainingDuration: 0.75 }), null);
+  assert.equal(fitnessAgeNTNU({ sex: 'm', age: 95, bmi: 22, restingHR: 60, trainingFreq: 2.5, trainingIntensity: 2, trainingDuration: 0.75 }), null);
+
+  // Пример из находок: возраст 79, индекс массы тела 45, пульс 95 — формула
+  // отдавала около 8 мл/кг/мин, и это молча уходило в возраст тела
+  const absurd = estimateVo2maxNTNU({ sex: 'm', age: 79, bmi: 45, restingHR: 95, trainingFreq: 0, trainingIntensity: 1, trainingDuration: 0.1 });
+  assert.equal(absurd, null);
+  assert.equal(fitnessAgeNTNU({ sex: 'm', age: 79, bmi: 45, restingHR: 95, trainingFreq: 0, trainingIntensity: 1, trainingDuration: 0.1 }), null);
+
+  // Нижний предел взят из данных, а не с потолка: это самая низкая
+  // опубликованная точка таблицы FRIEND для этого пола
+  const lowestPublished = Math.min(...Object.values(NORMS.vo2max.m).map((row) => row.p5));
+  assert.equal(spec.minPlausibleVo2max.m, lowestPublished);
+  const lowestF = Math.min(...Object.values(NORMS.vo2max.f).map((row) => row.p5));
+  assert.equal(spec.minPlausibleVo2max.f, lowestF);
+
+  // Обычный случай считается как раньше
+  assert.equal(typeof fitnessAgeNTNU({ sex: 'm', age: 38, bmi: 24.6, restingHR: 52, trainingFreq: 5, trainingIntensity: 3, trainingDuration: 1 }), 'number');
+});
+
+test('ошибка оценки формулы NTNU хранится отдельно для мужчин и женщин', () => {
+  const see = NORMS.ntnuFormula.standardError;
+  assert.equal(see.m, 5.70);
+  assert.equal(see.f, 5.14);
+});
+
+// Тест-страж: знак ГТО нигде не приравнивается к перцентилю. Смотрит на ОБА
+// файла и на разметку — раньше он видел только forma-calc.js и пропустил
+// формулировки «серебро означает перцентиль 50 и выше» и «бронза означает
+// нижнюю четверть».
+test('тест-страж: знак ГТО нигде не приравнивается к доле населения', () => {
+  const badge = /(золот|серебр|бронз)/i;
+  const share = /(перцентил\w*\s*\d|\bp\d{1,2}\b|нижн\w+\s+четверт|медиан|\d{1,3}\s*%\s*(людей|населен))/i;
+
+  for (const file of ['../forma-calc.js', '../forma-norms.js', '../forma.html']) {
+    const source = readFileSync(new URL(file, import.meta.url), 'utf8');
+    source.split('\n').forEach((line, i) => {
+      if (badge.test(line) && share.test(line)) {
+        assert.fail(`${file}, строка ${i + 1}: знак ГТО стоит рядом с долей населения — «${line.trim()}»`);
+      }
+    });
+  }
+
+  // И в самом расчёте: знак сравнивается со знаком, а не с числом
+  const calc = readFileSync(new URL('../forma-calc.js', import.meta.url), 'utf8');
+  assert.ok(!/badgeOrdinalPosition/.test(calc));
+  assert.ok(!/BADGE_ORDER\[[^\]]+\]\s*[/*]\s*\d/.test(calc), 'знак ГТО пересчитывается в число');
+});
+
+test('зачёт блока: перцентиль по медиане, знак ГТО — по самому знаку', () => {
+  // Серебро и золото — зачёт, бронза и ниже — нет. Никакого перцентиля.
+  assert.equal(formScore([{ key: 'pullups', block: 'strength', badge: 'серебро', informational: false }]).byBlock.strength, 'green');
+  assert.equal(formScore([{ key: 'pullups', block: 'strength', badge: 'бронза', informational: false }]).byBlock.strength, 'red');
+  // Знаменатель счёта — посчитанные блоки, а не всегда шесть
+  const s = formScore([
+    { key: 'vo2max', block: 'endurance', percentile: 80, informational: false },
+    { key: 'pushups', block: 'strength', percentile: 75, informational: false },
+  ]);
+  assert.equal(s.counted, 2);
+  assert.equal(s.green, 2);
 });

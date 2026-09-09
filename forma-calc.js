@@ -45,6 +45,9 @@ export function ageGrade(sex, age, distanceKm, timeSec) {
   const entry = NORMS.running[sex][String(distanceKm)];
   if (!entry) return null; // нет данных по этой дистанции (например, миля — см. отчёт)
   if (typeof timeSec !== 'number' || !Number.isFinite(timeSec) || timeSec <= 0) return null;
+  // Вне возрастного покрытия таблиц оценки нет: раньше пятнадцатилетний
+  // молча получал коэффициент двадцатилетнего (правка перед публикацией).
+  if (!withinCoverage(age, NORMS.running.ageCoverage)) return null;
   // Результат быстрее открытого мирового стандарта — это опечатка, а не
   // результат. Раньше «24» в поле пяти километров давало «3332% от мирового
   // стандарта, уровень мирового рекорда» (правка по ревью задачи 7).
@@ -176,9 +179,12 @@ export function bodyAgeBounds(sex) {
 // 115 мужчин-военных, женщин в ней не было, отдельной женской формулы не
 // опубликовано. Применять мужскую к женщинам — то же нарушение, за которое
 // правили силовые нормы. Коэффициенты и список полов — в данных.
-export function vo2maxFromCooper(distanceM, sex) {
+export function vo2maxFromCooper(distanceM, sex, age) {
   const spec = NORMS.cooper;
   if (!spec.applicableSex.includes(sex)) return null;
+  // Возрастной охват когорты оригинала — 17-52 года, он назван в источнике.
+  // Вне его формулу не применяем (правка перед публикацией).
+  if (!withinCoverage(age, spec.ageCoverage)) return null;
   if (typeof distanceM !== 'number' || !Number.isFinite(distanceM) || distanceM <= 0) return null;
   const value = (distanceM - spec.formula.offsetM) / spec.formula.divisor;
   return value > 0 ? value : null;
@@ -203,12 +209,24 @@ function kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration) {
 // Physiology, 2019 (см. normy-vo2max.md, набор 3). Версия с окружностью талии
 // не подтверждена рецензируемым источником и намеренно не используется.
 // Источник программно доступен в NORMS.ntnuFormula.source.
-function estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
+export function estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
+  const spec = NORMS.ntnuFormula;
+  // Границы применимости из источника: модель откалибрована на участниках
+  // 20-90 лет. Раньше границ не было вовсе.
+  if (!withinCoverage(age, spec.ageCoverage)) return null;
+
   const pa = kurtzeIndex(trainingFreq, trainingIntensity, trainingDuration);
-  if (sex === 'f') {
-    return 70.77 - 0.244 * age - 0.749 * bmi - 0.107 * restingHR + 0.213 * pa;
-  }
-  return 92.05 - 0.327 * age - 0.933 * bmi - 0.167 * restingHR + 0.257 * pa;
+  const value = sex === 'f'
+    ? 70.77 - 0.244 * age - 0.749 * bmi - 0.107 * restingHR + 0.213 * pa
+    : 92.05 - 0.327 * age - 0.933 * bmi - 0.167 * restingHR + 0.257 * pa;
+
+  // Нижний предел осмысленного результата. При возрасте 79, индексе массы
+  // тела 45 и пульсе 95 формула отдаёт около 8 мл/кг/мин — такой оценки нет
+  // ни в одной строке таблицы, в которую мы её переводим, и молча уходить в
+  // возраст тела она не должна.
+  const floor = spec.minPlausibleVo2max[sex];
+  if (typeof floor === 'number' && value < floor) return null;
+  return value;
 }
 
 // Фитнес-возраст NTNU — запасной путь, когда VO2max неизвестен.
@@ -216,6 +234,7 @@ function estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIn
 // его в возраст тела через ту же таблицу FRIEND.
 export function fitnessAgeNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration }) {
   const estimated = estimateVo2maxNTNU({ sex, age, bmi, restingHR, trainingFreq, trainingIntensity, trainingDuration });
+  if (estimated === null) return null; // вне применимости формулы возраста тела нет
   return bodyAgeFromVo2max(estimated, sex);
 }
 
@@ -430,6 +449,7 @@ export function evaluateTest(testKey, value, profile) {
     secondaryClamped: null,
     secondaryLabel: spec.secondary ? spec.secondary.label : null,
     secondaryPopulation: null, // название популяции для подписи вторичного чтения
+    bounds: null, // две опубликованные точки распределения там, где источник даёт только их
     informational: Boolean(spec.informational),
     belowThreshold: null, // считается ниже: только для числа и только внутри когорты порога
     reference: spec.source,
@@ -447,6 +467,24 @@ export function evaluateTest(testKey, value, profile) {
       result.belowThreshold = value < spec.threshold;
     } else {
       result.note = appendNote(result.note, spec.thresholdCohortNote || 'порог измерен на другой возрастной группе, поэтому вердикта здесь нет');
+    }
+  }
+
+  // Тесты, у которых источник публикует только две крайние точки
+  // распределения (наклон вперёд сидя: 5-й и 95-й перцентиль). Достроить
+  // между ними прямую и назвать результат перцентилем нельзя — такого
+  // распределения не существует. Показываем сами опубликованные точки.
+  if (spec.boundsOnly) {
+    const bySex = spec[profile.sex];
+    const youngest = bySex ? Math.min(...Object.keys(bySex).map(Number)) : null;
+    const covered = Boolean(bySex)
+      && (spec.maxAge === undefined || profile.age <= spec.maxAge)
+      && profile.age >= youngest;
+    if (covered) {
+      const table = bySex[ageBucket(profile.age, bySex)];
+      result.bounds = { p5: table.p5, p95: table.p95 };
+    } else {
+      result.note = appendNote(result.note, 'опубликованных точек для этого возраста нет: нормы не опубликованы');
     }
   }
 
@@ -570,20 +608,20 @@ function isCountable(r) {
   return typeof r.percentile === 'number' || typeof r.badge === 'string';
 }
 
-// Тест на медиане или выше. Для знака ГТО перцентиля нет — вместо него
-// используем сам разряд по BADGE_ORDER: серебро и золото официально
-// означают «на уровне или выше нормы для этой ступени», бронза и «ниже
-// бронзы» — «не дотянул». Подменять это выдуманным числом перцентиля
-// нельзя, поэтому знак и перцентиль оцениваются каждый по своей логике,
-// а не приводятся к общей шкале.
-function isAtOrAboveMedian(r) {
+// Зачтён ли тест. Две разные шкалы, каждая по своей логике.
+// Перцентильная норма: зачёт — медиана своей группы и выше.
+// Знак ГТО: зачёт — серебро или золото, незачёт — бронза и ниже. Это
+// официальный смысл самого знака, никакой доли населения за ним не стоит:
+// ГТО нигде не публикует, какая часть людей берёт серебро, и приравнивать
+// знак к позиции в распределении нельзя (правка перед публикацией).
+function isPass(r) {
   if (typeof r.percentile === 'number') return r.percentile >= 50;
   if (typeof r.badge === 'string') return (BADGE_ORDER[r.badge] ?? -1) >= BADGE_ORDER['серебро'];
   return false;
 }
 
 // Счёт формы: по каждому из шести блоков — зелёный (больше половины тестов
-// блока на медиане или выше), красный (половина или меньше) либо серый
+// блока зачтено), красный (половина или меньше) либо серый
 // (в блоке вообще нет годных результатов). green — сколько блоков зелёных,
 // counted — сколько блоков вообще участвовало в счёте (не серых).
 export function formScore(results) {
@@ -598,8 +636,8 @@ export function formScore(results) {
       continue;
     }
     counted += 1;
-    const atOrAboveMedian = items.filter(isAtOrAboveMedian).length;
-    const isGreen = atOrAboveMedian > items.length / 2;
+    const passed = items.filter(isPass).length;
+    const isGreen = passed > items.length / 2;
     byBlock[block] = isGreen ? 'green' : 'red';
     if (isGreen) green += 1;
   }
@@ -645,6 +683,12 @@ function hazardApplies(h, r) {
     case 'gradient':
       // Градиент «на каждые N единиц» — не персональный множитель.
       return false;
+    case 'groupComparison':
+      // Сравнение двух групп источника, в которое человека поставить нечем:
+      // либо граница группы задана не тем, что мы измеряем (VO2max —
+      // квинтили когорты другой клиники), либо связку с нашим порогом никто
+      // не публиковал (саркопения). Персональной карточки не даёт никогда.
+      return false;
     case 'percentileBelow':
       return typeof r.percentile === 'number' && r.percentile < t.value;
     case 'valueBelow': {
@@ -665,14 +709,13 @@ function hazardApplies(h, r) {
   }
 }
 
-// Знак ГТО «бронза» или «ниже бронзы» — провал по опубликованному разряду,
-// ровно так же, как нижняя четверть перцентильного распределения. Сейчас ни
-// у одного badge-теста (подтягивания, прыжок в длину) нет записи в
-// NORMS.hazards, поэтому эта ветка пока ничего не включает на практике —
-// но как только коэффициент риска для badge-теста появится, знак должен
-// уметь стать причиной карточки, а не молча теряться из-за отсутствия
-// перцентиля (правка по итогам ревью задачи 6 — раньше ветки для badge
-// не было вовсе).
+// Знак ГТО «бронза» или «ниже бронзы» — незачёт по официальному смыслу
+// самого знака. Никакой доли населения за этим не стоит: сколько людей
+// берёт бронзу, ГТО не публикует. Сейчас ни у одного badge-теста
+// (подтягивания, прыжок в длину) нет записи в hazards, поэтому ветка ничего
+// не включает на практике — но как только коэффициент риска для такого
+// теста появится, знак должен уметь стать причиной карточки, а не молча
+// теряться из-за отсутствия перцентиля.
 function badgeIndicatesFailure(badge) {
   const rank = BADGE_ORDER[badge];
   return typeof rank === 'number' && rank <= BADGE_ORDER['бронза'];
@@ -720,7 +763,9 @@ export function riskCards(results) {
       condition: h.condition,
       outcome: h.outcome,
       ci: sexSplitOrPlain(h.ci ?? null, r.sex),
+      ciNote: h.ciNote ?? null,
       cohortSize: h.cohortSize ?? null,
+      cohortAgeRangeSource: h.cohortAgeRangeSource ?? null,
       reference: h.source,
     });
   }
@@ -733,17 +778,23 @@ export function riskCards(results) {
   return groups;
 }
 
-// Коэффициенты-градиенты («на каждые −5 кг силы хвата», «на каждые +10
-// ударов пульса»): показываем их отдельным списком и от третьего лица.
-// Персональной карточкой они быть не могут — чтобы превратить градиент по
-// когорте в личный множитель, нужна точка отсчёта, которой источник не
-// публикует, а посчитать её самим означало бы выдумать число.
+// Коэффициенты, которые нельзя превратить в утверждение о конкретном
+// человеке. Их два вида, и оба показываются отдельным списком от третьего
+// лица — «в исследовании было так», а не «у тебя риск выше».
+//   gradient        — «на каждые −5 кг силы хвата»: чтобы получить личный
+//                     множитель, нужна точка отсчёта, которой источник не даёт;
+//   groupComparison — сравнение двух групп источника, в которое человека
+//                     поставить нечем: граница группы задана не тем, что мы
+//                     измеряем (VO2max), или связку с нашим порогом никто не
+//                     публиковал (саркопения).
 // Возвращаем только те показатели, которые человек действительно заполнил.
-export function riskGradients(results) {
+const THIRD_PERSON_TRIGGERS = ['gradient', 'groupComparison'];
+
+export function riskContext(results) {
   const out = [];
   for (const r of results) {
     const h = NORMS.hazards[r.key];
-    if (!h || !h.trigger || h.trigger.kind !== 'gradient') continue;
+    if (!h || !h.trigger || !THIRD_PERSON_TRIGGERS.includes(h.trigger.kind)) continue;
     if (typeof r.value !== 'number') continue;
     // Тот же охват когорты, что и у карточек: цифру, измеренную на людях
     // 35-70 лет, восьмидесятилетнему не показываем даже справочно.
@@ -755,12 +806,15 @@ export function riskGradients(results) {
     out.push({
       testKey: r.key,
       label: TEST_NORMS[r.key]?.label ?? h.label ?? r.key,
+      kind: h.trigger.kind,
       hazard,
-      step: h.trigger.step,
+      step: h.trigger.step ?? null,
       condition: h.condition,
       outcome: h.outcome,
       ci: sexSplitOrPlain(h.ci ?? null, r.sex),
+      ciNote: h.ciNote ?? null,
       cohortSize: h.cohortSize ?? null,
+      cohortAgeRangeSource: h.cohortAgeRangeSource ?? null,
       reference: h.source,
     });
   }
@@ -779,7 +833,7 @@ export function riskCoverage(results) {
 
   for (const r of results) {
     const h = NORMS.hazards[r.key];
-    if (!h || !h.trigger || h.trigger.kind === 'gradient') continue;
+    if (!h || !h.trigger || THIRD_PERSON_TRIGGERS.includes(h.trigger.kind)) continue;
 
     const label = TEST_NORMS[r.key]?.label ?? h.label ?? r.key;
     if (cohortCovers(h, r)) {
@@ -821,9 +875,9 @@ export function diffWithPrevious(current, previous, labels = {}) {
 
 // Слабое звено — два разных утверждения, и смешивать их в одно число
 // нельзя (правка по итогам повторного ревью задачи 6: раньше знак ГТО
-// раскладывался в число 0/33,3/66,7/100 и усреднялся с настоящими
-// перцентилями — самодельная шкала, которую никто не публиковал). Ровно
-// та же честность, что уже есть у isAtOrAboveMedian(): знак и перцентиль
+// раскладывался в число и усреднялся с настоящими перцентилями —
+// самодельная шкала, которую никто не публиковал). Ровно
+// та же честность, что уже есть у isPass(): знак и перцентиль
 // оцениваются каждый по своей логике, а не приводятся к общей шкале.
 //
 // primary — худший блок СРЕДИ ТЕХ, где есть настоящие числовые перцентили.
