@@ -555,7 +555,7 @@ button.ghost {
       <div class="fields">
         <div class="field">
           <label for="sitandreach">Наклон вперёд сидя <span class="unit">— см</span></label>
-          <span class="how">Сидя, ноги прямые, тянешься к стопам по линейке. Записывается лучшая из двух попыток.</span>
+          <span class="how" id="sitandreachHow">Сидя, ноги прямые, тянешься к стопам по линейке. Записывается лучшая из двух попыток.</span>
           <input id="sitandreach" type="number" inputmode="decimal" min="-30" max="70" step="0.5" placeholder="8">
         </div>
         <div class="field">
@@ -788,6 +788,12 @@ function initFromNorms() {
   // Границы ввода в поле возраста — разумный диапазон для взрослых, а не
   // норматив. У каждого теста своё покрытие, оно проверяется отдельно.
   $('ageHow').textContent = `Полных лет на сегодня. Возраст тела считается для возраста от ${COVERAGE.min} до ${COVERAGE.max} лет — дальше таблица FRIEND не идёт. Остальные тесты работают по своему покрытию.`;
+
+  // У наклона вперёд разряда нет вовсе — предупреждаем сразу у поля, а не
+  // только в карточке результата.
+  if (TEST_NORMS.sitandreach.boundsOnly) {
+    $('sitandreachHow').textContent = 'Сидя, ноги прямые, тянешься к стопам по линейке. Записывается лучшая из двух попыток. Разряда нет: источник публикует только две крайние точки распределения, их и покажем как ориентир.';
+  }
 
   const stand = TEST_NORMS.onelegstand;
   $('onelegHow').textContent = `Глаза открыты, руки свободно, без опоры. Порог из исследования — ${stand.threshold} ${unitText('секунд', stand.threshold)}, и он измерен на людях ${stand.thresholdAgeRange.min}-${stand.thresholdAgeRange.max} лет: в другом возрасте вердикта не будет, только время.`;
@@ -1369,7 +1375,9 @@ function scoreHtml(state) {
   return `<section>
     <div class="eyebrow">Этаж 2 — счёт формы</div>
     <div class="score-number">${score.counted === 0 ? '—' : `${score.green} из ${score.counted}`}</div>
-    <p class="hint" style="color:var(--graphite-65);margin:0">Знаменатель — блоки, которые удалось посчитать: ${score.counted} из 6, остальные пустые или со своей шкалой. Блок зелёный, если больше половины его тестов зачтено. ${PASS_RULE_PERCENTILE} ${PASS_RULE_BADGE}</p>
+    <p class="hint" style="color:var(--graphite-65);margin:0">${score.counted === 0
+      ? 'Считать пока нечего: ни один блок не дал разряда — заполненные тесты либо со своей шкалой, либо без опубликованной нормы для твоего случая.'
+      : `Знаменатель — блоки, которые удалось посчитать: ${score.counted} из 6, остальные пустые или со своей шкалой. Блок зелёный, если больше половины его тестов зачтено. ${PASS_RULE_PERCENTILE} ${PASS_RULE_BADGE}`}</p>
     <div class="tiles">${tiles}</div>
     ${ownNote}
   </section>`;
