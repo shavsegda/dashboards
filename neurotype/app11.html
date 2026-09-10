@@ -706,7 +706,13 @@ async function pushCombined(){
     try{
       tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{});
     }catch(e){}
-    if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'neurotype',scores})); }catch(e){} }
+    // 10.09.2026. `tg.sendData` УБРАН намеренно — не возвращать.
+    // Он закрывает мини-апп сразу после первого же завершённого опросника,
+    // а на этой странице их шесть: человек проходил один и вылетал, добраться
+    // до остальных было нельзя. Дефект найден на живом клиенте (Метелкин).
+    // Результат и так уходит в Supabase выше (pushToSupabase) — это основной
+    // путь, из него читает fetch_passport.py. В боте есть ensure_*_synced,
+    // который подтягивает запись, даже когда апдейт web_app_data не пришёл.
     save();
   } finally { pushing=false; }
 }

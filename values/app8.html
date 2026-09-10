@@ -407,9 +407,9 @@ async function finish(){
   const record={user_id:UID, block:'values', instrument:'MFQ-30 + PVQ-RR', scores, answers, completed_at};
   await pushToSupabase(record);
   try{ localStorage.setItem(RESULT_KEY+'_pushed', completed_at); }catch(e){}
-  if(tg&&typeof tg.sendData==='function'){
-    try{ tg.sendData(JSON.stringify({type:'values',scores})); }catch(e){}
-  }
+  // 10.09.2026. `tg.sendData` УБРАН намеренно — не возвращать.
+  // Закрывал мини-апп после первого опросника из двух. Данные уходят в
+  // Supabase выше, бот подтягивает через ensure_values_synced.
   const res={scores,completed_at};
   // Сдвиг считаем по прошлому заходу и только потом запоминаем этот.
   TESTS.forEach(t=>makeShift(t, t.score(answers[t.key]).data));

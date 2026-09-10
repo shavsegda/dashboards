@@ -327,7 +327,9 @@ async function pushCombined(){
   try{
     tg?.CloudStorage?.setItem(CLOUD_KEY, JSON.stringify({scores, completed_at}), ()=>{});
   }catch(e){}
-  if(tg&&typeof tg.sendData==='function'){ try{ tg.sendData(JSON.stringify({type:'decisions',scores})); }catch(e){} }
+  // 10.09.2026. `tg.sendData` УБРАН намеренно — не возвращать.
+  // Закрывал мини-апп после первого опросника из трёх. Данные уходят в
+  // Supabase выше, бот подтягивает через ensure_decisions_synced.
   save();
 }
 
