@@ -32,19 +32,21 @@
   --terracotta-15: rgba(184,92,56,0.15);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --max: 720px;
-  --gutter: 24px;
+  --max: 680px;
+  --gutter: 22px;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--paper);
   color: var(--graphite);
   font-family: var(--font-sans);
   font-size: 18px;
-  line-height: 1.62;
+  line-height: 1.68;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-wrap: break-word;
 }
 .container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 .eyebrow {
@@ -197,10 +199,33 @@ footer a:hover { text-decoration: underline; }
 }
 .toc h2 { font-size: 19px; font-weight: 600; margin: 0 0 5px; line-height: 1.28; }
 .toc p { margin: 0; font-size: 15.5px; color: var(--graphite-65); line-height: 1.5; }
-@media (max-width: 560px) {
-  body { font-size: 17px; }
-  header { padding: 48px 0 28px; }
-  .toc a { grid-template-columns: 32px 1fr; gap: 12px; padding: 15px 16px; }
+/* чтение с телефона — главный сценарий */
+@media (max-width: 620px) {
+  :root { --gutter: 20px; }
+  body { font-size: 17.5px; line-height: 1.7; }
+  header { padding: 40px 0 24px; }
+  header h1 { font-size: 29px; line-height: 1.15; margin: 13px 0 12px; }
+  header .lead { font-size: 16.5px; }
+  article h2 { font-size: 21px; margin: 40px 0 12px; }
+  article h3 { font-size: 18px; margin: 28px 0 9px; }
+  article p { margin: 0 0 17px; }
+  article ol, article ul { padding-left: 19px; }
+  article li { margin: 0 0 13px; }
+  table { font-size: 15px; }
+  th, td { padding-right: 14px; }
+  .nextbig { padding: 19px 18px; margin-top: 40px; }
+  .nextbig .t { font-size: 20px; }
+  .nextbig .d { font-size: 15.5px; }
+  .quiet { font-size: 15px; }
+  .toc a { grid-template-columns: 30px 1fr; gap: 11px; padding: 16px 15px; }
+  .toc h2 { font-size: 17.5px; }
+  .toc p { font-size: 15px; }
+  .nav-pair { font-size: 15px; gap: 10px; flex-direction: column; }
+  footer { font-size: 13.5px; padding-bottom: 48px; }
+}
+/* тап-зоны не меньше пальца */
+@media (hover: none) {
+  .nav-pair a, footer a, .quiet a { display: inline-block; padding: 4px 0; }
 }
 </style>
 </head>
