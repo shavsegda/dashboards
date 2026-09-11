@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Дом с шестью этажами — Дом без лестниц</title>
+<meta name="description" content="У дел есть шесть этажей. Дорогие беды сидят не на этаже, а между ними.">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Дом с шестью этажами — Дом без лестниц">
+<meta property="og:description" content="У дел есть шесть этажей. Дорогие беды сидят не на этаже, а между ними.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/dom-bez-lestnic/dom-s-shestyu-etazhami.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --max: 720px;
+  --gutter: 24px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+header { padding: 72px 0 34px; border-bottom: 1px solid var(--graphite-15); }
+header h1 {
+  font-weight: 600;
+  font-size: clamp(30px, 5.4vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 16px 0 14px;
+}
+header .lead { font-size: 18px; color: var(--graphite-65); margin: 0; max-width: 34em; }
+article { padding: 8px 0 0; }
+article h2 {
+  font-weight: 600;
+  font-size: clamp(21px, 3.2vw, 27px);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 52px 0 14px;
+}
+article h3 {
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 34px 0 10px;
+}
+article p { margin: 0 0 18px; }
+article strong { font-weight: 600; }
+article em { font-style: italic; color: var(--graphite-75); }
+article ol, article ul { margin: 0 0 20px; padding-left: 22px; }
+article li { margin: 0 0 12px; }
+article li::marker { color: var(--terracotta); font-weight: 500; }
+.tablewrap { overflow-x: auto; margin: 0 0 24px; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  font-weight: 500;
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--graphite-15);
+}
+td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--graphite-08); vertical-align: top; }
+hr { border: 0; border-top: 1px solid var(--graphite-15); margin: 44px 0; }
+.cta {
+  background: var(--terracotta-tint);
+  border: 1px solid var(--terracotta-15);
+  border-radius: 14px;
+  padding: 28px 26px;
+  margin: 52px 0 0;
+}
+.cta h3 { margin: 12px 0 10px; font-size: 21px; font-weight: 600; line-height: 1.3; }
+.cta p { color: var(--graphite-75); margin: 0 0 18px; font-size: 17px; }
+.btn {
+  display: inline-block;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 13px 24px;
+  border-radius: 9px;
+}
+.btn:hover { background: var(--terracotta-dark); }
+.nav-pair {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 44px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 16px;
+}
+.nav-pair a { color: var(--terracotta); text-decoration: none; }
+.nav-pair a:hover { text-decoration: underline; }
+.nav-pair .stub { color: var(--graphite-30); }
+footer {
+  margin-top: 56px;
+  padding: 30px 0 64px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 14px;
+  color: var(--graphite-50);
+}
+footer p { margin: 0 0 7px; }
+footer a { color: var(--terracotta); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+/* оглавление */
+.toc { display: flex; flex-direction: column; gap: 12px; margin: 36px 0 0; }
+.toc a {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 16px;
+  align-items: start;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--graphite-15);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.toc a:hover { border-color: var(--terracotta); }
+.toc .num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--terracotta);
+  padding-top: 3px;
+}
+.toc h2 { font-size: 19px; font-weight: 600; margin: 0 0 5px; line-height: 1.28; }
+.toc p { margin: 0; font-size: 15.5px; color: var(--graphite-65); line-height: 1.5; }
+@media (max-width: 560px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 28px; }
+  .toc a { grid-template-columns: 32px 1fr; gap: 12px; padding: 15px 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="eyebrow accent">Глава 1 из 9 · Дом без лестниц</div>
+    <h1>Дом с шестью этажами</h1>
+    <p class="lead">У дел есть шесть этажей. Дорогие беды сидят не на этаже, а между ними.</p>
+  </div>
+</header>
+
+<article>
+  <div class="container">
+<h2>Возможность, которая съела год</h2>
+<p>Появилась возможность, от которой глупо отказываться.</p>
+<p>Тебе предложили новую роль и больший масштаб. Или дали долгожданный здоровенный проект, который наконец-то «свой». Или ты открыл новое направление, взял крупного клиента, позвал партнёра с деньгами.</p>
+<p>Ты всё посчитал, оно сошлось, и ты взял.</p>
+<p>Через год это «что-то» существует. Внутри люди, потраченное время и деньги. Ожидаемого результата нет, а внимания оно забирает больше всего остального. И выйти уже нельзя: вложено слишком много, и есть люди, которых ты сам туда позвал.</p>
+<p>Каждое твое решение по пути в эту точку было разумным. Дорогим было первое «да».</p>
+<p>Дорогие ошибки вообще не похожи на ошибки. Они похожи на удачу. И именного поэтому их не видно в начале.</p>
+<p><strong>Почему опытный человек берёт то, что потом съедает его год?</strong></p>
+<p>Ответ короткий. У него нет правила, по которому можно отказаться от хорошего. А правила нет потому, что верхние этажи его жизни не связаны с нижними.</p>
+<p>Дальше объясню, что это значит.</p>
+<h2>У дел есть этажи</h2>
+<p>Представь дом, в котором живут твои дела. С одного видно двор, с другого — весь район. А всего этажей шесть.</p>
+<ol><li><strong>Первый — что делаю сейчас.</strong> Позвонить, ответить, съездить.</li><li><strong>Второй — дела, которые не сделать за один подход.</strong> Нанять человека, открыть новую точку, закрыть сделку. У дел «побольше» есть начало и конец.</li><li><strong>Третий — то, что не кончается никогда.</strong> Здоровье, деньги, близкие, люди, на которых всё держится. Это нельзя сделать один раз и потом навсегда об этом забыть. Это можно только постоянно поддерживать в необходимом состоянии.</li><li><strong>Четвёртый — цель на длительный период времени.</strong> С числом и датой. Не «расти», а «было три, стало пять, к декабрю».</li><li><strong>Пятый — к чему это всё идёт.</strong> Где ты окажешься примерно через 5 лет? Каким будет твой обычный вторник, когда ты станешь на 5 лет старше? Во сколько проснешься? Что будешь делать весь день? Сколько будешь зарабатывать? Где и с кем жить?</li><li><strong>Шестой — ради чего.</strong> Правила, по которым ты говоришь «нет». Не красивые слова, а настоящие правила, которым нельзя не следовать, чтобы не предать себя.</li></ol>
+<h2>Главное — лестницы</h2>
+<p>Я не буду спрашивать: хорошо ли ты знаешь, что находится на твоих этажах? Это важно, но не главное.</p>
+<p>Главное — есть ли между ними лестницы. Соединены этажи или нет.</p>
+<p>Дорогие беды почти никогда не сидят на каком-то конкретном этаже. Они сидят между этажами. Каждый этаж сам по себе выглядит нормально. Поэтому изнутри ничего и не видно.</p>
+<h2>Шесть «кривых» домов</h2>
+<p><strong>1. Нет лестницы.</strong></p>
+<p>Наверху цель, внизу дела. А между ними ничего. Год прошёл, все поработали, а бесхозная цель стоит там же, где стояла.</p>
+<p>Как проверить? Назови свою цель. Теперь назови три дела прошлой недели, которые к ней вели. Не получилось — лестницы нет. Ты платишь за это упущенным временем и потраченными усилиями: своими и чужими.</p>
+<p><strong>2. Дом стоит вверх ногами.</strong></p>
+<p>Не цель говорит, что делать, а наоборот: сначала делаешь, потом придумываешь, зачем это было надо. Один из моих подопечных сказал про это так: «Я куда-то попал, а потом вокруг этого места нарисовал мишень».</p>
+<p>Как проверить? Когда ты называешь цели — до исполнения задач или после? Чем платишь? Ты всегда занят, но никуда не двигаешься.</p>
+<p><strong>3. Дом чужой.</strong></p>
+<p>Цели вроде бы твои, а на самом деле их выбрал отец или партнёр, или люди вокруг. Ты живёшь в красивом доме в уютной деревне, но никогда этого не хотел, тихо мечтая о квартире в шумном центре.</p>
+<p>Как проверить? Ты дошёл до большой цели, но радости не случилось, а вместо нее пришла пустота. Ты, скорее всего, заплатил за это примерно десятью годами своей жизни и понимаешь это уже после якобы внешней победы.</p>
+<p><strong>4. Дом на хлипком фундаменте.</strong></p>
+<p>Например, всё внимание — работе, а остальные этажи пустые. Дом стоит, пока с работой все норм. Рушится работа и падает сразу весь дом.</p>
+<p>Как проверить? Посмотри дела за месяц. Одна область занимает половину списка? А остальные — по одной строчке? Чем заплатишь? Каждый своим: здоровьем, семьёй или человеком, который ушёл навсегда. И это уже не купить деньгами, которые ты так упорно зарабатывал все это время.</p>
+<p><strong>5. Нежилые верхние этажи.</strong></p>
+<p>Правила может и есть, но на решения они не влияют.</p>
+<p>Как проверить? Вспомни за год хоть одно решение, где ты отказался от выгоды, потому что так велело правило. Нет такого — значит правил нет, но есть красивая формулировка. Чем заплатишь? Думаю, что огромной упущенной значимой выгодой, пока мотаешься за «хорошими» вариантами.</p>
+<p><strong>6. Самозастройка.</strong></p>
+<p>У собственника один дом, у директора другой, у команды третий. И, может быть, даже каждый дом внутри и правильный. Только вместе они никак не сходятся. Такое случается и в бизнесе, и в семье.</p>
+<p>Как проверить?  Есть спор, который идёт про задачи и не кончается годами. Скорее всего, он не совсем про задачи, а про совсем другой этаж. Чем заплатишь? В лучем случае — ваше общее дело будет стоять на месте, в худшем — вы разойдетесь, продолжая доказывать собственную правоту.</p>
+<h2>Про свой дом довольно сложно поговорить</h2>
+<p>Снаружи, может быть, всё и хорошо. Деньги есть, дела идут, люди уважают. И никто даже не жалуется.</p>
+<p>Но только рассказать про свой дом некому.</p>
+<p>На работе нельзя, за тобой же там идут или пристально присматривают за твоей же эффективностью. Дома страшно — начнут еще волноваться. Друзьям неловко.</p>
+<p>Поэтому вопрос откладывают. Не потому что он неважный, а потому что он не горит. А потом он приходит сам, как плита на голову: давила, давила и придавила. И это не будет вопрос, а скорее болезнь, уход человека или сорванная ключевая сделка.</p>
+<h2>Что будет, если ничего не менять</h2>
+<p>Ничего не будет. В этом вся и беда.</p>
+<p>Кривой дом не падает сразу. Он годами стоит криво. А ты живёшь в нём и, по тихой грусти, привыкаешь, пока не рухнет.</p>
+<p>Просто каждый год ты отдаёшь ему год. Тихо, без скандала и криков. А расплата приходит один раз и сразу весь период проживания.</p>
+<p>И что тогда человек начинает делать? Кому какой этаж привычнее. Когда не идёт, человек давит сильнее там, где привык. Кто привык делать — берёт ещё дел. Кто привык мечтать — придумывает новую большую цель. Оба стараются и оба чинят не то место.</p>
+<h2>Один шаг</h2>
+<p>Возьми лист бумаги. Напиши шесть строк — по одной на этаж.</p>
+<p>Против каждой строки напиши одно своё дело за последнюю неделю.</p>
+<p>Строки, которые остались пустыми, — это места, где у тебя нет лестницы.</p>
+<p>Займёт десять минут. Дальше уже понятно, где чинить.</p>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>Где в твоём доме нет лестницы?</h3>
+      <p>Если узнал себя — приходи на Разбор. За полтора часа соберём твою карту: что на каждом этаже и где рвётся между ними.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+
+    <div class="nav-pair">
+      <span><span class="stub">начало серии</span></span>
+      <span><a href="otkaz-ot-horoshego.html">Почему нельзя отказаться от хорошего →</a></span>
+    </div>
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <p>Серия «Дом без лестниц» · Почему усилий всё больше, а толку всё меньше</p>
+    <p>Оглавление · <a href="./">все девять глав</a></p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Дом без лестниц — Почему усилий всё больше, а толку всё меньше</title>
+<meta name="description" content="Девять глав о том, почему усилий всё больше, а толку всё меньше. У дел есть шесть этажей, и дорогие беды сидят между ними, а не на них.">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Дом без лестниц — Почему усилий всё больше, а толку всё меньше">
+<meta property="og:description" content="Девять глав о том, почему усилий всё больше, а толку всё меньше. У дел есть шесть этажей, и дорогие беды сидят между ними, а не на них.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/dom-bez-lestnic/">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --max: 720px;
+  --gutter: 24px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+header { padding: 72px 0 34px; border-bottom: 1px solid var(--graphite-15); }
+header h1 {
+  font-weight: 600;
+  font-size: clamp(30px, 5.4vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 16px 0 14px;
+}
+header .lead { font-size: 18px; color: var(--graphite-65); margin: 0; max-width: 34em; }
+article { padding: 8px 0 0; }
+article h2 {
+  font-weight: 600;
+  font-size: clamp(21px, 3.2vw, 27px);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 52px 0 14px;
+}
+article h3 {
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 34px 0 10px;
+}
+article p { margin: 0 0 18px; }
+article strong { font-weight: 600; }
+article em { font-style: italic; color: var(--graphite-75); }
+article ol, article ul { margin: 0 0 20px; padding-left: 22px; }
+article li { margin: 0 0 12px; }
+article li::marker { color: var(--terracotta); font-weight: 500; }
+.tablewrap { overflow-x: auto; margin: 0 0 24px; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  font-weight: 500;
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--graphite-15);
+}
+td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--graphite-08); vertical-align: top; }
+hr { border: 0; border-top: 1px solid var(--graphite-15); margin: 44px 0; }
+.cta {
+  background: var(--terracotta-tint);
+  border: 1px solid var(--terracotta-15);
+  border-radius: 14px;
+  padding: 28px 26px;
+  margin: 52px 0 0;
+}
+.cta h3 { margin: 12px 0 10px; font-size: 21px; font-weight: 600; line-height: 1.3; }
+.cta p { color: var(--graphite-75); margin: 0 0 18px; font-size: 17px; }
+.btn {
+  display: inline-block;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 13px 24px;
+  border-radius: 9px;
+}
+.btn:hover { background: var(--terracotta-dark); }
+.nav-pair {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 44px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 16px;
+}
+.nav-pair a { color: var(--terracotta); text-decoration: none; }
+.nav-pair a:hover { text-decoration: underline; }
+.nav-pair .stub { color: var(--graphite-30); }
+footer {
+  margin-top: 56px;
+  padding: 30px 0 64px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 14px;
+  color: var(--graphite-50);
+}
+footer p { margin: 0 0 7px; }
+footer a { color: var(--terracotta); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+/* оглавление */
+.toc { display: flex; flex-direction: column; gap: 12px; margin: 36px 0 0; }
+.toc a {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 16px;
+  align-items: start;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--graphite-15);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.toc a:hover { border-color: var(--terracotta); }
+.toc .num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--terracotta);
+  padding-top: 3px;
+}
+.toc h2 { font-size: 19px; font-weight: 600; margin: 0 0 5px; line-height: 1.28; }
+.toc p { margin: 0; font-size: 15.5px; color: var(--graphite-65); line-height: 1.5; }
+@media (max-width: 560px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 28px; }
+  .toc a { grid-template-columns: 32px 1fr; gap: 12px; padding: 15px 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="eyebrow">Серия · девять глав</div>
+    <h1>Дом без лестниц</h1>
+    <p class="lead">Почему усилий всё больше, а толку всё меньше</p>
+  </div>
+</header>
+
+<article>
+  <div class="container">
+    <p>У дел есть шесть этажей: что делаю сейчас · дела на несколько подходов · то, что не кончается никогда · цель с числом и датой · к чему всё идёт · ради чего.</p>
+    <p><strong>Дорогие беды почти никогда не сидят на конкретном этаже. Они сидят между этажами.</strong> Каждый этаж сам по себе выглядит нормально — поэтому изнутри ничего и не видно.</p>
+    <p>Девять глав о том, где рвутся связи между этажами, как это проверить у себя и чем за это платят.</p>
+
+    <div class="toc">
+      <a href="dom-s-shestyu-etazhami.html"><span class="num">01</span><span><h2>Дом с шестью этажами</h2><p>У дел есть шесть этажей. Дорогие беды сидят не на этаже, а между ними.</p></span></a>
+      <a href="otkaz-ot-horoshego.html"><span class="num">02</span><span><h2>Почему нельзя отказаться от хорошего</h2><p>Шестой этаж — правила, по которым говоришь «нет». Ценность ничего не запрещает, правило запрещает.</p></span></a>
+      <a href="mechta-zabiraet-sily.html"><span class="num">03</span><span><h2>Почему мечта забирает силы</h2><p>Пятый этаж — картина будущего. Почему образ без плана разряжает, а не двигает.</p></span></a>
+      <a href="cel-stoit-na-meste.html"><span class="num">04</span><span><h2>Почему цель стоит на месте</h2><p>Четвёртый этаж — цель с числом и датой. Год прошёл, все работали, цель там же.</p></span></a>
+      <a href="chto-lomaetsya-poka-ty-zanyat.html"><span class="num">05</span><span><h2>Что ломается, пока ты занят</h2><p>Третий этаж — то, что не кончается никогда. Здоровье, деньги, близкие.</p></span></a>
+      <a href="spisok-del-ne-pomogaet.html"><span class="num">06</span><span><h2>Почему список дел не помогает</h2><p>Первый и второй этажи. Почему полный список не двигает и как это чинится.</p></span></a>
+      <a href="sobrat-dom-celikom.html"><span class="num">07</span><span><h2>Как собрать дом целиком</h2><p>Шесть этажей и лестницы между ними — собранные в одну схему.</p></span></a>
+      <a href="strategiya-ne-doezzhaet.html"><span class="num">08</span><span><h2>Почему стратегия не доезжает</h2><p>Дом на две головы: у собственника один, у команды другой. Где рвётся.</p></span></a>
+      <a href="dom-kotoryy-nikto-ne-stroil.html"><span class="num">09</span><span><h2>Дом, который никто не строил</h2><p>Что делать, когда дом достался как есть — и ни одного этажа ты не выбирал.</p></span></a>
+    </div>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>Где в твоём доме нет лестницы?</h3>
+      <p>За полтора часа на Разборе соберём твою карту: что лежит на каждом этаже и где рвётся между ними.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <p>Другая серия · <a href="../urovni.html">Потолок: карта вертикального развития</a></p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+</body>
+</html>

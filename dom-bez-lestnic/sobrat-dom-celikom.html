@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Как собрать дом целиком — Дом без лестниц</title>
+<meta name="description" content="Шесть этажей и лестницы между ними — собранные в одну схему.">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="Как собрать дом целиком — Дом без лестниц">
+<meta property="og:description" content="Шесть этажей и лестницы между ними — собранные в одну схему.">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://shapovalov-aleksey.ru/dom-bez-lestnic/sobrat-dom-celikom.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-65: rgba(26,26,26,0.65);
+  --graphite-50: rgba(26,26,26,0.5);
+  --graphite-30: rgba(26,26,26,0.3);
+  --graphite-15: rgba(26,26,26,0.15);
+  --graphite-08: rgba(26,26,26,0.08);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.08);
+  --terracotta-15: rgba(184,92,56,0.15);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --max: 720px;
+  --gutter: 24px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+}
+.eyebrow.accent { color: var(--terracotta); }
+header { padding: 72px 0 34px; border-bottom: 1px solid var(--graphite-15); }
+header h1 {
+  font-weight: 600;
+  font-size: clamp(30px, 5.4vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 16px 0 14px;
+}
+header .lead { font-size: 18px; color: var(--graphite-65); margin: 0; max-width: 34em; }
+article { padding: 8px 0 0; }
+article h2 {
+  font-weight: 600;
+  font-size: clamp(21px, 3.2vw, 27px);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 52px 0 14px;
+}
+article h3 {
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 34px 0 10px;
+}
+article p { margin: 0 0 18px; }
+article strong { font-weight: 600; }
+article em { font-style: italic; color: var(--graphite-75); }
+article ol, article ul { margin: 0 0 20px; padding-left: 22px; }
+article li { margin: 0 0 12px; }
+article li::marker { color: var(--terracotta); font-weight: 500; }
+.tablewrap { overflow-x: auto; margin: 0 0 24px; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--graphite-50);
+  font-weight: 500;
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--graphite-15);
+}
+td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--graphite-08); vertical-align: top; }
+hr { border: 0; border-top: 1px solid var(--graphite-15); margin: 44px 0; }
+.cta {
+  background: var(--terracotta-tint);
+  border: 1px solid var(--terracotta-15);
+  border-radius: 14px;
+  padding: 28px 26px;
+  margin: 52px 0 0;
+}
+.cta h3 { margin: 12px 0 10px; font-size: 21px; font-weight: 600; line-height: 1.3; }
+.cta p { color: var(--graphite-75); margin: 0 0 18px; font-size: 17px; }
+.btn {
+  display: inline-block;
+  background: var(--terracotta);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 13px 24px;
+  border-radius: 9px;
+}
+.btn:hover { background: var(--terracotta-dark); }
+.nav-pair {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 44px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 16px;
+}
+.nav-pair a { color: var(--terracotta); text-decoration: none; }
+.nav-pair a:hover { text-decoration: underline; }
+.nav-pair .stub { color: var(--graphite-30); }
+footer {
+  margin-top: 56px;
+  padding: 30px 0 64px;
+  border-top: 1px solid var(--graphite-15);
+  font-size: 14px;
+  color: var(--graphite-50);
+}
+footer p { margin: 0 0 7px; }
+footer a { color: var(--terracotta); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+/* оглавление */
+.toc { display: flex; flex-direction: column; gap: 12px; margin: 36px 0 0; }
+.toc a {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 16px;
+  align-items: start;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--graphite-15);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.toc a:hover { border-color: var(--terracotta); }
+.toc .num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--terracotta);
+  padding-top: 3px;
+}
+.toc h2 { font-size: 19px; font-weight: 600; margin: 0 0 5px; line-height: 1.28; }
+.toc p { margin: 0; font-size: 15.5px; color: var(--graphite-65); line-height: 1.5; }
+@media (max-width: 560px) {
+  body { font-size: 17px; }
+  header { padding: 48px 0 28px; }
+  .toc a { grid-template-columns: 32px 1fr; gap: 12px; padding: 15px 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="eyebrow accent">Глава 7 из 9 · Дом без лестниц</div>
+    <h1>Как собрать дом целиком</h1>
+    <p class="lead">Шесть этажей и лестницы между ними — собранные в одну схему.</p>
+  </div>
+</header>
+
+<article>
+  <div class="container">
+<p>Если ты дочитал до этого места, у тебя, скорее всего, нашлось не одно слабое место, а три-четыре.</p>
+<p>Это нормально, и так у всех.</p>
+<p>Плохо другое: когда дыр несколько, человек обычно начинает чинить ту, что ближе, то есть нижнюю. Наводит порядок в делах, ставит приложение, разгребает почту.</p>
+<p>Через месяц всё то же самое, только аккуратнее.</p>
+<p>Эта статья — про порядок. Что за чем и почему именно так.</p>
+<h2>Правило порядка: сверху вниз</h2>
+<p>Каждый этаж задаёт правило отбора для того, что ниже.</p>
+<p>Правила решают, за что ты вообще не берёшься. Образ решает, куда это всё едет. Цель решает, что меняется в этом году. Области решают, что нужно держать всё время. И только из них рождаются проекты и дела.</p>
+<p>Поэтому чинить надо сверху.</p>
+<p>Починил низ при пустом верхе — получил аккуратный список чужих дел. Он даже станет приятнее на вид. Но он останется чужим, потому что взялся не из твоих решений, а из того, что тебе прислали.</p>
+<p><strong>Простое правило: если непонятно, с какого этажа начать, — начинай с самого верхнего, где нашлась дыра.</strong></p>
+<h2>Одно исключение, и оно важное</h2>
+<p>Есть состояние, при котором сверху начинать нельзя.</p>
+<p>Если голова забита так, что ты каждый день боишься что-то забыть, — разговор про смысл жизни будет мучением. Не потому что смысл не нужен. Просто у тебя нет свободной головы, чтобы о нём думать.</p>
+<p>Тогда сначала один вечер на разгрузку: выпиши всё, что висит, наружу. Это не этаж и не работа над собой. Это расчистка стола перед работой.</p>
+<p><strong>Разгрузка — вечер. Потом сверху вниз.</strong></p>
+<p>Не путай её с наведением порядка в делах. Разгрузка нужна один раз, чтобы освободить голову. Порядок в делах при пустом верхе бесполезен.</p>
+<h2>Найди свою дыру: шесть вопросов</h2>
+<p>По одному на этаж. Отвечай коротко, вслух или на бумаге.</p>
+<p><strong>Шестой — правила.</strong></p>
+<p>Назови решение за последний год, где ты отказался от выгоды, потому что так велело твоё правило. Не вспоминается — дыра здесь.</p>
+<p><strong>Пятый — куда всё едет.</strong></p>
+<p>Опиши свой обычный вторник через пять лет. Хотя бы в трёх деталях: где ты, чем занят, сколько зарабатываешь. Не описывается — дыра здесь.</p>
+<p><strong>Четвёртый — цель.</strong></p>
+<p>Назови свою цель этого года. С числом и датой. Нет числа или нет даты — дыра здесь.</p>
+<p><strong>Третий — области.</strong></p>
+<p>Перечисли, что ты обязан поддерживать, чтобы не рухнуло. Теперь скажи, что ты сделал по каждой за последний месяц. Есть пустые строки — дыра здесь.</p>
+<p><strong>Второй — дела.</strong></p>
+<p>Открой список дел. Есть в нём строчки без конца — «здоровье», «сайт», «поговорить»? Есть — дыра здесь.</p>
+<p><strong>Первый — шаги.</strong></p>
+<p>Возьми первое дело из списка. Можешь назвать физический шаг: где и как ты это сделаешь? Не можешь — дыра здесь.</p>
+<p>Дальше просто: <strong>самая верхняя из найденных дыр — та, с которой начинаешь.</strong></p>
+<h2>Четыре знакомых дома</h2>
+<p>Чаще всего встречаются четыре конфигурации. Найди свою.</p>
+<p><strong>Дом без крыши.</strong></p>
+<p>Внизу всё отлично: система дел, календарь, порядок. Наверху пусто. Такой человек невероятно эффективен и не может ответить, зачем всё это. Обычно ловит себя на этом лет в сорок, после большого достижения.</p>
+<p><em>Начинать: с шестого.</em></p>
+<p><strong>Дом без середины.</strong></p>
+<p>Наверху есть большая идея, внизу кипит работа, а между ними ничего. Самый частый вариант. Цель есть, дела есть, они не связаны. Год проходит, цель на месте, все работали.</p>
+<p><em>Начинать: с третьего — с областей. Именно там верх соединяется с низом.</em></p>
+<p><strong>Дом на одной опоре.</strong></p>
+<p>Всё внимание в дело. Остальные области пустые годами. Стоит, пока стоит опора. Падает целиком.</p>
+<p><em>Начинать: с третьего, и честно — с той области, где ты сам.</em></p>
+<p><strong>Красивый картонный дом.</strong></p>
+<p>Есть всё: миссия, ценности, видение, цели. Записано, оформлено, лежит в отдельном файле. И ни одного отказа за год. Ни одного изменения в календаре.</p>
+<p><em>Начинать: не сверху. Спуститься вниз и проверить, что вообще изменилось в делах. Скорее всего, ничего.</em></p>
+<h2>Ритм: что как часто трогать</h2>
+<p>Этажи живут с разной скоростью. Пересматривать всё сразу и одинаково — верный способ бросить.</p>
+<div class="tablewrap"><table><thead><tr><th>Этаж</th><th>Как часто</th><th>Сколько времени</th></tr></thead><tbody><tr><td>Шаги</td><td>каждый день</td><td>секунды: глянуть, когда меняется обстановка</td></tr><tr><td>Дела</td><td>раз в неделю</td><td>полчаса, весь список целиком</td></tr><tr><td>Области</td><td>раз в квартал</td><td>двадцать минут</td></tr><tr><td>Цель</td><td>раз в квартал</td><td>час</td></tr><tr><td>Куда едет</td><td>раз в год</td><td>полдня</td></tr><tr><td>Правила</td><td>раз в год</td><td>полдня</td></tr></tbody></table></div>
+<p>Верхние этажи не требуют внимания часто — их сила не в частоте. Но раз в год их надо трогать обязательно, иначе они незаметно перестают быть твоими.</p>
+<h2>Как понять, что дом живой</h2>
+<p>Три проверки. Все три — про изменения в делах, а не про красоту документа.</p>
+<p><strong>1. Твоё правило за последний год что-то отменило.</strong> Ты отказался от чего-то выгодного, и можешь назвать, от чего.</p>
+<p><strong>2. Твоя цель что-то отменила.</strong> Ты перестал делать что-то, что делал раньше, потому что оно не ведёт к цели.</p>
+<p><strong>3. В твоём списке дел появилось то, чего там раньше не было.</strong> Из областей, которые ты назвал, родились дела — и они там лежат.</p>
+<p><strong>Ни одна проверка не прошла — дома нет.</strong> Есть документ про дом.</p>
+<p>Это, кстати, главная разница между тем, кто собрал этажи, и тем, кто про них почитал. Не в качестве формулировок, а в том, что после сборки список дел выглядит иначе.</p>
+<h2>И последнее, самое важное</h2>
+<p>Всё это устройство существует ради одной вещи. Не ради ясности и не ради спокойствия.</p>
+<p><strong>Ради того, чтобы ты мог отказываться.</strong></p>
+<p>Наверху — правила, по которым отказываешь предложениям. Ниже — образ, по которому отказываешь возможностям. Ещё ниже — цель, по которой отказываешься от других целей. Дальше — области, из-за которых отказываешься работать по вечерам. И в самом низу — список, по которому отказываешься от чужих просьб.</p>
+<p>Дом, который ничего не отменяет, — не дом.</p>
+<p>Если после всей работы ты стал делать столько же, сколько делал, только с более красивым обоснованием, — значит собрали не то.</p>
+<h2>Один шаг</h2>
+<p>Десять минут, прямо сейчас.</p>
+<p><strong>1.</strong> Пройди шесть вопросов выше. По одному на этаж. Отмечай, где споткнулся.</p>
+<p><strong>2.</strong> Найди самую верхнюю дыру. Не самую болезненную — самую верхнюю.</p>
+<p><strong>3.</strong> Поставь себе одну задачу на ближайший месяц: закрыть только её.</p>
+<p><strong>4.</strong> Запиши на бумаге, по чему поймёшь, что закрыл. Не «станет яснее». А что конкретно изменится в твоих делах.</p>
+
+    <div class="cta">
+      <div class="eyebrow accent">Первый шаг</div>
+      <h3>Где в твоём доме нет лестницы?</h3>
+      <p>Если узнал себя — приходи на Разбор. За полтора часа соберём твою карту: что на каждом этаже и где рвётся между ними.</p>
+      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
+    </div>
+
+    <div class="nav-pair">
+      <span><a href="spisok-del-ne-pomogaet.html">← Почему список дел не помогает</a></span>
+      <span><a href="strategiya-ne-doezzhaet.html">Почему стратегия не доезжает →</a></span>
+    </div>
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <p>Серия «Дом без лестниц» · Почему усилий всё больше, а толку всё меньше</p>
+    <p>Оглавление · <a href="./">все девять глав</a></p>
+    <p>© Алексей Шаповалов</p>
+  </div>
+</footer>
+</body>
+</html>
