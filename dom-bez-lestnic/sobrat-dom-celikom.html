@@ -99,6 +99,38 @@ th {
 }
 td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--graphite-08); vertical-align: top; }
 hr { border: 0; border-top: 1px solid var(--graphite-15); margin: 44px 0; }
+/* переход к следующей главе — главное действие внизу страницы */
+.nextbig {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--graphite-15);
+  border-left: 3px solid var(--terracotta);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin: 52px 0 0;
+}
+.nextbig:hover { border-color: var(--terracotta); border-left-color: var(--terracotta); }
+.nextbig .eyebrow { display: block; margin-bottom: 9px; }
+.nextbig .t {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-bottom: 7px;
+}
+.nextbig .d { display: block; font-size: 16px; color: var(--graphite-65); line-height: 1.5; }
+/* контакт — вторым планом, не перебивает чтение */
+.quiet {
+  margin: 22px 0 0;
+  font-size: 15.5px;
+  color: var(--graphite-50);
+  line-height: 1.55;
+}
+.quiet a { color: var(--terracotta); text-decoration: none; border-bottom: 1px solid var(--terracotta-15); }
+.quiet a:hover { border-bottom-color: var(--terracotta); }
 .cta {
   background: var(--terracotta-tint);
   border: 1px solid var(--terracotta-15);
@@ -253,16 +285,17 @@ footer a:hover { text-decoration: underline; }
 <p><strong>3.</strong> Поставь себе одну задачу на ближайший месяц: закрыть только её.</p>
 <p><strong>4.</strong> Запиши на бумаге, по чему поймёшь, что закрыл. Не «станет яснее». А что конкретно изменится в твоих делах.</p>
 
-    <div class="cta">
-      <div class="eyebrow accent">Первый шаг</div>
-      <h3>Где в твоём доме нет лестницы?</h3>
-      <p>Если узнал себя — приходи на Разбор. За полтора часа соберём твою карту: что на каждом этаже и где рвётся между ними.</p>
-      <a class="btn" href="https://t.me/shapovalov_vsegda">Записаться на Разбор</a>
-    </div>
+    <a class="nextbig" href="strategiya-ne-doezzhaet.html">
+      <span class="eyebrow accent">Глава 8 из 9</span>
+      <span class="t">Почему стратегия не доезжает</span>
+      <span class="d">Дом на две головы: у собственника один, у команды другой. Где рвётся.</span>
+    </a>
+
+    <p class="quiet">Не хочется читать дальше — <a href="https://t.me/shapovalov_vsegda">напиши мне в телеграм</a>. Без разборов и без предложений, просто расскажи, где совпало.</p>
 
     <div class="nav-pair">
       <span><a href="spisok-del-ne-pomogaet.html">← Почему список дел не помогает</a></span>
-      <span><a href="strategiya-ne-doezzhaet.html">Почему стратегия не доезжает →</a></span>
+      <span><a href="./">Оглавление</a></span>
     </div>
   </div>
 </article>
