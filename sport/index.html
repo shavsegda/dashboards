@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рост в спорте без надрыва — четыре вопроса</title>
+<meta name="description" content="Собираю программу. Четыре вопроса о том, как у вас со спортом на самом деле.">
+<meta property="og:title" content="Четыре вопроса про спорт">
+<meta property="og:description" content="Собираю программу. Хочу понять, как с этим у вас на самом деле.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --graphite-75:rgba(26,26,26,0.75); --graphite-65:rgba(26,26,26,0.65);
+  --graphite-50:rgba(26,26,26,0.5); --graphite-30:rgba(26,26,26,0.3);
+  --graphite-15:rgba(26,26,26,0.15); --graphite-08:rgba(26,26,26,0.08);
+  --terracotta:#B85C38; --terracotta-dark:#8F4528; --terracotta-tint:rgba(184,92,56,0.10);
+  --moss:#4F6B3A;
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --max:680px; --gutter:24px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--graphite);font-family:var(--font-sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--max);margin:0 auto;padding:48px var(--gutter) 80px}
+header{margin-bottom:40px}
+.kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terracotta);margin-bottom:14px}
+h1{font-size:30px;line-height:1.2;font-weight:600;margin:0 0 20px;letter-spacing:-.02em}
+.intro{color:var(--graphite-75);font-size:17px}
+.intro p{margin:0 0 12px}
+.meta{font-family:var(--font-mono);font-size:13px;color:var(--graphite-50);margin-top:18px;padding-top:18px;border-top:1px solid var(--graphite-15)}
+.q{margin:0 0 34px;padding:0;border:0}
+.q-num{font-family:var(--font-mono);font-size:12px;color:var(--terracotta);margin-bottom:8px}
+.q-label{display:block;font-size:18px;font-weight:500;line-height:1.4;margin-bottom:6px}
+.q-hint{font-size:14px;color:var(--graphite-50);margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:2px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;background:#fff;border:1px solid var(--graphite-15);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--graphite-30)}
+.opt input{margin:4px 0 0;accent-color:var(--terracotta);flex:none;width:17px;height:17px}
+.opt span{font-size:16px;line-height:1.45}
+.opt.on{border-color:var(--terracotta);background:var(--terracotta-tint)}
+textarea,input[type=text]{width:100%;font-family:var(--font-sans);font-size:16px;line-height:1.55;color:var(--graphite);background:#fff;border:1px solid var(--graphite-15);border-radius:10px;padding:14px 16px;resize:vertical;transition:border-color .15s}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--terracotta)}
+textarea{min-height:110px}
+.check{display:flex;align-items:flex-start;gap:12px;margin-top:14px;padding:13px 16px;background:#fff;border:1px solid var(--graphite-15);border-radius:10px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--terracotta);width:17px;height:17px;flex:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+button{width:100%;font-family:var(--font-sans);font-size:17px;font-weight:500;color:#fff;background:var(--terracotta);border:0;border-radius:10px;padding:17px;cursor:pointer;transition:background .15s}
+button:hover{background:var(--terracotta-dark)}
+button:disabled{background:var(--graphite-30);cursor:default}
+.note{font-size:14px;color:var(--graphite-50);text-align:center;margin-top:14px}
+.err{display:none;margin-top:14px;padding:13px 16px;background:var(--terracotta-tint);border:1px solid var(--terracotta);border-radius:10px;font-size:15px;color:var(--terracotta-dark)}
+.err.on{display:block}
+.done{display:none;text-align:center;padding:60px 0}
+.done.on{display:block}
+.done .mark{font-family:var(--font-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--moss);margin-bottom:18px}
+.done h2{font-size:26px;font-weight:600;margin:0 0 14px;letter-spacing:-.01em}
+.done p{color:var(--graphite-65);margin:0 auto;max-width:440px}
+@media(max-width:520px){
+  .wrap{padding:32px 18px 60px}
+  h1{font-size:25px}
+  body{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="form-view">
+  <header>
+    <div class="kicker">Четыре вопроса · 3 минуты</div>
+    <h1>Как у вас на самом деле со спортом?</h1>
+    <div class="intro">
+      <p>Я собираю программу для тех, кто хочет расти в спорте без надрыва — так, чтобы это не съедало остальную жизнь.</p>
+      <p>До того как всё соберу, хочу понять, как с этим у вас. Не по моим догадкам, а по вашему опыту.</p>
+      <div class="meta">Итоги пришлю всем, кто ответил</div>
+    </div>
+  </header>
+
+  <form id="f" autocomplete="off">
+
+    <fieldset class="q">
+      <div class="q-num">01</div>
+      <label class="q-label">Что у вас сейчас со спортом?</label>
+      <div class="opts" id="q1">
+        <label class="opt"><input type="radio" name="q1" value="Не занимаюсь, хотя раньше занимался"><span>Не занимаюсь, хотя раньше занимался</span></label>
+        <label class="opt"><input type="radio" name="q1" value="Тренируюсь регулярно"><span>Тренируюсь регулярно</span></label>
+        <label class="opt"><input type="radio" name="q1" value="Хожу, но без особого результата"><span>Хожу, но без особого результата</span></label>
+        <label class="opt"><input type="radio" name="q1" value="Тренируюсь на пределе, часто через боль"><span>Тренируюсь на пределе, часто через боль</span></label>
+        <label class="opt"><input type="radio" name="q1" value="Никогда толком не занимался"><span>Никогда толком не занимался</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="q">
+      <div class="q-num">02</div>
+      <label class="q-label" for="q2">Вспомните последний раз, когда начинали тренироваться после перерыва. Что тогда происходило в жизни?</label>
+      <div class="q-hint">На работе, дома, с самочувствием — что вокруг было в тот период</div>
+      <textarea id="q2" name="q2"></textarea>
+    </fieldset>
+
+    <fieldset class="q">
+      <div class="q-num">03</div>
+      <label class="q-label" for="q3">Какие два вопроса про форму и тренировки для вас сейчас главные?</label>
+      <div class="q-hint">То, на что вы сами не знаете ответа</div>
+      <textarea id="q3" name="q3"></textarea>
+    </fieldset>
+
+    <fieldset class="q">
+      <div class="q-num">04</div>
+      <label class="q-label" for="q4">О чём я не спросил, но стоило бы?</label>
+      <div class="q-hint">Необязательно</div>
+      <textarea id="q4" name="q4" style="min-height:80px"></textarea>
+    </fieldset>
+
+    <fieldset class="q">
+      <div class="q-num">05</div>
+      <label class="q-label" for="who">Как вас зовут и как связаться?</label>
+      <div class="q-hint">Телеграм, телефон или почта — пришлю итоги</div>
+      <input type="text" id="who" name="who" placeholder="Имя и @телеграм">
+      <label class="check"><input type="checkbox" id="talk" name="talk"><span>Готов поговорить 15 минут голосом</span></label>
+    </fieldset>
+
+    <div class="hp"><label>Не заполняйте это поле<input type="text" id="hp" name="website" tabindex="-1"></label></div>
+
+    <button type="submit" id="send">Отправить</button>
+    <div class="note">Ответы идут лично Алексею. Нигде не публикуются</div>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+
+<div class="done" id="done-view">
+  <div class="mark">Получено</div>
+  <h2>Спасибо, это правда помогает</h2>
+  <p>Прочитаю каждый ответ лично. Итоги пришлю, когда соберу все — это займёт несколько дней.</p>
+</div>
+
+</div>
+
+<script>
+// ——— настройки: подставить перед публикацией ———
+const BOT_TOKEN = "PASTE_BOT_TOKEN";
+const CHAT_ID = "PASTE_CHAT_ID";
+// ————————————————————————————————————————————
+
+const f = document.getElementById('f');
+const err = document.getElementById('err');
+const send = document.getElementById('send');
+const KEY = 'sport-opros-draft';
+
+// подсветка выбранного варианта
+document.querySelectorAll('#q1 .opt').forEach(o=>{
+  o.addEventListener('click',()=>{
+    document.querySelectorAll('#q1 .opt').forEach(x=>x.classList.remove('on'));
+    o.classList.add('on');
+  });
+});
+
+// черновик в браузере — чтобы не потерять текст при случайном закрытии
+const fields = ['q2','q3','q4','who'];
+try{
+  const saved = JSON.parse(localStorage.getItem(KEY)||'{}');
+  fields.forEach(id=>{ if(saved[id]) document.getElementById(id).value = saved[id]; });
+}catch(e){}
+fields.forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    try{
+      const d={}; fields.forEach(x=>d[x]=document.getElementById(x).value);
+      localStorage.setItem(KEY,JSON.stringify(d));
+    }catch(e){}
+  });
+});
+
+function showErr(t){ err.textContent=t; err.classList.add('on'); }
+
+f.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  err.classList.remove('on');
+
+  if(document.getElementById('hp').value) return; // ловушка для ботов
+
+  const q1 = (document.querySelector('input[name=q1]:checked')||{}).value;
+  const q2 = document.getElementById('q2').value.trim();
+  const q3 = document.getElementById('q3').value.trim();
+  const q4 = document.getElementById('q4').value.trim();
+  const who = document.getElementById('who').value.trim();
+  const talk = document.getElementById('talk').checked;
+
+  if(!q1) return showErr('Отметьте, что у вас сейчас со спортом — первый вопрос');
+  if(q2.length < 10) return showErr('Второй вопрос — самый важный. Напишите пару строк');
+  if(q3.length < 5) return showErr('Третий вопрос: что для вас сейчас главное?');
+  if(!who) return showErr('Оставьте контакт, чтобы я мог прислать итоги');
+
+  send.disabled = true;
+  send.textContent = 'Отправляю…';
+
+  const text =
+    '🏃 НОВЫЙ ОТВЕТ\n\n' +
+    '👤 ' + who + (talk ? '\n✅ Готов поговорить 15 минут' : '') + '\n\n' +
+    '1. Сейчас со спортом:\n' + q1 + '\n\n' +
+    '2. Что происходило в жизни:\n' + q2 + '\n\n' +
+    '3. Два главных вопроса:\n' + q3 +
+    (q4 ? '\n\n4. О чём не спросил:\n' + q4 : '');
+
+  try{
+    const r = await fetch('https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.description||'ошибка отправки');
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    document.getElementById('form-view').style.display='none';
+    document.getElementById('done-view').classList.add('on');
+    window.scrollTo(0,0);
+  }catch(ex){
+    send.disabled = false;
+    send.textContent = 'Отправить ещё раз';
+    showErr('Не отправилось. Проверьте интернет и нажмите ещё раз. Если не выйдет — напишите мне в телеграм, я заберу ответ руками.');
+  }
+});
+</script>
+</body>
+</html>
