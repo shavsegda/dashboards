@@ -42,6 +42,9 @@ h1{font-size:30px;line-height:1.2;font-weight:600;margin:0 0 20px;letter-spacing
 .opt input{margin:4px 0 0;accent-color:var(--terracotta);flex:none;width:17px;height:17px}
 .opt span{font-size:16px;line-height:1.45}
 .opt.on{border-color:var(--terracotta);background:var(--terracotta-tint)}
+.opts.row{flex-direction:row;flex-wrap:wrap;gap:8px}
+.opts.row .opt{flex:1 1 auto;min-width:88px;justify-content:center}
+.opts + textarea{margin-top:10px;min-height:70px}
 textarea,input[type=text]{width:100%;font-family:var(--font-sans);font-size:16px;line-height:1.55;color:var(--graphite);background:#fff;border:1px solid var(--graphite-15);border-radius:10px;padding:14px 16px;resize:vertical;transition:border-color .15s}
 textarea:focus,input[type=text]:focus{outline:none;border-color:var(--terracotta)}
 textarea{min-height:110px}
@@ -74,11 +77,12 @@ button:disabled{background:var(--graphite-30);cursor:default}
 
 <div id="form-view">
   <header>
-    <div class="kicker">Четыре вопроса · 3 минуты</div>
+    <div class="kicker">Пять вопросов · 2 минуты</div>
     <h1>Как у вас на самом деле со спортом?</h1>
     <div class="intro">
       <p>Я собираю программу для тех, кто хочет расти в спорте без надрыва — так, чтобы он давал силы на остальное: работу, семью, дело.</p>
       <p>До того как всё соберу, хочу понять, как с этим у вас. Не по моим догадкам, а по вашему опыту.</p>
+      <p>Почти везде — просто галочки.</p>
       <div class="meta">Итоги пришлю всем, кто ответил</div>
     </div>
   </header>
@@ -88,7 +92,7 @@ button:disabled{background:var(--graphite-30);cursor:default}
     <fieldset class="q">
       <div class="q-num">01</div>
       <label class="q-label">Что у вас сейчас со спортом?</label>
-      <div class="opts" id="q1">
+      <div class="opts" data-g="q1">
         <label class="opt"><input type="radio" name="q1" value="Не занимаюсь, хотя раньше занимался"><span>Не занимаюсь, хотя раньше занимался</span></label>
         <label class="opt"><input type="radio" name="q1" value="Тренируюсь регулярно"><span>Тренируюсь регулярно</span></label>
         <label class="opt"><input type="radio" name="q1" value="Хожу, но без особого результата"><span>Хожу, но без особого результата</span></label>
@@ -99,31 +103,58 @@ button:disabled{background:var(--graphite-30);cursor:default}
 
     <fieldset class="q">
       <div class="q-num">02</div>
-      <label class="q-label" for="q2">Вспомните последний раз, когда начинали тренироваться после перерыва. Что тогда происходило в жизни?</label>
-      <div class="q-hint">На работе, дома, с самочувствием — что вокруг было в тот период</div>
-      <textarea id="q2" name="q2"></textarea>
+      <label class="q-label">Сколько вам лет?</label>
+      <div class="opts row" data-g="q2">
+        <label class="opt"><input type="radio" name="q2" value="до 30"><span>до 30</span></label>
+        <label class="opt"><input type="radio" name="q2" value="30–39"><span>30–39</span></label>
+        <label class="opt"><input type="radio" name="q2" value="40–49"><span>40–49</span></label>
+        <label class="opt"><input type="radio" name="q2" value="50+"><span>50+</span></label>
+      </div>
     </fieldset>
 
     <fieldset class="q">
       <div class="q-num">03</div>
-      <label class="q-label" for="q3">Какие два вопроса про форму и тренировки для вас сейчас главные?</label>
-      <div class="q-hint">То, на что вы сами не знаете ответа</div>
-      <textarea id="q3" name="q3"></textarea>
+      <label class="q-label">Вспомните последний раз, когда начинали тренироваться после перерыва. Что тогда происходило в жизни?</label>
+      <div class="q-hint">Что было вокруг в тот период</div>
+      <div class="opts" data-g="q3">
+        <label class="opt"><input type="radio" name="q3" value="Завал на работе или в деле"><span>Завал на работе или в деле</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Устал, не было сил"><span>Устал, не было сил</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Проблемы со здоровьем"><span>Проблемы со здоровьем</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Что-то поменялось в семье"><span>Что-то поменялось в семье</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Посмотрел на себя и не понравилось"><span>Посмотрел на себя и не понравилось</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Друг позвал, за компанию"><span>Друг позвал, за компанию</span></label>
+        <label class="opt"><input type="radio" name="q3" value="Ничего особенного, просто решил"><span>Ничего особенного, просто решил</span></label>
+      </div>
+      <textarea id="q3t" placeholder="Если хотите — расскажите подробнее"></textarea>
     </fieldset>
 
     <fieldset class="q">
       <div class="q-num">04</div>
-      <label class="q-label" for="q4">О чём я не спросил, но стоило бы?</label>
-      <div class="q-hint">Необязательно</div>
-      <textarea id="q4" name="q4" style="min-height:80px"></textarea>
+      <label class="q-label">Какой вопрос про тренировки для вас сейчас главный?</label>
+      <div class="opts" data-g="q4">
+        <label class="opt"><input type="radio" name="q4" value="Как начать и не бросить"><span>Как начать и не бросить</span></label>
+        <label class="opt"><input type="radio" name="q4" value="Как найти на это время"><span>Как найти на это время</span></label>
+        <label class="opt"><input type="radio" name="q4" value="Как не навредить себе"><span>Как не навредить себе</span></label>
+        <label class="opt"><input type="radio" name="q4" value="Как понять, что прогресс есть"><span>Как понять, что прогресс есть</span></label>
+        <label class="opt"><input type="radio" name="q4" value="Как совместить с работой и семьёй"><span>Как совместить с работой и семьёй</span></label>
+        <label class="opt"><input type="radio" name="q4" value="Как перестать делать через силу"><span>Как перестать делать через силу</span></label>
+      </div>
+      <textarea id="q4t" placeholder="Или напишите свой"></textarea>
     </fieldset>
 
     <fieldset class="q">
       <div class="q-num">05</div>
-      <label class="q-label" for="who">Как вас зовут и как связаться?</label>
-      <div class="q-hint">Телеграм, телефон или почта — пришлю итоги</div>
-      <input type="text" id="who" name="who" placeholder="Имя и @телеграм">
-      <label class="check"><input type="checkbox" id="talk" name="talk"><span>Готов поговорить 15 минут голосом</span></label>
+      <label class="q-label" for="q5">О чём я не спросил, но стоило бы?</label>
+      <div class="q-hint">Необязательно</div>
+      <textarea id="q5" style="min-height:80px"></textarea>
+    </fieldset>
+
+    <fieldset class="q">
+      <div class="q-num">06</div>
+      <label class="q-label" for="who">Как вас зовут?</label>
+      <div class="q-hint">Остальное придёт вместе с вашим сообщением</div>
+      <input type="text" id="who" placeholder="Имя">
+      <label class="check"><input type="checkbox" id="talk"><span>Готов поговорить 15 минут голосом</span></label>
     </fieldset>
 
     <div class="hp"><label>Не заполняйте это поле<input type="text" id="hp" name="website" tabindex="-1"></label></div>
@@ -163,16 +194,18 @@ const err = document.getElementById('err');
 const send = document.getElementById('send');
 const KEY = 'sport-opros-draft';
 
-// подсветка выбранного варианта
-document.querySelectorAll('#q1 .opt').forEach(o=>{
-  o.addEventListener('click',()=>{
-    document.querySelectorAll('#q1 .opt').forEach(x=>x.classList.remove('on'));
-    o.classList.add('on');
+// подсветка выбранного варианта — в каждой группе своя
+document.querySelectorAll('.opts').forEach(group=>{
+  group.querySelectorAll('.opt').forEach(o=>{
+    o.addEventListener('click',()=>{
+      group.querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));
+      o.classList.add('on');
+    });
   });
 });
 
 // черновик в браузере — чтобы не потерять текст при случайном закрытии
-const fields = ['q2','q3','q4','who'];
+const fields = ['q3t','q4t','q5','who'];
 try{
   const saved = JSON.parse(localStorage.getItem(KEY)||'{}');
   fields.forEach(id=>{ if(saved[id]) document.getElementById(id).value = saved[id]; });
@@ -186,7 +219,8 @@ fields.forEach(id=>{
   });
 });
 
-function showErr(t){ err.textContent=t; err.classList.add('on'); }
+function showErr(t){ err.textContent=t; err.classList.add('on'); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
+function pick(name){ const el=document.querySelector('input[name='+name+']:checked'); return el?el.value:''; }
 
 f.addEventListener('submit', async (e)=>{
   e.preventDefault();
@@ -194,45 +228,42 @@ f.addEventListener('submit', async (e)=>{
 
   if(document.getElementById('hp').value) return; // ловушка для ботов
 
-  const q1 = (document.querySelector('input[name=q1]:checked')||{}).value;
-  const q2 = document.getElementById('q2').value.trim();
-  const q3 = document.getElementById('q3').value.trim();
-  const q4 = document.getElementById('q4').value.trim();
-  const who = document.getElementById('who').value.trim();
-  const talk = document.getElementById('talk').checked;
+  const q1=pick('q1'), q2=pick('q2'), q3=pick('q3'), q4=pick('q4');
+  const q3t=document.getElementById('q3t').value.trim();
+  const q4t=document.getElementById('q4t').value.trim();
+  const q5=document.getElementById('q5').value.trim();
+  const who=document.getElementById('who').value.trim();
+  const talk=document.getElementById('talk').checked;
 
-  if(!q1) return showErr('Отметьте, что у вас сейчас со спортом — первый вопрос');
-  if(q2.length < 10) return showErr('Второй вопрос — самый важный. Напишите пару строк');
-  if(q3.length < 5) return showErr('Третий вопрос: что для вас сейчас главное?');
-  if(!who) return showErr('Оставьте контакт, чтобы я мог прислать итоги');
+  if(!q1) return showErr('Отметьте первый вопрос — что у вас сейчас со спортом');
+  if(!q2) return showErr('Отметьте возраст');
+  if(!q3) return showErr('Третий вопрос: что происходило в жизни в тот период');
+  if(!q4 && !q4t) return showErr('Четвёртый вопрос: что для вас сейчас главное');
+  if(!who) return showErr('Напишите, как вас зовут');
 
   send.disabled = true;
-  send.textContent = 'Отправляю…';
+  send.textContent = 'Открываю телеграм…';
 
   const message =
-    '1. Сейчас со спортом: ' + q1 + '\n\n' +
-    '2. Что происходило в жизни:\n' + q2 + '\n\n' +
-    '3. Два главных вопроса:\n' + q3 +
-    (q4 ? '\n\n4. О чём не спросил:\n' + q4 : '') +
+    '1. Сейчас со спортом: ' + q1 + '\n' +
+    '2. Возраст: ' + q2 + '\n\n' +
+    '3. Что происходило в жизни: ' + q3 +
+    (q3t ? '\n' + q3t : '') + '\n\n' +
+    '4. Главный вопрос: ' + (q4 || '') + (q4t ? (q4 ? '\n' : '') + q4t : '') +
+    (q5 ? '\n\n5. О чём не спросил:\n' + q5 : '') +
     (talk ? '\n\n✅ Готов поговорить 15 минут' : '');
 
-  const payload = {
-    type: 'sport',
-    message: message,
-    name: who,
-    contact: who,
-    role: null,
-    source: 'site:sport'
-  };
-
-  // Сначала пишем в базу — чтобы ответ не пропал, даже если человек
+  // Сначала в базу — чтобы ответ не пропал, даже если человек
   // не нажмёт «отправить» в телеграме
-  try{ await sb.from('inbox').insert(payload); }catch(ex){}
+  try{
+    await sb.from('inbox').insert({
+      type:'sport', message:message, name:who, contact:who,
+      role:null, source:'site:sport'
+    });
+  }catch(ex){}
 
-  // Собираем текст для телеграма
-  let tgText = 'Ответы на опрос\n\n' + message;
-  if (tgText.length > 3500) tgText = tgText.slice(0, 3500) + '…';
-
+  let tgText = 'Ответы на опрос\n\n' + who + '\n\n' + message;
+  if (tgText.length > 3500) tgText = tgText.slice(0,3500) + '…';
   const link = 'https://t.me/' + TG_USER + '?text=' + encodeURIComponent(tgText);
 
   try{ localStorage.removeItem(KEY); }catch(e){}
@@ -241,8 +272,6 @@ f.addEventListener('submit', async (e)=>{
   document.getElementById('done-view').classList.add('on');
   document.getElementById('tglink').href = link;
   window.scrollTo(0,0);
-
-  // Открываем телеграм сразу
   window.location.href = link;
 });
 </script>
