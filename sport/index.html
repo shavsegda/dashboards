@@ -9,6 +9,7 @@
 <meta property="og:description" content="Собираю программу. Хочу понять, как с этим у вас на самом деле.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -58,6 +59,9 @@ button:disabled{background:var(--graphite-30);cursor:default}
 .done .mark{font-family:var(--font-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--moss);margin-bottom:18px}
 .done h2{font-size:26px;font-weight:600;margin:0 0 14px;letter-spacing:-.01em}
 .done p{color:var(--graphite-65);margin:0 auto;max-width:440px}
+.tgbtn{display:inline-block;margin-top:28px;font-size:17px;font-weight:500;color:#fff;background:var(--graphite);text-decoration:none;border-radius:10px;padding:15px 28px;transition:opacity .15s}
+.tgbtn:hover{opacity:.85}
+.tgnote{font-size:14px;color:var(--graphite-50);margin-top:12px}
 @media(max-width:520px){
   .wrap{padding:32px 18px 60px}
   h1{font-size:25px}
@@ -139,10 +143,22 @@ button:disabled{background:var(--graphite-30);cursor:default}
 </div>
 
 <script>
-// ——— настройки: подставить перед публикацией ———
-const BOT_TOKEN = "PASTE_BOT_TOKEN";
-const CHAT_ID = "PASTE_CHAT_ID";
+// ——— Телеграм: подставить перед публикацией ———
+// Отдельный бот только для этой формы. Токен виден в коде — это осознанно.
+// После набора группы отозвать токен: @BotFather → /revoke
+const TG_TOKEN = "PASTE_BOT_TOKEN";
+const TG_CHAT  = "PASTE_CHAT_ID";
 // ————————————————————————————————————————————
+
+// Supabase — тот же проект и ключ, что в svyaz/ и portret-test/
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Если открыто внутри телеграма — подтянем имя и id
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+const tgUser = tg?.initDataUnsafe?.user || null;
 
 const f = document.getElementById('f');
 const err = document.getElementById('err');
@@ -195,31 +211,54 @@ f.addEventListener('submit', async (e)=>{
   send.disabled = true;
   send.textContent = 'Отправляю…';
 
-  const text =
-    '🏃 НОВЫЙ ОТВЕТ\n\n' +
-    '👤 ' + who + (talk ? '\n✅ Готов поговорить 15 минут' : '') + '\n\n' +
-    '1. Сейчас со спортом:\n' + q1 + '\n\n' +
+  const message =
+    '1. Сейчас со спортом: ' + q1 + '\n\n' +
     '2. Что происходило в жизни:\n' + q2 + '\n\n' +
     '3. Два главных вопроса:\n' + q3 +
-    (q4 ? '\n\n4. О чём не спросил:\n' + q4 : '');
+    (q4 ? '\n\n4. О чём не спросил:\n' + q4 : '') +
+    (talk ? '\n\n✅ Готов поговорить 15 минут' : '');
 
+  const payload = {
+    type: 'sport',
+    message: message,
+    name: who,
+    contact: who,
+    role: null,
+    source: 'site:sport'
+  };
+
+  const tgText = '🏃 ОТВЕТ НА ОПРОС\n\n👤 ' + who + '\n\n' + message;
+
+  let sentTg = false, sentDb = false;
+
+  // 1. Телеграм — уведомление сразу
   try{
-    const r = await fetch('https://api.telegram.org/bot'+BOT_TOKEN+'/sendMessage',{
+    const r = await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+      body: JSON.stringify({ chat_id: TG_CHAT, text: tgText })
     });
     const j = await r.json();
-    if(!j.ok) throw new Error(j.description||'ошибка отправки');
-    try{ localStorage.removeItem(KEY); }catch(e){}
-    document.getElementById('form-view').style.display='none';
-    document.getElementById('done-view').classList.add('on');
-    window.scrollTo(0,0);
-  }catch(ex){
+    sentTg = !!j.ok;
+  }catch(ex){}
+
+  // 2. База — страховка, чтобы ответ не пропал, если телеграм не ответил
+  try{
+    const { error } = await sb.from('inbox').insert(payload);
+    sentDb = !error;
+  }catch(ex){}
+
+  if(!sentTg && !sentDb){
     send.disabled = false;
     send.textContent = 'Отправить ещё раз';
-    showErr('Не отправилось. Проверьте интернет и нажмите ещё раз. Если не выйдет — напишите мне в телеграм, я заберу ответ руками.');
+    showErr('Не отправилось. Нажмите ещё раз — или напишите мне в телеграм @shapovalov_vsegda, заберу ответ руками.');
+    return;
   }
+
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  document.getElementById('form-view').style.display='none';
+  document.getElementById('done-view').classList.add('on');
+  window.scrollTo(0,0);
 });
 </script>
 </body>
