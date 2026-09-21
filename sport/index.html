@@ -128,27 +128,25 @@ button:disabled{background:var(--graphite-30);cursor:default}
 
     <div class="hp"><label>Не заполняйте это поле<input type="text" id="hp" name="website" tabindex="-1"></label></div>
 
-    <button type="submit" id="send">Отправить</button>
-    <div class="note">Ответы идут лично Алексею. Нигде не публикуются</div>
+    <button type="submit" id="send">Отправить в телеграм</button>
+    <div class="note">Ответ уйдёт мне в личку с вашего аккаунта. Нигде не публикуется</div>
     <div class="err" id="err"></div>
   </form>
 </div>
 
 <div class="done" id="done-view">
-  <div class="mark">Получено</div>
-  <h2>Спасибо, это правда помогает</h2>
-  <p>Прочитаю каждый ответ лично. Итоги пришлю, когда соберу все — это займёт несколько дней.</p>
+  <div class="mark">Почти всё</div>
+  <h2>Остался один шаг</h2>
+  <p>Сейчас откроется телеграм с готовым текстом — просто нажмите там «отправить». Ответ придёт мне лично, и я смогу вам ответить.</p>
+  <a class="tgbtn" id="tglink" href="#">Открыть телеграм</a>
+  <div class="tgnote">Если не открылось само — нажмите кнопку</div>
 </div>
 
 </div>
 
 <script>
-// ——— Телеграм: подставить перед публикацией ———
-// Отдельный бот только для этой формы. Токен виден в коде — это осознанно.
-// После набора группы отозвать токен: @BotFather → /revoke
-const TG_TOKEN = "PASTE_BOT_TOKEN";
-const TG_CHAT  = "PASTE_CHAT_ID";
-// ————————————————————————————————————————————
+// Телеграм Алексея — ответ уходит с аккаунта самого человека
+const TG_USER = "shapovalov_vsegda";
 
 // Supabase — тот же проект и ключ, что в svyaz/ и portret-test/
 const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
@@ -227,38 +225,25 @@ f.addEventListener('submit', async (e)=>{
     source: 'site:sport'
   };
 
-  const tgText = '🏃 ОТВЕТ НА ОПРОС\n\n👤 ' + who + '\n\n' + message;
+  // Сначала пишем в базу — чтобы ответ не пропал, даже если человек
+  // не нажмёт «отправить» в телеграме
+  try{ await sb.from('inbox').insert(payload); }catch(ex){}
 
-  let sentTg = false, sentDb = false;
+  // Собираем текст для телеграма
+  let tgText = 'Ответы на опрос\n\n' + message;
+  if (tgText.length > 3500) tgText = tgText.slice(0, 3500) + '…';
 
-  // 1. Телеграм — уведомление сразу
-  try{
-    const r = await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: TG_CHAT, text: tgText })
-    });
-    const j = await r.json();
-    sentTg = !!j.ok;
-  }catch(ex){}
-
-  // 2. База — страховка, чтобы ответ не пропал, если телеграм не ответил
-  try{
-    const { error } = await sb.from('inbox').insert(payload);
-    sentDb = !error;
-  }catch(ex){}
-
-  if(!sentTg && !sentDb){
-    send.disabled = false;
-    send.textContent = 'Отправить ещё раз';
-    showErr('Не отправилось. Нажмите ещё раз — или напишите мне в телеграм @shapovalov_vsegda, заберу ответ руками.');
-    return;
-  }
+  const link = 'https://t.me/' + TG_USER + '?text=' + encodeURIComponent(tgText);
 
   try{ localStorage.removeItem(KEY); }catch(e){}
+
   document.getElementById('form-view').style.display='none';
   document.getElementById('done-view').classList.add('on');
+  document.getElementById('tglink').href = link;
   window.scrollTo(0,0);
+
+  // Открываем телеграм сразу
+  window.location.href = link;
 });
 </script>
 </body>
