@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Как вы восстанавливаетесь — четыре механизма</title>
+<meta name="description" content="Шестнадцать вопросов о том, что на самом деле восстанавливает вас после работы. Результат сразу на экране.">
+<meta property="og:title" content="Как вы восстанавливаетесь">
+<meta property="og:description" content="Четыре механизма восстановления. Шестнадцать вопросов, три минуты, результат сразу.">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F2EC; --stone:#E8E5DC; --graphite:#1A1A1A;
+  --graphite-75:rgba(26,26,26,0.75); --graphite-65:rgba(26,26,26,0.65);
+  --graphite-50:rgba(26,26,26,0.5); --graphite-30:rgba(26,26,26,0.3);
+  --graphite-15:rgba(26,26,26,0.15); --graphite-08:rgba(26,26,26,0.08);
+  --terracotta:#B85C38; --terracotta-dark:#8F4528; --terracotta-tint:rgba(184,92,56,0.10);
+  --moss:#4F6B3A; --moss-tint:rgba(79,107,58,0.14);
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--graphite);font-family:var(--font-sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:680px;margin:0 auto;padding:44px 24px 80px}
+.kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--terracotta);margin-bottom:14px}
+h1{font-size:30px;line-height:1.18;font-weight:600;margin:0 0 18px;letter-spacing:-.02em}
+.intro{color:var(--graphite-75);margin-bottom:10px}
+.meta{font-family:var(--font-mono);font-size:13px;color:var(--graphite-50);margin-top:18px;padding-top:18px;border-top:1px solid var(--graphite-15)}
+
+.scale-note{position:sticky;top:0;background:var(--paper);padding:14px 0 12px;margin:32px 0 8px;border-bottom:1px solid var(--graphite-15);font-family:var(--font-mono);font-size:11px;color:var(--graphite-50);display:flex;justify-content:space-between;z-index:5}
+.q{padding:18px 0;border-bottom:1px solid var(--graphite-08)}
+.q-txt{font-size:17px;line-height:1.45;margin-bottom:12px}
+.q-num{font-family:var(--font-mono);font-size:11px;color:var(--graphite-30);margin-right:8px}
+.opts{display:flex;gap:6px}
+.opt{flex:1;position:relative}
+.opt input{position:absolute;opacity:0;width:0;height:0}
+.opt span{display:flex;align-items:center;justify-content:center;height:44px;background:#fff;border:1px solid var(--graphite-15);border-radius:9px;cursor:pointer;font-family:var(--font-mono);font-size:15px;color:var(--graphite-50);transition:all .13s}
+.opt span:hover{border-color:var(--graphite-30)}
+.opt input:checked + span{background:var(--terracotta);border-color:var(--terracotta);color:#fff}
+
+button{width:100%;font-family:var(--font-sans);font-size:17px;font-weight:500;color:#fff;background:var(--terracotta);border:0;border-radius:10px;padding:17px;cursor:pointer;margin-top:30px;transition:background .15s}
+button:hover{background:var(--terracotta-dark)}
+button:disabled{background:var(--graphite-30)}
+.err{display:none;margin-top:14px;padding:13px 16px;background:var(--terracotta-tint);border:1px solid var(--terracotta);border-radius:10px;font-size:15px;color:var(--terracotta-dark)}
+.err.on{display:block}
+
+/* отчёт */
+#report{display:none}
+#report.on{display:block}
+.bars{margin:28px 0 36px}
+.bar-row{margin-bottom:18px}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.bar-name{font-size:16px;font-weight:500}
+.bar-val{font-family:var(--font-mono);font-size:13px;color:var(--graphite-50)}
+.bar-track{height:10px;background:var(--stone);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s ease}
+.bar-fill.low{background:var(--terracotta)}
+.bar-fill.mid{background:var(--graphite-30)}
+.bar-fill.ok{background:var(--moss)}
+
+.card{background:#fff;border:1px solid var(--graphite-15);border-radius:12px;padding:24px;margin-bottom:16px}
+.card.good{background:var(--moss-tint);border-color:rgba(79,107,58,0.3)}
+.card.hole{background:var(--terracotta-tint);border-color:var(--terracotta)}
+.card-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--graphite-50);margin-bottom:10px}
+.card h3{margin:0 0 10px;font-size:20px;font-weight:600;letter-spacing:-.01em}
+.card p{margin:0 0 12px;font-size:16px;line-height:1.55;color:var(--graphite-75)}
+.card p:last-child{margin-bottom:0}
+.card strong{color:var(--graphite);font-weight:600}
+
+.honest{font-size:15px;color:var(--graphite-50);line-height:1.55;padding:18px 0;border-top:1px solid var(--graphite-15);border-bottom:1px solid var(--graphite-15);margin:24px 0}
+
+.three{margin:32px 0 8px}
+.three h3{font-size:19px;font-weight:600;margin:0 0 6px}
+.three .sub{font-size:15px;color:var(--graphite-50);margin-bottom:20px}
+.f{margin-bottom:20px}
+.f-lab{font-size:16px;font-weight:500;margin-bottom:10px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;width:0;height:0}
+.pill span{display:inline-block;padding:10px 16px;background:#fff;border:1px solid var(--graphite-15);border-radius:20px;cursor:pointer;font-size:15px;transition:all .13s}
+.pill input:checked + span{background:var(--terracotta);border-color:var(--terracotta);color:#fff}
+textarea{width:100%;font-family:var(--font-sans);font-size:16px;line-height:1.5;color:var(--graphite);background:#fff;border:1px solid var(--graphite-15);border-radius:10px;padding:13px 15px;resize:vertical;min-height:72px}
+textarea:focus{outline:none;border-color:var(--terracotta)}
+
+.tgbtn{display:block;text-align:center;background:var(--graphite);color:#fff;text-decoration:none;font-size:17px;font-weight:500;padding:17px;border-radius:10px;margin-top:8px}
+.tgnote{font-size:14px;color:var(--graphite-50);margin-top:12px;text-align:center}
+
+@media(max-width:520px){
+  .wrap{padding:30px 16px 60px}
+  h1{font-size:25px}
+  body{font-size:16px}
+  .opt span{height:46px;font-size:14px}
+  .card{padding:20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="quiz">
+  <div class="kicker">16 вопросов · 3 минуты</div>
+  <h1>Как вы восстанавливаетесь после работы</h1>
+  <div class="intro">
+    <p>Восстановление состоит из четырёх механизмов. Они предсказывают ваше состояние и работоспособность на следующий день — и почти у всех работают не все четыре.</p>
+    <p>Эти вопросы показывают, какой из них у вас просел. Результат увидите сразу, на этом же экране.</p>
+    <div class="meta">Отвечайте про последние две-три недели, а не про то, как хотелось бы</div>
+  </div>
+
+  <form id="f">
+    <div class="scale-note"><span>1 — совсем не про меня</span><span>5 — точно про меня</span></div>
+    <div id="questions"></div>
+    <button type="submit" id="send">Показать результат</button>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+
+<div id="report">
+  <div class="kicker">Ваш результат</div>
+  <h1 id="rep-title">Четыре механизма восстановления</h1>
+
+  <div class="bars" id="bars"></div>
+
+  <div class="card good" id="card-good">
+    <div class="card-label">Что у вас работает</div>
+    <h3 id="good-name"></h3>
+    <p id="good-txt"></p>
+  </div>
+
+  <div class="card hole">
+    <div class="card-label">Главная дыра</div>
+    <h3 id="hole-name"></h3>
+    <p id="hole-what"></p>
+    <p id="hole-why"></p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Что её чинит</div>
+    <p id="hole-fix"></p>
+  </div>
+
+  <div class="honest">
+    Это не диагноз и не тест. Одна анкета ничего не лечит — она показывает, где искать. Что делать с вашей дырой конкретно, зависит от того, как у вас со сном и с нагрузкой.
+  </div>
+
+  <div class="three">
+    <h3>Три вопроса — и я отвечу лично</h3>
+    <div class="sub">Так я пойму ваш контекст и скажу что-то по делу, а не общее</div>
+
+    <div class="f">
+      <div class="f-lab">Чем вы занимаетесь?</div>
+      <div class="pills" id="role">
+        <label class="pill"><input type="radio" name="role" value="Собственник"><span>Собственник</span></label>
+        <label class="pill"><input type="radio" name="role" value="Наёмный руководитель"><span>Наёмный руководитель</span></label>
+        <label class="pill"><input type="radio" name="role" value="Специалист"><span>Специалист</span></label>
+        <label class="pill"><input type="radio" name="role" value="Другое"><span>Другое</span></label>
+      </div>
+    </div>
+
+    <div class="f">
+      <div class="f-lab">Возраст</div>
+      <div class="pills" id="age">
+        <label class="pill"><input type="radio" name="age" value="до 30"><span>до 30</span></label>
+        <label class="pill"><input type="radio" name="age" value="30–39"><span>30–39</span></label>
+        <label class="pill"><input type="radio" name="age" value="40–49"><span>40–49</span></label>
+        <label class="pill"><input type="radio" name="age" value="50+"><span>50+</span></label>
+      </div>
+    </div>
+
+    <div class="f">
+      <div class="f-lab">Что вы уже пробовали, чтобы стало лучше?</div>
+      <textarea id="tried" placeholder="Отпуск, спорт, витамины, психолог, сменить работу — что угодно, и чем закончилось"></textarea>
+    </div>
+  </div>
+
+  <a class="tgbtn" id="tglink" href="#">Отправить мне результат</a>
+  <div class="tgnote">Откроется телеграм с готовым текстом — нажмите «отправить»</div>
+</div>
+
+</div>
+
+<script>
+const TG_USER = "shapovalov_vsegda";
+const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Четыре механизма восстановления. Модель: Sonnentag & Fritz, 2007.
+// Формулировки собственные.
+const M = {
+  det: {
+    name: "Отстранение",
+    good: "Вы умеете выходить из работы. В нерабочее время голова действительно занята другим — это самый сильный из четырёх механизмов, и он у вас жив.",
+    what: "Вы не выходите из работы. Формально рабочий день кончился, фактически он продолжается в голове — и организм не получает сигнала, что можно восстанавливаться.",
+    why: "Это самый сильный предиктор восстановления из четырёх. Именно поэтому у вас не работают ни выходные, ни отпуск: они дают покой телу, но не выключают голову.",
+    fix: "Отстранение не чинится усилием воли — нельзя приказать себе не думать о работе. Оно чинится занятием, которое физически не даёт думать. Нагрузка, требующая внимания к телу, — самый надёжный способ: во время неё голова просто не может заниматься рабочими задачами."
+  },
+  rel: {
+    name: "Расслабление",
+    good: "Вы умеете снижать обороты. Тело и нервная система получают покой — это база, и она у вас есть.",
+    what: "У вас нет времени, когда вы просто ничего не делаете. Нервная система не выходит из режима готовности.",
+    why: "Это единственный из четырёх механизмов, который даёт отпуск. Если просел и он — значит даже базовый отдых до вас не доходит.",
+    fix: "Тут работает то, что обычно советуют: сон, паузы, снижение стимуляции. Но важно проверить физиологию — при нарушениях сна расслабление не наступает, сколько ни лежи."
+  },
+  mas: {
+    name: "Мастерство",
+    good: "У вас есть занятие, где вы растёте и видите прогресс. Это то, что восстанавливает лучше пассивного отдыха, и это у вас работает.",
+    what: "У вас нет занятия, где вы осваиваете новое и видите собственный прогресс. Есть работа, где всё давно знакомо, и отдых, где ничего не происходит.",
+    why: "Мастерство — единственный механизм, который восстанавливает через усилие, а не через его отсутствие. Его дефицит вырос за последние годы: часть задач, дававших освоение и преодоление, ушла в автоматизацию, и на их месте осталось администрирование чужого результата.",
+    fix: "Чинится занятием с видимым прогрессом и понятной обратной связью — таким, где заметно, что вчера не получалось, а сегодня вышло. Спорт для этого подходит лучше всего: измеримо, результат виден за недели, и от вас ничего не требуется, кроме регулярности."
+  },
+  con: {
+    name: "Контроль",
+    good: "Вы распоряжаетесь своим нерабочим временем сами. Это даёт автономию — она входит в число того, что удерживает людей в любых изменениях.",
+    what: "Своим нерабочим временем вы распоряжаетесь не сами. Оно расписано чужими ожиданиями — семьи, работы, обстоятельств.",
+    why: "Контроль связан с ощущением, что от вас что-то зависит. Когда его нет, любые изменения даются тяжелее: человек не верит, что сможет их удержать.",
+    fix: "Чинится не большими решениями, а одним защищённым блоком в неделю, который принадлежит только вам и не двигается. Важно, чтобы это было не «когда получится», а фиксированное время."
+  }
+};
+
+// Вопросы: все прямые, высокий балл = механизм работает. Порядок перемешан.
+const Q = [
+  {m:"det", t:"В нерабочее время я не думаю о работе"},
+  {m:"mas", t:"Я осваиваю что-то, что не даётся мне сразу"},
+  {m:"con", t:"Я сам решаю, чем занять своё свободное время"},
+  {m:"rel", t:"У меня бывает время, когда я просто ничего не делаю"},
+  {m:"det", t:"Вечером мне легко переключиться с рабочего на своё"},
+  {m:"con", t:"Я могу отменить необязательные планы, если не хочется"},
+  {m:"mas", t:"У меня есть занятие, где я вижу свой прогресс"},
+  {m:"rel", t:"За неделю у меня набирается несколько часов настоящего покоя"},
+  {m:"det", t:"В выходные я не проверяю рабочие сообщения"},
+  {m:"mas", t:"Вне работы я регулярно делаю что-то, требующее навыка"},
+  {m:"rel", t:"Я успеваю восстановиться физически между рабочими днями"},
+  {m:"con", t:"Моё личное время не диктуется чужими ожиданиями"},
+  {m:"det", t:"Отдыхая, я не возвращаюсь мыслями к незакрытым задачам"},
+  {m:"rel", t:"Мне удаётся расслабиться, не прикладывая к этому усилий"},
+  {m:"mas", t:"У меня есть задачи вне работы, которые бросают мне вызов"},
+  {m:"con", t:"Мой график в нерабочее время зависит от меня"}
+];
+
+// рендер вопросов
+const qBox = document.getElementById('questions');
+Q.forEach((q,i)=>{
+  const d = document.createElement('div');
+  d.className = 'q';
+  let opts = '';
+  for(let v=1; v<=5; v++){
+    opts += '<label class="opt"><input type="radio" name="q'+i+'" value="'+v+'"><span>'+v+'</span></label>';
+  }
+  d.innerHTML = '<div class="q-txt"><span class="q-num">'+(i+1)+'</span>'+q.t+'</div><div class="opts">'+opts+'</div>';
+  qBox.appendChild(d);
+});
+
+const err = document.getElementById('err');
+function showErr(t){ err.textContent=t; err.classList.add('on'); }
+
+document.getElementById('f').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  err.classList.remove('on');
+
+  const vals = [];
+  for(let i=0;i<Q.length;i++){
+    const el = document.querySelector('input[name=q'+i+']:checked');
+    if(!el){
+      showErr('Не отвечен вопрос ' + (i+1) + '. Нужны все шестнадцать — иначе картина будет неполной.');
+      document.querySelectorAll('.q')[i].scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    vals.push(+el.value);
+  }
+
+  // считаем средние по механизмам
+  const sums = {det:0, rel:0, mas:0, con:0}, cnt = {det:0, rel:0, mas:0, con:0};
+  Q.forEach((q,i)=>{ sums[q.m] += vals[i]; cnt[q.m]++; });
+  const sc = {};
+  Object.keys(sums).forEach(k => sc[k] = +(sums[k]/cnt[k]).toFixed(1));
+
+  // полосы
+  const order = ['det','rel','mas','con'];
+  const barsBox = document.getElementById('bars');
+  barsBox.innerHTML = '';
+  order.forEach(k=>{
+    const pct = Math.round((sc[k]-1)/4*100);
+    const cls = sc[k] < 2.5 ? 'low' : (sc[k] < 3.5 ? 'mid' : 'ok');
+    const label = sc[k] < 2.5 ? 'просел' : (sc[k] < 3.5 ? 'наполовину' : 'работает');
+    barsBox.innerHTML += '<div class="bar-row"><div class="bar-top"><span class="bar-name">'+M[k].name+'</span><span class="bar-val">'+sc[k].toFixed(1).replace('.',',')+' · '+label+'</span></div><div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+Math.max(pct,3)+'%"></div></div></div>';
+  });
+
+  // лучший и худший
+  const best = order.reduce((a,b)=> sc[b] > sc[a] ? b : a);
+  const worst = order.reduce((a,b)=> sc[b] < sc[a] ? b : a);
+
+  document.getElementById('good-name').textContent = M[best].name;
+  document.getElementById('good-txt').textContent = M[best].good;
+  document.getElementById('hole-name').textContent = M[worst].name;
+  document.getElementById('hole-what').textContent = M[worst].what;
+  document.getElementById('hole-why').textContent = M[worst].why;
+  document.getElementById('hole-fix').textContent = M[worst].fix;
+
+  // если всё ровно высокое
+  if(sc[worst] >= 3.5){
+    document.getElementById('hole-what').textContent = 'Явного провала нет — все четыре механизма работают. Самый слабый из них: ' + M[worst].name.toLowerCase() + '.';
+    document.getElementById('hole-why').textContent = 'Если при этом сил всё равно нет, причина скорее физиологическая: сон, щитовидная железа, дефициты, апноэ. Начинать стоит с обследования, а не с режима.';
+  }
+
+  window.__profile = {sc:sc, best:best, worst:worst};
+
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('report').classList.add('on');
+  window.scrollTo(0,0);
+  updateLink();
+});
+
+// подсветка таблеток и сборка ссылки
+document.querySelectorAll('.pill input').forEach(i=> i.addEventListener('change', updateLink));
+document.getElementById('tried').addEventListener('input', updateLink);
+
+function pick(n){ const el=document.querySelector('input[name='+n+']:checked'); return el?el.value:''; }
+
+function updateLink(){
+  const p = window.__profile;
+  if(!p) return;
+  const role = pick('role'), age = pick('age');
+  const tried = document.getElementById('tried').value.trim();
+
+  const txt =
+    'Прошёл диагностику восстановления\n\n' +
+    'Отстранение: ' + p.sc.det.toFixed(1).replace('.',',') + '\n' +
+    'Расслабление: ' + p.sc.rel.toFixed(1).replace('.',',') + '\n' +
+    'Мастерство: ' + p.sc.mas.toFixed(1).replace('.',',') + '\n' +
+    'Контроль: ' + p.sc.con.toFixed(1).replace('.',',') + '\n\n' +
+    'Главная дыра: ' + M[p.worst].name +
+    (role ? '\n\nКто я: ' + role : '') +
+    (age ? '\nВозраст: ' + age : '') +
+    (tried ? '\n\nЧто пробовал:\n' + tried : '');
+
+  document.getElementById('tglink').href = 'https://t.me/' + TG_USER + '?text=' + encodeURIComponent(txt);
+}
+
+// пишем в базу при переходе — страховка, если человек не нажмёт «отправить» в телеграме
+document.getElementById('tglink').addEventListener('click', async ()=>{
+  const p = window.__profile;
+  if(!p) return;
+  const tried = document.getElementById('tried').value.trim();
+  try{
+    await sb.from('inbox').insert({
+      type: 'recovery',
+      message: 'Отстранение ' + p.sc.det + ' · Расслабление ' + p.sc.rel +
+               ' · Мастерство ' + p.sc.mas + ' · Контроль ' + p.sc.con +
+               '\nГлавная дыра: ' + M[p.worst].name +
+               (tried ? '\nПробовал: ' + tried : ''),
+      name: pick('role') || null,
+      contact: null,
+      role: pick('age') || null,
+      source: 'site:vosstanovlenie'
+    });
+  }catch(e){}
+});
+</script>
+</body>
+</html>
