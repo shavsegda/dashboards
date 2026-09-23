@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Две трети руководителей лечат не ту болезнь · Алексей Шаповалов</title>
+<meta name="description" content="Усталость и истощение восстанавливаются противоположными способами. 67% топ-менеджеров выбирают неверную стратегию — и теряют месяцы.">
+<meta property="og:title" content="Две трети руководителей лечат не ту болезнь">
+<meta property="og:description" content="Усталость и истощение лечатся противоположно. Перепутал — потерял полгода.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-12: rgba(26,26,26,0.12);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.09);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--graphite);
+  font-family: var(--font-sans); font-size: 18px; line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--terracotta); }
+.site-header { border-bottom: 1px solid var(--graphite-12); }
+.site-header .inner, .site-footer .inner {
+  max-width: 1000px; margin: 0 auto; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand { font-weight: 500; font-size: 15px; color: var(--graphite); }
+.nav-link { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite-55); }
+
+main { max-width: 680px; margin: 0 auto; padding: 64px 24px 40px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); margin-bottom: 18px; }
+h1 { font-size: clamp(30px, 5.5vw, 42px); line-height: 1.12; font-weight: 500; letter-spacing: -.025em; margin: 0 0 18px; text-wrap: balance; }
+.sub { font-size: 20px; color: var(--graphite-75); margin: 0 0 28px; font-style: italic; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--graphite-55); display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 32px; border-bottom: 1px solid var(--graphite-12); margin-bottom: 44px; }
+
+article p { margin: 0 0 22px; }
+article h2 { font-size: 26px; line-height: 1.25; font-weight: 500; letter-spacing: -.02em; margin: 52px 0 20px; text-wrap: balance; }
+article strong { font-weight: 600; }
+article em { font-style: italic; }
+hr { border: 0; border-top: 1px solid var(--graphite-12); margin: 48px 0; }
+
+.lead { font-size: 20px; color: var(--graphite); }
+.pull { margin: 36px 0; padding: 22px 26px; background: var(--terracotta-tint); border-left: 3px solid var(--terracotta); font-size: 19px; line-height: 1.55; }
+.pull strong { color: var(--terracotta-dark); }
+
+.facts { margin: 30px 0; display: grid; gap: 2px; }
+.fact { background: #fff; border: 1px solid var(--graphite-12); border-radius: 10px; padding: 16px 20px; }
+.fact-num { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--terracotta); display: block; margin-bottom: 2px; }
+.fact-txt { font-size: 16px; color: var(--graphite-75); line-height: 1.5; }
+
+.steps { margin: 30px 0; counter-reset: st; }
+.stp { position: relative; padding-left: 46px; margin-bottom: 24px; counter-increment: st; }
+.stp::before { content: counter(st); position: absolute; left: 0; top: 1px; width: 30px; height: 30px; border-radius: 50%; background: var(--graphite); color: var(--paper); font-family: var(--font-mono); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.stp b { display: block; font-weight: 600; margin-bottom: 3px; }
+.stp span { font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+
+.cta { margin: 48px 0 16px; padding: 30px; background: #fff; border: 1px solid var(--graphite-12); border-radius: 14px; }
+.cta h3 { margin: 0 0 12px; font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+.cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 20px; }
+.btn { display: inline-block; background: var(--terracotta); color: #fff; text-decoration: none; font-size: 17px; font-weight: 500; padding: 15px 30px; border-radius: 10px; transition: background .15s; }
+.btn:hover { background: var(--terracotta-dark); }
+.cta .note { font-size: 15px; color: var(--graphite-55); margin: 16px 0 0; }
+
+.sources { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--graphite-12); font-size: 15px; color: var(--graphite-55); line-height: 1.7; }
+.sources h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); font-weight: 400; margin: 0 0 16px; }
+.sources p { margin: 0 0 10px; }
+.sources b { color: var(--graphite-75); font-weight: 500; }
+
+.site-footer { border-top: 1px solid var(--graphite-12); margin-top: 72px; }
+.site-footer .inner { font-size: 14px; color: var(--graphite-55); flex-wrap: wrap; }
+.site-footer a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  main { padding: 40px 20px 32px; }
+  .sub { font-size: 18px; }
+  .pull { padding: 18px 20px; font-size: 18px; }
+  .cta { padding: 24px 20px; }
+  article h2 { font-size: 23px; margin: 42px 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="/blog/">Блог</a>
+  </div>
+</header>
+
+<main>
+  <div class="eyebrow">Блог</div>
+  <h1>Две трети руководителей лечат не ту болезнь</h1>
+  <p class="sub">Усталость и истощение восстанавливаются противоположными способами. Перепутал — потерял полгода</p>
+  <div class="meta">
+    <span>23 сентября 2026</span>
+    <span>10 минут</span>
+  </div>
+
+<article>
+
+<p class="lead">Есть исследование, которое стоит прочитать всем, кто руководит.</p>
+
+<p>Институт развития бизнеса опросил топ-менеджеров и руководителей направлений из более чем 150 российских компаний — ИТ, телеком, промышленность, банки, ритейл, логистика, консалтинг. Возраст участников 35–55 лет.</p>
+
+<div class="pull"><strong>67% путают хроническую усталость с выгоранием и из-за этого выбирают неверную стратегию восстановления.</strong></div>
+
+<p>Две трети. Не «плохо отдыхают» — а отдыхают <strong>не тем способом</strong>, потому что неправильно определили, что с ними происходит.</p>
+
+<p>Это похоже на ситуацию, когда человек полгода лечит гастрит, а у него проблема с желчным. Он дисциплинированно пьёт таблетки, соблюдает диету, честно старается — и ему не становится лучше. Не потому что плохо лечится. Потому что лечит не то.</p>
+
+<h2>Почему это вообще можно перепутать</h2>
+
+<p>Потому что снаружи выглядит одинаково: сил нет. А устроено по-разному.</p>
+
+<p><strong>Усталость</strong> — результат нагрузки. Ты много сделал, организм израсходовал ресурс, нужно время на восстановление. Убираешь нагрузку — проходит.</p>
+
+<p><strong>Истощение</strong> — не про количество нагрузки, а про то, что восстановление перестало работать. Нагрузка может быть даже небольшой. Убираешь её — ничего не меняется.</p>
+
+<p>В исследованиях это разделили строго. Энергия и усталость — не два полюса одной шкалы, а два разных состояния. Факторный анализ показывает, что витальность, усталость и депрессия — три отдельные вещи.</p>
+
+<p>И дальше цифра, которая расставляет приоритеты:</p>
+
+<div class="pull"><strong>Снижение ощущения энергии значимо повышает риск смертности и ухудшает функциональные возможности. Изменения в ощущении усталости — нет.</strong></div>
+
+<p>Это не «одно и то же, только сильнее». Это разные поломки с разными последствиями.</p>
+
+<h2>И лечатся они противоположно</h2>
+
+<p>Вот здесь и происходит ошибка двух третей.</p>
+
+<p><strong>При усталости нужно снизить нагрузку.</strong> Поспать, взять выходной, уехать. Работает.</p>
+
+<p><strong>При истощении снижение нагрузки не помогает.</strong> Потому что проблема не в избытке работы, а в отсутствии восстановления. А восстановление — не то же самое, что отдых.</p>
+
+<p>Человек делает логичную вещь: устал — отдохни. И попадает мимо.</p>
+
+<h2>Как проверить, что ты уже здесь</h2>
+
+<p>Самый точный признак — что происходит <strong>после отпуска</strong>.</p>
+
+<p>Мета-анализ исследований: показатели благополучия не отличаются от доотпускных <strong>уже после первой недели</strong> возвращения. По более щадящим оценкам — эффект исчезает за две-четыре недели.</p>
+
+<p>И отдельно для тех, кто думает «значит, надо брать дольше»: увеличение длительности отпуска пользы не добавляет.</p>
+
+<p>Причина, которую называют исследователи, обидная. Ты возвращаешься к тем же обстоятельствам, которые съели твой ресурс. Они никуда не делись, пока ты был в отъезде, и работают с прежней скоростью.</p>
+
+<p>Если после отпуска отпускает на пару недель — это усталость, всё в порядке. Если через неделю как не ездил — это уже не усталость, и дальше отпуск не поможет никогда.</p>
+
+<h2>Что такое восстановление на самом деле</h2>
+
+<p>Есть опросник, которым меряют, как человек восстанавливается после работы. Он выделяет четыре механизма, и вместе они предсказывают самочувствие и работоспособность <strong>на следующий день</strong>.</p>
+
+<div class="steps">
+  <div class="stp"><b>Психологическое отстранение</b><span>Не думать о работе вообще. Самый сильный предиктор из четырёх, подтверждён десятками исследований</span></div>
+  <div class="stp"><b>Расслабление</b><span>Тело и нервная система в покое</span></div>
+  <div class="stp"><b>Мастерство</b><span>Освоение нового, преодоление. Задача, которая по зубам, но не даётся сразу</span></div>
+  <div class="stp"><b>Контроль</b><span>Ты сам решаешь, что делать в эти часы</span></div>
+</div>
+
+<p>Теперь посмотри на свой способ отдыхать. Отпуск даёт второе. Иногда четвёртое. Первое — почти никогда, потому что телефон с тобой и в голове висит незакрытое. Третьего нет вообще, если ты лежишь.</p>
+
+<p><strong>Один механизм из четырёх.</strong> Поэтому и хватает на неделю.</p>
+
+<h2>Что с этим сделал искусственный интеллект</h2>
+
+<p>У руководителя за последние два года добавился слой, которого раньше не было.</p>
+
+<p>Все ждали, что ИИ освободит время. Исследование Беркли и Йеля: <strong>экономия времени составила 3%</strong>. На рабочее время он практически не повлиял.</p>
+
+<p>Зато появилась новая работа. Ты отвечаешь за внедрение, с тебя спрашивают результат, и ты же проверяешь качество того, что сгенерировали другие. Больше трёх из пяти работников сообщают о росте объёма. Время в чатах выросло на <strong>145%</strong>, почта на <strong>104%</strong> — потому что когда каждый в команде утраивает свой выход, всё это сходится наверх, к тебе.</p>
+
+<p>В Harvard Business Review это назвали «AI brain fry» — туман в голове, замедленные решения, истощение от постоянной проверки.</p>
+
+<div class="pull"><strong>88% тех, кто получил от ИИ наибольший прирост продуктивности, выгорели.</strong> Они же вдвое чаще думают об уходе.</div>
+
+<p>Теперь по четырём механизмам. ИИ забрал <strong>отстранение</strong> — ты всегда на связи, всегда что-то надо посмотреть. И забрал <strong>мастерство</strong> — усилие ушло из работы, осталось администрирование чужого результата.</p>
+
+<p>Два механизма из четырёх. Те самые, которых и так не давал отпуск.</p>
+
+<h2>Чем ты за это платишь</h2>
+
+<p>Не самочувствием. Самочувствие — симптом.</p>
+
+<p>Платишь ты тем, за что тебе платят: качеством решений.</p>
+
+<p>Недосып бьёт в первую очередь по исполнительным функциям — рабочая память, контроль импульсов, принятие решений. Префронтальная кора чувствительнее всего к нехватке сна.</p>
+
+<p>Что происходит конкретно:</p>
+
+<div class="facts">
+  <div class="fact"><span class="fact-txt"><b>Растёт ригидность мышления</b> — цепляешься за прежнее решение</span></div>
+  <div class="fact"><span class="fact-txt"><b>Хуже используется новая информация</b> в сложных задачах</span></div>
+  <div class="fact"><span class="fact-txt"><b>Падает когнитивная гибкость</b> — труднее поменять курс, когда появились новые данные</span></div>
+  <div class="fact"><span class="fact-txt"><b>Растёт импульсивность</b> — реактивность миндалины выше, связь с префронтальной корой слабее</span></div>
+</div>
+
+<p>Последнее особенно неприятно. Ты не чувствуешь, что стал рисковее. Тебе кажется, что ты решителен.</p>
+
+<h2>Задача на пять минут</h2>
+
+<p>Возьми прошлую неделю и посчитай одну цифру.</p>
+
+<div class="pull"><strong>Сколько часов ты был по-настоящему недоступен?</strong></div>
+
+<p>Не «не работал». Не «был в выходном». А: не проверял почту и мессенджеры, не держал рабочее в фоне, не отвечал «быстро, одну минуту». Считай честно, блоками от получаса.</p>
+
+<div class="steps">
+  <div class="stp"><b>Меньше 4 часов за неделю</b><span>Отстранения у тебя нет вообще. Это первый и главный механизм из четырёх, и он не работает</span></div>
+  <div class="stp"><b>4–10 часов</b><span>Есть, но мало, и скорее случайно</span></div>
+  <div class="stp"><b>Больше 10 часов</b><span>Механизм жив, ищи причину в другом месте</span></div>
+</div>
+
+<p>Эта цифра полезнее любого теста на выгорание. Её нельзя приукрасить, и она сразу показывает, где именно дыра.</p>
+
+<h2>Что работает вместо отдыха</h2>
+
+<p>Тут неинтуитивно.</p>
+
+<p>Мета-анализ 38 исследований: <strong>физическая активность снижает усталость</strong>. Размер эффекта 0,70 — это много.</p>
+
+<p>Там же прямо назван парадокс: усталость мешает людям заниматься, но занятия усталость снимают. Интуиция ведёт ровно в противоположную сторону от того, что работает.</p>
+
+<p>Две детали, без которых вывод опасен.</p>
+
+<p><strong>Интенсивность.</strong> Лёгкая и умеренная нагрузка усталость снимают. Высокая — может усугубить. Вот почему попытки «взять себя в руки» и убиться в зале заканчиваются тем, что становится хуже.</p>
+
+<p><strong>Длительность.</strong> Программы на 2–6 недель дают эффект 0,86. Программы на 16–24 недели — <strong>1,82</strong>. Вдвое сильнее. Это не чинится за месяц.</p>
+
+<p>И если вернуться к четырём механизмам, понятно, почему это работает лучше лежания. Тренировка даёт <strong>отстранение</strong> — полтора часа, когда голова физически не может думать о работе. И даёт <strong>мастерство</strong> — то самое, которое ушло из работы вместе с усилием.</p>
+
+<p>Два механизма из четырёх. Те, которых нет ни в отпуске, ни в выходных.</p>
+
+<h2>И проверь простые вещи</h2>
+
+<p>Прежде чем менять режим, стоит исключить медицинское.</p>
+
+<p><strong>Апноэ сна.</strong> 11% людей имеют недиагностированное умеренное или тяжёлое апноэ. Среди мужчин — <strong>17%</strong>, каждый шестой.</p>
+
+<p>Самое коварное: у тех, кому его не поставили, реже отмечают храп — 19% против 43% среди диагностированных. То есть человек не подозревает. Просто просыпается разбитым и списывает на возраст и работу.</p>
+
+<p>Сюда же: щитовидная железа, ферритин, витамин D. Дешёвые анализы, которые закрывают вопрос за неделю. Если это про тебя — начинать надо не с режима, а с обследования.</p>
+
+<h2>Зачем я это написал</h2>
+
+<p>Я тренер по физической подготовке, в прошлом профессиональный спортсмен. И последний год разбирался ровно с этим на себе.</p>
+
+<p>Тридцать лет я делал всё через надрыв — потерпеть, дожать, собраться. Это работало ровно до момента, когда перестало.</p>
+
+<p>За год: 340 тренировок, аэробная форма выросла втрое — с 20 до 63 по Training Peaks. Две недели назад прошёл 59 километров с набором 4713 метров за двадцать часов, средний пульс 131.</p>
+
+<p>Но важнее цифр другое. Я впервые рос <strong>без надрыва</strong> — и на это ушёл год работы с питанием и сном, причём не самостоятельно, а с диетологом, психологом и психиатром. Тренировки оказались самой простой частью.</p>
+
+<p>Сейчас я собираю программу — квартал сопровождения для тех, кто хочет восстановить форму так, чтобы это давало силы на работу и на семью, а не забирало.</p>
+
+<p>И у меня проблема: всё, что выше, — это данные плюс опыт одного человека. Я не знаю, насколько это совпадает с тем, что происходит у вас.</p>
+
+<div class="cta">
+  <h3>Поэтому просьба</h3>
+  <p>Ответьте на пять вопросов — две минуты, почти везде галочки. Итоги пришлю всем, кто ответил.</p>
+  <a class="btn" href="/sport/">Ответить на пять вопросов</a>
+  <p class="note">А если открывать форму лень — напишите в комментариях одну цифру: сколько часов на прошлой неделе вы были по-настоящему недоступны. Мне и этого хватит.</p>
+</div>
+
+</article>
+
+<div class="sources">
+  <h3>Источники</h3>
+  <p><b>67% путают усталость с выгоранием:</b> <a href="https://www.sostav.ru/blogs/288536/85630">исследование Института развития бизнеса</a></p>
+  <p><b>Энергия и усталость — разные состояния:</b> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10156440/">два разных настроения</a> · <a href="https://link.springer.com/article/10.1007/s11136-014-0839-9">бифакторная модель витальности</a></p>
+  <p><b>Эффект отпуска:</b> <a href="https://econtent.hogrefe.com/doi/10.1027/1016-9040/a000518">мета-анализ и затухание</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/19096200/">Do We Recover from Vacation?</a></p>
+  <p><b>Четыре механизма восстановления:</b> <a href="https://pubmed.ncbi.nlm.nih.gov/17638488/">Recovery Experience Questionnaire</a></p>
+  <p><b>Искусственный интеллект:</b> <a href="https://fortune.com/2026/02/10/ai-future-of-work-white-collar-employees-technology-productivity-burnout-research-uc-berkeley">Беркли и Йель</a> · <a href="https://www.resultsense.com/news/2026-02-12-ai-burnout-early-adopters-harvard-study/">88% выгорания</a></p>
+  <p><b>Сон и решения:</b> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12189852/">недосып и принятие решений</a> · <a href="https://eric.ed.gov/?id=EJ1262969">исполнительные функции</a></p>
+  <p><b>Движение против усталости:</b> <a href="https://www.nature.com/articles/s41598-023-41075-8">мета-анализ 38 исследований</a></p>
+  <p><b>Апноэ:</b> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC13473928/">недиагностированное апноэ у мужчин</a></p>
+</div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a>
+  </div>
+</footer>
+
+</body>
+</html>
