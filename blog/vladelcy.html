@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Вы не устали — вы перестали отличать · Алексей Шаповалов</title>
+<meta name="description" content="Недоспавшие предприниматели оценивают плохие идеи так же высоко, как хорошие. Что с этим делать и почему отпуск не помогает.">
+<meta property="og:title" content="Вы не устали — вы перестали отличать">
+<meta property="og:description" content="Недоспавшие предприниматели оценивают плохие идеи так же высоко, как хорошие. И не замечают этого.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-12: rgba(26,26,26,0.12);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.09);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--graphite);
+  font-family: var(--font-sans); font-size: 18px; line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--terracotta); }
+.site-header { border-bottom: 1px solid var(--graphite-12); }
+.site-header .inner, .site-footer .inner {
+  max-width: 1000px; margin: 0 auto; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand { font-weight: 500; font-size: 15px; color: var(--graphite); }
+.nav-link { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite-55); }
+
+main { max-width: 680px; margin: 0 auto; padding: 64px 24px 40px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); margin-bottom: 18px; }
+h1 { font-size: clamp(30px, 5.5vw, 42px); line-height: 1.12; font-weight: 500; letter-spacing: -.025em; margin: 0 0 18px; text-wrap: balance; }
+.sub { font-size: 20px; color: var(--graphite-75); margin: 0 0 28px; font-style: italic; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--graphite-55); display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 32px; border-bottom: 1px solid var(--graphite-12); margin-bottom: 44px; }
+
+article p { margin: 0 0 22px; }
+.echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 26px; line-height: 1.25; font-weight: 500; letter-spacing: -.02em; margin: 52px 0 20px; text-wrap: balance; }
+article strong { font-weight: 600; }
+article em { font-style: italic; }
+hr { border: 0; border-top: 1px solid var(--graphite-12); margin: 48px 0; }
+
+.lead { font-size: 20px; color: var(--graphite); }
+.pull { margin: 36px 0; padding: 22px 26px; background: var(--terracotta-tint); border-left: 3px solid var(--terracotta); font-size: 19px; line-height: 1.55; }
+.pull strong { color: var(--terracotta-dark); }
+
+.facts { margin: 30px 0; display: grid; gap: 2px; }
+.fact { background: #fff; border: 1px solid var(--graphite-12); border-radius: 10px; padding: 16px 20px; }
+.fact-num { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--terracotta); display: block; margin-bottom: 2px; }
+.fact-txt { font-size: 16px; color: var(--graphite-75); line-height: 1.5; }
+
+.steps { margin: 30px 0; counter-reset: st; }
+.stp { position: relative; padding-left: 46px; margin-bottom: 24px; counter-increment: st; }
+.stp::before { content: counter(st); position: absolute; left: 0; top: 1px; width: 30px; height: 30px; border-radius: 50%; background: var(--graphite); color: var(--paper); font-family: var(--font-mono); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.stp b { display: block; font-weight: 600; margin-bottom: 3px; }
+.stp span { font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+
+.cta { margin: 48px 0 16px; padding: 30px; background: #fff; border: 1px solid var(--graphite-12); border-radius: 14px; }
+.cta h3 { margin: 0 0 12px; font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+.cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 20px; }
+.btn { display: inline-block; background: var(--terracotta); color: #fff; text-decoration: none; font-size: 17px; font-weight: 500; padding: 15px 30px; border-radius: 10px; transition: background .15s; }
+.btn:hover { background: var(--terracotta-dark); }
+.cta .note { font-size: 15px; color: var(--graphite-55); margin: 16px 0 0; }
+
+.sources { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--graphite-12); font-size: 15px; color: var(--graphite-55); line-height: 1.7; }
+.sources h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); font-weight: 400; margin: 0 0 16px; }
+.sources p { margin: 0 0 10px; }
+.sources b { color: var(--graphite-75); font-weight: 500; }
+
+.site-footer { border-top: 1px solid var(--graphite-12); margin-top: 72px; }
+.site-footer .inner { font-size: 14px; color: var(--graphite-55); flex-wrap: wrap; }
+.site-footer a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  main { padding: 40px 20px 32px; }
+  .sub { font-size: 18px; }
+  .pull { padding: 18px 20px; font-size: 18px; }
+  .cta { padding: 24px 20px; }
+  .echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 23px; margin: 42px 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="/blog/">Блог</a>
+  </div>
+</header>
+
+<main>
+  <div class="eyebrow">Блог</div>
+  <h1>Вы не устали — вы перестали отличать</h1>
+  <p class="sub">Недоспавшие предприниматели оценивают плохие идеи так же высоко, как хорошие. И не замечают этого</p>
+  <div class="meta">
+    <span>23 сентября 2026</span>
+    <span>8 минут</span>
+  </div>
+
+<article>
+
+<p class="lead">Есть исследование, после которого я перестал спокойно относиться к собственному недосыпу.</p>
+
+<p>Предпринимателей просили оценить новые бизнес-идеи. Часть из них спала мало.</p>
+
+<div class="pull"><strong>Недоспавшие теряли способность отличать хорошие возможности от плохих.</strong> Они оценивали плохие идеи так же высоко, как хорошие.</div>
+
+<p>Не работали медленнее. Не ошибались чаще. <strong>Перестали различать.</strong></p>
+
+<p>При этом уверенность в своих оценках у них не падала.</p>
+
+<h2>Что это значит для владельца</h2>
+
+<p>Отбор возможностей — это и есть ваша работа.</p>
+
+<p>Наёмный сотрудник на недосыпе делает свою задачу хуже. Это заметно, это чинится, это стоит денег компании. Вы на недосыпе <strong>берётесь не за то</strong> — и узнаёте об этом через год, когда вложены деньги, наняты люди и выйти уже нельзя.</p>
+
+<p>Для масштаба: сон меньше шести часов ухудшает принятие решений <strong>сопоставимо с алкогольным опьянением</strong>.</p>
+
+<p>Никто из нас не пошёл бы на переговоры выпившим. Но на пяти часах сна — регулярно.</p>
+
+<h2>Почему вы этого не чувствуете</h2>
+
+<p>Потому что усталость и то, что с вами происходит, — разные вещи.</p>
+
+<p><strong>Усталость</strong> — результат нагрузки. Много сделал, ресурс израсходован, нужно время. Убрал нагрузку — прошло.</p>
+
+<p><strong>Истощение</strong> — не про количество работы, а про то, что восстановление перестало работать. Нагрузка может быть небольшой. Убрал её — ничего не изменилось.</p>
+
+<p>В исследованиях это разделили строго: витальность, усталость и депрессия — три отдельных состояния, а не одна шкала. И снижение ощущения энергии значимо повышает риск смертности, а изменения усталости — нет.</p>
+
+<p>Разные поломки. И лечатся противоположно: при усталости нагрузку снижают, при истощении это не помогает.</p>
+
+<p>Именно поэтому не работает отпуск. Мета-анализ: показатели благополучия не отличаются от доотпускных <strong>уже после первой недели</strong> возвращения. И увеличение длительности отпуска пользы не добавляет — вы возвращаетесь к тем же обстоятельствам, которые съели ресурс.</p>
+
+<h2>Восстановление состоит из четырёх механизмов</h2>
+
+<p>Их меряют отдельным опросником, и вместе они предсказывают ваше состояние и работоспособность <strong>на следующий день</strong>.</p>
+
+<div class="steps">
+  <div class="stp"><b>Психологическое отстранение</b><span>Не думать о работе вообще. Самый сильный предиктор из четырёх</span></div>
+  <div class="stp"><b>Расслабление</b><span>Тело и нервная система в покое</span></div>
+  <div class="stp"><b>Мастерство</b><span>Освоение нового, преодоление. Задача по зубам, но не даётся сразу</span></div>
+  <div class="stp"><b>Контроль</b><span>Вы сами решаете, что делать в эти часы</span></div>
+</div>
+
+<p>А теперь честно посмотрите на свою неделю.</p>
+
+<p><strong>Отстранение.</strong> Бизнес не выключается. Телефон с вами в отпуске, в выходные, на дне рождения ребёнка. Не потому что вы трудоголик, а потому что если не вы, то никто.</p>
+
+<p><strong>Контроль.</strong> У наёмного руководителя есть рабочие часы и есть свои. У вас нет этой границы: проблема возникает тогда, когда возникает.</p>
+
+<p><strong>Мастерство.</strong> Первые годы вы осваивали новое каждый месяц. Сейчас вы администрируете то, что построили. Усилие ушло, а вместе с ним ушёл механизм, который восстанавливает через преодоление.</p>
+
+<p><strong>Расслабление</strong> остаётся. Один из четырёх — и то не всегда.</p>
+
+<div class="pull">У наёмного руководителя обычно ломаются два механизма. <strong>У владельца — три.</strong></div>
+
+<h2>И вам некому об этом сказать</h2>
+
+<p>Это не жалоба, это измеренная вещь.</p>
+
+<div class="facts">
+  <div class="fact"><span class="fact-num">50%</span><span class="fact-txt">CEO испытывают изоляцию. Из них 61% говорят, что это вредит их работе</span></div>
+  <div class="fact"><span class="fact-num">81%</span><span class="fact-txt">основателей не откровенны о своих стрессорах ни с кем в своей жизни</span></div>
+  <div class="fact"><span class="fact-num">10%</span><span class="fact-txt">только столько говорят об этом с инвесторами</span></div>
+</div>
+
+<p>Причины в исследованиях названы прямо, и они структурные, а не про характер.</p>
+
+<p>Партнёрам и инвесторам сказать нельзя — откровенность про выгорание читается как отсутствие стойкости.</p>
+
+<p>Команде нельзя — они на вас рассчитывают. Сказать сотруднику, что сомневаешься в направлении, значит запустить процесс, который потом не остановишь.</p>
+
+<p>Дома — испугаются. Близкие заботятся, но не понимают масштаба.</p>
+
+<p>Друзьям — неловко. Статус мешает.</p>
+
+<p>В итоге человек, который отвечает за всё, оказывается единственным, кому не к кому обратиться. И это не исключение, а норма роли.</p>
+
+<h2>Чем вы за это платите</h2>
+
+<p>Не компанией. Компания — ваш актив, а платите вы собой.</p>
+
+<p><strong>Здоровьем.</strong> Выгорание — более сильный предиктор ишемической болезни сердца, чем курение, уровень липидов и физическая активность. Мета-анализ: риск сердечно-сосудистых заболеваний выше на 21%, риск предгипертензии — на 85%. С выгоранием связана смертность до 45 лет.</p>
+
+<p><strong>Деньгами.</strong> Экономисты труда посчитали: один дополнительный час сна в неделю даёт рост заработка на <strong>3,4%</strong>, а в долгосрочной перспективе до 5%. Механизм — производительность.</p>
+
+<p><strong>Годами.</strong> Лонгитюдные исследования: выгорание бывает устойчивым пять, десять и даже пятнадцать лет. И в поздней фазе карьеры последствия серьёзнее, чем в ранней. Само не проходит.</p>
+
+<p><strong>И решениями, которые нельзя отыграть.</strong> Это мы уже обсудили в начале.</p>
+
+<h2>Самое неприятное</h2>
+
+<p>В первом квартале 2026 года <strong>31% владельцев малого бизнеса рассматривали закрытие или продажу компании</strong> — на восемь пунктов больше, чем годом раньше. 94,7% предпринимателей отметили ухудшение условий.</p>
+
+<p>Условия действительно ухудшились, это правда.</p>
+
+<p>Но вот вопрос, который стоит задать себе до такого решения:</p>
+
+<div class="pull"><strong>Это бизнес не идёт — или вы сейчас не в том состоянии, чтобы отличить, идёт он или нет?</strong></div>
+
+<p>Мы начали с исследования, где недоспавшие предприниматели переставали различать хорошие и плохие возможности. Решение продать дело — необратимое. Его нельзя принимать на том же топливе, на котором вы перестаёте различать.</p>
+
+<p>Сначала проверьте состояние. Потом решайте.</p>
+
+<h2>Задача на пять минут</h2>
+
+<p>Возьмите прошлую неделю и посчитайте одну цифру.</p>
+
+<div class="pull"><strong>Сколько часов вы были по-настоящему недоступны?</strong></div>
+
+<p>Не «не работал». Не «был в выходном». А: не проверяли сообщения, не держали рабочее в фоне, не отвечали «одну минуту». Считайте блоками от получаса, честно.</p>
+
+<div class="steps">
+  <div class="stp"><b>Меньше 4 часов за неделю</b><span>Отстранения нет вообще. Главный из четырёх механизмов не работает</span></div>
+  <div class="stp"><b>4–10 часов</b><span>Есть, но мало и скорее случайно</span></div>
+  <div class="stp"><b>Больше 10 часов</b><span>Механизм жив, причину ищите в другом</span></div>
+</div>
+
+<p>У владельцев эта цифра обычно ниже четырёх. И это не повод собой гордиться.</p>
+
+<h2>Проверьте простые вещи</h2>
+
+<p>Прежде чем менять режим, исключите медицинское.</p>
+
+<p><strong>Апноэ сна.</strong> 11% людей имеют недиагностированное умеренное или тяжёлое апноэ. Среди мужчин — <strong>17%</strong>, каждый шестой. У тех, кому его не поставили, реже отмечают храп: 19% против 43% среди диагностированных. Человек просто просыпается разбитым и списывает на возраст.</p>
+
+<p>Сюда же: щитовидная железа, ферритин, витамин D.</p>
+
+<h2>Зачем я это написал</h2>
+
+<p>Я тренер по физической подготовке, в прошлом профессиональный спортсмен, и последний год разбирался ровно с этим на себе.</p>
+
+<p>Тридцать лет я делал всё через надрыв — потерпеть, дожать, собраться. Работало, пока не перестало.</p>
+
+<p>За год: 340 тренировок, аэробная форма выросла втрое — с 20 до 63 по Training Peaks. Две недели назад прошёл 59 километров с набором 4713 метров за двадцать часов, средний пульс 131.</p>
+
+<p>Важнее другое: я впервые рос <strong>без надрыва</strong>. На это ушёл год работы с питанием и сном — с диетологом, психологом и психиатром. Тренировки оказались самой простой частью.</p>
+
+<p>Сейчас собираю программу — квартал сопровождения для тех, кто хочет восстановить форму так, чтобы она давала силы на дело и на семью, а не забирала.</p>
+
+<h2>Посмотрите свои четыре механизма</h2>
+
+<p>Я собрал короткую диагностику по той самой модели, о которой вся статья. Шестнадцать вопросов, три минуты, <strong>результат сразу на экране</strong>: какой механизм просел, какой работает и что с этим делать.</p>
+
+<div class="cta">
+  <h3>Диагностика восстановления</h3>
+  <p>Не тест и не диагноз — структурированная самооценка. Но она показывает то, что обычно не видно.</p>
+  <a class="btn" href="/vosstanovlenie/">Пройти за три минуты</a>
+  <p class="note">И честно про мой интерес: я собираю данные для программы и хочу понять, насколько то, что я вижу у себя, совпадает с тем, что происходит у вас. В конце можно отправить мне результат — отвечу лично каждому.</p>
+</div>
+
+<p class="echo">Решение продать дело стоит принимать на свежую голову. Как и решение его не продавать.</p>
+
+</article>
+
+<div class="sources">
+  <h3>Источники</h3>
+  <p><b>Сон и оценка возможностей:</b> <a href="https://hbr.org/2019/10/entrepreneurs-who-sleep-more-are-better-at-spotting-good-ideas">предприниматели, которые спят больше, лучше распознают идеи</a> · <a href="https://www.sciencedirect.com/science/article/abs/pii/S0883902618303434">сон и формирование убеждений о новых бизнес-идеях</a> · <a href="https://link.springer.com/article/10.1007/s11187-026-01220-9">сон предпринимателей: обзор</a></p>
+  <p><b>Энергия и усталость — разные состояния:</b> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10156440/">два разных настроения</a> · <a href="https://link.springer.com/article/10.1007/s11136-014-0839-9">бифакторная модель витальности</a></p>
+  <p><b>Эффект отпуска:</b> <a href="https://econtent.hogrefe.com/doi/10.1027/1016-9040/a000518">мета-анализ и затухание</a></p>
+  <p><b>Четыре механизма восстановления:</b> <a href="https://pubmed.ncbi.nlm.nih.gov/17638488/">Recovery Experience Questionnaire</a></p>
+  <p><b>Одиночество основателей:</b> <a href="https://hbr.org/2024/12/ceos-often-feel-lonely-heres-how-they-can-cope">CEO часто чувствуют себя одиноко, HBR</a> · <a href="https://fintechtakes.com/articles/2024-03-21/founders-mental-health/">81% не откровенны о своих стрессорах</a> · <a href="https://www.indexbox.io/blog/loneliness-at-the-top-corporate-leaders-report-widespread-isolation/">изоляция руководителей</a></p>
+  <p><b>Здоровье:</b> <a href="https://pubmed.ncbi.nlm.nih.gov/38439796/">выгорание и сердечно-сосудистые заболевания: мета-анализ</a> · <a href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0185781">физические последствия выгорания</a></p>
+  <p><b>Сон и заработок:</b> <a href="https://www.sciencedirect.com/science/article/pii/S0167629623001170">отдача сна на рынке труда</a></p>
+  <p><b>Устойчивость выгорания:</b> <a href="https://www.ncbi.nlm.nih.gov/books/NBK614516/">последствия выгорания для человека и организации</a></p>
+  <p><b>Закрытие и продажа бизнеса:</b> <a href="https://www.obozrevatel.com/ekonomika-glavnaya/economy/antirekord-za-vsyu-istoriyu-v-rf-nachalas-massovaya-volna-zakryitiya-biznesa.htm">31% рассматривают закрытие или продажу</a></p>
+  <p><b>Апноэ:</b> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC13473928/">недиагностированное апноэ у мужчин</a></p>
+</div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a>
+  </div>
+</footer>
+
+</body>
+</html>
