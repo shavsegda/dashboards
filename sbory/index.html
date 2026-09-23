@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Сборы · Алексей Шаповалов</title>
+<meta name="description" content="Два дня замеров и квартал сопровождения для собственников и руководителей, у которых отдых перестал восстанавливать.">
+<meta property="og:title" content="Сборы">
+<meta property="og:description" content="Два дня замеров и квартал сопровождения. Восемь человек, старт 26 октября.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-12: rgba(26,26,26,0.12);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.09);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--graphite);
+  font-family: var(--font-sans); font-size: 18px; line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--terracotta); }
+.site-header { border-bottom: 1px solid var(--graphite-12); }
+.site-header .inner, .site-footer .inner {
+  max-width: 1000px; margin: 0 auto; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand { font-weight: 500; font-size: 15px; color: var(--graphite); }
+.nav-link { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite-55); }
+
+main { max-width: 680px; margin: 0 auto; padding: 64px 24px 40px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); margin-bottom: 18px; }
+h1 { font-size: clamp(30px, 5.5vw, 42px); line-height: 1.12; font-weight: 500; letter-spacing: -.025em; margin: 0 0 18px; text-wrap: balance; }
+.sub { font-size: 20px; color: var(--graphite-75); margin: 0 0 28px; font-style: italic; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--graphite-55); display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 32px; border-bottom: 1px solid var(--graphite-12); margin-bottom: 44px; }
+
+article p { margin: 0 0 22px; }
+.echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+
+.lead-big { font-size: 21px; line-height: 1.5; color: var(--graphite); margin-bottom: 32px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
+.two > div { background: #fff; border: 1px solid var(--graphite-12); border-radius: 12px; padding: 22px; }
+.two h4 { margin: 0 0 12px; font-size: 17px; font-weight: 600; }
+.two ul { margin: 0; padding-left: 18px; }
+.two li { font-size: 16px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 8px; }
+.yes h4 { color: var(--moss); }
+.no h4 { color: var(--terracotta); }
+.stage { display: grid; grid-template-columns: 116px 1fr; gap: 20px; padding: 24px 0; border-top: 1px solid var(--graphite-12); }
+.stage:last-of-type { border-bottom: 1px solid var(--graphite-12); }
+.stage-when { font-family: var(--font-mono); font-size: 14px; color: var(--terracotta); line-height: 1.4; }
+.stage h4 { margin: 0 0 8px; font-size: 19px; font-weight: 600; }
+.stage p { margin: 0 0 8px; font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+.stage ul { margin: 8px 0 0; padding-left: 18px; }
+.stage li { font-size: 16px; color: var(--graphite-75); line-height: 1.5; margin-bottom: 6px; }
+.tariffs { margin: 28px 0; }
+.tf { background: #fff; border: 1px solid var(--graphite-12); border-radius: 12px; padding: 24px; margin-bottom: 14px; }
+.tf.main { border-color: var(--terracotta); border-width: 2px; }
+.tf-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.tf-name { font-size: 20px; font-weight: 600; }
+.tf-price { font-family: var(--font-mono); font-size: 20px; color: var(--terracotta); font-weight: 500; white-space: nowrap; }
+.tf-old { font-family: var(--font-mono); font-size: 14px; color: var(--graphite-50); text-decoration: line-through; margin-left: 8px; }
+.tf ul { margin: 0; padding-left: 18px; }
+.tf li { font-size: 16px; color: var(--graphite-75); line-height: 1.5; margin-bottom: 6px; }
+.tf-for { font-size: 15px; color: var(--graphite-50); margin-top: 12px; font-style: italic; }
+@media (max-width: 640px) {
+  .two { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 1fr; gap: 6px; }
+}
+
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 26px; line-height: 1.25; font-weight: 500; letter-spacing: -.02em; margin: 52px 0 20px; text-wrap: balance; }
+article strong { font-weight: 600; }
+article em { font-style: italic; }
+hr { border: 0; border-top: 1px solid var(--graphite-12); margin: 48px 0; }
+
+.lead { font-size: 20px; color: var(--graphite); }
+.pull { margin: 36px 0; padding: 22px 26px; background: var(--terracotta-tint); border-left: 3px solid var(--terracotta); font-size: 19px; line-height: 1.55; }
+.pull strong { color: var(--terracotta-dark); }
+
+.facts { margin: 30px 0; display: grid; gap: 2px; }
+.fact { background: #fff; border: 1px solid var(--graphite-12); border-radius: 10px; padding: 16px 20px; }
+.fact-num { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--terracotta); display: block; margin-bottom: 2px; }
+.fact-txt { font-size: 16px; color: var(--graphite-75); line-height: 1.5; }
+
+.steps { margin: 30px 0; counter-reset: st; }
+.stp { position: relative; padding-left: 46px; margin-bottom: 24px; counter-increment: st; }
+.stp::before { content: counter(st); position: absolute; left: 0; top: 1px; width: 30px; height: 30px; border-radius: 50%; background: var(--graphite); color: var(--paper); font-family: var(--font-mono); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.stp b { display: block; font-weight: 600; margin-bottom: 3px; }
+.stp span { font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+
+.cta { margin: 48px 0 16px; padding: 30px; background: #fff; border: 1px solid var(--graphite-12); border-radius: 14px; }
+.cta h3 { margin: 0 0 12px; font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+.cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 20px; }
+.btn { display: inline-block; background: var(--terracotta); color: #fff; text-decoration: none; font-size: 17px; font-weight: 500; padding: 15px 30px; border-radius: 10px; transition: background .15s; }
+.btn:hover { background: var(--terracotta-dark); }
+.cta .note { font-size: 15px; color: var(--graphite-55); margin: 16px 0 0; }
+
+.sources { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--graphite-12); font-size: 15px; color: var(--graphite-55); line-height: 1.7; }
+.sources h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); font-weight: 400; margin: 0 0 16px; }
+.sources p { margin: 0 0 10px; }
+.sources b { color: var(--graphite-75); font-weight: 500; }
+
+.site-footer { border-top: 1px solid var(--graphite-12); margin-top: 72px; }
+.site-footer .inner { font-size: 14px; color: var(--graphite-55); flex-wrap: wrap; }
+.site-footer a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  main { padding: 40px 20px 32px; }
+  .sub { font-size: 18px; }
+  .pull { padding: 18px 20px; font-size: 18px; }
+  .cta { padding: 24px 20px; }
+  .echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+
+.lead-big { font-size: 21px; line-height: 1.5; color: var(--graphite); margin-bottom: 32px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0; }
+.two > div { background: #fff; border: 1px solid var(--graphite-12); border-radius: 12px; padding: 22px; }
+.two h4 { margin: 0 0 12px; font-size: 17px; font-weight: 600; }
+.two ul { margin: 0; padding-left: 18px; }
+.two li { font-size: 16px; line-height: 1.5; color: var(--graphite-75); margin-bottom: 8px; }
+.yes h4 { color: var(--moss); }
+.no h4 { color: var(--terracotta); }
+.stage { display: grid; grid-template-columns: 116px 1fr; gap: 20px; padding: 24px 0; border-top: 1px solid var(--graphite-12); }
+.stage:last-of-type { border-bottom: 1px solid var(--graphite-12); }
+.stage-when { font-family: var(--font-mono); font-size: 14px; color: var(--terracotta); line-height: 1.4; }
+.stage h4 { margin: 0 0 8px; font-size: 19px; font-weight: 600; }
+.stage p { margin: 0 0 8px; font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+.stage ul { margin: 8px 0 0; padding-left: 18px; }
+.stage li { font-size: 16px; color: var(--graphite-75); line-height: 1.5; margin-bottom: 6px; }
+.tariffs { margin: 28px 0; }
+.tf { background: #fff; border: 1px solid var(--graphite-12); border-radius: 12px; padding: 24px; margin-bottom: 14px; }
+.tf.main { border-color: var(--terracotta); border-width: 2px; }
+.tf-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.tf-name { font-size: 20px; font-weight: 600; }
+.tf-price { font-family: var(--font-mono); font-size: 20px; color: var(--terracotta); font-weight: 500; white-space: nowrap; }
+.tf-old { font-family: var(--font-mono); font-size: 14px; color: var(--graphite-50); text-decoration: line-through; margin-left: 8px; }
+.tf ul { margin: 0; padding-left: 18px; }
+.tf li { font-size: 16px; color: var(--graphite-75); line-height: 1.5; margin-bottom: 6px; }
+.tf-for { font-size: 15px; color: var(--graphite-50); margin-top: 12px; font-style: italic; }
+@media (max-width: 640px) {
+  .two { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 1fr; gap: 6px; }
+}
+
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 23px; margin: 42px 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="/blog/">Блог</a>
+  </div>
+</header>
+
+<main>
+  <div class="eyebrow">Ближайший поток — октябрь</div>
+  <h1>Сборы</h1>
+  <p class="sub">Два дня замеров и квартал сопровождения. Для собственников и руководителей, у которых отдых перестал восстанавливать</p>
+
+<article>
+
+<p class="lead-big">Восстановление состоит из четырёх механизмов. У руководителя обычно ломаются два, у владельца — три. Отпуск чинит только один, поэтому и не помогает.</p>
+
+<p>Сборы — это про то, чтобы починить остальные. Не мотивацией и не режимом дня, а нагрузкой, построенной под ваши данные, и группой, в которой вы не сольётесь на третьей неделе.</p>
+
+<p>Подробно, с исследованиями и цифрами — в статьях <a href="/blog/dve-treti.html">для руководителей</a> и <a href="/blog/vladelcy.html">для владельцев</a>.</p>
+
+<h2>Кому подходит</h2>
+
+<div class="two">
+  <div class="yes">
+    <h4>Да, если</h4>
+    <ul>
+      <li>После отпуска отпускает на неделю, а дальше как не ездили</li>
+      <li>Вы уже пробовали вернуться в спорт — и бросали</li>
+      <li>Или тренируетесь, но это съело остальную жизнь</li>
+      <li>Хоть какая-то физическая активность в жизни есть или была</li>
+      <li>Решения стали даваться тяжелее, чем год назад</li>
+    </ul>
+  </div>
+  <div class="no">
+    <h4>Нет, если</h4>
+    <ul>
+      <li>Главная цель — похудеть к лету</li>
+      <li>Никогда толком не занимались</li>
+      <li>Состояние тяжёлое — тогда сначала к врачу, а не к тренеру</li>
+      <li>Есть ограничения по здоровью без допуска врача</li>
+      <li>Ждёте, что с вами что-то сделают, пока вы наблюдаете</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Как устроено</h2>
+
+<div class="stage">
+  <div class="stage-when">суббота<br>17 октября</div>
+  <div>
+    <h4>Первый день сборов</h4>
+    <p>Шесть-семь часов. Допуск к нагрузке, функциональные и силовые тесты, состав тела, опросники по мотивации, вниманию и режиму.</p>
+    <p>Уходите с отчётом на руках и трекером, который неделю собирает данные о сне и восстановлении.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-when">суббота<br>24 октября</div>
+  <div>
+    <h4>Второй день сборов</h4>
+    <p>Разбор недельных данных, полная интерпретация всей батареи. Здесь же строится ваш тренировочный цикл на квартал — при вас и из ваших цифр.</p>
+    <p>И собирается группа: знакомство, договорённости, расписание на двенадцать недель.</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-when">26 октября —<br>7 февраля</div>
+  <div>
+    <h4>Квартал</h4>
+    <p>Три блока по схеме «три недели работы, неделя разгрузки». Каникулы с 21 декабря по 10 января заложены в план, а не отнимают результат.</p>
+    <ul>
+      <li>Еженедельная сверка группы: каждый называет свои цифры вслух</li>
+      <li>Ежедневная подстройка нагрузки под сон и восстановление</li>
+      <li>Разбор блока раз в четыре недели</li>
+      <li>Одна личная сверка в середине цикла</li>
+    </ul>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="stage-when">февраль</div>
+  <div>
+    <h4>Пересдача</h4>
+    <p>Те же тесты, те же шкалы, две колонки. Видно, что изменилось — не по ощущениям, а в числах.</p>
+  </div>
+</div>
+
+<h2>Сколько стоит</h2>
+
+<div class="tariffs">
+  <div class="tf main">
+    <div class="tf-top">
+      <span class="tf-name">Группа</span>
+      <span class="tf-price">95 000 ₽<span class="tf-old">120 000</span></span>
+    </div>
+    <ul>
+      <li>Оба дня сборов и пересдача в феврале</li>
+      <li>Группа восьми человек, состав не меняется</li>
+      <li>Еженедельные сверки и разборы блоков</li>
+      <li>Ежедневная подстройка нагрузки</li>
+      <li>Одна личная сверка в середине</li>
+    </ul>
+    <div class="tf-for">Подходит большинству</div>
+  </div>
+
+  <div class="tf">
+    <div class="tf-top">
+      <span class="tf-name">Группа плюс</span>
+      <span class="tf-price">135 000 ₽<span class="tf-old">170 000</span></span>
+    </div>
+    <ul>
+      <li>Всё из тарифа «Группа»</li>
+      <li>Личный созвон раз в две недели</li>
+      <li>Разбор техники по видео</li>
+      <li>План правит тренер вручную, а не алгоритм</li>
+    </ul>
+    <div class="tf-for">Если были травмы или график рваный</div>
+  </div>
+
+  <div class="tf">
+    <div class="tf-top">
+      <span class="tf-name">Личный</span>
+      <span class="tf-price">250 000 ₽<span class="tf-old">310 000</span></span>
+    </div>
+    <ul>
+      <li>Всё из предыдущих тарифов</li>
+      <li>Личная работа каждую неделю</li>
+      <li>Тренер в мессенджере в рабочее время</li>
+      <li>Разбор питания</li>
+      <li>Программа переписывается под вас по ходу</li>
+    </ul>
+    <div class="tf-for">Не больше двух мест в потоке</div>
+  </div>
+</div>
+
+<p>Цены первого потока. Он идёт дешевле, потому что вы идёте первыми и даёте обратную связь — со второго потока цены полные. Продукт продаётся целиком: по частям он не работает, замер без сопровождения даёт отчёт и ноль изменений.</p>
+
+<h2>Как попасть</h2>
+
+<div class="steps">
+  <div class="stp"><b>Пройти диагностику</b><span>Шестнадцать вопросов, три минуты, результат сразу</span></div>
+  <div class="stp"><b>Отправить мне результат</b><span>В конце диагностики есть кнопка — отвечу лично</span></div>
+  <div class="stp"><b>Поговорить двадцать минут</b><span>Вместе решим, подходит вам это или нет. Если нет — скажу прямо и объясню, что подойдёт</span></div>
+  <div class="stp"><b>Оплатить место</b><span>Мест восемь. Отбор обязателен: один неподходящий человек ломает группу на весь квартал</span></div>
+</div>
+
+<h2>Чего здесь не будет</h2>
+
+<p><strong>Обещаний результата.</strong> Этот поток первый, кейсов у меня нет. Есть данные исследований, собственный опыт и построенная на них конструкция — но ваш результат я предсказать не могу и не буду.</p>
+
+<p><strong>Диагнозов.</strong> Я тренер, а не врач. При красных флагах отправлю к специалисту, и это не будет поводом для продолжения разговора о сборах.</p>
+
+<p><strong>Мотивации.</strong> Её не хватает никому и никогда — поэтому конструкция держится на группе, расписании и цифрах, а не на желании.</p>
+
+<p><strong>Возможности передумать бесплатно.</strong> Но есть право выхода после вторых сборов: если понимаете, что не пойдёте в квартал, возвращаю 30 000, а отчёт остаётся вам.</p>
+
+<h2>Кто ведёт</h2>
+
+<p>Алексей Шаповалов. В прошлом профессиональный спортсмен и тренер по физической подготовке, открывал зал кроссфита, вёл персональную подготовку.</p>
+
+<p>Последний год разбирался с этим на себе: 340 тренировок, аэробная форма выросла втрое — с 20 до 63 по Training Peaks. В сентябре прошёл 59 километров с набором 4713 метров за двадцать часов при среднем пульсе 131.</p>
+
+<p>На то, чтобы научиться расти без надрыва, ушёл год работы с питанием и сном — с диетологом, психологом и психиатром. Тренировки оказались самой простой частью.</p>
+
+<div class="cta">
+  <h3>Начать с диагностики</h3>
+  <p>Шестнадцать вопросов о том, как вы восстанавливаетесь. Результат сразу на экране: какой механизм просел, какой работает и что с этим делать.</p>
+  <a class="btn" href="/vosstanovlenie/">Пройти за три минуты</a>
+  <p class="note">Или напишите сразу — <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a></p>
+</div>
+
+</article>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a>
+  </div>
+</footer>
+
+</body>
+</html>
