@@ -187,6 +187,28 @@ const SUPABASE_URL = "https://tsregyrxtmkxrxvpsvot.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yppYfhMVGsvSrFRxDij81w_7fO-1VSo";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// id сессии — чтобы связать «увидел результат» и «отправил» как одного человека
+const SID = 's' + Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-4);
+
+function profileText(p, extra){
+  return 'Отстранение ' + p.sc.det + ' · Расслабление ' + p.sc.rel +
+         ' · Мастерство ' + p.sc.mas + ' · Контроль ' + p.sc.con +
+         '\nГлавная дыра: ' + M[p.worst].name + (extra || '');
+}
+
+async function save(stage, extra, name, role){
+  try{
+    await sb.from('inbox').insert({
+      type: 'recovery',
+      message: '[' + stage + '] ' + SID + '\n' + profileText(window.__profile, extra),
+      name: name || null,
+      contact: null,
+      role: role || null,
+      source: 'site:vosstanovlenie'
+    });
+  }catch(e){}
+}
+
 // Четыре механизма восстановления. Модель: Sonnentag & Fritz, 2007.
 // Формулировки собственные.
 const M = {
@@ -311,6 +333,9 @@ document.getElementById('f').addEventListener('submit', async (e)=>{
   document.getElementById('report').classList.add('on');
   window.scrollTo(0,0);
   updateLink();
+
+  // фиксируем сразу: человек дошёл до результата
+  save('результат');
 });
 
 // подсветка таблеток и сборка ссылки
@@ -339,25 +364,26 @@ function updateLink(){
   document.getElementById('tglink').href = 'https://t.me/' + TG_USER + '?text=' + encodeURIComponent(txt);
 }
 
-// пишем в базу при переходе — страховка, если человек не нажмёт «отправить» в телеграме
-document.getElementById('tglink').addEventListener('click', async ()=>{
-  const p = window.__profile;
-  if(!p) return;
+// при переходе в телеграм — вторая запись, уже с контекстом
+document.getElementById('tglink').addEventListener('click', ()=>{
   const tried = document.getElementById('tried').value.trim();
-  try{
-    await sb.from('inbox').insert({
-      type: 'recovery',
-      message: 'Отстранение ' + p.sc.det + ' · Расслабление ' + p.sc.rel +
-               ' · Мастерство ' + p.sc.mas + ' · Контроль ' + p.sc.con +
-               '\nГлавная дыра: ' + M[p.worst].name +
-               (tried ? '\nПробовал: ' + tried : ''),
-      name: pick('role') || null,
-      contact: null,
-      role: pick('age') || null,
-      source: 'site:vosstanovlenie'
-    });
-  }catch(e){}
+  save('отправил', (tried ? '\nПробовал: ' + tried : ''), pick('role'), pick('age'));
 });
+
+// если человек заполнил три вопроса, но ушёл не нажав — сохраняем то, что есть
+let sentExtra = false;
+function saveExtraOnce(){
+  if(sentExtra) return;
+  const tried = document.getElementById('tried').value.trim();
+  const role = pick('role'), age = pick('age');
+  if(!tried && !role && !age) return;
+  sentExtra = true;
+  save('ответил, но не отправил', (tried ? '\nПробовал: ' + tried : ''), role, age);
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden') saveExtraOnce();
+});
+window.addEventListener('pagehide', saveExtraOnce);
 </script>
 </body>
 </html>
