@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Вашей программой благополучия пользуются 15% сотрудников · Алексей Шаповалов</title>
+<meta name="description" content="Когда руководители не участвуют в программах благополучия, вовлечённость команды держится на 44%. Где на самом деле рычаг.">
+<meta property="og:title" content="Вашей программой благополучия пользуются 15% сотрудников">
+<meta property="og:description" content="Рычаг вовлечённости — участие руководителей. Он почти нигде не задействован.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4F2EC;
+  --stone: #E8E5DC;
+  --graphite: #1A1A1A;
+  --graphite-75: rgba(26,26,26,0.75);
+  --graphite-55: rgba(26,26,26,0.55);
+  --graphite-12: rgba(26,26,26,0.12);
+  --terracotta: #B85C38;
+  --terracotta-dark: #8F4528;
+  --terracotta-tint: rgba(184,92,56,0.09);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--graphite);
+  font-family: var(--font-sans); font-size: 18px; line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--terracotta); }
+.site-header { border-bottom: 1px solid var(--graphite-12); }
+.site-header .inner, .site-footer .inner {
+  max-width: 1000px; margin: 0 auto; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.site-header a { text-decoration: none; }
+.brand { font-weight: 500; font-size: 15px; color: var(--graphite); }
+.nav-link { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--graphite-55); }
+
+main { max-width: 680px; margin: 0 auto; padding: 64px 24px 40px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); margin-bottom: 18px; }
+h1 { font-size: clamp(30px, 5.5vw, 42px); line-height: 1.12; font-weight: 500; letter-spacing: -.025em; margin: 0 0 18px; text-wrap: balance; }
+.sub { font-size: 20px; color: var(--graphite-75); margin: 0 0 28px; font-style: italic; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--graphite-55); display: flex; gap: 18px; flex-wrap: wrap; padding-bottom: 32px; border-bottom: 1px solid var(--graphite-12); margin-bottom: 44px; }
+
+article p { margin: 0 0 22px; }
+.echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 26px; line-height: 1.25; font-weight: 500; letter-spacing: -.02em; margin: 52px 0 20px; text-wrap: balance; }
+article strong { font-weight: 600; }
+article em { font-style: italic; }
+hr { border: 0; border-top: 1px solid var(--graphite-12); margin: 48px 0; }
+
+.lead { font-size: 20px; color: var(--graphite); }
+.pull { margin: 36px 0; padding: 22px 26px; background: var(--terracotta-tint); border-left: 3px solid var(--terracotta); font-size: 19px; line-height: 1.55; }
+.pull strong { color: var(--terracotta-dark); }
+
+.facts { margin: 30px 0; display: grid; gap: 2px; }
+.fact { background: #fff; border: 1px solid var(--graphite-12); border-radius: 10px; padding: 16px 20px; }
+.fact-num { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--terracotta); display: block; margin-bottom: 2px; }
+.fact-txt { font-size: 16px; color: var(--graphite-75); line-height: 1.5; }
+
+.steps { margin: 30px 0; counter-reset: st; }
+.stp { position: relative; padding-left: 46px; margin-bottom: 24px; counter-increment: st; }
+.stp::before { content: counter(st); position: absolute; left: 0; top: 1px; width: 30px; height: 30px; border-radius: 50%; background: var(--graphite); color: var(--paper); font-family: var(--font-mono); font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.stp b { display: block; font-weight: 600; margin-bottom: 3px; }
+.stp span { font-size: 16px; color: var(--graphite-75); line-height: 1.55; }
+
+.cta { margin: 48px 0 16px; padding: 30px; background: #fff; border: 1px solid var(--graphite-12); border-radius: 14px; }
+.cta h3 { margin: 0 0 12px; font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+.cta p { font-size: 17px; color: var(--graphite-75); margin: 0 0 20px; }
+.btn { display: inline-block; background: var(--terracotta); color: #fff; text-decoration: none; font-size: 17px; font-weight: 500; padding: 15px 30px; border-radius: 10px; transition: background .15s; }
+.btn:hover { background: var(--terracotta-dark); }
+.cta .note { font-size: 15px; color: var(--graphite-55); margin: 16px 0 0; }
+
+.sources { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--graphite-12); font-size: 15px; color: var(--graphite-55); line-height: 1.7; }
+.sources h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--graphite-55); font-weight: 400; margin: 0 0 16px; }
+.sources p { margin: 0 0 10px; }
+.sources b { color: var(--graphite-75); font-weight: 500; }
+
+.site-footer { border-top: 1px solid var(--graphite-12); margin-top: 72px; }
+.site-footer .inner { font-size: 14px; color: var(--graphite-55); flex-wrap: wrap; }
+.site-footer a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  main { padding: 40px 20px 32px; }
+  .sub { font-size: 18px; }
+  .pull { padding: 18px 20px; font-size: 18px; }
+  .cta { padding: 24px 20px; }
+  .echo { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--graphite-12); font-size: 19px; color: var(--graphite-75); font-style: italic; }
+article h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 36px 0 14px; }
+article h2 { font-size: 23px; margin: 42px 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">Алексей Шаповалов</a>
+    <a class="nav-link" href="/blog/">Блог</a>
+  </div>
+</header>
+
+<main>
+  <div class="eyebrow">Блог</div>
+  <h1>Вашей программой благополучия пользуются 15% сотрудников</h1>
+  <p class="sub">Когда руководители в ней не участвуют, вовлечённость команды держится на 44%. Когда участвуют — растёт на 60%</p>
+  <div class="meta">
+    <span>23 сентября 2026</span>
+    <span>7 минут</span>
+  </div>
+
+<article>
+
+<p class="lead">Средняя вовлечённость в корпоративные программы благополучия — <strong>15,37%</strong>.</p>
+
+<p>Устойчивое участие падает до 20–30% за первые два месяца. Программами психологической помощи пользуются <strong>5,5%</strong> сотрудников.</p>
+
+<p>Вы платите за ДМС, спортзал, психологов и дни ментального здоровья. Пользуется этим примерно каждый седьмой, и через два месяца — каждый десятый.</p>
+
+<p>Дальше о том, почему так и где рычаг. Он не там, где его обычно ищут.</p>
+
+<h2>Сначала про разрыв, который все видят, но не называют</h2>
+
+<div class="facts">
+  <div class="fact"><span class="fact-num">91%</span><span class="fact-txt">руководителей говорят, что поддерживают благополучие сотрудников</span></div>
+  <div class="fact"><span class="fact-num">38%</span><span class="fact-txt">сотрудников считают, что руководство этим действительно занимается</span></div>
+</div>
+
+<p>Разрыв в пятьдесят три пункта. И он не про лицемерие — руководители не врут, они правда так думают. Просто поддержка на словах и поддержка в наблюдаемом поведении — разные вещи, и сотрудники смотрят на второе.</p>
+
+<h2>Почему люди не идут</h2>
+
+<p>В исследованиях называют три барьера, и порядок неожиданный.</p>
+
+<p><strong>Первый — конфиденциальность.</strong> Не стигма, а именно страх, что данные попадут к работодателю. Это главное препятствие к участию в любых программах, связанных с состоянием.</p>
+
+<p><strong>Второй — стигма.</strong> Обратиться за помощью значит показать, что не справляешься.</p>
+
+<p><strong>Третий — культура.</strong> И вот здесь самое интересное.</p>
+
+<p>Если никто из руководителей в программе не участвует, сотрудники читают её как необязательную. Не как заботу, а как строку в соцпакете, которую поставили для галочки. Человек смотрит не на то, что написано в рассылке, а на то, что делает его начальник.</p>
+
+<h2>Рычаг измерен</h2>
+
+<div class="pull"><strong>Когда в программах участвуют 30% руководителей или меньше, вовлечённость сотрудников держится на 44%.</strong></div>
+
+<div class="pull"><strong>Руководители, которые участвуют по-настоящему, поднимают вовлечённость команды на 60%</strong> — причём даже в тех случаях, когда своих собственных целей они не достигли.</div>
+
+<p>То есть работает не результат руководителя, а сам факт его участия. Люди реагируют на то, что первое лицо делает то же, что предлагает им.</p>
+
+<p>Это самый дешёвый рычаг из всех, что есть в программах благополучия. И он почти нигде не задействован.</p>
+
+<h2>И ещё одна вещь, которая течёт сверху вниз</h2>
+
+<p>Ваше состояние не остаётся вашим.</p>
+
+<p>Панельное исследование в крупном муниципалитете Дании: стресс руководителя переходит к подчинённым, и эффект прослеживается <strong>целый год</strong> после того, как руководитель о нём сообщил. Около <strong>10% вашего стресса</strong> конвертируется в стресс сотрудников.</p>
+
+<p>Механизмы простые: эмоциональное заражение и ролевая модель. Люди копируют то, как вы работаете, — включая то, во сколько вы отвечаете на письма и берёте ли выходные.</p>
+
+<p>Что это стоит компании:</p>
+
+<div class="facts">
+  <div class="fact"><span class="fact-txt">Команды выгоревших руководителей — на <b>50% больше инцидентов безопасности</b> и на <b>37% выше абсентеизм</b></span></div>
+  <div class="fact"><span class="fact-txt"><b>86% руководителей</b> фиксируют падение производительности из-за выгорания в командах, <b>72%</b> — уход ценных людей</span></div>
+  <div class="fact"><span class="fact-txt">Команды с высоким уровнем выгорания работают на <b>18–20% ниже нормы</b></span></div>
+</div>
+
+<p>И отдельно про деньги: <strong>89% издержек от выгорания — это не больничные, а работа вполсилы.</strong> Люди отсутствуют в среднем четыре дня в году, а непродуктивны — <strong>57,5 дней</strong>. Для компании это в десять раз дороже больничных.</p>
+
+<p>Выгорание одного топ-менеджера обходится примерно в <strong>$20 683 в год</strong> — больше, чем на любом другом уровне.</p>
+
+<h2>Что из этого следует</h2>
+
+<p>Начинать программу благополучия с сотрудников — значит начинать с конца.</p>
+
+<p>Не потому что сотрудники не важны, а потому что без участия руководителей эти вложения работают на 15%. Вы платите полную цену за программу, которой пользуется каждый седьмой.</p>
+
+<p><strong>Дешевле и быстрее — начать с руководящего слоя.</strong> Не как показательное выступление, а по-настоящему: с замером, планом и результатом, который видно.</p>
+
+<p>Тогда включаются сразу три вещи:</p>
+
+<div class="steps">
+  <div class="stp"><b>У руководителя перестаёт течь вниз</b><span>А это 10% стресса на каждого в команде</span></div>
+  <div class="stp"><b>Появляется ролевая модель</b><span>И остальные программы начинают работать</span></div>
+  <div class="stp"><b>Восстанавливается то, чем он принимает решения</b><span>Недосып бьёт по исполнительным функциям в первую очередь</span></div>
+</div>
+
+<p>ROI при этом считается. У компаний, которые измеряют отдачу от программ благополучия, <strong>95% фиксируют положительный возврат</strong>: $3,27 экономии на медицине и $2,73 на абсентеизме с каждого вложенного доллара.</p>
+
+<h2>Почему руководители сами туда не идут</h2>
+
+<p>По тем же трём причинам, только сильнее.</p>
+
+<p><strong>Конфиденциальность.</strong> Данные о состоянии первого лица — самое чувствительное, что есть в компании.</p>
+
+<p><strong>Стигма.</strong> Признать, что тебе нужна помощь, когда на тебя смотрят сорок человек, тяжелее, чем рядовому сотруднику.</p>
+
+<p><strong>И формат.</strong> Программы для сотрудников рассчитаны на сотрудников: вебинары, абонементы, горячая линия. Руководитель туда не пойдёт не из снобизма, а потому что ему это не подходит по плотности и по глубине.</p>
+
+<p>Значит нужен отдельный формат — не расширение существующей программы вниз, а нормальная работа с тем слоем, от которого зависят остальные.</p>
+
+<h2>Задача на пять минут</h2>
+
+<p>Посчитайте две цифры по своей компании.</p>
+
+<div class="pull"><strong>Первая: сколько руководителей реально пользуются тем, за что компания платит?</strong> Не по спискам, а по факту — ходят в зал, были у психолога, прошли чекап.<br><br><strong>Вторая: когда вы сами последний раз этим пользовались?</strong></div>
+
+<p>Если первая цифра меньше трети, вовлечённость сотрудников у вас, скорее всего, в районе сорока процентов — и никакая коммуникация её не поднимет.</p>
+
+<p>А если вторая — «не помню», то вы знаете, с чего начинать.</p>
+
+<h2>Что должно быть в таком формате</h2>
+
+<p>Если решите делать отдельно для руководящего слоя, вот условия, без которых это не сработает.</p>
+
+<div class="steps">
+  <div class="stp"><b>Конфиденциальность прописана письменно</b><span>Компания получает агрегат без имён: средние по группе и динамику. Человек получает свой результат лично. Иначе замер превращается в аттестацию, люди отвечают правильно вместо честного, и все данные становятся мусором</span></div>
+  <div class="stp"><b>В группе нет прямого подчинения</b><span>Никто не скажет «я сорвался на третьей неделе», если это услышит его руководитель. А без этого не работает подотчётность — главное, что даёт доходимость</span></div>
+  <div class="stp"><b>Есть измеримый результат</b><span>Не «стало лучше», а две колонки цифр: до и после. Иначе через квартал вы не отличите эффект от впечатления</span></div>
+  <div class="stp"><b>Это не разовое мероприятие</b><span>Программы на две-шесть недель дают эффект вдвое слабее, чем программы на три-шесть месяцев</span></div>
+</div>
+
+<h2>Зачем я это написал</h2>
+
+<p>Я тренер по физической подготовке, в прошлом профессиональный спортсмен, и последний год разбирался с собственным восстановлением всерьёз: 340 тренировок, аэробная форма выросла втрое, в сентябре прошёл 59 километров с набором 4713 метров.</p>
+
+<p>Сейчас собираю программу — квартал работы с замерами, для руководителей и собственников. Есть формат для одного человека и есть для группы из одной компании.</p>
+
+<p>Отдельно о том, как это устроено для первого лица, — <a href="/blog/dve-treti.html">для руководителей</a> и <a href="/blog/vladelcy.html">для владельцев</a>.</p>
+
+<h2>С чего начать</h2>
+
+<p>Прежде чем обсуждать формат для команды, стоит посмотреть на себя.</p>
+
+<div class="cta">
+  <h3>Диагностика восстановления</h3>
+  <p>Шестнадцать вопросов о том, как устроено ваше восстановление. Три минуты, результат сразу на экране — какой из четырёх механизмов просел, какой работает и что с этим делать.</p>
+  <a class="btn" href="/vosstanovlenie/">Пройти за три минуты</a>
+  <p class="note">А если сразу интересует формат для команды — <a href="https://t.me/shapovalov_vsegda">напишите</a>, обсудим условия.</p>
+</div>
+
+<p class="echo">Программа благополучия начинает работать с того момента, когда в ней появляется тот, кто её купил.</p>
+
+</article>
+
+<div class="sources">
+  <h3>Источники</h3>
+  <p><b>Участие в корпоративных программах:</b> <a href="https://www.wellable.co/resources/eight-barriers-to-wellness-program-participation/">барьеры к участию</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6427860/">организационные факторы участия</a> · <a href="https://onlinelibrary.wiley.com/doi/10.1111/1748-8583.12547">почему программы помощи сотрудникам недоиспользуются</a></p>
+  <p><b>Разрыв между словами и делом:</b> <a href="https://www.hr.com/en/magazines/all_articles/employee-well-being-in-focus-evidence-challenges-a_mewmfgxv.html">благополучие сотрудников: данные и вызовы</a></p>
+  <p><b>Участие руководителей и вовлечённость:</b> <a href="https://wellhub.com/en-us/blog/wellness-and-benefits-programs/roi-employee-wellness-programs/">ROI программ благополучия, бенчмарки 2026</a> · <a href="https://www.investorsinpeople.com/knowledge/how-to-overcome-leadership-resistance-to-investment-in-wellbeing/">сопротивление руководства вложениям в благополучие</a></p>
+  <p><b>Стресс руководителя переходит команде:</b> <a href="https://bmcpublichealth.biomedcentral.com/articles/10.1186/s12889-022-14179-5">панельное исследование передачи профессионального стресса</a></p>
+  <p><b>Цена выгорания:</b> <a href="https://www.fastcompany.com/91289611/employee-worker-burnout-costs-companies-5-million-per-year-research">89% издержек — презентеизм</a> · <a href="https://www.ehstoday.com/safety-leadership/article/21918281/presenteeism-costs-business-10-times-more-than-absenteeism">презентеизм в 10 раз дороже</a> · <a href="https://hr3-0.com/tpost/509e6e5ok1-ekonomicheskie-posledstviya-vigoraniya-2">потери российского бизнеса</a></p>
+  <p><b>Длительность программ:</b> <a href="https://www.nature.com/articles/s41598-023-41075-8">мета-анализ 38 исследований</a></p>
+</div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>Тренерская · сопровождение собственников в фазе перехода</span>
+    <a href="https://t.me/shapovalov_vsegda">@shapovalov_vsegda</a>
+  </div>
+</footer>
+
+</body>
+</html>
