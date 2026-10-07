@@ -81,6 +81,36 @@ a{color:var(--acc)}
 
 footer{color:var(--ink3);font-size:12.5px;line-height:1.6;border-top:1px solid var(--line);padding-top:16px}
 footer a{color:var(--ink3)}
+/* навигация */
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.nav a{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2);
+  border:1px solid var(--line);border-radius:999px;padding:8px 12px;text-decoration:none;background:var(--card)}
+.nav a:hover,.nav a:focus-visible{border-color:var(--acc);color:var(--acc);outline:none}
+section{scroll-margin-top:12px}
+/* сам */
+.solo{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.solo div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-size:14.5px;color:var(--ink2);line-height:1.5}
+.solo b{display:block;color:var(--ink);font-weight:600;margin-bottom:3px}
+.honest{border-left:3px solid var(--ink3);padding:4px 0 4px 14px;font-size:14px;color:var(--ink2)}
+/* занятия */
+.group{display:flex;flex-direction:column;gap:12px}
+.gh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:8px}
+.gh h3{margin:0;font-size:17px;font-weight:650}
+.gh span{font-size:13.5px;color:var(--ink3)}
+.game{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.game .top2{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.game .name{font-weight:650;font-size:16.5px}
+.game .min{font:500 12px/1 "JetBrains Mono",monospace;color:var(--ink3);white-space:nowrap}
+.game .need{font-size:14px;color:var(--ink2)}
+.game .need b{color:var(--ink);font-weight:600}
+.game ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.game li{font-size:14.5px;color:var(--ink2);line-height:1.5}
+.row2{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px;align-items:baseline}
+.row2 dt{font:500 10.5px/1.6 "JetBrains Mono",monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+.row2 dd{margin:0;color:var(--ink2);line-height:1.5}
+.row2 dd.warn{color:var(--red)}
+.src{font:400 11.5px/1.4 "JetBrains Mono",monospace;color:var(--ink3)}
+@media(max-width:480px){.row2{grid-template-columns:1fr;gap:0}.row2 dd{margin-bottom:6px}}
 </style>
 </head><body>
 
@@ -91,9 +121,13 @@ footer a{color:var(--ink3)}
   <h1>Святослав: игры и игрушки</h1>
   <p class="lead">Святославу 8 месяцев. Главная игрушка для него — <b>взрослый рядом</b>. Мозг малыша растёт через обмены: он подал сигнал, взрослый ответил. Это важнее любой игрушки.</p>
   <p class="sub">Всё нужное для игр уже есть дома.</p>
+  <nav class="nav" aria-label="Разделы">
+    <a href="#kak">Как играть</a><a href="#veshchi">Вещи</a><a href="#sam">Когда играет сам</a>
+    <a href="#zanyatiya">Все занятия</a><a href="#s-sestroy">С Василисой</a><a href="#nelzya">Чего не делать</a><a href="#zametit">Что замечать</a>
+  </nav>
 </header>
 
-<section>
+<section id="kak">
   <h2>Как играть</h2>
   <p class="note">Пять шагов «подачи и отбива» — по ним идёт любая игра.</p>
   <ol class="steps">
@@ -106,7 +140,7 @@ footer a{color:var(--ink3)}
   <p class="note">Одна игра — 2–5 минут, пока ему интересно. Длину решает он. Речь растит не количество слов взрослого, а число таких обменов.</p>
 </section>
 
-<section>
+<section id="veshchi">
   <h2>Шесть вещей для игры</h2>
   <div class="toys">
     <div class="toy top"><span class="t">Платок или пелёнка</span><span class="g">«Ку-ку». Прятать игрушку под платок у него на глазах, потом под второй платок.</span><span class="d">память</span></div>
@@ -119,7 +153,289 @@ footer a{color:var(--ink3)}
   <p class="free"><b>Без вещей:</b> «Сорока-белобока», «Ладушки», «По кочкам» на коленях. И «эхо»: он говорит «ба-ба» — взрослый отвечает «ба-ба, баран!».</p>
 </section>
 
-<section>
+<section id="sam">
+  <h2>Когда он играет сам</h2>
+  <p class="note">Такое время нужно. Но в 8 месяцев «сам» значит: взрослый рядом, но не вмешивается. Одного его не оставляют.</p>
+  <div class="solo">
+    <div><b>Увлёкся — не мешать</b>Не подсовывать новую игрушку, не комментировать каждое движение. Сосредоточенность — тоже навык.</div>
+    <div><b>Позвал — ответить</b>Посмотрел, пискнул, протянул руки — взрослый включается. По его сигналу, а не по своему.</div>
+    <div><b>Безопасное место</b>Пол без мелочей, мебель устойчивая, острые углы закрыты. Взрослый видит его всё время.</div>
+    <div><b>Вода — никогда</b>Рядом с ванной, тазом, речкой — ни на минуту одного.</div>
+  </div>
+  <p class="note">Почему так. По теории привязанности ребёнок уходит исследовать мир, а взрослый — «надёжная база»: следит и радуется со стороны. Длину игры решает малыш — это последний шаг «подачи и отбива». ВОЗ советует несколько раз в день свободное движение на полу.</p>
+  <p class="honest">Сколько минут в день должно быть такой игры — исследований мы не нашли. Ориентир: пусть играет сам, пока ему интересно и спокойно. Захныкал или зовёт — пора к нему.</p>
+</section>
+
+<section id="zanyatiya">
+  <h2>Все занятия подробно</h2>
+  <p class="note">Пятнадцать занятий на 8–12 месяцев, по четырём направлениям. Минуты — ориентир: заканчиваем, когда ему надоело. Если чего-то он пока не умеет — это нормально, занятие и нужно, чтобы научиться.</p>
+
+  <div class="group">
+    <div class="gh"><h3>Память и внимание</h3><span>помнить, ждать, искать</span></div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Ку-ку</span><span class="min">2–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> ладони или лёгкий платок.</p>
+      <ol>
+        <li>Сядьте лицом к лицу, поймайте его взгляд.</li>
+        <li>Закройте лицо ладонями или платком. Пауза 2–3 секунды.</li>
+        <li>Откройте лицо: «Ку-ку!» — с улыбкой.</li>
+        <li>Повторяйте, пока смеётся. Потом пусть платок держит он: накиньте на его голову на секунду — он стянет сам.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Память: помнит, что вы там, хотя не видит. Ожидание сюрприза.</dd>
+        <dt>Усложнить</dt><dd>Прятаться за дверь или край дивана — голос слышен, лица не видно.</dd>
+        <dt>Осторожно</dt><dd class="warn">Платок на его голове — только лёгкий, на секунды, при вас.</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 9 мес «смеётся в ку-ку»; игра — сборник Гарварда</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Под платком</span><span class="min">2–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> любимая игрушка и два платка.</p>
+      <ol>
+        <li>Покажите игрушку, дайте подержать.</li>
+        <li>У него на глазах накройте игрушку платком.</li>
+        <li>Спросите: «Где мяч?» — и подождите. Не подсказывайте сразу.</li>
+        <li>Нашёл — радуйтесь вслух: «Вот он!»</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Рабочая память: держит в голове, где вещь.</dd>
+        <dt>Усложнить</dt><dd>Два платка рядом. Спрячьте под первый, потом, пока он смотрит, перепрячьте под второй.</dd>
+        <dt>Если не ищет</dt><dd>Накройте игрушку наполовину, чтобы краешек торчал. Это нормальный шаг до полного «спрятали».</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 12 мес «ищет игрушку, спрятанную у него на глазах»</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">По кочкам</span><span class="min">2–3 мин</span></div>
+      <p class="need"><b>Нужно:</b> ваши колени.</p>
+      <ol>
+        <li>Посадите его на колени лицом к себе, держите под мышки.</li>
+        <li>Ритмично покачивайте коленями: «По кочкам, по кочкам, по маленьким листочкам…»</li>
+        <li>На «в ямку — бух!» раздвиньте колени, и он мягко «проваливается» вниз. Держите крепко.</li>
+        <li>Повторите. Скоро он начнёт ждать «бух» и смеяться заранее.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Предвидит сюрприз и сдерживает реакцию до конца.</dd>
+        <dt>Осторожно</dt><dd class="warn">Без резких рывков головы. Держать под мышки всё время.</dd>
+        <dt>Опора</dt><dd><span class="src">сборник Гарварда</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Повторяй за мной</span><span class="min">2–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> ничего или кубик.</p>
+      <ol>
+        <li>Сделайте одно простое действие: помашите, хлопните, стукните кубиком по столу.</li>
+        <li>Подождите. Повторит — радуйтесь. Не повторит — сделайте ещё раз.</li>
+        <li>Повторяйте то, что делает он, — это тоже игра.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Внимание, память, ожидание своей очереди.</dd>
+        <dt>Усложнить</dt><dd>Цепочка из двух действий: хлопнуть, потом помахать.</dd>
+        <dt>Опора</dt><dd><span class="src">сборник Гарварда</span></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="gh"><h3>Речь и общение</h3><span>звуки, слова, очередь</span></div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Эхо</span><span class="min">между делом</span></div>
+      <p class="need"><b>Нужно:</b> ничего.</p>
+      <ol>
+        <li>Он произносит звук: «ба-ба».</li>
+        <li>Повторите его же звук и добавьте слово: «Ба-ба… баран!»</li>
+        <li>Замолчите и ждите. Пауза — его очередь.</li>
+        <li>Ответил — снова повторите и добавьте.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Речь и диалог по очереди. Первые разговоры выглядят именно так.</dd>
+        <dt>Опора</dt><dd><span class="src">CDC: повторять звуки малыша и добавлять слова</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Комментатор</span><span class="min">в течение дня</span></div>
+      <p class="need"><b>Нужно:</b> ничего. Годится кормление, купание, прогулка.</p>
+      <ol>
+        <li>Посмотрите, куда смотрит он.</li>
+        <li>Назовите это коротко: «Ложка. Большая ложка».</li>
+        <li>Не переводите его внимание на своё. Смотрит на собаку — говорим про собаку.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Совместное внимание и первые слова.</dd>
+        <dt>Важно</dt><dd>Решает не количество ваших слов, а число обменов «он — вы». Говорить без остановки не нужно.</dd>
+        <dt>Опора</dt><dd><span class="src">Гарвардский центр развития ребёнка; Romeo, 2018</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Книжка</span><span class="min">пока интересно</span></div>
+      <p class="need"><b>Нужно:</b> картонные книжки, одна крупная картинка на странице.</p>
+      <ol>
+        <li>Посадите его на колени, книжка перед ним.</li>
+        <li>Покажите пальцем картинку, назовите: «Кот. Мяу».</li>
+        <li>Подождите: смотрит, тянется, лепечет — ответьте на это.</li>
+        <li>Пусть листает сам, хоть с середины и задом наперёд. Это нормально.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Речь, совместное внимание, привычку к книге.</dd>
+        <dt>Если грызёт книжку</dt><dd>Это тоже знакомство. Картонные книжки для этого и сделаны.</dd>
+        <dt>Опора</dt><dd><span class="src">AAP советует читать детям с рождения</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">«Сорока-белобока» и «Ладушки»</span><span class="min">2–3 мин</span></div>
+      <p class="need"><b>Нужно:</b> ваши руки и его ладошки.</p>
+      <ol>
+        <li>«Сорока»: возьмите его ладошку, водите пальцем по кругу — «кашку варила», — потом загибайте пальчики по одному.</li>
+        <li>«Ладушки»: хлопайте его ладошками друг о друга под стишок.</li>
+        <li>Потом хлопайте сами — посмотрите, повторит ли он.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Память на порядок движений, речь, предвкушение знакомого места в стишке.</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 12 мес «играет в ладушки»</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Музыка вместе</span><span class="min">5 мин</span></div>
+      <p class="need"><b>Нужно:</b> ваш голос, погремушка.</p>
+      <ol>
+        <li>Пойте простую песенку и двигайтесь в такт: качайте, хлопайте, топайте.</li>
+        <li>Дайте погремушку — трясите вместе в ритм.</li>
+        <li>Остановитесь посреди песни и подождите: попросит продолжить взглядом или звуком?</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Жесты для общения, контакт.</dd>
+        <dt>Важно</dt><dd>Именно вместе. Музыка фоном из колонки этого не даёт.</dd>
+        <dt>Опора</dt><dd><span class="src">исследование активных музыкальных занятий с младенцами, Gerry, 2012</span></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="gh"><h3>Движение</h3><span>ползать, вставать, шагать</span></div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Приманка</span><span class="min">3–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> любимая игрушка, мяч или машинка, чистый пол.</p>
+      <ol>
+        <li>Положите игрушку на пол чуть дальше вытянутой руки.</li>
+        <li>Дайте потянуться и поползти. Не подавайте сразу.</li>
+        <li>Злится и сдаётся — придвиньте ближе, чтобы дотянулся. Успех важнее.</li>
+        <li>Дотянулся — радуйтесь вслух.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Ползание, настойчивость.</dd>
+        <dt>Нормально</dt><dd>Ползают по-разному: на животе, на четвереньках, сидя на попе. Около 4% детей не ползают вовсе и сразу встают — это тоже норма.</dd>
+        <dt>Опора</dt><dd><span class="src">CDC; окна двигательного развития ВОЗ</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">У дивана</span><span class="min">3–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> устойчивый диван или пуф, игрушка.</p>
+      <ol>
+        <li>Положите игрушку на край дивана.</li>
+        <li>Он подтягивается, встаёт у опоры, тянется к ней.</li>
+        <li>Когда уже стоит уверенно — перекладывайте игрушку вдоль дивана, чтобы делал шаги боком.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Стоять и ходить с опорой.</dd>
+        <dt>Осторожно</dt><dd class="warn">Мебель не должна качаться и опрокидываться. Острые углы закрыть. Взрослый рядом, чтобы поймать.</dd>
+        <dt>Нормально</dt><dd>Стоять с опорой начинают от 5 до 11 месяцев, ходить сами — от 8 до 17. Всё это норма.</dd>
+        <dt>Опора</dt><dd><span class="src">окна двигательного развития ВОЗ</span></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="gh"><h3>Руки и причина-следствие</h3><span>«я сделал — и вот что вышло»</span></div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Оркестр</span><span class="min">3–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> кастрюля, деревянная ложка, пластиковая бутылка с крупой.</p>
+      <ol>
+        <li>Дайте ему ложку и кастрюлю — пусть стучит сам.</li>
+        <li>Постучите простой ритм: «тук — тук-тук». Подождите, повторит ли.</li>
+        <li>Потрясите бутылку с крупой, дайте ему.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Понимание «я сделал — получился звук», ритм, подражание.</dd>
+        <dt>Осторожно</dt><dd class="warn">Крышку бутылки закрутить плотно, лучше заклеить скотчем. Крупа во рту опасна.</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 9 мес «стучит двумя предметами»</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Положи-достань</span><span class="min">3–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> ведёрко или коробка, 4–5 крупных кубиков.</p>
+      <ol>
+        <li>Покажите: кладёте кубик в ведёрко — «бух!»</li>
+        <li>Высыпьте всё обратно: «Где кубики? Вот они!»</li>
+        <li>Дайте кубик ему. Положил — радуйтесь.</li>
+        <li>Сначала он будет только доставать и высыпать. Класть внутрь научится позже.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Действие с целью, мелкая моторика.</dd>
+        <dt>Осторожно</dt><dd class="warn">Кубики крупные — такие, что целиком в рот не помещаются.</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 12 мес «кладёт вещь в коробку»</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Башня-ломашня</span><span class="min">3–5 мин</span></div>
+      <p class="need"><b>Нужно:</b> 3–4 кубика.</p>
+      <ol>
+        <li>Постройте при нём башню из 2–3 кубиков.</li>
+        <li>Он ломает — радуйтесь вместе: «Бах! Упала!»</li>
+        <li>Стройте снова. Ему нравится, что результат зависит от него.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Подражание, причина и следствие.</dd>
+        <dt>Дальше</dt><dd>К 15 месяцам он начнёт сам ставить кубик на кубик.</dd>
+        <dt>Опора</dt><dd><span class="src">сборник Гарварда; вехи CDC</span></dd>
+      </dl>
+    </div>
+
+    <div class="game">
+      <div class="top2"><span class="name">Сам ест</span><span class="min">за едой</span></div>
+      <p class="need"><b>Нужно:</b> мягкие кусочки еды, которые разрешили родители.</p>
+      <ol>
+        <li>Положите на столик стульчика 2–3 маленьких мягких кусочка.</li>
+        <li>Пусть берёт сам: сначала всей ладонью, потом двумя пальцами — большим и указательным.</li>
+        <li>Не помогайте сразу. Испачкался — это часть занятия.</li>
+      </ol>
+      <dl class="row2">
+        <dt>Развивает</dt><dd>Щипковый захват — брать мелкое двумя пальцами.</dd>
+        <dt>Осторожно</dt><dd class="warn">Только сидя, только при взрослом. Какие продукты и какого размера — решают родители.</dd>
+        <dt>Опора</dt><dd><span class="src">веха CDC к 12 мес «берёт мелкое большим и указательным пальцами»</span></dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section id="s-sestroy">
+  <h2>Игры вместе с Василисой</h2>
+  <p class="note">Василиса ведёт игру для брата, взрослый — рядом. Когда ребёнок управляет игрой другого, растёт его собственное умение управлять собой. Исследований именно про игры старшей сестры с малышом мы не нашли: это сборка из общих источников.</p>
+  <div class="toys">
+    <div class="toy"><span class="t">Ку-ку от сестры</span><span class="g">Василиса прячется за платком, выдерживает паузу, открывается. Брат смеётся.</span></div>
+    <div class="toy"><span class="t">Найди игрушку</span><span class="g">Василиса прячет игрушку под платок у брата на глазах. Взрослый спрашивает: «Где мяч?»</span></div>
+    <div class="toy"><span class="t">Оркестр</span><span class="g">Василиса задаёт ритм бубном, брат стучит ложкой по кастрюле.</span></div>
+    <div class="toy"><span class="t">Сестра читает</span><span class="g">Василиса «читает» брату по картинкам: показывает и называет.</span></div>
+    <div class="toy"><span class="t">Помощник</span><span class="g">Взрослый даёт Василисе задание из трёх шагов: «Принеси подгузник, салфетки и погремушку».</span></div>
+    <div class="toy"><span class="t">Эхо на троих</span><span class="g">Брат лепечет, Василиса повторяет, взрослый добавляет слово.</span></div>
+    <div class="toy"><span class="t">Замри под погремушку</span><span class="g">Брат трясёт погремушку — Василиса танцует. Перестал — она замирает.</span></div>
+    <div class="toy"><span class="t">Камешки у речки</span><span class="g">Василиса сортирует камни, брат кладёт их в ведро. <b>Только если взрослых двое</b>.</span></div>
+  </div>
+</section>
+
+<section id="nelzya">
   <h2>Чего не делать</h2>
   <div class="dont">
     <div class="x"><div><b>Никаких экранов, даже «развивающих».</b> До полутора лет — только видеозвонки с родными. Мультики сестры, когда он рядом, тоже считаются.</div></div>
@@ -130,7 +446,7 @@ footer a{color:var(--ink3)}
   </div>
 </section>
 
-<section>
+<section id="zametit">
   <h2>Что заметить и рассказать родителям</h2>
   <p class="note">К 9 месяцам, примерно к 1 ноября, большинство малышей умеют это. Увидели впервые — отметьте и скажите родителям. Если чего-то ещё нет — это нормально: список нужен для осмотра у педиатра.</p>
   <div class="checks">
@@ -158,7 +474,12 @@ footer a{color:var(--ink3)}
   Источники: <a href="https://developingchild.harvard.edu/resources/briefs/5-steps-for-brain-building-serve-and-return/" target="_blank" rel="noopener">Гарвардский центр развития ребёнка</a> ·
   <a href="https://www.cdc.gov/act-early/milestones/9-months.html" target="_blank" rel="noopener">вехи CDC к 9 месяцам</a> ·
   <a href="https://www.who.int/news/item/24-04-2019-to-grow-up-healthy-children-need-to-sit-less-and-play-more" target="_blank" rel="noopener">ВОЗ: движение, сон, экраны</a> ·
-  <a href="https://www.healthychildren.org/English/news/Pages/AAP-releases-updated-drowning-prevention-recommendations.aspx" target="_blank" rel="noopener">AAP: безопасность у воды</a>
+  <a href="https://www.healthychildren.org/English/news/Pages/AAP-releases-updated-drowning-prevention-recommendations.aspx" target="_blank" rel="noopener">AAP: безопасность у воды</a> ·
+  <a href="https://www.cdc.gov/ncbddd/actearly/milestones/milestones-1yr.html" target="_blank" rel="noopener">вехи CDC к 1 году</a> ·
+  <a href="https://cdn.who.int/media/docs/default-source/child-growth/child-growth-standards/indicators/motor-development-milestones/who-motor-development-study-windows-of-achievement-for-six-gross-motor-development-milestones.pdf" target="_blank" rel="noopener">ВОЗ: окна двигательного развития</a> ·
+  <a href="https://pubmed.ncbi.nlm.nih.gov/24962987/" target="_blank" rel="noopener">AAP: чтение с рождения</a> ·
+  <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-7687.2012.01142.x" target="_blank" rel="noopener">Gerry, 2012: музыка с младенцами</a> ·
+  <a href="https://developingchild.harvard.edu/resources/handouts-tools/activities-guide-enhancing-and-practicing-executive-function-skills/" target="_blank" rel="noopener">сборник игр Гарварда</a>
 </footer>
 
 </div>
