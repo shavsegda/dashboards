@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Святослав: игры и игрушки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#faf8f5; --card:#ffffff; --ink:#232120; --ink2:#5d564d; --ink3:#948b80;
+  --line:#e7e0d5; --line2:#f0ebe2; --acc:#b8543a; --acc-s:#f4e7e2;
+  --ok:#5c8a4a; --ok-s:#eaf0e5; --red:#b23a2e; --red-s:#f7e4e1;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --paper:#161513; --card:#1f1d1b; --ink:#ece5da; --ink2:#b3aa9e; --ink3:#7d746a;
+  --line:#302c28; --line2:#282522; --acc:#d97a5c; --acc-s:#2e211d;
+  --ok:#6fa259; --ok-s:#1e2a1b; --red:#e07a6c; --red-s:#2f1c19;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#161513; --card:#1f1d1b; --ink:#ece5da; --ink2:#b3aa9e; --ink3:#7d746a;
+  --line:#302c28; --line2:#282522; --acc:#d97a5c; --acc-s:#2e211d;
+  --ok:#6fa259; --ok-s:#1e2a1b; --red:#e07a6c; --red-s:#2f1c19;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;padding-inline:18px}
+.wrap{max-width:760px;margin:0 auto;padding-block:40px 64px;display:flex;flex-direction:column;gap:40px}
+.eyebrow{font:500 11px/1.3 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+header{display:flex;flex-direction:column;gap:12px}
+h1{font-size:clamp(28px,6vw,38px);line-height:1.15;font-weight:700;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.lead{font-size:17px;line-height:1.55;margin:0;max-width:36em}
+.lead b{color:var(--acc);font-weight:600}
+.sub{color:var(--ink2);font-size:14.5px;margin:0}
+section{display:flex;flex-direction:column;gap:14px}
+h2{font-size:21px;font-weight:650;letter-spacing:-.015em;margin:0;padding-top:20px;border-top:2px solid var(--ink)}
+p{margin:0}
+.note{color:var(--ink2);font-size:14.5px;max-width:40em}
+a{color:var(--acc)}
+
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;font-size:15.5px;color:var(--ink2)}
+.steps li::before{counter-increment:s;content:counter(s);font:500 13px/1 "JetBrains Mono",monospace;color:var(--acc);
+  width:28px;height:28px;border:1.5px solid var(--acc);border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.steps b{color:var(--ink);font-weight:600}
+
+.toys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.toy{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;display:flex;flex-direction:column;gap:6px}
+.toy .t{font-weight:650;font-size:15.5px}
+.toy .g{font-size:14.5px;color:var(--ink2);line-height:1.5}
+.toy .d{font:500 11px/1.5 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ok);
+  background:var(--ok-s);border-radius:5px;padding:2px 8px;align-self:flex-start}
+.toy.top{border-color:var(--acc)}
+.toy.top .t::after{content:"  главное";font:500 10px/1 "JetBrains Mono",monospace;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--acc);vertical-align:2px}
+.free{background:var(--acc-s);border-radius:10px;padding:13px 16px;font-size:14.5px;color:var(--ink2)}
+.free b{color:var(--ink)}
+
+.dont{display:flex;flex-direction:column;gap:10px}
+.x{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;padding:12px 14px;
+  border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.x::before{content:"✕";font-weight:700;color:var(--red);font-size:14px}
+.x div{font-size:14.5px;color:var(--ink2);line-height:1.5}
+.x b{color:var(--ink);font-weight:600}
+
+.checks{display:flex;flex-direction:column;gap:2px}
+.check{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:10px 4px;
+  border-bottom:1px solid var(--line2);font-size:15px;cursor:pointer;color:var(--ink2)}
+.check:last-child{border-bottom:0}
+.check input{width:20px;height:20px;accent-color:var(--ok);margin:0}
+.check input:checked + span{color:var(--ink);text-decoration:line-through;text-decoration-color:var(--ok)}
+.check input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tip{font-size:12.5px;color:var(--ink3)}
+
+.alarm{background:var(--red-s);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.alarm .h{font-weight:650;color:var(--red);font-size:15.5px}
+.alarm ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14.5px;color:var(--ink)}
+.call{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;margin-top:4px;font-size:14.5px}
+.num{font:600 22px/1 "JetBrains Mono",monospace;color:var(--red);user-select:all}
+
+footer{color:var(--ink3);font-size:12.5px;line-height:1.6;border-top:1px solid var(--line);padding-top:16px}
+footer a{color:var(--ink3)}
+</style>
+</head><body>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Памятка для родителей и няни · октябрь 2026</span>
+  <h1>Святослав: игры и игрушки</h1>
+  <p class="lead">Святославу 8 месяцев. Главная игрушка для него — <b>взрослый рядом</b>. Мозг малыша растёт через обмены: он подал сигнал, взрослый ответил. Это важнее любой игрушки.</p>
+  <p class="sub">Всё нужное для игр уже есть дома.</p>
+</header>
+
+<section>
+  <h2>Как играть</h2>
+  <p class="note">Пять шагов «подачи и отбива» — по ним идёт любая игра.</p>
+  <ol class="steps">
+    <li><span><b>Заметить, что он подал.</b> Куда смотрит, на что тянется, какой звук издаёт.</span></li>
+    <li><span><b>Ответить.</b> Улыбнуться, кивнуть, подать вещь.</span></li>
+    <li><span><b>Назвать.</b> «Это мяч. Красный мяч».</span></li>
+    <li><span><b>Подождать его ответа.</b> Пауза — его очередь «говорить».</span></li>
+    <li><span><b>Закончить, когда ему хватит.</b> Отвернулся, захныкал — сменить занятие.</span></li>
+  </ol>
+  <p class="note">Одна игра — 2–5 минут, пока ему интересно. Длину решает он. Речь растит не количество слов взрослого, а число таких обменов.</p>
+</section>
+
+<section>
+  <h2>Шесть вещей для игры</h2>
+  <div class="toys">
+    <div class="toy top"><span class="t">Платок или пелёнка</span><span class="g">«Ку-ку». Прятать игрушку под платок у него на глазах, потом под второй платок.</span><span class="d">память</span></div>
+    <div class="toy top"><span class="t">Кубики и ведёрко</span><span class="g">Класть и доставать. Взрослый строит башню из 2–3 кубиков — он ломает.</span><span class="d">действие с целью</span></div>
+    <div class="toy"><span class="t">Кастрюля, ложка, бутылка с крупой</span><span class="g">«Оркестр»: стучит сам и повторяет за взрослым. Бутылка — плотно закрыта.</span><span class="d">причина и следствие</span></div>
+    <div class="toy"><span class="t">Картонные книжки</span><span class="g">Показать картинку, назвать, подождать его реакции.</span><span class="d">речь</span></div>
+    <div class="toy"><span class="t">Мяч, машинка, любимая игрушка</span><span class="g">Положить чуть дальше, чем он достаёт рукой.</span><span class="d">ползание</span></div>
+    <div class="toy"><span class="t">Устойчивый диван или пуф</span><span class="g">Игрушка наверху — встаёт у опоры и шагает вдоль.</span><span class="d">стоять с опорой</span></div>
+  </div>
+  <p class="free"><b>Без вещей:</b> «Сорока-белобока», «Ладушки», «По кочкам» на коленях. И «эхо»: он говорит «ба-ба» — взрослый отвечает «ба-ба, баран!».</p>
+</section>
+
+<section>
+  <h2>Чего не делать</h2>
+  <div class="dont">
+    <div class="x"><div><b>Никаких экранов, даже «развивающих».</b> До полутора лет — только видеозвонки с родными. Мультики сестры, когда он рядом, тоже считаются.</div></div>
+    <div class="x"><div><b>Мелкие детали — выше его роста.</b> Он тянет всё в рот. Детали конструктора и карточки Василисы, монеты, батарейки — убирать.</div></div>
+    <div class="x"><div><b>Не держать пристёгнутым дольше часа подряд</b> — в коляске, стульчике, шезлонге. Несколько раз в день — игра на полу.</div></div>
+    <div class="x"><div><b>У воды — только на расстоянии вытянутой руки.</b> Ванна, речка, море. Ни на минуту одного. У речки с обоими детьми — только вдвоём со взрослым.</div></div>
+    <div class="x"><div><b>Не звать разными именами.</b> Он учится откликаться на имя. Все зовут его «Святослав» или «Свят», без «Святика» и других вариантов.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Что заметить и рассказать родителям</h2>
+  <p class="note">К 9 месяцам, примерно к 1 ноября, большинство малышей умеют это. Увидели впервые — отметьте и скажите родителям. Если чего-то ещё нет — это нормально: список нужен для осмотра у педиатра.</p>
+  <div class="checks">
+    <label class="check"><input type="checkbox" id="c1"><span>Откликается на имя: позвали сбоку обычным голосом — повернулся</span></label>
+    <label class="check"><input type="checkbox" id="c2"><span>Сам садится из положения лёжа</span></label>
+    <label class="check"><input type="checkbox" id="c3"><span>Стесняется чужих, жмётся к своим</span></label>
+    <label class="check"><input type="checkbox" id="c4"><span>Показывает лицом радость, грусть, злость, удивление</span></label>
+    <label class="check"><input type="checkbox" id="c5"><span>Стучит двумя предметами друг о друга</span></label>
+    <label class="check"><input type="checkbox" id="c6"><span>Ищет игрушку, спрятанную под платок у него на глазах</span></label>
+  </div>
+  <p class="tip">Отметки видны только на этом телефоне. Главное — сказать родителям.</p>
+
+  <div class="alarm">
+    <span class="h">Сразу сказать родителям, не дожидаясь вечера</span>
+    <ul>
+      <li>умел что-то и перестал: лепетал — замолчал, сидел — больше не сидит;</li>
+      <li>температура, вялость, рвота, отказ от еды и питья;</li>
+      <li>ударился головой или что-то проглотил.</li>
+    </ul>
+    <div class="call">При опасном состоянии — сначала скорая: <span class="num">103</span> или <span class="num">112</span>, потом родители.</div>
+  </div>
+</section>
+
+<footer>
+  Источники: <a href="https://developingchild.harvard.edu/resources/briefs/5-steps-for-brain-building-serve-and-return/" target="_blank" rel="noopener">Гарвардский центр развития ребёнка</a> ·
+  <a href="https://www.cdc.gov/act-early/milestones/9-months.html" target="_blank" rel="noopener">вехи CDC к 9 месяцам</a> ·
+  <a href="https://www.who.int/news/item/24-04-2019-to-grow-up-healthy-children-need-to-sit-less-and-play-more" target="_blank" rel="noopener">ВОЗ: движение, сон, экраны</a> ·
+  <a href="https://www.healthychildren.org/English/news/Pages/AAP-releases-updated-drowning-prevention-recommendations.aspx" target="_blank" rel="noopener">AAP: безопасность у воды</a>
+</footer>
+
+</div>
+
+<script>
+// Отметки вех хранятся только в браузере этого телефона
+(function(){
+  var KEY='svyat-vehi';
+  var saved={};
+  try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ saved={}; }
+  document.querySelectorAll('.check input').forEach(function(box){
+    if(saved[box.id]) box.checked=true;
+    box.addEventListener('change',function(){
+      saved[box.id]=box.checked;
+      try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){}
+    });
+  });
+})();
+</script>
+
+</body></html>
