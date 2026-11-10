@@ -321,5 +321,10 @@
         "bowtie-standard"
       ]
     }
+  },
+  "tracking": {
+    "counter_id": 114172914,
+    "list_id": 589267,
+    "book_field": "merge_3"
   }
 }

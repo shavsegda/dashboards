@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = ROOT / 'biblioteka'
@@ -77,6 +78,33 @@ RELATED_STYLE = '''
 '''
 
 
+
+def add_tracking(source, slug, entry, settings):
+    if not settings:
+        return source
+    source = re.sub(r'\n?<!-- library-tracking:start -->.*?<!-- library-tracking:end -->\n?', '\n', source, flags=re.S)
+    counter = int(settings['counter_id'])
+    block = f'<!-- library-tracking:start -->\n<script defer src="/biblioteka/library-tracking.js" data-library-counter="{counter}" data-library-book="{slug}"></script>\n<!-- library-tracking:end -->\n'
+    source = source.replace('</head>', block + '</head>', 1)
+    if not entry:
+        return source
+    # Название книги записывается в поле «Книги подписки» существующей базы.
+    field = settings['book_field']
+    name = entry['name'].replace(';', ',')
+    tag = html.escape('Библиотека;' + name, quote=True)
+    draft = 'Здравствуйте, Алексей! Пришёл из библиотеки, со страницы «' + name + '».\nХочу обсудить: '
+    telegram = 'https://t.me/shapovalov_vsegda?text=' + quote(draft, safe='')
+    def update_connect(match):
+        section = match[0]
+        section = re.sub(r'<input\b(?=[^>]*name="' + re.escape(field) + r'")[^>]*>\s*', '', section)
+        hidden = f'<input type="hidden" name="{field}" value="{tag}">\n    '
+        section = re.sub(r'(<input\b(?=[^>]*name="list_id")[^>]*>\s*)', lambda m: m[0] + hidden, section, count=1)
+        section = re.sub(r'<a\b[^>]*href="https://t\.me/shapovalov_vsegda(?:\?[^"\n]*)?"[^>]*>', lambda m: '<a href="' + html.escape(telegram, quote=True) + '" data-library-action="telegram">', section, count=1)
+        section = section.replace('Адрес хранится в DashaMail и используется для рассылки.', 'Адрес и название материала сохраняются в DashaMail для рассылки и учёта источника подписки.')
+        return section
+    return re.sub(r'<!-- author-connect:start -->.*?<!-- author-connect:end -->', update_connect, source, count=1, flags=re.S)
+
+
 def main():
     manifest = json.loads(MANIFEST.read_text())
     base = manifest['base_url'].rstrip('/')
@@ -127,7 +155,12 @@ def main():
             source = source.replace('<!-- author-connect:start -->',block+'<!-- author-connect:start -->',1)
         # Меняется только название навигации, сами адреса остаются прежними.
         source = source.replace('← Библиотека','← Пересказы книг')
+        source = add_tracking(source,slug,entry,manifest.get('tracking'))
         write_changed(path,source)
+
+    home_path = ROOT/'index.html'
+    home = add_tracking(home_path.read_text(),'home',None,manifest.get('tracking'))
+    write_changed(home_path,home)
 
     collection_url = base+'/biblioteka/'
     collection = {'@context':'https://schema.org','@type':'CollectionPage','name':'Пересказы книг','description':'Основные идеи, объяснения и практические инструменты простым языком. Библиотека Алексея Шаповалова.','url':collection_url,'inLanguage':'ru','author':author,'mainEntity':{'@type':'ItemList','numberOfItems':len(entries),'itemListElement':[{'@type':'ListItem','position':i,'name':entry['name'],'url':f'{collection_url}{slug}/'} for i,(slug,entry) in enumerate(entries.items(),1)]}}
@@ -143,6 +176,7 @@ def main():
         shelf = shelf.replace('<!-- КАТЕГОРИИ.',guide+'\n\n<!-- КАТЕГОРИИ.',1)
         # Ссылка относится к вступлению и использует ширину основного текста.
         shelf = shelf.replace(guide,'<div class="content">'+guide+'</div>')
+    shelf = add_tracking(shelf,'library',None,manifest.get('tracking'))
     write_changed(shelf_path,shelf)
 
     ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
