@@ -101,6 +101,7 @@ def add_tracking(source, slug, entry, settings):
         section = re.sub(r'(<input\b(?=[^>]*name="list_id")[^>]*>\s*)', lambda m: m[0] + hidden, section, count=1)
         section = re.sub(r'<a\b[^>]*href="https://t\.me/shapovalov_vsegda(?:\?[^"\n]*)?"[^>]*>', lambda m: '<a href="' + html.escape(telegram, quote=True) + '" data-library-action="telegram">', section, count=1)
         section = section.replace('Адрес хранится в DashaMail и используется для рассылки.', 'Адрес и название материала сохраняются в DashaMail для рассылки и учёта источника подписки.')
+        section = section.replace('подтвердите подписку. Адрес и название', 'подтвердите подписку. Если письма нет, проверьте папку «Спам». Адрес и название')
         return section
     return re.sub(r'<!-- author-connect:start -->.*?<!-- author-connect:end -->', update_connect, source, count=1, flags=re.S)
 
