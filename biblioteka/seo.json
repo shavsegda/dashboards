@@ -1,0 +1,325 @@
+{
+  "base_url": "https://shapovalov-aleksey.ru",
+  "pages": {
+    "atkinson-hilgard-psychology": {
+      "title": "Введение в психологию — Аткинсон: краткое содержание",
+      "description": "Пересказ учебника Аткинсон и Хилгарда: восприятие, память, мышление, эмоции, развитие и поведение. Основные понятия и объяснения простым языком.",
+      "name": "Введение в психологию",
+      "original_authors": "Рита Аткинсон, Ричард Аткинсон, Эдвард Смит, Дэрил Бем, Сьюзен Нолен-Хоэксема",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "leontiev-psihologiya-smysla"
+      ]
+    },
+    "attia-outlive": {
+      "title": "Outlive — Питер Аттиа: краткое содержание книги о долголетии",
+      "description": "Пересказ книги Питера Аттиа «Outlive»: долголетие, профилактика заболеваний, физическая активность, питание, сон и эмоциональное здоровье.",
+      "name": "Outlive. Наука и искусство долголетия",
+      "original_authors": "Питер Аттиа",
+      "related": [
+        "iyengar-light-on-yoga",
+        "lieberman-exercised",
+        "mcgill-back-mechanic"
+      ]
+    },
+    "barrett-how-emotions-are-made": {
+      "title": "Как рождаются эмоции — Лиза Барретт: краткое содержание",
+      "description": "Пересказ книги Лизы Фельдман Барретт: теория конструирования эмоций, работа мозга, роль тела, языка и прошлого опыта.",
+      "name": "Как рождаются эмоции",
+      "original_authors": "Лиза Фельдман Барретт",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology"
+      ]
+    },
+    "beck-cbt-basics-3ed": {
+      "title": "Когнитивно-поведенческая терапия — Джудит Бек: пересказ",
+      "description": "Пересказ книги Джудит Бек о КПТ: когнитивная модель, убеждения, структура сессии, поведенческие и когнитивные инструменты. Третье издание.",
+      "name": "Когнитивно-поведенческая терапия. От основ к направлениям",
+      "original_authors": "Джудит С. Бек",
+      "related": [
+        "schein-helping",
+        "eidemiller-family",
+        "prohazka-norkross-sistemy"
+      ]
+    },
+    "bowtie-standard": {
+      "title": "Модель Bowtie — Winning by Design: основные идеи и этапы",
+      "description": "Пересказ стандарта Winning by Design: путь клиента от привлечения до продления и расширения, этапы модели Bowtie и показатели бизнеса.",
+      "name": "Бабочка (The Bowtie)",
+      "original_authors": "Winning by Design",
+      "related": [
+        "walker-launch",
+        "ilyahov-skryabin-socseti",
+        "weiss-million-dollar-consulting"
+      ],
+      "source_type": "CreativeWork"
+    },
+    "cci-self-esteem": {
+      "title": "Самооценка: упражнения и практикум CCI на русском",
+      "description": "Девять модулей CCI о самооценке: объяснения, упражнения, заполненные примеры и рабочие бланки. Неофициальная русская учебная версия и PDF.",
+      "name": "Самооценка. От понимания к практике",
+      "original_authors": "Louella Lim, Lisa Saulsman, Paula Nathan",
+      "related": [
+        "golvi-vnutrennyaya-igra",
+        "safren-adhd-workbook",
+        "culadasa-mind-illuminated"
+      ],
+      "source_type": "CreativeWork"
+    },
+    "clear-atomic-habits": {
+      "title": "Атомные привычки — Джеймс Клир: краткое содержание",
+      "description": "Пересказ «Атомных привычек» Джеймса Клира: четыре закона изменения поведения, привычки и идентичность, среда и практические шаги.",
+      "name": "Атомные привычки",
+      "original_authors": "Джеймс Клир",
+      "related": [
+        "goldsmith-what-got-you-here"
+      ]
+    },
+    "culadasa-mind-illuminated": {
+      "title": "Свет ума — Куладаса: краткое содержание и ступени практики",
+      "description": "Пересказ книги Куладасы «Свет ума»: десять ступеней медитации, внимание и осознавание, отвлечения, притуплённость и развитие практики.",
+      "name": "Свет ума",
+      "original_authors": "Куладаса, Мэтью Иммергат, Джереми Грейвс",
+      "related": [
+        "golvi-vnutrennyaya-igra",
+        "safren-adhd-workbook",
+        "cci-self-esteem"
+      ]
+    },
+    "drogan-dtbd": {
+      "title": "Что дальше? — Юрий Дроган: краткое содержание книги о DTBD",
+      "description": "Пересказ книги Юрия Дрогана и соавторов: метод DTBD, задачи развития клиента, интервью, граф работ и разработка продуктов.",
+      "name": "Что дальше?",
+      "original_authors": "Юрий Дроган, Дамир Хайров, Артём Еременко, Антон Елфимов",
+      "related": [
+        "walker-launch",
+        "ilyahov-skryabin-socseti",
+        "weiss-million-dollar-consulting"
+      ]
+    },
+    "eidemiller-family": {
+      "title": "Психология и психотерапия семьи — Эйдемиллер: пересказ",
+      "description": "Пересказ книги Эйдемиллера и Юстицкиса: семейная система, роли, нарушения отношений, диагностика и подходы к семейной психотерапии.",
+      "name": "Психология и психотерапия семьи",
+      "original_authors": "Эдмонд Эйдемиллер, Витаутас Юстицкис",
+      "related": [
+        "schein-helping",
+        "prohazka-norkross-sistemy",
+        "real-depression"
+      ]
+    },
+    "erikson-childhood-society": {
+      "title": "Детство и общество — Эрик Эриксон: краткое содержание",
+      "description": "Пересказ книги Эрика Эриксона: стадии психосоциального развития, идентичность, детство и влияние общества на становление личности.",
+      "name": "Детство и общество",
+      "original_authors": "Эрик Эриксон",
+      "related": [
+        "storr-status-game",
+        "atkinson-hilgard-psychology",
+        "leontiev-psihologiya-smysla"
+      ]
+    },
+    "goldsmith-what-got-you-here": {
+      "title": "Прыгни выше головы! — Маршалл Голдсмит: краткое содержание",
+      "description": "Пересказ книги Маршалла Голдсмита: привычки, мешающие руководителю расти, обратная связь и изменение поведения в отношениях с людьми.",
+      "name": "Прыгни выше головы!",
+      "original_authors": "Маршалл Голдсмит, Марк Рейтер",
+      "related": [
+        "clear-atomic-habits"
+      ]
+    },
+    "golvi-vnutrennyaya-igra": {
+      "title": "Работа как внутренняя игра — Тимоти Голви: краткое содержание",
+      "description": "Пересказ книги Тимоти Голви: внутренние помехи в работе, внимание, обучение и развитие. Основные идеи и практические инструменты автора.",
+      "name": "Работа как внутренняя игра",
+      "original_authors": "Тимоти Голви",
+      "related": [
+        "safren-adhd-workbook",
+        "culadasa-mind-illuminated",
+        "cci-self-esteem"
+      ]
+    },
+    "graham-haidt-moral-foundations": {
+      "title": "Теория моральных оснований — Хайдт и соавторы: пересказ",
+      "description": "Пересказ статьи о теории моральных оснований: откуда берутся моральные различия, как устроена модель и какие исследования её проверяют.",
+      "name": "Теория моральных оснований",
+      "original_authors": "Грэм, Хайдт, Колева, Мотыл, Айер, Войцик, Дитто",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology"
+      ],
+      "source_type": "CreativeWork"
+    },
+    "ilyahov-skryabin-socseti": {
+      "title": "Большая книга о соцсетях — Ильяхов и Скрябин: пересказ",
+      "description": "Пересказ книги Максима Ильяхова и Родиона Скрябина: задачи соцсетей, аудитория, содержание, продвижение и организация работы.",
+      "name": "Большая книга о соцсетях",
+      "original_authors": "Максим Ильяхов, Родион Скрябин",
+      "related": [
+        "walker-launch",
+        "weiss-million-dollar-consulting",
+        "bowtie-standard"
+      ]
+    },
+    "iyengar-light-on-yoga": {
+      "title": "Йога Дипика — Айенгар: краткое содержание и практика",
+      "description": "Пересказ «Йога Дипики» Б. К. С. Айенгара: устройство практики йоги, асаны, пранаяма, последовательности и объяснения автора.",
+      "name": "Йога Дипика: прояснение йоги",
+      "original_authors": "Б. К. С. Айенгар",
+      "related": [
+        "lieberman-exercised",
+        "attia-outlive",
+        "mcgill-back-mechanic"
+      ]
+    },
+    "leontiev-psihologiya-smysla": {
+      "title": "Психология смысла — Дмитрий Леонтьев: краткое содержание",
+      "description": "Пересказ книги Дмитрия Леонтьева: смысл, личностные ценности, мотивация, смысловая регуляция и развитие личности.",
+      "name": "Психология смысла",
+      "original_authors": "Дмитрий Леонтьев",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology"
+      ]
+    },
+    "lieberman-exercised": {
+      "title": "Парадокс упражнений — Дэниел Либерман: краткое содержание",
+      "description": "Пересказ книги Дэниела Либермана: эволюция физической активности, отношение к упражнениям, здоровье и распространённые представления о спорте.",
+      "name": "Парадокс упражнений",
+      "original_authors": "Дэниел Либерман",
+      "related": [
+        "iyengar-light-on-yoga",
+        "attia-outlive",
+        "mcgill-back-mechanic"
+      ]
+    },
+    "mcgill-back-mechanic": {
+      "title": "Back Mechanic — Стюарт Макгилл: краткое содержание",
+      "description": "Пересказ книги Стюарта Макгилла о боли в спине: оценка провоцирующих движений, повседневные нагрузки и упражнения в подходе автора.",
+      "name": "Back Mechanic. Метод Макгилла от боли в спине",
+      "original_authors": "Стюарт Макгилл",
+      "related": [
+        "iyengar-light-on-yoga",
+        "lieberman-exercised",
+        "attia-outlive"
+      ]
+    },
+    "prohazka-norkross-sistemy": {
+      "title": "Системы психотерапии — Прохазка и Норкросс: пересказ",
+      "description": "Пересказ книги Прохазки и Норкросса: основные школы психотерапии, модели изменений, инструменты, исследования и ограничения подходов.",
+      "name": "Системы психотерапии",
+      "original_authors": "Джеймс Прохазка, Джон Норкросс",
+      "related": [
+        "schein-helping",
+        "eidemiller-family",
+        "real-depression"
+      ]
+    },
+    "real-depression": {
+      "title": "Я не хочу об этом говорить — Терренс Реал: краткое содержание",
+      "description": "Пересказ книги Терренса Реала о мужской депрессии: стыд, отношения, семейные сценарии, скрытые переживания и восстановление связи с собой.",
+      "name": "Я не хочу об этом говорить",
+      "original_authors": "Терренс Реал",
+      "related": [
+        "schein-helping",
+        "eidemiller-family",
+        "prohazka-norkross-sistemy"
+      ]
+    },
+    "safren-adhd-workbook": {
+      "title": "КПТ при СДВГ у взрослых — рабочая тетрадь Сафрена: пересказ",
+      "description": "Русский пересказ рабочей тетради Сафрена и соавторов: планирование, отвлекаемость, адаптивное мышление и прокрастинация. Упражнения и бланки.",
+      "name": "Рабочая тетрадь по СДВГ у взрослых",
+      "original_authors": "Стивен Сафрен, Сьюзан Сприч, Кэрол Перлман, Майкл Отто",
+      "related": [
+        "golvi-vnutrennyaya-igra",
+        "culadasa-mind-illuminated",
+        "cci-self-esteem"
+      ]
+    },
+    "schein-helping": {
+      "title": "Помощь — Эдгар Шейн: краткое содержание и основные идеи",
+      "description": "Пересказ книги Эдгара Шейна «Помощь»: роли помощника, доверие, статус, вопросы и ловушки консультирования. Короткая и полная версии.",
+      "name": "Помощь",
+      "original_authors": "Эдгар Шейн",
+      "related": [
+        "eidemiller-family",
+        "prohazka-norkross-sistemy",
+        "real-depression"
+      ]
+    },
+    "schwartz-19-values": {
+      "title": "19 базовых ценностей Шварца: теория и применение в России",
+      "description": "Пересказ статьи Шварца и соавторов: уточнённая теория 19 ценностей, их структура, измерение и результаты применения модели в России.",
+      "name": "Уточнённая теория базовых индивидуальных ценностей: применение в России",
+      "original_authors": "Шварц, Бутенко, Седова, Липатова",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology"
+      ],
+      "source_type": "CreativeWork"
+    },
+    "storr-status-game": {
+      "title": "Игра в статус — Уилл Сторр: краткое содержание книги",
+      "description": "Пересказ книги Уилла Сторра: статусные игры, принадлежность к группам, признание, доминирование, успех и добродетель.",
+      "name": "Игра в статус",
+      "original_authors": "Уилл Сторр",
+      "related": [
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology",
+        "leontiev-psihologiya-smysla"
+      ]
+    },
+    "tri-vetki-psihologii": {
+      "title": "Книги по психологии: что читать и в каком порядке",
+      "description": "Путеводитель по 39 книгам: клиническая психология, развитие взрослых и руководителей, организационная психология. Темы и порядок чтения.",
+      "name": "Три ветки психологии",
+      "original_authors": "",
+      "related": [
+        "atkinson-hilgard-psychology",
+        "beck-cbt-basics-3ed",
+        "golvi-vnutrennyaya-igra"
+      ],
+      "source_type": null
+    },
+    "vaillant-aging-well": {
+      "title": "Стареть хорошо — Джордж Вайян: краткое содержание Aging Well",
+      "description": "Пересказ книги Джорджа Вайяна «Aging Well»: взрослое развитие, отношения, защитные механизмы и результаты длительных исследований жизни людей.",
+      "name": "Aging Well («Стареть хорошо»)",
+      "original_authors": "Джордж Вайян",
+      "related": [
+        "storr-status-game",
+        "erikson-childhood-society",
+        "atkinson-hilgard-psychology"
+      ]
+    },
+    "walker-launch": {
+      "title": "Запуск! — Джефф Уокер: краткое содержание книги",
+      "description": "Пересказ книги Джеффа Уокера: подготовка запуска продукта, работа с аудиторией, последовательность сообщений и организация продаж.",
+      "name": "Запуск! Быстрый старт для вашего бизнеса",
+      "original_authors": "Джефф Уокер",
+      "related": [
+        "ilyahov-skryabin-socseti",
+        "weiss-million-dollar-consulting",
+        "bowtie-standard"
+      ]
+    },
+    "weiss-million-dollar-consulting": {
+      "title": "Консалтинг на миллион — Алан Вайс: краткое содержание",
+      "description": "Пересказ книги Алана Вайса: развитие консультационного бизнеса, работа с заказчиком, ценность результата, предложения и стоимость услуг.",
+      "name": "Консалтинг на миллион",
+      "original_authors": "Алан Вайс",
+      "related": [
+        "walker-launch",
+        "ilyahov-skryabin-socseti",
+        "bowtie-standard"
+      ]
+    }
+  }
+}
