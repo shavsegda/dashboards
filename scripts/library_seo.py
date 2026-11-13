@@ -184,6 +184,9 @@ def main():
     namespace = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
     sitemap = ET.Element(namespace+'urlset')
     urls = [base+'/',collection_url] + [f'{collection_url}{slug}/' for slug in entries]
+    # Самостоятельные страницы сохраняются при пересборке карты библиотеки.
+    urls += [base+'/'+path.lstrip('/') for path in manifest.get('additional_pages', [])]
+    urls = list(dict.fromkeys(urls))
     for url in urls:
         node = ET.SubElement(sitemap,namespace+'url')
         ET.SubElement(node,namespace+'loc').text = url
