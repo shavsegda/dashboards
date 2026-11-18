@@ -1,0 +1,15 @@
+/* Первый согласованный экран добавлен отдельно от прежних блоков. */
+.intro-screen{min-height:calc(100svh - 88px);max-width:1000px;padding-block:64px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:32px}
+.intro-screen h1{margin:0;line-height:1.1;letter-spacing:-.04em}
+.intro-name{display:block;font-family:var(--serif);font-size:clamp(58px,6vw,88px);font-weight:400;margin-bottom:24px}
+.intro-definition{display:block;font-family:var(--sans);font-size:clamp(18px,2vw,25px);font-weight:400;line-height:1.6;letter-spacing:0;max-width:34ch}
+.intro-job{font-family:var(--sans);font-size:clamp(20px,2.25vw,28px);line-height:1.65;max-width:58ch;margin:0}
+.intro-value{font-family:var(--serif);font-size:clamp(26px,2.7vw,38px);line-height:1.45;letter-spacing:-.025em;color:var(--accent);max-width:46ch;margin:0}
+.intro-value strong{font-weight:500}
+.intro-scroll{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:50%;color:var(--accent);font-size:24px;margin-top:8px}
+.intro-scroll:hover{border-color:var(--accent);background:var(--accent-light)}
+.hero h2.hero-result-title{font-size:clamp(44px,4.65vw,67px);line-height:1.15;letter-spacing:-.055em;margin-bottom:30px}
+@media(max-width:1100px){.hero h2.hero-result-title{font-size:clamp(43px,4.8vw,60px)}}
+@media(max-width:800px){.intro-screen{min-height:calc(100svh - 80px);padding-block:48px;gap:28px}.hero h2.hero-result-title{font-size:clamp(43px,7.8vw,62px)}}
+@media(max-width:520px){.intro-screen{padding-block:40px;gap:24px}.intro-name{font-size:56px;margin-bottom:20px}.intro-definition{font-size:18px;line-height:1.6}.intro-job{font-size:20px;line-height:1.65}.intro-value{font-size:27px;line-height:1.5}.hero h2.hero-result-title{font-size:clamp(38px,10.7vw,51px);line-height:1.18}}
+@media print{.intro-screen{min-height:0;padding-block:24pt;break-after:page}.intro-scroll{display:none}.intro-name{font-size:46pt}.intro-job{font-size:16pt}.intro-value{font-size:21pt}.hero h2.hero-result-title{font-size:34pt}}

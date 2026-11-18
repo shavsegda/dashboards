@@ -1,0 +1,34 @@
+/* Шесть жизненных ситуаций: полное желание видно сразу, подробности раскрываются. */
+.recognize-section{padding:86px 0 90px;background:var(--paper);border-bottom:1px solid var(--line);scroll-margin-top:88px}
+.recognize-section h2{font-size:clamp(36px,4vw,55px);line-height:1.2;letter-spacing:-.04em;margin-bottom:38px}
+.recognize-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.recognize-card{min-width:0;border:1px solid #cfcfbe;background:var(--white)}
+.recognize-card>summary{display:grid;grid-template-columns:32px minmax(0,1fr) 28px;gap:13px 17px;align-items:start;list-style:none;cursor:pointer;padding:28px 26px;transition:background .15s}
+.recognize-card>summary::-webkit-details-marker{display:none}
+.recognize-card>summary::marker{content:""}
+.recognize-card>summary:hover{background:#eff0e6}
+.recognize-card>summary:focus-visible{outline:3px solid #aa6a35;outline-offset:4px}
+.recognize-number{font-family:var(--serif);font-size:22px;font-style:italic;line-height:1.5;color:var(--muted);padding-top:2px}
+.recognize-card-title{font-family:var(--serif);font-size:26px;line-height:1.4;letter-spacing:-.025em;color:var(--ink);min-width:0}
+.recognize-toggle{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #c6b9aa;border-radius:50%;font-size:18px;font-weight:400;line-height:1;color:var(--accent);margin-top:5px;transition:transform .15s}
+.recognize-card[open] .recognize-toggle{transform:rotate(45deg)}
+.recognize-want{grid-column:2/4;font-size:15px;line-height:1.8;color:#555c4e;min-width:0}
+.recognize-want strong{font-weight:500;color:var(--ink)}
+.recognize-body{margin:0 26px 26px 75px;padding-top:23px;border-top:1px solid var(--line)}
+.recognize-body>div{margin-bottom:21px}
+.recognize-body>div:last-child{margin-bottom:0}
+.recognize-body dt{font-size:12px;font-weight:500;line-height:1.5;color:var(--olive);margin-bottom:7px}
+.recognize-body dd{font-size:15px;line-height:1.8;color:#555c4e;margin:0}
+@media(max-width:1050px){.recognize-grid{gap:18px}.recognize-card>summary{grid-template-columns:26px minmax(0,1fr) 26px;gap:12px 13px;padding:24px 22px}.recognize-card-title{font-size:24px}.recognize-number{font-size:21px}.recognize-toggle{width:26px;height:26px}.recognize-want{font-size:14px}.recognize-body{margin:0 22px 24px 61px}.recognize-body dd{font-size:14px}}
+@media(max-width:800px){.recognize-section{padding:62px 0}.recognize-section h2{margin-bottom:30px}.recognize-grid{grid-template-columns:1fr;gap:16px}.recognize-card>summary{grid-template-columns:32px minmax(0,1fr) 28px;gap:13px 17px;padding:26px}.recognize-card-title{font-size:27px}.recognize-want{font-size:16px;max-width:62ch}.recognize-body{margin:0 26px 26px 75px}.recognize-body dd{font-size:16px;max-width:62ch}.recognize-body dt{font-size:13px}}
+@media(max-width:520px){.recognize-section{padding:48px 0}.recognize-section h2{font-size:35px;margin-bottom:26px}.recognize-card>summary{grid-template-columns:24px minmax(0,1fr) 25px;column-gap:12px;padding:22px 18px}.recognize-card-title{font-size:23px;line-height:1.45}.recognize-number{font-size:19px;padding-top:3px}.recognize-toggle{width:25px;height:25px;font-size:17px;margin-top:4px}.recognize-want{font-size:14px;line-height:1.8}.recognize-body{margin:0 18px 22px 54px;padding-top:20px}.recognize-body dt{font-size:12px}.recognize-body dd{font-size:14px;line-height:1.8}}
+@media(max-width:360px){.recognize-card>summary{padding-inline:15px;column-gap:10px;grid-template-columns:21px minmax(0,1fr) 24px}.recognize-card-title{font-size:21px}.recognize-body{margin-left:46px;margin-right:15px}.recognize-toggle{width:24px;height:24px}}
+@media(prefers-reduced-motion:reduce){.recognize-card>summary,.recognize-toggle{transition:none}}
+@media print{.recognize-section{padding-block:24pt;background:white}.recognize-section h2{font-size:25pt}.recognize-grid{display:block}.recognize-card{margin-bottom:16pt;break-inside:avoid}.recognize-card>summary{display:block;padding:16pt;list-style:none}.recognize-number,.recognize-toggle{display:none}.recognize-card-title{display:block;font-size:19pt;margin-bottom:10pt}.recognize-want{display:block;font-size:12pt}.recognize-card>.recognize-body{display:block!important;margin:0 16pt 16pt;padding-top:12pt}.recognize-body dt{font-size:10pt}.recognize-body dd{font-size:12pt;color:#111}}
+/* Продолжение шестой ситуации: интерес к кругу собеседников. */
+.recognize-card .recognize-social-note{margin:0 26px 26px 75px;padding-top:20px;border-top:1px solid var(--line);font-size:15px;line-height:1.8;color:#555c4e}
+@media(max-width:1050px){.recognize-card .recognize-social-note{margin:0 22px 24px 61px;font-size:14px}}
+@media(max-width:800px){.recognize-card .recognize-social-note{margin:0 26px 26px 75px;font-size:16px}}
+@media(max-width:520px){.recognize-card .recognize-social-note{margin:0 18px 22px 54px;font-size:14px}}
+@media(max-width:360px){.recognize-card .recognize-social-note{margin-left:46px;margin-right:15px}}
+@media print{.recognize-card .recognize-social-note{display:block!important;margin:0 16pt 16pt;font-size:12pt;color:#111}}
