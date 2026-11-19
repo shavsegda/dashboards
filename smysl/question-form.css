@@ -1,0 +1,60 @@
+.question-section, .benefits { padding-block: clamp(4rem, 8vw, 8rem); border-top: 1px solid rgb(40 43 36 / 18%); }
+.question-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.question-intro h2, .benefits h2 { margin: 0 0 2rem; font-family: "Literata", Georgia, serif; font-size: clamp(2rem, 3.8vw, 3.75rem); line-height: 1.24; font-weight: 400; letter-spacing: -.035em; text-wrap: balance; overflow-wrap: break-word; }
+.question-intro p { margin: 0 0 1.25rem; font-size: 1.125rem; line-height: 1.7; }
+.question-hint { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+.question-intro p.question-hint { font-size: 1rem; }
+.question-panel { min-width: 0; padding: clamp(1.25rem, 2.5vw, 2.5rem); background: #fffdf8; border: 1px solid rgb(40 43 36 / 20%); border-radius: .5rem; }
+.question-progress-label { margin: 0 0 .75rem; font-size: 1rem; line-height: 1.5; color: var(--muted); }
+.question-progress { height: .25rem; margin-bottom: 2rem; background: #e6e2d9; }
+.question-progress span { display: block; width: 25%; height: 100%; background: var(--wine); }
+.question-step { min-width: 0; margin: 0; padding: 0; border: 0; }
+.question-step[hidden], .question-field[hidden], .question-send-error[hidden], .question-success[hidden], #question-progress-area[hidden] { display: none; }
+.question-step legend { width: 100%; margin-bottom: 1.25rem; padding: 0; font-size: 1.375rem; font-weight: 500; line-height: 1.4; }
+.question-step legend:focus, .question-success h3:focus { outline: 2px solid var(--wine); outline-offset: .35rem; }
+.question-options { display: grid; gap: .625rem; margin-bottom: 1.75rem; }
+.question-options > label { display: flex; gap: .75rem; align-items: start; padding: .875rem; border: 1px solid #c4c4b9; border-radius: .25rem; cursor: pointer; font-size: 1rem; line-height: 1.5; }
+.question-options > label:has(input:checked) { border-color: var(--wine); background: #f8efeb; }
+.question-options input, .question-check input { flex: 0 0 auto; width: 1.125rem; height: 1.125rem; margin: .2rem 0 0; accent-color: var(--wine); }
+.question-field { margin-bottom: 1.5rem; }
+.question-field > label, .question-card > label { display: block; margin-bottom: .5rem; font-size: 1rem; font-weight: 500; line-height: 1.5; }
+.question-field > p.question-hint { margin: -.125rem 0 .625rem; }
+.question-field > input, .question-field > textarea, .question-card textarea { display: block; width: 100%; min-width: 0; max-width: 100%; padding: .875rem; border: 1px solid #92978b; border-radius: .25rem; background: white; color: var(--ink); font: inherit; font-size: 1rem; line-height: 1.6; }
+.question-field > textarea, .question-card textarea { resize: vertical; }
+.question-field input:focus, .question-field textarea:focus, .question-card textarea:focus { outline: 2px solid var(--wine); outline-offset: 2px; }
+.question-panel [aria-invalid="true"] { border-color: var(--wine); }
+.question-check { display: flex; align-items: start; gap: .75rem; margin-top: .875rem; font-size: 1rem; line-height: 1.6; cursor: pointer; }
+.field-error { margin: .375rem 0 0; color: var(--wine); font-size: 1rem; line-height: 1.5; }
+.field-error:empty { display: none; }
+.question-examples { margin-block: 1.5rem; font-size: 1rem; line-height: 1.6; }
+.question-examples summary { color: var(--wine); cursor: pointer; text-decoration: underline; text-underline-offset: .2em; }
+.question-examples ul { padding-left: 1.25rem; }
+.question-examples li + li { margin-top: .75rem; }
+.question-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.question-actions button { min-height: 3rem; max-width: 100%; padding: .75rem 1.125rem; border: 1px solid var(--wine); border-radius: .25rem; background: var(--wine); color: white; font: inherit; font-size: 1rem; font-weight: 500; line-height: 1.4; text-align: center; cursor: pointer; }
+.question-actions button.secondary { background: transparent; color: var(--wine); }
+.question-actions button:hover { filter: brightness(.92); }
+.question-actions button:focus-visible { outline: 2px solid var(--wine); outline-offset: 3px; }
+.question-actions button:disabled { cursor: wait; opacity: .65; }
+.question-card { margin-bottom: 2.5rem; }
+.question-card textarea { min-height: 18rem; background: #f7f4ed; }
+.question-contact-title, .question-success h3 { margin: 0 0 1.5rem; font-size: 1.5rem; font-weight: 500; line-height: 1.4; }
+.question-reply, .question-success p { font-size: 1rem; line-height: 1.7; }
+.question-send-error { margin: 1.5rem 0 0; padding: 1rem; background: #f8efeb; color: var(--wine); font-size: 1rem; line-height: 1.6; }
+#question-receipt { overflow-wrap: anywhere; }
+.benefits h2 { max-width: 28ch; margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
+.benefits-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem clamp(2rem, 6vw, 6rem); }
+.benefits-grid article { min-width: 0; padding-top: 1.5rem; border-top: 1px solid rgb(40 43 36 / 25%); overflow-wrap: break-word; }
+.benefits-grid h3 { margin: 0 0 1rem; font-size: clamp(1.25rem, 1.8vw, 1.625rem); line-height: 1.4; font-weight: 500; }
+.benefits-grid p { margin: 0; color: var(--muted); font-size: 1.125rem; line-height: 1.7; }
+.recognize { padding-block: clamp(4rem, 8vw, 8rem); border-top: 1px solid rgb(40 43 36 / 18%); }
+.recognize > h2 { margin: 0 0 clamp(2.5rem, 5vw, 4.5rem); font-family: "Literata", Georgia, serif; font-size: clamp(2rem, 3.8vw, 3.75rem); line-height: 1.24; font-weight: 400; letter-spacing: -.035em; }
+.recognize-stories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(2rem, 6vw, 6rem); }
+.recognize-stories article { min-width: 0; max-width: 40rem; padding-top: 1.5rem; border-top: 2px solid var(--wine); overflow-wrap: break-word; }
+.recognize-stories h3 { margin: 0 0 1.5rem; font-family: "Literata", Georgia, serif; color: var(--wine); font-size: clamp(1.625rem, 2.2vw, 2.125rem); font-weight: 400; line-height: 1.4; letter-spacing: -.02em; text-wrap: balance; }
+.recognize-stories p { margin: 0; font-size: 1.125rem; line-height: 1.75; }
+.recognize-stories p + p { margin-top: 1.25rem; }
+@media (max-width: 52rem) { .question-layout, .benefits-grid { grid-template-columns: minmax(0, 1fr); } .question-intro { max-width: 42rem; } }
+@media (max-width: 52rem) { .recognize-stories { grid-template-columns: minmax(0, 1fr); gap: 3rem; } }
+@media (max-width: 40rem) { .question-section, .benefits { padding-block: 3.5rem; } .question-intro h2, .benefits h2 { font-size: clamp(2rem, 7.8vw, 2.75rem); } .question-panel { padding: 1.125rem; } .question-actions button { flex: 1 1 auto; } }
+@media (max-width: 40rem) { .recognize { padding-block: 3.5rem; } .recognize > h2 { font-size: clamp(2rem, 7.8vw, 2.75rem); } }
