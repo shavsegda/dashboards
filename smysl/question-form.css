@@ -57,14 +57,16 @@
 .study-process { padding-block: clamp(4rem, 8vw, 8rem); border-top: 1px solid rgb(40 43 36 / 18%); }
 .study-process > h2 { margin: 0 0 clamp(2.5rem, 5vw, 4.5rem); font-family: "Literata", Georgia, serif; font-size: clamp(2rem, 3.8vw, 3.75rem); line-height: 1.24; font-weight: 400; letter-spacing: -.035em; text-wrap: balance; }
 .study-process-item { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(2rem, 6vw, 6rem); align-items: start; padding-top: 1.5rem; border-top: 2px solid var(--wine); }
-.study-process-item h3 { margin: 0; max-width: 19ch; color: var(--wine); font-family: "Literata", Georgia, serif; font-size: clamp(1.625rem, 2.2vw, 2.125rem); font-weight: 400; line-height: 1.4; letter-spacing: -.02em; text-wrap: balance; overflow-wrap: break-word; }
+.study-process-item h4 { margin: 0; max-width: 19ch; color: var(--wine); font-family: "Literata", Georgia, serif; font-size: clamp(1.625rem, 2.2vw, 2.125rem); font-weight: 400; line-height: 1.4; letter-spacing: -.02em; text-wrap: balance; overflow-wrap: break-word; }
 .study-process-copy { min-width: 0; max-width: 42rem; }
 .study-process-copy p { margin: 0; font-size: 1.125rem; line-height: 1.75; overflow-wrap: break-word; }
 .study-process-copy p + p { margin-top: 1.25rem; }
 .study-process-item + .study-process-item { margin-top: clamp(2.5rem, 5vw, 4.5rem); }
+.study-route + .study-route { margin-top: clamp(4rem, 8vw, 8rem); }
+.study-route-title { margin: 0 0 clamp(2rem, 4vw, 3.5rem); max-width: 32ch; font-size: clamp(1.625rem, 2.4vw, 2.25rem); font-weight: 600; line-height: 1.4; letter-spacing: -.025em; text-wrap: balance; }
 @media (max-width: 52rem) { .question-layout, .benefits-grid { grid-template-columns: minmax(0, 1fr); } .question-intro { max-width: 42rem; } }
 @media (max-width: 52rem) { .recognize-stories { grid-template-columns: minmax(0, 1fr); gap: 3rem; } }
-@media (max-width: 52rem) { .study-process-item { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; } .study-process-item h3 { max-width: 28ch; } }
+@media (max-width: 52rem) { .study-process-item { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; } .study-process-item h4 { max-width: 28ch; } }
 @media (max-width: 40rem) { .question-section, .benefits { padding-block: 3.5rem; } .question-intro h2, .benefits h2 { font-size: clamp(2rem, 7.8vw, 2.75rem); } .question-panel { padding: 1.125rem; } .question-actions button { flex: 1 1 auto; } }
 @media (max-width: 40rem) { .recognize { padding-block: 3.5rem; } .recognize > h2 { font-size: clamp(2rem, 7.8vw, 2.75rem); } }
 @media (max-width: 40rem) { .study-process { padding-block: 3.5rem; } .study-process > h2 { font-size: clamp(2rem, 7.8vw, 2.75rem); } }
