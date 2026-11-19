@@ -61,6 +61,7 @@
 .study-process-copy { min-width: 0; max-width: 42rem; }
 .study-process-copy p { margin: 0; font-size: 1.125rem; line-height: 1.75; overflow-wrap: break-word; }
 .study-process-copy p + p { margin-top: 1.25rem; }
+.study-process-item + .study-process-item { margin-top: clamp(2.5rem, 5vw, 4.5rem); }
 @media (max-width: 52rem) { .question-layout, .benefits-grid { grid-template-columns: minmax(0, 1fr); } .question-intro { max-width: 42rem; } }
 @media (max-width: 52rem) { .recognize-stories { grid-template-columns: minmax(0, 1fr); gap: 3rem; } }
 @media (max-width: 52rem) { .study-process-item { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; } .study-process-item h3 { max-width: 28ch; } }
