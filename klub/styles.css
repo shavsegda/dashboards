@@ -78,4 +78,11 @@ h1{font-family:Literata,Georgia,serif;font-weight:400;font-size:clamp(3.5rem,6.5
 .topic-basis a:hover{text-decoration-color:var(--accent);color:var(--accent)}
 .topic-basis a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 @media(max-width:700px){.meeting-topics{padding:34px 0 48px}.topics-intro{grid-template-columns:1fr;gap:24px;margin-bottom:30px}.topics-grid{grid-template-columns:1fr;gap:30px}.topic-card{padding-top:20px}.topic-card h3{font-size:1.4rem;margin-bottom:14px}.topic-card>p{font-size:1.025rem}.topic-card .topic-date,.topic-card .topic-basis,.topic-card .topic-first-label{font-size:1rem}}
+.life-value{border-top:1px solid var(--line);padding:54px 0 84px}
+.life-value>h2{font-family:Literata,Georgia,serif;font-size:clamp(2rem,3.5vw,3.25rem);font-weight:400;letter-spacing:-.035em;line-height:1.2;margin:0 0 42px;max-width:30ch;text-wrap:balance}
+.life-value-copy{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:64px}
+.life-value-copy p{font-size:1.05rem;line-height:1.7;margin:0;color:var(--muted);max-width:56ch}
+.life-value-copy p+p{margin-top:18px}
+.life-value-copy .life-value-feeling{font-size:clamp(1.2rem,1.8vw,1.6rem);line-height:1.5;color:var(--accent);border-top:2px solid var(--accent);padding-top:22px;max-width:36ch}
+@media(max-width:700px){.life-value{padding:34px 0 48px}.life-value>h2{margin-bottom:28px}.life-value-copy{grid-template-columns:1fr;gap:28px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
