@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="application-name" content="First meeting sheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Совместный рабочий лист первого разговора: ситуация, вопрос, возможная помощь и следующий шаг.">
+  <meta name="theme-color" content="#783742">
+  <title>Первый разговор — совместный рабочий лист</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="guided-mode">
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">С</span><div><span class="eyebrow">Совместный рабочий лист</span><h1>Первый разговор</h1></div></div>
+    <button id="resume-guided" class="button button-light" type="button" hidden>Вернуться к разговору</button>
+    <details id="facilitator-menu" class="facilitator-menu"><summary>Встреча</summary><div id="facilitator-content"></div></details>
+    <div class="header-actions">
+      <span id="save-status" class="save-status" role="status">Ответы сохраняются в этом браузере</span>
+      <button id="summary-toggle" class="button button-light" type="button">Посмотреть итог</button>
+      <details class="file-menu" id="file-menu"><summary>Файл встречи</summary><div class="menu-items">
+        <button type="button" id="download-text">Скачать итог текстом</button>
+        <button type="button" id="download-json">Сохранить копию встречи</button>
+        <button type="button" id="import-button">Открыть копию встречи</button>
+        <button type="button" id="print-button">Печать итога</button>
+      </div></details>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="meeting-meta">
+      <label>Участник<input id="meeting-title" autocomplete="off" maxlength="200" placeholder="Имя или короткое название встречи"></label>
+      <label class="date-label">Дата<input id="meeting-date" type="date"></label>
+      <button id="new-session" class="button button-light" type="button">Новая встреча</button>
+      <details class="history-menu"><summary>Предыдущие записи</summary><div id="history-list" class="history-list"></div></details>
+    </div>
+    <div class="purpose"><p>Сначала выслушаем вашу историю. Затем вместе выберем, что полезно уточнить.</p><p>Записываем сказанное так, чтобы вы могли проверить и поправить наше понимание.</p></div>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <div class="work-layout" id="work-layout">
+      <aside class="rail" aria-label="Доступные темы"><p class="eyebrow">Доступные темы</p><nav id="steps-nav"></nav><details class="use-note"><summary>Как пользоваться</summary><p>Сначала слушаем связный рассказ, затем выбираем уточнение из сказанного. Темы — ориентиры: проходить их все не требуется. Вопрос можно переписать под текущий разговор.</p><p>Нужный фокус связан с тем, что человек рассказал. Перед предположением или советом обозначаем основания и затем проверяем отклик. Если участник спрашивает о помощи или условиях раньше, отвечаем сразу.</p><p>Рабочая формулировка задачи может меняться. После редактирования сохраняется версия; её оценку нужно отметить заново. Можно записать, что нового узнали и почему уточнили вопрос.</p><p>Известное, возможное объяснение и неизвестное отмечаются раздельно. При необходимости рассматриваем другие понимания задачи и существенные позиции других участников. В конце разделяем результат разговора и будущую проверку.</p><p>Лист — наша адаптация глав 4–5 книги Эдгара Шейна «Помощь» и идей Джонассена о слабо определённых задачах. Это не авторский опросник или проверенный протокол этих авторов.</p></details></aside>
+
+      <section class="question-area" aria-label="Текущий вопрос">
+        <div class="conversation-tools" aria-label="Выбор хода разговора"><button id="choose-topic" type="button">Выбрать тему</button><button id="check-understanding" type="button">Проверить понимание</button><button id="open-fit-check" type="button">Подходит ли помощь</button><button id="open-agreement" type="button">Условия работы</button><button id="open-knowledge" type="button">На что опираемся</button><button id="open-opinion" type="button">Мой взгляд</button><button id="check-process" type="button">Как идёт разговор?</button></div>
+        <div class="topic-label"><span id="step-label"></span></div>
+        <section id="topic-chooser" class="question-card topic-chooser" hidden><p class="speaker-label">Опираемся на услышанное</p><h2 id="chooser-title" tabindex="-1">Что сейчас полезно уточнить?</h2><p class="question-hint">Выберите тему из рассказа. Можно продолжить слушать, задать свой вопрос или перейти к итогу.</p><div id="topic-choices" class="topic-choices"></div><div class="chooser-actions"><button id="chooser-story" class="button button-light" type="button">Продолжить рассказ</button><button id="chooser-summary" class="button button-primary" type="button">Посмотреть итог</button></div></section>
+        <article class="question-card" id="question-card">
+          <div class="question-heading-row"><p id="speaker-label" class="speaker-label"></p><button id="edit-prompt" class="text-button" type="button">Изменить вопрос</button></div>
+          <h2 id="question-title" tabindex="-1"></h2>
+          <p id="step-purpose" class="purpose-note"></p>
+          <div id="prompt-editor" class="prompt-editor" hidden><label for="prompt-input">Вопрос, который человек видит и слышит</label><textarea id="prompt-input" maxlength="2000" rows="3"></textarea><p id="prompt-integrity-note" class="field-hint" hidden>На прежний вопрос уже есть ответ. Новый вопрос получит отдельное поле; прежняя запись сохранится. Если нужно только исправить текст вопроса, выберите это действие отдельно.</p><div class="editor-actions"><button id="save-prompt" class="button button-primary" type="button">Сохранить вопрос</button><button id="correct-prompt" class="button button-light" type="button" hidden>Исправить только текст</button><button id="cancel-prompt" class="button button-light" type="button">Отмена</button><button id="reset-prompt" class="text-button" type="button">Вернуть подсказку</button></div></div>
+          <p id="question-hint" class="question-hint"></p>
+          <details id="anchor-note" class="anchor-note"><summary id="anchor-summary">Выбрать фразу или эпизод для уточнения</summary><label for="anchor-text">Запись, к которой возвращаемся</label><textarea id="anchor-text" maxlength="12000" rows="3" placeholder="Выберите запись справа или запишите нужную фразу"></textarea><p>Проверьте вместе, точно ли эта запись передаёт сказанное.</p></details>
+          <div id="story-invitations" class="story-invitations" hidden><span>Если нужно продолжить рассказ:</span><button type="button" data-invitation="Расскажите подробнее об этом.">Расскажите подробнее</button><button type="button" data-invitation="Что произошло дальше?">Что было дальше?</button><button type="button" data-invitation="Что ещё важно добавить?">Что ещё важно?</button></div>
+          <div id="opinion-options" class="opinion-options" hidden aria-label="Вид вклада ведущего"><button type="button" data-opinion-mode="hypothesis">Проверить предположение</button><button type="button" data-opinion-mode="advice">Обсудить мнение или совет</button></div>
+          <p id="ai-status" class="ai-status" role="status" hidden></p>
+          <div id="answer-fields"></div>
+        </article>
+        <div class="step-actions" id="step-actions"><button id="previous-step" class="button button-light" type="button">Продолжить рассказ</button><p id="navigation-note">Выбираем уточнения по ходу разговора.</p><button id="next-step" class="button button-primary" type="button">Выбрать, что уточнить</button></div>
+      </section>
+
+      <aside class="context-panel" aria-label="Опорные записи разговора"><div class="context-heading"><span class="eyebrow">Опорные записи</span><p>Рассказ участника, общие формулировки и версии ведущего отмечены отдельно.</p></div><div id="context-records"></div></aside>
+    </div>
+
+    <section id="summary-view" class="summary-view" hidden aria-label="Итог разговора">
+      <div class="summary-heading"><div><p class="eyebrow">Проверяем вместе</p><h2>Итог разговора</h2><p>Это записанное понимание разговора. Его можно уточнить перед завершением.</p></div><div class="summary-actions"><button id="edit-outcome" class="button button-primary" type="button">Записать результат разговора</button><button id="back-to-questions" class="button button-light" type="button">Вернуться к вопросам</button></div></div>
+      <div id="summary-content"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><p>Записи сохраняются в этом браузере. Чтобы перенести встречу или иметь отдельную копию, используйте «Файл встречи».</p></footer>
+  <div id="live-message" class="sr-only" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
