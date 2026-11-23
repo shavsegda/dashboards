@@ -9,7 +9,7 @@ export async function requestDrafts(request, accessCode, { signal, fetchImpl = f
   try {
     const response = await fetchImpl(DRAFT_ENDPOINT, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessCode.trim()}` },
-      body: JSON.stringify({ answers: request.answers, targets: request.targets, requestId: request.requestId }),
+      body: JSON.stringify(request.version === 2 ? { version: 2, requestId: request.requestId, screenId: request.screenId, context: request.context } : { answers: request.answers, targets: request.targets, requestId: request.requestId }),
       signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer',
     });
     if (!response.ok) {

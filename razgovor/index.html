@@ -46,6 +46,9 @@
         <div class="topic-label"><span id="step-label"></span></div>
         <section id="topic-chooser" class="question-card topic-chooser" hidden><p class="speaker-label">Опираемся на услышанное</p><h2 id="chooser-title" tabindex="-1">Что сейчас полезно уточнить?</h2><p class="question-hint">Выберите тему из рассказа. Можно продолжить слушать, задать свой вопрос или перейти к итогу.</p><div id="topic-choices" class="topic-choices"></div><div class="chooser-actions"><button id="chooser-story" class="button button-light" type="button">Продолжить рассказ</button><button id="chooser-summary" class="button button-primary" type="button">Посмотреть итог</button></div></section>
         <article class="question-card" id="question-card">
+          <nav id="chat-phases" class="chat-phases" aria-label="Части разговора" hidden></nav>
+          <div id="chat-thread" class="chat-thread" hidden></div>
+          <section id="chat-active" class="chat-bubble chat-assistant chat-active" hidden><p id="chat-speaker" class="chat-origin"></p><h2 id="chat-question" tabindex="-1"></h2><p id="chat-explanation"></p><div id="ai-card-panel"></div><p id="ai-status" class="ai-status" role="status" hidden></p></section>
           <div class="question-heading-row"><p id="speaker-label" class="speaker-label"></p><button id="edit-prompt" class="text-button" type="button">Изменить вопрос</button></div>
           <h2 id="question-title" tabindex="-1"></h2>
           <p id="step-purpose" class="purpose-note"></p>
@@ -54,7 +57,6 @@
           <details id="anchor-note" class="anchor-note"><summary id="anchor-summary">Выбрать фразу или эпизод для уточнения</summary><label for="anchor-text">Запись, к которой возвращаемся</label><textarea id="anchor-text" maxlength="12000" rows="3" placeholder="Выберите запись справа или запишите нужную фразу"></textarea><p>Проверьте вместе, точно ли эта запись передаёт сказанное.</p></details>
           <div id="story-invitations" class="story-invitations" hidden><span>Если нужно продолжить рассказ:</span><button type="button" data-invitation="Расскажите подробнее об этом.">Расскажите подробнее</button><button type="button" data-invitation="Что произошло дальше?">Что было дальше?</button><button type="button" data-invitation="Что ещё важно добавить?">Что ещё важно?</button></div>
           <div id="opinion-options" class="opinion-options" hidden aria-label="Вид вклада ведущего"><button type="button" data-opinion-mode="hypothesis">Проверить предположение</button><button type="button" data-opinion-mode="advice">Обсудить мнение или совет</button></div>
-          <p id="ai-status" class="ai-status" role="status" hidden></p>
           <div id="answer-fields"></div>
         </article>
         <div class="step-actions" id="step-actions"><button id="previous-step" class="button button-light" type="button">Продолжить рассказ</button><p id="navigation-note">Выбираем уточнения по ходу разговора.</p><button id="next-step" class="button button-primary" type="button">Выбрать, что уточнить</button></div>
@@ -65,6 +67,8 @@
 
     <section id="summary-view" class="summary-view" hidden aria-label="Итог разговора">
       <div class="summary-heading"><div><p class="eyebrow">Проверяем вместе</p><h2>Итог разговора</h2><p>Это записанное понимание разговора. Его можно уточнить перед завершением.</p></div><div class="summary-actions"><button id="edit-outcome" class="button button-primary" type="button">Записать результат разговора</button><button id="back-to-questions" class="button button-light" type="button">Вернуться к вопросам</button></div></div>
+      <p id="ai-summary-status" class="ai-status" role="status" hidden></p>
+      <div id="ai-summary-panel"></div>
       <div id="summary-content"></div>
     </section>
   </main>

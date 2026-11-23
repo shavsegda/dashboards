@@ -1,9 +1,10 @@
-import { FIELD_LABELS, createSession, normaliseSession, parseImport, exportSession, makeSummary, saveQuestionVersion, addFollowup, correctPrompt, AGREEMENT_FIELDS, AGREEMENT_TERM_KEYS, updateAgreementAnswer } from './core.mjs';
+import { FIELD_LABELS, createSession, normaliseSession, parseImport, exportSession, makeSummary, saveQuestionVersion, addFollowup, correctPrompt, AGREEMENT_FIELDS, AGREEMENT_TERM_KEYS, updateAgreementAnswer, saveChatTurn } from './core.mjs';
 import { TOPIC_PURPOSES } from './learning.mjs';
 import { renderLearning } from './learning-ui.mjs';
 import { GUIDED_FLOW, GUIDED_PHASES } from './guided-flow.mjs';
-import { AI_DRAFT_FIELDS, buildDraftRequest, contextFingerprint, validateDraftResponse, isDraftCurrent, invalidateStaleDrafts, acceptDraft, rejectDraft } from './ai-drafts.mjs';
-import { renderDraftPanel } from './ai-ui.mjs';
+import { invalidateStaleDrafts, isDraftCurrent, acceptDraft, rejectDraft } from './ai-drafts.mjs';
+import { FIELD_SCHEMA, SCREEN_SCHEMA } from './ai-schema.mjs';
+import { collectCardContext, cardFingerprint, buildCardRequest, validateCardResponse, isCardCurrent, acceptCardDraft, rejectCardDraft, invalidateAiCards } from './ai-cards.mjs';
 import { requestDrafts } from './ai-client.mjs';
 
 const STORAGE_KEY = 'first-meeting-sheet:v1';
@@ -83,13 +84,12 @@ let persistenceBlocked = false;
 const AI_CODE_KEY = 'first-meeting-sheet:access-code';
 const aiJobs = new Map();
 const aiAttempts = new Map();
-const aiAutoSources = new Map();
 const aiQuestions = new Map();
 const aiMessages = new Map();
 let aiCode = '';
 try { aiCode = sessionStorage.getItem(AI_CODE_KEY) || ''; } catch { /* Код можно держать только до закрытия страницы. */ }
 function shownFieldQuestion(key) { return aiQuestions.get(`${current().id}:${key}`) || currentQuestion(); }
-function aiStatus(message = '') { aiMessages.set(current().id, message); const element = $('ai-status'); if (element) { element.textContent = message; element.hidden = !message; } }
+function aiStatus(message = '') { aiMessages.set(current().id, message); for (const id of ['ai-status', 'ai-summary-status']) { const element = $(id); if (element) { element.textContent = message; element.hidden = !message; } } }
 function stopAiRequests() { for (const [id, job] of aiJobs) { job.controller.abort(); aiMessages.set(id, 'Запрос остановлен. Можно подготовить новый черновик.'); } aiJobs.clear(); }
 function syncAiSettings() {
   if (!$('ai-consent') || !current()) return;
@@ -99,7 +99,7 @@ function syncAiSettings() {
 }
 function setupAiSettings(parent) {
   const box = dom('details', 'ai-settings'); box.append(dom('summary', '', 'Помощник'));
-  box.append(dom('p', '', 'Помощник предлагает черновики по записям этого разговора. Вы обсуждаете их и сами решаете, что принять. Он не заполняет ответы без вашего действия.'));
+  box.append(dom('p', '', 'Помощник предлагает вопрос и короткие подсказки для каждого экрана по записям текущей встречи. Вы обсуждаете их и сами решаете, что принять. Он не заполняет ответы без вашего действия.'));
   const label = dom('label', '', 'Код доступа ведущего');
   const input = dom('input'); input.id = 'ai-access-code'; input.type = 'password'; input.autocomplete = 'off'; input.maxLength = 1024; label.append(input); box.append(label);
   const actions = dom('div', 'ai-draft-actions');
@@ -116,61 +116,50 @@ function setupAiSettings(parent) {
   actions.append(save, clear); box.append(actions, Object.assign(dom('p', 'field-hint'), { id: 'ai-code-state' }));
   const consentLabel = dom('label', 'ai-consent-label'); const consent = dom('input'); consent.type = 'checkbox'; consent.id = 'ai-consent';
   consentLabel.append(consent, dom('span', '', 'Мы договорились использовать помощника'));
-  box.append(consentLabel, dom('p', 'field-hint', 'При подготовке черновика записи раздела «Ваш вопрос» отправляются в Supabase и OpenRouter. Имя, возраст и форма «Несколько слов о вас» не отправляются. Если личные сведения есть в самом рассказе, они попадут в запрос. Код доступа передаётся только серверу.'));
+  box.append(consentLabel, dom('p', 'field-hint', 'При подготовке подсказки в Supabase и OpenRouter отправляются записи всей текущей встречи: форма знакомства, ваш вопрос, обсуждение помощи, условий и итога, записанные варианты и уточняющие ответы. Черновики помощника не отправляются как ваши ответы. Код доступа передаётся только серверу.'));
   consent.addEventListener('change', () => {
     stopAiRequests(); current().aiConsent = consent.checked; persist();
-    aiStatus(consent.checked ? (aiCode ? 'Помощник включён для этой встречи. Черновики появятся после «Дальше» или по вашей кнопке.' : 'Договорённость отмечена. Для отправки запроса ещё нужен код доступа.') : 'Помощник выключен. Новые записи никуда не отправляются.');
+    aiStatus(consent.checked ? (aiCode ? 'Помощник включён для этой встречи. Подсказки появятся при переходе на следующий экран или по вашей кнопке.' : 'Договорённость отмечена. Для отправки запроса ещё нужен код доступа.') : 'Помощник выключен. Новые записи никуда не отправляются.');
     refreshAiPanels();
   }); parent.append(box);
 }
-function targetFor(field, step) { return { key: field.key, question: aiQuestions.get(`${current().id}:${field.key}`) || `${step.title} ${field.label}` }; }
-function autoDraftPlan(step, index) {
-  if (!current().aiConsent || !aiCode || step.phase !== 'question') return null;
-  const keys = [...(step.fields || []), ...(step.optional || [])].map(field => field.key).filter(key => AI_DRAFT_FIELDS.includes(key));
-  if (!keys.some(key => current().answers[key].trim())) return null;
-  const fingerprint = contextFingerprint(current()); const sourceKey = `${current().id}:${step.id}`;
-  if (aiAutoSources.get(sourceKey) === fingerprint) return null;
-  const targets = [];
-  for (const next of GUIDED_FLOW.slice(index + 1)) {
-    if (next.phase !== 'question') break;
-    for (const field of [...(next.fields || []), ...(next.optional || [])]) {
-      if (AI_DRAFT_FIELDS.includes(field.key) && !current().answers[field.key].trim() && !isDraftCurrent(current(), field.key) && !targets.some(item => item.key === field.key)) targets.push(targetFor(field, next));
-      if (targets.length === 3) break;
-    }
-    if (targets.length === 3) break;
-  }
-  if (!targets.length) return null;
-  aiAutoSources.set(sourceKey, fingerprint);
-  return { sessionId: current().id, fingerprint, targets };
+function activeAiScreen() { return state.summary ? 'summary' : state.mode === 'guided' ? guidedSpec().id : ''; }
+function cardMount() { return state.summary ? $('ai-summary-panel') : $('ai-card-panel'); }
+function canRequestCard() { return current()?.aiConsent && aiCode && !!SCREEN_SCHEMA[activeAiScreen()]; }
+function cardPlan() { return { sessionId: current().id, screenId: activeAiScreen(), fingerprint: cardFingerprint(current()) }; }
+function ensureAiCard() {
+  const screenId = activeAiScreen();
+  if (!canRequestCard() || ['welcome', 'about_you'].includes(screenId) || isCardCurrent(current(), screenId) || !collectCardContext(current()).length) return;
+  void prepareAiDrafts(cardPlan());
 }
 async function prepareAiDrafts(plan, manual = false) {
   if (current().id !== plan.sessionId || !current().aiConsent) return;
   if (!aiCode) { aiStatus('Сначала сохраните код доступа в меню «Встреча» → «Помощник».'); return; }
-  if (contextFingerprint(current()) !== plan.fingerprint) return;
+  if (cardFingerprint(current()) !== plan.fingerprint) return;
   const running = aiJobs.get(plan.sessionId);
   if (running) { running.queued = { plan, manual }; return; }
-  const signature = JSON.stringify([plan.fingerprint, plan.targets]);
+  const signature = JSON.stringify([plan.fingerprint, plan.screenId]);
   const attempts = aiAttempts.get(plan.sessionId) || { signatures: new Set(), count: 0, at: 0 };
   if (!manual && attempts.signatures.has(signature)) return;
-  if (attempts.count >= 40) { aiStatus('Для этой встречи уже было много запросов. Продолжим с имеющимися записями.'); return; }
+  if (attempts.count >= 80) { aiStatus('Для этой встречи уже было много запросов. Продолжим с имеющимися записями.'); return; }
   if (manual && Date.now() - attempts.at < 3000) { aiStatus('Подождите несколько секунд перед следующим запросом.'); return; }
   let built;
-  try { built = buildDraftRequest(current(), { targets: plan.targets, requestId: crypto.randomUUID() }); }
+  try { built = buildCardRequest(current(), plan.screenId, { requestId: crypto.randomUUID() }); }
   catch (error) { aiStatus(error.message); return; }
   attempts.signatures.add(signature); attempts.count++; attempts.at = Date.now(); aiAttempts.set(plan.sessionId, attempts);
   const job = { controller: new AbortController(), requestId: built.request.requestId, queued: null }; aiJobs.set(plan.sessionId, job);
-  aiStatus('Помощник готовит черновик. Можно продолжать разговор.'); refreshAiPanels();
+  aiStatus('Помощник готовит подсказку. Можно продолжать разговор.'); refreshAiPanels();
   try {
     const response = await requestDrafts(built.request, aiCode, { signal: job.controller.signal });
     if (aiJobs.get(plan.sessionId) !== job || current().id !== plan.sessionId || !current().aiConsent || !aiCode) return;
-    if (contextFingerprint(current()) !== built.contextFingerprint) { aiStatus('Записи изменились. Прежний черновик не применён; можно подготовить новый.'); return; }
-    const drafts = validateDraftResponse(response, { session: current(), ...built });
-    current().aiDrafts = { ...current().aiDrafts, ...drafts }; persist();
-    aiStatus(Object.keys(drafts).length ? 'Черновики готовы. Проверьте их у соответствующих вопросов.' : 'Помощник не предложил черновиков. Можно записать ответ своими словами.');
+    if (cardFingerprint(current()) !== built.contextFingerprint) { aiStatus('Записи изменились. Можно подготовить подсказку по новой записи.'); return; }
+    const card = validateCardResponse(response, { session: current(), ...built });
+    current().aiCards = { ...current().aiCards, [plan.screenId]: card }; persist();
+    aiStatus(activeAiScreen() === plan.screenId ? 'Подсказка готова. Проверьте её вместе с участником.' : '');
     refreshAiPanels();
   } catch (error) {
     if (aiJobs.get(plan.sessionId) === job && current().id === plan.sessionId && current().aiConsent && aiCode && !job.controller.signal.aborted) {
-      aiStatus(contextFingerprint(current()) === built.contextFingerprint ? (error.message || 'Помощник сейчас не ответил.') : 'Записи изменились. Прежний черновик не применён; можно подготовить новый.');
+      aiStatus(cardFingerprint(current()) === built.contextFingerprint ? (error.message || 'Помощник сейчас не ответил.') : 'Записи изменились. Можно подготовить подсказку по новой записи.');
     }
   } finally {
     if (aiJobs.get(plan.sessionId) === job) {
@@ -179,38 +168,107 @@ async function prepareAiDrafts(plan, manual = false) {
     }
   }
 }
+function renderAiBasis(parent, basis) {
+  if (!basis?.length) return;
+  const details = dom('details', 'ai-card-basis'); details.append(dom('summary', '', 'На какие записи опирается подсказка'));
+  for (const item of basis) { const source = dom('div', 'ai-draft-source'); source.append(dom('p', 'ai-draft-source-label', FIELD_SCHEMA[item.key]?.label || 'Запись текущего разговора'), dom('blockquote', 'ai-draft-quote', item.quote)); details.append(source); }
+  parent.append(details);
+}
+function renderAiCard() {
+  const mount = cardMount(); if (!mount) return;
+  mount.replaceChildren();
+  const screenId = activeAiScreen();
+  if (!screenId || ['welcome', 'about_you'].includes(screenId)) return;
+  const card = SCREEN_SCHEMA[screenId] && isCardCurrent(current(), screenId) ? current().aiCards[screenId] : null;
+  if (card) {
+    const panel = dom('section', 'ai-card-guidance'); panel.setAttribute('aria-label', 'Подсказка по вашему разговору');
+    panel.append(dom('h3', 'ai-draft-title', 'Подсказка по вашему разговору'), dom('p', 'ai-draft-note', 'Предложение помощника. Обсудите и поправьте, если оно не подходит.'));
+    if (card.explanation && !/[?？]/.test(card.explanation)) panel.append(dom('p', 'ai-card-explanation', card.explanation));
+    const statements = (card.hints || []).filter(hint => !/[?？]/.test(hint));
+    if (statements.length) { const hints = dom('ul', 'ai-card-hints'); for (const hint of statements) hints.append(dom('li', '', hint)); panel.append(hints); }
+    if (!state.summary && card.question && card.question !== chatQuestion() && (chatKey() || guidedSpec().input === 'free')) {
+      const input = $(`answer-${chatKey() || 'chat-free'}`); const use = dom('button', 'text-button', 'Уточнить вопрос'); use.type = 'button';
+      use.disabled = !!chatEditingTurnId || !!input?.value.trim() || !!(chatKey() && current().answers[chatKey()].trim());
+      use.addEventListener('click', () => showAiQuestion(card.question, chatKey())); panel.append(use);
+    }
+    renderAiBasis(panel, card.basis); mount.append(panel);
+  }
+  if (current().aiConsent) {
+    const button = dom('button', 'text-button ai-prepare', aiJobs.has(current().id) ? 'Помощник готовит подсказку…' : card ? 'Обновить подсказку по разговору' : 'Подготовить подсказку по разговору');
+    button.type = 'button'; button.disabled = aiJobs.has(current().id);
+    button.addEventListener('click', () => void prepareAiDrafts(cardPlan(), true)); mount.append(button);
+  }
+}
+function applyAiAnswer(key, accept) {
+  const input = $(`answer-${key}`);
+  if (!input || input.value.trim() || current().answers[key].trim()) throw new Error('В поле уже есть запись. Черновик её не заменит.');
+  if (state.mode === 'guided') {
+    const screenId = guidedSpec().id;
+    const card = isCardCurrent(current(), screenId) ? current().aiCards[screenId] : null;
+    const draft = card?.drafts?.[key] || current().aiDrafts[key];
+    if (!draft?.text?.trim()) throw new Error('Этот черновик больше недоступен.');
+    const source = card?.drafts?.[key] ? { kind: 'card', screenId, key, card: structuredClone(card) } : { kind: 'legacy', key, draft: structuredClone(draft) };
+    current().chatDrafts[chatDraftKey()] = { text: draft.text, source, question: chatQuestion(), origin: chatQuestionOrigin() }; input.value = draft.text; grow(input); persist(); input.focus();
+    aiStatus('Черновик перенесён в поле. Обсудите и поправьте текст; ответ запишется только после «Отправить».'); return;
+  }
+  const original = current();
+  const previous = { previousText: original.answers.shared_question, previousStatus: original.answers.question_status, previousReason: original.answers.question_change_reason };
+  const question = shownFieldQuestion(key);
+  let accepted = accept(original);
+  if (AGREEMENT_FIELDS.includes(key)) accepted = { ...updateAgreementAnswer(original, key, accepted.answers[key]), aiCards: accepted.aiCards, aiDrafts: accepted.aiDrafts };
+  replaceCurrent(accepted); current().answerPrompts[key] = question;
+  if (key === 'shared_question') {
+    current().answers.question_status = ''; current().answers.question_change_reason = '';
+    replaceCurrent(saveQuestionVersion(current(), previous));
+  }
+  for (const other of ['question_status', 'question_change_reason', 'agreement_status', 'agreement_client_decision', 'agreement_leader_decision', 'agreement_client_understanding']) {
+    const element = $(`answer-${other}`); if (element) element.value = current().answers[other];
+  }
+  input.value = current().answers[key]; grow(input); persist(); renderContext();
+  aiStatus('Черновик принят в запись. Проверьте его вместе и при необходимости поправьте.');
+}
+function showAiQuestion(question, key) {
+  const input = $(`answer-${key || 'chat-free'}`);
+  if (chatEditingTurnId || !input || input.value.trim() || (key && current().answers[key].trim())) { aiStatus('В поле уже есть текст. Сохраним вопрос, к которому вы начали отвечать.'); return; }
+  aiQuestions.set(`${current().id}:${key || '@' + guidedSpec().id}`, question);
+  current().chatDrafts[chatDraftKey()] = { text: input.value, source: chatDraft()?.source || null, question, origin: 'ai' };
+  persist();
+  $('chat-question').textContent = question; $('question-title').textContent = question; $('chat-speaker').textContent = 'Уточнение с помощью ИИ';
+  refreshAiPanels(); input.focus();
+}
+function renderCardFieldPanel(key, screenId, mount) {
+  const card = SCREEN_SCHEMA[screenId] && isCardCurrent(current(), screenId) ? current().aiCards[screenId] : null;
+  const draft = card?.drafts?.[key];
+  if (!draft || draft.status !== 'suggested') return false;
+  const panel = dom('section', 'ai-draft-panel'); panel.append(dom('h3', 'ai-draft-title', 'Черновик записи'), dom('p', 'ai-draft-note', 'Это текст помощника. Сначала проверьте его вместе с человеком, чьи слова записываем.'));
+  if (draft.text) panel.append(dom('p', 'ai-draft-text', draft.text));
+  renderAiBasis(panel, draft.basis);
+  const actions = dom('div', 'ai-draft-actions');
+  const add = (label, callback) => { const button = dom('button', 'button button-light', label); button.type = 'button'; button.addEventListener('click', () => { try { callback(); } catch (error) { aiStatus(error.message); } }); actions.append(button); };
+  if (draft.text?.trim()) add('Взять за основу ответа', () => applyAiAnswer(key, session => acceptCardDraft(session, screenId, key)));
+  if (draft.question) add('Уточнить вопрос', () => showAiQuestion(draft.question, key));
+  add('Убрать черновик', () => { replaceCurrent(rejectCardDraft(current(), screenId, key)); persist(); });
+  panel.append(actions); mount.append(panel); return true;
+}
 function refreshAiPanels() {
-  if (!current() || state.mode !== 'guided') return;
+  if (!current()) return;
+  renderAiCard();
+  if (state.mode !== 'guided' || state.summary) return;
+  const screenId = guidedSpec().id;
   document.querySelectorAll('[data-ai-field]').forEach(mount => {
     const key = mount.dataset.aiField; mount.replaceChildren();
-    const selectedQuestion = aiQuestions.get(`${current().id}:${key}`);
-    if (selectedQuestion) mount.append(dom('p', 'ai-active-question', `Обсуждаем: ${selectedQuestion}`));
-    if (current().answers[key].trim()) {
-      if (current().aiDrafts[key]?.status === 'accepted') mount.append(dom('p', 'field-hint', 'Эту запись начали с принятого черновика помощника. Можно поправить её своими словами.'));
-      return;
-    }
-    const panel = renderDraftPanel({ key, session: current(), parent: mount, dom,
-      onAccept: draftKey => {
-        const input = $(`answer-${draftKey}`);
-        if (!input || input.value.trim() || current().answers[draftKey].trim()) throw new Error('В поле уже есть запись. Черновик её не заменит.');
-        const previous = { previousText: current().answers.shared_question, previousStatus: current().answers.question_status, previousReason: current().answers.question_change_reason };
-        const question = shownFieldQuestion(draftKey);
-        replaceCurrent(acceptDraft(current(), draftKey)); current().answerPrompts[draftKey] = question;
-        if (draftKey === 'shared_question') {
-          current().answers.question_status = ''; current().answers.question_change_reason = '';
-          replaceCurrent(saveQuestionVersion(current(), previous));
-          for (const other of ['question_status', 'question_change_reason']) { const element = $(`answer-${other}`); if (element) element.value = ''; }
-        }
-        input.value = current().answers[draftKey]; grow(input); persist(); refreshAiPanels(); renderContext();
-        aiStatus('Черновик принят в запись. Проверьте его вместе и при необходимости поправьте.');
-      },
-      onReject: draftKey => { replaceCurrent(rejectDraft(current(), draftKey)); persist(); refreshAiPanels(); },
-      onUseQuestion: (question, draftKey) => { aiQuestions.set(`${current().id}:${draftKey}`, question); refreshAiPanels(); const input = $(`answer-${draftKey}`); input?.focus(); },
-    });
-    if (!panel && current().aiConsent) {
-      const button = dom('button', 'text-button ai-prepare', aiJobs.has(current().id) ? 'Помощник готовит черновики…' : 'Подготовить черновик по нашим записям'); button.type = 'button'; button.disabled = aiJobs.has(current().id);
-      button.addEventListener('click', () => { const step = guidedSpec(); const field = [...(step.fields || []), ...(step.optional || [])].find(item => item.key === key); if (field) void prepareAiDrafts({ sessionId: current().id, fingerprint: contextFingerprint(current()), targets: [targetFor(field, step)] }, true); });
-      mount.append(button);
+    const accepted = current().aiDrafts[key]?.status === 'accepted' || Object.values(current().aiCards || {}).some(card => card.drafts?.[key]?.status === 'accepted');
+    if (current().answers[key].trim()) { if (accepted) mount.append(dom('p', 'field-hint', 'Эту запись начали с принятого черновика помощника. Можно поправить её своими словами.')); return; }
+    if ($(`answer-${key}`)?.value.trim()) { if (chatDraft()?.source) mount.append(dom('p', 'field-hint', 'Черновик в поле ещё не отправлен. Можно исправить его перед записью.')); return; }
+    if (renderCardFieldPanel(key, screenId, mount)) return;
+    const legacy = current().aiDrafts[key];
+    if (legacy?.status === 'suggested' && isDraftCurrent(current(), key)) {
+      const panel = dom('section', 'ai-draft-panel'); panel.append(dom('h3', 'ai-draft-title', 'Прежний черновик помощника'));
+      if (legacy.text) panel.append(dom('p', 'ai-draft-text', legacy.text)); renderAiBasis(panel, legacy.basis);
+      const actions = dom('div', 'ai-draft-actions');
+      if (legacy.text.trim()) { const use = dom('button', 'button button-light', 'Взять за основу ответа'); use.type = 'button'; use.addEventListener('click', () => { try { applyAiAnswer(key, session => acceptDraft(session, key)); } catch (error) { aiStatus(error.message); } }); actions.append(use); }
+      if (legacy.question) { const question = dom('button', 'text-button', 'Уточнить вопрос'); question.type = 'button'; question.addEventListener('click', () => showAiQuestion(legacy.question, key)); actions.append(question); }
+      const reject = dom('button', 'text-button', 'Убрать'); reject.type = 'button'; reject.addEventListener('click', () => { replaceCurrent(rejectDraft(current(), key)); persist(); }); actions.append(reject); panel.append(actions); mount.append(panel);
     }
   });
 }
@@ -219,7 +277,7 @@ function current() { return state.sessions.find(item => item.id === state.curren
 function activeEntry() { return current().qaEntries.find(entry => entry.id === state.followupId); }
 function activeSpec() { return state.mode === 'guided' ? { ...guidedSpec(), context: [], fields: guidedSpec().fields || [] } : state.mode === 'followup' && activeEntry() ? { group: 'Уточнение из разговора', title: activeEntry().question, hint: 'Предыдущий вопрос и ответ сохранены. Здесь записываем ответ на это уточнение.', context: ['shared_question'], fields: [] } : extraViews[state.mode] || steps[current().step]; }
 function activeKey() { if (state.mode === 'guided') { const key = guidedSpec().fields?.[0]?.key; const index = steps.findIndex(step => step.fields.some(field => field.key === key)); return index >= 0 ? topicKeys[index] : AGREEMENT_FIELDS.includes(key) ? 'agreement' : 'fit_check'; } return state.mode === 'followup' && activeEntry() ? activeEntry().topic : extraViews[state.mode] ? state.mode : topicKeys[current().step]; }
-function currentQuestion() { return state.mode === 'guided' ? guidedSpec().title : state.mode === 'followup' && activeEntry() ? activeEntry().question : current().prompts[activeKey()] || activeSpec().title; }
+function currentQuestion() { return state.mode === 'guided' ? chatQuestion() : state.mode === 'followup' && activeEntry() ? activeEntry().question : current().prompts[activeKey()] || activeSpec().title; }
 function notice(message) { $('notice').textContent = message; $('notice').hidden = !message; }
 function say(message) { $('live-message').textContent = message; }
 function load() {
@@ -227,7 +285,7 @@ function load() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const raw = JSON.parse(stored);
-      if (![1, 2, 3, 4, 5, 6, 7].includes(raw.version) || !Array.isArray(raw.sessions)) throw new Error('Формат сохранённых записей не распознан.');
+      if (![1, 2, 3, 4, 5, 6, 7, 8].includes(raw.version) || !Array.isArray(raw.sessions)) throw new Error('Формат сохранённых записей не распознан.');
       state.sessions = raw.sessions.map(item => ({ ...normaliseSession(item), aiConsent: false }));
       state.currentId = state.sessions.some(s => s.id === raw.currentId) ? raw.currentId : state.sessions[0]?.id;
     }
@@ -239,10 +297,12 @@ function load() {
   if (!state.sessions.length) { const session = createSession(); state.sessions.push(session); state.currentId = session.id; }
 }
 function persist() {
+  replaceCurrent(invalidateAiCards(invalidateStaleDrafts(current())));
+  refreshAiPanels();
   current().updatedAt = new Date().toISOString();
   if (persistenceBlocked) { $('save-status').textContent = 'Сохраните отдельную копию встречи'; return; }
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 7, sessions: state.sessions, currentId: state.currentId }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 8, sessions: state.sessions, currentId: state.currentId }));
     $('save-status').textContent = 'Сохранено в этом браузере';
   } catch (error) {
     $('save-status').textContent = 'Не удалось сохранить в браузере';
@@ -294,7 +354,7 @@ function refreshNavMarks() {
 }
 function renderField(field, parent, compact = false) {
   const wrapper = dom('div', `answer-field${compact ? ' compact' : ''}`);
-  if (state.mode === 'guided' && !field.select && AI_DRAFT_FIELDS.includes(field.key)) { const mount = dom('div', 'ai-draft-mount'); mount.dataset.aiField = field.key; wrapper.append(mount); }
+  if (state.mode === 'guided' && !field.select && FIELD_SCHEMA[field.key]?.draftable) { const mount = dom('div', 'ai-draft-mount'); mount.dataset.aiField = field.key; wrapper.append(mount); }
   const label = dom('label', '', field.label); label.htmlFor = `answer-${field.key}`; wrapper.append(label);
   const input = document.createElement(field.select ? 'select' : 'textarea'); input.id = `answer-${field.key}`; input.name = field.key;
   if (field.select) field.select.forEach(([value, text]) => { const option = dom('option', '', text); option.value = value; input.append(option); });
@@ -334,7 +394,6 @@ function renderField(field, parent, compact = false) {
       }
     } else current().answers[field.key] = input.value;
     current().answerPrompts[field.key] = shownFieldQuestion(field.key);
-    if (AI_DRAFT_FIELDS.includes(field.key)) { replaceCurrent(invalidateStaleDrafts(current())); refreshAiPanels(); }
     if (sourceNote) { sourceNote.remove(); sourceNote = null; }
     persist(); refreshNavMarks(); renderContext();
     if (!field.select) grow(input);
@@ -598,9 +657,10 @@ function renderChooser() {
 function guidedSpec() {
   return GUIDED_FLOW.find(item => item.id === current().guidedStep) || GUIDED_FLOW[0];
 }
-function goGuided(id, backwards = false) {
+function goGuided(id, backwards = false, editingId = '') {
   const next = GUIDED_FLOW.find(item => item.id === id);
   if (!next) return;
+  chatEditingTurnId = editingId;
   const previous = guidedSpec().id;
   if (!backwards && next.id !== previous) {
     current().guidedTrail.push(previous);
@@ -611,15 +671,9 @@ function goGuided(id, backwards = false) {
   $('facilitator-menu').open = false;
   persist(); render(); focusCurrentView();
 }
-function nextGuided() {
-  const step = guidedSpec();
-  const index = GUIDED_FLOW.indexOf(step);
-  const plan = autoDraftPlan(step, index);
-  if (index === GUIDED_FLOW.length - 1) viewSummary();
-  else goGuided(GUIDED_FLOW[index + 1].id);
-  if (plan) void prepareAiDrafts(plan);
-}
+function nextGuided() { recordChatAction('continue'); advanceChat(); }
 function previousGuided() {
+  chatReturnStep = '';
   let id = current().guidedTrail.pop();
   if (!GUIDED_FLOW.some(item => item.id === id)) id = GUIDED_FLOW[Math.max(0, GUIDED_FLOW.indexOf(guidedSpec()) - 1)].id;
   goGuided(id, true);
@@ -627,39 +681,147 @@ function previousGuided() {
 function guidedField(field) {
   return { ...field, select: choices[field.key] };
 }
-function renderGuidedQuestion() {
+let chatReturnStep = '';
+let chatEditingTurnId = '';
+function chatTurn(step = guidedSpec()) { return current().chatLog.find(turn => turn.id === chatEditingTurnId && turn.screenId === step.id) || current().chatLog.slice().reverse().find(turn => turn.screenId === step.id); }
+function chatKey(step = guidedSpec()) { return step.fields?.[0]?.key || null; }
+function chatDraftKey(step = guidedSpec()) { return chatEditingTurnId ? `turn:${chatEditingTurnId}` : step.id; }
+function chatDraft(step = guidedSpec()) { return current().chatDrafts[chatDraftKey(step)]; }
+function chatQuestion(step = guidedSpec()) { if (chatEditingTurnId && chatTurn(step)) return chatTurn(step).question; return aiQuestions.get(`${current().id}:${chatKey(step) || '@' + step.id}`) || chatDraft(step)?.question || chatTurn(step)?.question || step.title; }
+function chatQuestionOrigin(step = guidedSpec()) { if (chatEditingTurnId && chatTurn(step)) return chatTurn(step).origin; return aiQuestions.has(`${current().id}:${chatKey(step) || '@' + step.id}`) ? 'ai' : chatDraft(step)?.origin || chatTurn(step)?.origin || 'template'; }
+function advanceChat() {
   const step = guidedSpec();
-  $('topic-chooser').hidden = true; $('question-card').hidden = false;
-  $('step-actions').hidden = false;
+  const index = GUIDED_FLOW.indexOf(step);
+  if (chatReturnStep && chatReturnStep !== step.id) { const back = chatReturnStep; chatReturnStep = ''; goGuided(back, true); return; }
+  chatReturnStep = '';
+  const next = GUIDED_FLOW.slice(index + 1).find(item => !item.skipInMain);
+  if (next) goGuided(next.id); else viewSummary();
+}
+function recordChatAction(action, answer = '') {
+  const step = guidedSpec(); const existing = chatTurn(step);
+  replaceCurrent(saveChatTurn(current(), { id: existing?.id || null, screenId: step.id, draftKey: chatDraftKey(step), key: chatKey(step), question: chatQuestion(step), origin: chatQuestionOrigin(step), action, answer, topic: step.phase === 'terms' ? 'agreement' : 'fit_check' }));
+  persist();
+}
+function submitChatAnswer() {
+  const step = guidedSpec(); const key = chatKey(step); const input = $(`answer-${key || 'chat-free'}`);
+  if (!input) { recordChatAction('continue'); advanceChat(); return; }
+  const value = input.value; const existing = chatTurn(step);
+  if (!value.trim() && existing?.action !== 'answer') { say('Можно записать ответ или пропустить вопрос.'); input.focus(); return; }
+  const original = current(); const draft = chatDraft(step);
+  let source = draft?.source ? structuredClone(draft.source) : existing?.answerSource || null;
+  let accepted = null;
+  if (draft?.source && key && !original.answers[key].trim()) {
+    try { accepted = draft.source.kind === 'card' ? acceptCardDraft(original, draft.source.screenId, key) : acceptDraft(original, key); }
+    catch { /* Человек может отправить отредактированный текст; устаревший ИИ-ответ сам не принимается. */ }
+  }
+  if (source?.kind === 'card') source.card.drafts[source.key].status = 'accepted';
+  if (source?.kind === 'legacy') source.draft.status = 'accepted';
+  let next = saveChatTurn(original, { id: existing?.id || null, screenId: step.id, draftKey: chatDraftKey(step), key, question: chatQuestion(step), answer: value, origin: chatQuestionOrigin(step), action: 'answer', answerSource: source, topic: step.phase === 'terms' ? 'agreement' : 'fit_check' });
+  if (accepted) { next.aiCards = accepted.aiCards; next.aiDrafts = accepted.aiDrafts; }
+  replaceCurrent(next); persist(); advanceChat();
+}
+function editChatTurn(turn) {
+  const returnStep = guidedSpec().id;
+  goGuided(turn.screenId, true, turn.id);
+  chatReturnStep = returnStep === turn.screenId ? '' : returnStep;
+  const input = $(`answer-${turn.key || 'chat-free'}`); input?.focus();
+}
+function renderChatPhases() {
+  const nav = $('chat-phases'); nav.hidden = false; nav.replaceChildren();
+  for (const [id, label] of [['about', 'Знакомство'], ['question', 'Ваш вопрос'], ['help', 'Помощь'], ['terms', 'Условия'], ['outcome', 'Итог']]) {
+    const first = GUIDED_FLOW.find(step => step.phase === id && !step.skipInMain); if (!first) continue;
+    const button = dom('button', 'chat-phase', label); button.type = 'button';
+    const visited = current().chatLog.some(turn => GUIDED_FLOW.find(step => step.id === turn.screenId)?.phase === id && turn.action === 'answer');
+    if (visited) { button.classList.add('visited'); button.setAttribute('aria-label', `${label}: уже обсуждали`); }
+    if (guidedSpec().phase === id) { button.classList.add('current'); button.setAttribute('aria-current', 'step'); }
+    button.addEventListener('click', () => { chatReturnStep = ''; goGuided(first.id); }); nav.append(button);
+  }
+}
+function renderChatHistory() {
+  const thread = $('chat-thread'); thread.hidden = false; thread.replaceChildren();
+  const logged = new Set(current().chatLog.filter(turn => turn.action === 'answer').map(turn => turn.key));
+  const older = Object.keys(FIELD_LABELS).filter(key => current().answers[key].trim() && !logged.has(key));
+  const loggedQa = new Set(current().chatLog.map(turn => turn.qaEntryId));
+  const olderQa = current().qaEntries.filter(entry => entry.answer.trim() && !loggedQa.has(entry.id));
+  if (older.length || olderQa.length) {
+    const earlier = dom('details', 'chat-earlier'); earlier.append(dom('summary', '', 'Ранее записано'), dom('p', 'field-hint', 'Это прежние записи. Мы не восстанавливаем по ним последовательность разговора.'));
+    for (const key of older) earlier.append(dom('h3', '', FIELD_LABELS[key]), dom('p', '', selectedLabel(key, current().answers[key])));
+    for (const entry of olderQa) earlier.append(dom('h3', '', entry.question), dom('p', '', entry.answer));
+    thread.append(earlier);
+  }
+  for (const turn of current().chatLog) {
+    const pair = dom('section', 'chat-pair'); pair.dataset.turnId = turn.id;
+    const question = dom('div', 'chat-bubble chat-assistant');
+    question.append(dom('span', 'chat-origin', turn.origin === 'ai' ? 'Вопрос с помощью ИИ' : 'Ведущий'), dom('p', '', turn.question)); pair.append(question);
+    if (turn.action === 'answer' || turn.action === 'choice') {
+      const reply = dom('div', 'chat-bubble chat-answer');
+      const actor = turn.key ? FIELD_SCHEMA[turn.key]?.actor : '';
+      reply.append(dom('span', 'chat-origin', turn.action === 'choice' ? 'Выбрано' : actor === 'ведущий' ? 'Запись ведущего' : actor === 'обсуждение вместе' ? 'Общая запись' : actor === 'учебная запись вместе' ? 'Учебная запись' : 'Запись ответа'), dom('p', '', (turn.key ? selectedLabel(turn.key, turn.answer) : turn.answer) || 'Запись очищена'));
+      if (turn.answerSource) reply.append(dom('p', 'chat-provenance', 'Текст начали с черновика помощника и отправили после проверки.'));
+      if (turn.key && current().answers[turn.key] !== turn.answer) reply.append(dom('p', 'chat-provenance', `Текущая запись уже изменена: ${selectedLabel(turn.key, current().answers[turn.key]) || 'не заполнено'}. Эта реплика оставлена в истории.`));
+      if (turn.action === 'answer' && GUIDED_FLOW.some(step => step.id === turn.screenId)) { const edit = dom('button', 'text-button', 'Поправить запись'); edit.type = 'button'; edit.addEventListener('click', () => editChatTurn(turn)); reply.append(edit); }
+      if (turn.revisions.length) {
+        const history = dom('details', 'chat-revisions'); history.append(dom('summary', '', 'Прежние редакции'));
+        for (const version of turn.revisions) history.append(dom('p', 'chat-old-question', version.question), dom('p', '', version.action === 'skip' ? 'Вопрос пропустили' : (turn.key ? selectedLabel(turn.key, version.answer) : version.answer) || 'Без ответа'));
+        reply.append(history);
+      }
+      if (turn.answerSource) { const sources = turn.answerSource.kind === 'card' ? turn.answerSource.card.drafts[turn.answerSource.key].basis : turn.answerSource.draft.basis; renderAiBasis(reply, sources); }
+      pair.append(reply);
+    } else if (turn.action === 'skip') pair.append(dom('p', 'chat-skip', 'Вопрос пока пропустили'));
+    thread.append(pair);
+  }
+}
+function renderGuidedQuestion() {
+  const step = guidedSpec(); const key = chatKey(step); const field = step.fields?.[0];
+  $('topic-chooser').hidden = true; $('question-card').hidden = false; $('step-actions').hidden = false;
+  $('chat-active').hidden = false; renderChatPhases(); renderChatHistory();
+  $('question-card').classList.toggle('chat-correcting', !!chatReturnStep);
   $('step-label').textContent = GUIDED_PHASES[step.phase] || 'Первый разговор';
-  $('speaker-label').textContent = step.speaker || (step.kind === 'welcome' ? 'Начнём спокойно' : 'Обсуждаем и записываем вместе');
-  $('question-title').textContent = step.title;
-  $('step-purpose').textContent = step.explanation || '';
-  $('step-purpose').hidden = !step.explanation;
-  $('question-hint').textContent = step.hint || '';
-  $('question-hint').hidden = !step.hint;
+  $('speaker-label').textContent = step.speaker || 'Обсуждаем вместе';
+  $('question-title').textContent = chatQuestion(step);
+  $('chat-speaker').textContent = chatQuestionOrigin(step) === 'ai' ? 'Уточнение с помощью ИИ' : step.speaker || 'Обсуждаем вместе';
+  $('chat-question').textContent = chatQuestion(step);
+  $('chat-explanation').textContent = step.explanation || '';
+  $('chat-explanation').hidden = !step.explanation;
   for (const id of ['prompt-editor', 'anchor-note', 'story-invitations', 'opinion-options']) $(id).hidden = true;
   const fields = $('answer-fields'); fields.replaceChildren();
-  if (step.kind === 'options') renderHelpOptions(fields);
-  else if (step.kind === 'offer_overview') renderAgreementOverview(fields, false);
-  else (step.fields || []).forEach(field => renderField(guidedField(field), fields));
-  if (step.optional?.length) renderOptionalFields(fields, step.optionalLabel || 'Если нужно уточнить', step.optional.map(guidedField));
+  const acceptsAnswer = !!field || step.input === 'free';
+  if (acceptsAnswer) {
+    const form = dom('form', 'chat-composer'); form.addEventListener('submit', event => { event.preventDefault(); submitChatAnswer(); });
+    const label = dom('label', 'sr-only', field?.label || 'Запись ответа'); label.htmlFor = `answer-${key || 'chat-free'}`;
+    const options = key ? choices[key] : null; const input = dom(options ? 'select' : 'textarea'); input.id = label.htmlFor; input.name = key || 'chat-free';
+    if (options) for (const [value, text] of options) { const option = dom('option', '', text); option.value = value; input.append(option); }
+    else { input.rows = 3; input.maxLength = 12000; input.placeholder = 'Запишем ответ и отправим'; input.spellcheck = true; }
+    const existing = chatTurn(step); const draft = chatDraft(step);
+    if (chatEditingTurnId && existing && current().chatLog.slice(current().chatLog.indexOf(existing) + 1).some(turn => turn.key === key && turn.action === 'answer')) form.append(dom('p', 'field-hint', 'Вы исправляете раннюю реплику. Более поздняя запись останется текущей.')); 
+    input.value = draft ? draft.text : chatEditingTurnId && existing ? existing.answer : key ? current().answers[key] : existing?.qaEntryId ? current().qaEntries.find(entry => entry.id === existing.qaEntryId)?.answer || '' : '';
+    input.addEventListener(options ? 'change' : 'input', () => { const previous = chatDraft(step); current().chatDrafts[chatDraftKey(step)] = { text: input.value, source: previous?.source || null, question: chatQuestion(step), origin: chatQuestionOrigin(step) }; persist(); if (!options) grow(input); });
+    input.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); submitChatAnswer(); } });
+    form.append(label, input);
+    if (field?.hint && !/[?？]/.test(field.hint)) form.append(dom('p', 'field-hint', field.hint));
+    if (step.input === 'free') { const advanced = dom('button', 'text-button', step.kind === 'options' ? 'Открыть сравнение вариантов' : 'Открыть записанные условия'); advanced.type = 'button'; advanced.addEventListener('click', () => openMode(step.kind === 'options' ? 'fit_check' : 'agreement_summary')); form.append(advanced); }
+    const actions = dom('div', 'chat-compose-actions');
+    const submit = dom('button', 'button button-primary', existing?.action === 'answer' ? 'Сохранить исправление' : 'Отправить'); submit.type = 'submit';
+    const skip = dom('button', 'text-button', existing?.action === 'answer' ? 'Оставить запись и продолжить' : 'Пока пропустить'); skip.type = 'button';
+    skip.addEventListener('click', () => { if (existing?.action !== 'answer') recordChatAction('skip'); advanceChat(); });
+    actions.append(submit, skip); form.append(actions); fields.append(form);
+    if (key && FIELD_SCHEMA[key]?.draftable) { const mount = dom('div', 'ai-draft-mount'); mount.dataset.aiField = key; form.insertBefore(mount, label); }
+  }
   if (step.choices?.length) {
     const links = dom('div', 'guided-choices');
-    step.choices.forEach((choice, index) => {
-      const button = dom('button', `button ${index ? 'button-light' : 'button-primary'}`, choice.label);
-      button.type = 'button'; button.addEventListener('click', () => goGuided(choice.to)); links.append(button);
-    }); fields.append(links);
+    step.choices.forEach((choice, index) => { const button = dom('button', `button ${index ? 'button-light' : 'button-primary'}`, choice.label); button.type = 'button'; button.addEventListener('click', () => { recordChatAction('choice', choice.label); chatReturnStep = ''; goGuided(choice.to); }); links.append(button); }); fields.append(links);
   }
   $('previous-step').hidden = GUIDED_FLOW.indexOf(step) === 0;
   $('previous-step').textContent = 'Назад';
-  $('next-step').hidden = !!step.choices?.length;
-  $('next-step').textContent = step.kind === 'welcome' ? 'Начать разговор' : GUIDED_FLOW.indexOf(step) === GUIDED_FLOW.length - 1 ? 'Посмотреть итог' : 'Дальше';
-  $('navigation-note').textContent = step.kind === 'welcome' ? '' : 'Можно оставить вопрос открытым и вернуться к нему позже.';
-  refreshAiPanels();
+  $('next-step').hidden = acceptsAnswer || !!step.choices?.length;
+  $('next-step').textContent = step.kind === 'welcome' ? 'Начать разговор' : 'Дальше';
+  $('navigation-note').textContent = acceptsAnswer ? 'Ответ попадёт в разговор после отправки. Запись можно будет поправить.' : '';
+  refreshAiPanels(); ensureAiCard();
   requestAnimationFrame(() => fields.querySelectorAll('textarea').forEach(grow));
 }
+
 function renderQuestion() {
+  for (const id of ['chat-thread', 'chat-active', 'chat-phases']) $(id).hidden = state.mode !== 'guided';
   if (state.mode === 'guided') { renderGuidedQuestion(); return; }
   $('step-purpose').hidden = false; $('question-hint').hidden = false; $('next-step').hidden = false;
   $('previous-step').textContent = 'Продолжить рассказ';
@@ -742,7 +904,7 @@ function renderHistory() {
   if (!others.length) { list.append(dom('p', '', 'Других записей пока нет.')); return; }
   others.forEach(session => {
     const button = dom('button', '', session.title.trim() || session.answers.intake_name.trim() || 'Встреча без названия'); button.type = 'button'; button.append(dom('small', '', session.date));
-    button.addEventListener('click', () => { persist(); stopAiRequests(); state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); document.querySelector('.history-menu').open = false; $('facilitator-menu').open = false; say('Открыта сохранённая встреча.'); });
+    button.addEventListener('click', () => { persist(); stopAiRequests(); chatReturnStep = ''; chatEditingTurnId = ''; state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); document.querySelector('.history-menu').open = false; $('facilitator-menu').open = false; say('Открыта сохранённая встреча.'); });
     list.append(button);
   });
 }
@@ -837,7 +999,7 @@ function render() {
   $('meeting-title').value = current().title; $('meeting-date').value = current().date;
   $('work-layout').hidden = state.summary; $('summary-view').hidden = !state.summary;
   $('summary-toggle').textContent = state.summary ? 'Вернуться к вопросам' : 'Посмотреть итог';
-  if (state.summary) renderSummary(); else renderQuestion(); renderHistory();
+  if (state.summary) { renderSummary(); refreshAiPanels(); ensureAiCard(); } else renderQuestion(); renderHistory();
 }
 function go(index) {
   current().step = Math.max(0, Math.min(steps.length - 1, index)); state.summary = false; state.mode = 'topic'; persist(); render();
@@ -845,8 +1007,8 @@ function go(index) {
 }
 function focusCurrentView() {
   requestAnimationFrame(() => {
-    (state.mode === 'choose' ? $('chooser-title') : $('question-title')).focus({ preventScroll: true });
-    document.querySelector('.question-area').scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    (state.mode === 'choose' ? $('chooser-title') : state.mode === 'guided' ? $('chat-question') : $('question-title')).focus({ preventScroll: true });
+    (state.mode === 'guided' ? $('chat-active') : document.querySelector('.question-area')).scrollIntoView({ block: state.mode === 'guided' ? 'center' : 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
 }
 function openMode(mode) {
@@ -900,7 +1062,7 @@ document.querySelectorAll('[data-invitation]').forEach(button => button.addEvent
 $('summary-toggle').addEventListener('click', () => { if (state.summary) { state.summary = false; render(); } else viewSummary(); });
 $('back-to-questions').addEventListener('click', () => { state.summary = false; render(); });
 $('new-session').addEventListener('click', () => {
-  persist(); stopAiRequests(); const session = createSession(); state.sessions.push(session); state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); $('facilitator-menu').open = false; notice('Открыт чистый лист. Предыдущая встреча сохранена в «Предыдущих записях».');
+  persist(); stopAiRequests(); chatReturnStep = ''; chatEditingTurnId = ''; const session = createSession(); state.sessions.push(session); state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); $('facilitator-menu').open = false; notice('Открыт чистый лист. Предыдущая встреча сохранена в «Предыдущих записях».');
 });
 $('download-text').addEventListener('click', () => { persist(); download(makeSummary(current()), 'text/plain;charset=utf-8', 'txt'); });
 $('download-json').addEventListener('click', () => { persist(); download(exportSession(current()), 'application/json;charset=utf-8', 'json'); });
@@ -913,7 +1075,7 @@ $('import-file').addEventListener('change', async event => {
     const session = parseImport(await file.text());
     // Копия не затирает прежний вариант встречи с таким же идентификатором.
     if (state.sessions.some(existing => existing.id === session.id)) session.id = createSession().id;
-    persist(); stopAiRequests(); state.sessions.push(session); state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); $('facilitator-menu').open = false; notice('Открыта копия встречи. Прежние записи сохранены.');
+    persist(); stopAiRequests(); chatReturnStep = ''; chatEditingTurnId = ''; state.sessions.push(session); state.currentId = session.id; state.summary = false; state.mode = 'guided'; persist(); render(); $('facilitator-menu').open = false; notice('Открыта копия встречи. Прежние записи сохранены.');
   } catch (error) { notice(error.message || 'Не удалось открыть файл встречи.'); }
   finally { event.target.value = ''; }
 });
@@ -937,7 +1099,9 @@ for (const item of GUIDED_FLOW) {
   phases.add(item.phase); const button = dom('button', 'text-button', GUIDED_PHASES[item.phase] || item.phase);
   button.type = 'button'; button.addEventListener('click', () => goGuided(item.id)); guidedMap.append(button);
 }
-facilitatorContent.append(guidedMap);
+const optionalMap = dom('details', 'guided-map'); optionalMap.append(dom('summary', '', 'Дополнительные уточнения'));
+for (const step of GUIDED_FLOW.filter(item => item.skipInMain)) { const button = dom('button', 'text-button', step.title); button.type = 'button'; button.addEventListener('click', () => { chatReturnStep = guidedSpec().id; goGuided(step.id, true); }); optionalMap.append(button); }
+facilitatorContent.append(guidedMap, optionalMap);
 const advanced = dom('button', 'button button-light', 'Все инструменты ведущего'); advanced.type = 'button';
 advanced.addEventListener('click', () => { $('facilitator-menu').open = false; go(current().step); }); facilitatorContent.append(advanced);
 $('resume-guided').addEventListener('click', () => goGuided(guidedSpec().id, true));

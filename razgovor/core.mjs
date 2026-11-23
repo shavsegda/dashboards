@@ -1,4 +1,5 @@
 import { normaliseAiDrafts } from './ai-drafts.mjs';
+import { normaliseAiCards } from './ai-cards.mjs';
 // Общие данные и правила сессии не зависят от интерфейса страницы.
 export const FIELD_LABELS = Object.freeze({
   why_now: 'Рассказ участника и повод встречи',
@@ -337,6 +338,9 @@ export function createSession(now = new Date()) {
     guidedStep: 'welcome',
     guidedTrail: [],
     aiDrafts: {},
+    aiCards: {},
+    chatLog: [],
+    chatDrafts: {},
     aiConsent: false,
   };
 }
@@ -368,9 +372,12 @@ export function normaliseSession(raw) {
   const guidedStep = checkedString(own(raw, 'guidedStep') ? raw.guidedStep : 'welcome', 'Текущий шаг разговора', 200);
   const guidedTrail = checkedGuidedTrail(own(raw, 'guidedTrail') ? raw.guidedTrail : []);
   const aiDrafts = normaliseAiDrafts(own(raw, 'aiDrafts') ? raw.aiDrafts : {});
+  const chatLog = checkedChatLog(own(raw, 'chatLog') ? raw.chatLog : []);
+  const chatDrafts = checkedChatDrafts(own(raw, 'chatDrafts') ? raw.chatDrafts : {});
+  const aiCards = normaliseAiCards(own(raw, 'aiCards') ? raw.aiCards : {});
   if (own(raw, 'aiConsent') && typeof raw.aiConsent !== 'boolean') throw new Error('Согласие на помощника должно быть явной отметкой.');
   const aiConsent = raw.aiConsent === true;
-  return { id, date, title, step: raw.step, updatedAt, answers, prompts, anchors, questionHistory, answerPrompts, qaEntries, qaHistory, helpOptions, agreementHistory, guidedStep, guidedTrail, aiDrafts, aiConsent };
+  return { id, date, title, step: raw.step, updatedAt, answers, prompts, anchors, questionHistory, answerPrompts, qaEntries, qaHistory, helpOptions, agreementHistory, guidedStep, guidedTrail, aiDrafts, aiCards, aiConsent, chatLog, chatDrafts };
 }
 
 export function updateAgreementAnswer(session, key, value, { now = new Date() } = {}) {
@@ -485,7 +492,7 @@ export function parseImport(text) {
   if (!isObject(raw)) throw new Error('Файл должен содержать запись встречи в формате JSON.');
   if (own(raw, 'format') || own(raw, 'version') || own(raw, 'session')) {
     if (raw.format !== 'first-meeting-sheet') throw new Error('Этот файл относится к другому формату. Нужен файл первой встречи.');
-    if (![1, 2, 3, 4, 5, 6, 7].includes(raw.version)) throw new Error('Версия файла не поддерживается. Для этой страницы нужна версия от 1 до 7.');
+    if (![1, 2, 3, 4, 5, 6, 7, 8].includes(raw.version)) throw new Error('Версия файла не поддерживается. Для этой страницы нужна версия от 1 до 8.');
     if (!own(raw, 'session')) throw new Error('В файле отсутствует запись встречи.');
     return { ...normaliseSession(raw.session), aiConsent: false };
   }
@@ -493,7 +500,7 @@ export function parseImport(text) {
 }
 
 export function exportSession(session) {
-  return JSON.stringify({ format: 'first-meeting-sheet', version: 7, session: normaliseSession(session) }, null, 2);
+  return JSON.stringify({ format: 'first-meeting-sheet', version: 8, session: normaliseSession(session) }, null, 2);
 }
 
 export function makeSummary(session) {
@@ -647,4 +654,90 @@ export function makeSummary(session) {
     .map(([key, value]) => `${TOPIC_LABELS[key]} — опорная запись: ${value}`));
   if (!sections) output.push('', 'Ответы пока не записаны.');
   return output.join('\n');
+}
+
+// Лента хранит только отправленные записи. Неотправленный текст живёт отдельно.
+function checkedChatSource(raw) {
+  if (raw === undefined || raw === null) return null;
+  if (!isObject(raw) || typeof raw.key !== 'string' || !own(FIELD_LABELS, raw.key)) throw new Error('Не распознан источник черновика в разговоре.');
+  if (raw.kind === 'card') {
+    const screenId = checkedString(raw.screenId, 'Экран источника черновика', 200);
+    const card = normaliseAiCards({ [screenId]: raw.card })[screenId];
+    if (!card.drafts[raw.key]) throw new Error('В источнике нет выбранного черновика.');
+    return { kind: 'card', screenId, key: raw.key, card };
+  }
+  if (raw.kind === 'legacy') {
+    const draft = normaliseAiDrafts({ [raw.key]: raw.draft })[raw.key];
+    return { kind: 'legacy', key: raw.key, draft };
+  }
+  throw new Error('Неизвестный источник черновика.');
+}
+function checkedChatSnapshot(raw) {
+  if (!isObject(raw) || !['template', 'ai'].includes(raw.origin) || !['answer', 'skip', 'continue', 'choice'].includes(raw.action)) throw new Error('Не распознана отправленная реплика разговора.');
+  const answer = checkedString(raw.answer, 'Отправленный ответ');
+  if (raw.action === 'skip' && answer !== '') throw new Error('Пропуск не должен содержать ответ человека.');
+  return { question: checkedString(raw.question, 'Показанный вопрос разговора', 2000), answer, at: checkedTimestamp(raw.at), origin: raw.origin, action: raw.action, answerSource: checkedChatSource(raw.answerSource) };
+}
+function checkedChatLog(raw) {
+  if (!Array.isArray(raw) || raw.length > 1000) throw new Error('Лента разговора должна содержать не более 1000 записей.');
+  const ids = new Set();
+  return raw.map(turn => {
+    if (!isObject(turn)) throw new Error('Не распознана запись ленты разговора.');
+    const id = checkedId(turn.id); if (ids.has(id)) throw new Error('В ленте повторяется номер записи.'); ids.add(id);
+    const screenId = checkedString(turn.screenId, 'Экран отправленного ответа', 200);
+    const key = turn.key ?? null;
+    if (key !== null && (typeof key !== 'string' || !own(FIELD_LABELS, key))) throw new Error('Запись ленты относится к неизвестному полю.');
+    const qaEntryId = turn.qaEntryId === undefined || turn.qaEntryId === null ? null : checkedId(turn.qaEntryId);
+    if (!Array.isArray(turn.revisions) || turn.revisions.length > 1000) throw new Error('Не распознана история исправлений ответа.');
+    return { id, screenId, key, qaEntryId, ...checkedChatSnapshot(turn), revisions: turn.revisions.map(checkedChatSnapshot) };
+  });
+}
+function checkedChatDrafts(raw) {
+  if (!isObject(raw) || Object.keys(raw).length > 1000) throw new Error('Не распознаны неотправленные записи разговора.');
+  return Object.fromEntries(Object.entries(raw).map(([screenId, draft]) => {
+    checkedString(screenId, 'Экран неотправленной записи', 200);
+    if (!isObject(draft)) throw new Error('Неотправленная запись должна храниться отдельно от ответов.');
+    const question = draft.question === undefined || draft.question === null ? null : checkedString(draft.question, 'Вопрос к неотправленной записи', 2000);
+    const origin = draft.origin || 'template'; if (!['template', 'ai'].includes(origin)) throw new Error('Не распознан источник вопроса к черновику.');
+    return [screenId, { text: checkedString(draft.text, 'Неотправленный текст'), source: checkedChatSource(draft.source), question, origin }];
+  }));
+}
+
+export function saveChatTurn(session, { id = null, screenId, draftKey = screenId, key = null, question, answer = '', origin = 'template', action = 'answer', answerSource = null, topic = 'fit_check', now = new Date() }) {
+  let result = normaliseSession(session);
+  const at = checkedTimestamp(now.toISOString());
+  const snapshot = checkedChatSnapshot({ question, answer, at, origin, action, answerSource });
+  checkedString(screenId, 'Экран отправленной записи', 200);
+  if (key !== null && !own(FIELD_LABELS, key)) throw new Error('Для ответа указано неизвестное поле.');
+  const existing = id ? result.chatLog.find(turn => turn.id === id) : null;
+  if (id && !existing) throw new Error('Не найдена запись для исправления.');
+  if (existing && (existing.screenId !== screenId || existing.key !== key)) throw new Error('Исправление не должно перепривязывать прежний ответ к другому вопросу или полю.');
+  const position = existing ? result.chatLog.findIndex(turn => turn.id === existing.id) : -1;
+  const newerAnswer = existing && result.chatLog.slice(position + 1).some(turn => turn.action === 'answer' && (key ? turn.key === key : existing.qaEntryId && turn.qaEntryId === existing.qaEntryId));
+  let qaEntryId = existing?.qaEntryId || null;
+  if (action === 'answer' && !newerAnswer) {
+    if (key) {
+      const previous = { previousText: result.answers.shared_question, previousStatus: result.answers.question_status, previousReason: result.answers.question_change_reason };
+      if (AGREEMENT_FIELDS.includes(key)) result = updateAgreementAnswer(result, key, answer, { now });
+      else result.answers[key] = answer;
+      result.answerPrompts[key] = question;
+      if (key === 'shared_question' && previous.previousText !== answer) {
+        result.answers.question_status = ''; result.answers.question_change_reason = '';
+        result = saveQuestionVersion(result, { ...previous, now });
+      } else if (key === 'question_status' || key === 'question_change_reason') result = saveQuestionVersion(result, { reason: result.answers.question_change_reason, now });
+    } else {
+      if (!qaEntryId) { const added = addFollowup(result, { topic, question, now }); result = added.session; qaEntryId = added.entryId; }
+      const entry = result.qaEntries.find(item => item.id === qaEntryId);
+      if (!entry) throw new Error('Не найден исходный ответ для исправления.');
+      entry.question = question; entry.answer = answer; entry.updatedAt = at;
+    }
+  }
+  const turn = { id: existing?.id || makeId(), screenId, key, qaEntryId, ...snapshot, revisions: existing?.revisions || [] };
+  if (existing) {
+    if (JSON.stringify(checkedChatSnapshot(existing)) !== JSON.stringify(snapshot)) turn.revisions = [...existing.revisions, checkedChatSnapshot(existing)];
+    result.chatLog[result.chatLog.findIndex(item => item.id === existing.id)] = turn;
+  } else result.chatLog.push(turn);
+  checkedString(draftKey, 'Ключ неотправленной записи', 200);
+  if (action !== 'skip') delete result.chatDrafts[draftKey]; result.updatedAt = at;
+  return normaliseSession(result);
 }

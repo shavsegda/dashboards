@@ -45,3 +45,48 @@
 .ai-prepare { margin-bottom: 12px; text-align: left; }
 .ai-active-question { font-weight: 600; }
 @media print { .ai-settings, .ai-status, .ai-draft-mount { display: none !important; } }
+
+.ai-card-guidance { margin: 16px 0; padding: 16px 18px; border-left: 3px solid #b08e62; background: #faf6ef; border-radius: 0 8px 8px 0; }
+.ai-card-guidance p:last-child { margin-bottom: 0; }
+.ai-card-question { font-weight: 600; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-card-explanation, .ai-card-hints { font-size: .95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-card-basis { margin-top: 12px; font-size: .85rem; }
+.ai-card-basis summary { cursor: pointer; }
+@media print { #ai-card-panel, #ai-summary-panel { display: none !important; } }
+
+/* Лента первого разговора: история сверху, один текущий вопрос и одно поле. */
+.guided-mode .question-card { padding: 0; background: transparent; border: 0; box-shadow: none; }
+.guided-mode .question-heading-row, .guided-mode #question-title, .guided-mode #step-purpose, .guided-mode #question-hint { display: none !important; }
+.guided-mode .chat-phases { display: flex; flex-wrap: wrap; gap: 7px; padding: 12px 0 20px; margin-bottom: 12px; }
+.chat-phase { border: 1px solid var(--line); border-radius: 20px; background: var(--paper); padding: 8px 13px; color: var(--muted); font: inherit; font-size: .85rem; cursor: pointer; }
+.chat-phase.current { background: var(--wine); color: #fff; border-color: var(--wine); }
+.chat-phase.visited:not(.current) { border-color: #ad9f8b; color: var(--ink); }
+.chat-bubble { border-radius: 14px; padding: 19px 23px; margin-bottom: 12px; overflow-wrap: anywhere; }
+.chat-assistant { background: #fff; border: 1px solid var(--line); max-width: 94%; }
+.chat-answer { margin-left: 9%; background: #eeeae1; }
+.chat-bubble p { white-space: pre-wrap; margin: 8px 0 0; }
+.chat-origin { color: var(--muted); font-size: .8rem; display: block; margin: 0 0 6px; }
+.chat-provenance { font-size: .8rem; color: var(--muted); }
+.chat-pair { margin-bottom: 27px; }
+.chat-pair .text-button { display: block; margin-top: 12px; font-size: .85rem; }
+.chat-active { max-width: 100%; margin-top: 26px; }
+.guided-mode .chat-active h2 { display: block; font-size: 1.55rem; line-height: 1.4; margin: 8px 0 12px; letter-spacing: -.01em; }
+#chat-explanation { font-size: .97rem; color: #4c514d; }
+.chat-composer { margin-top: 16px; }
+.chat-composer textarea, .chat-composer select { display: block; width: 100%; padding: 16px 18px; border: 1px solid #b5aaa0; border-radius: 12px; background: #fff; color: var(--ink); font: inherit; font-size: 1.02rem; line-height: 1.65; min-height: 62px; }
+.chat-composer textarea { resize: vertical; min-height: 120px; }
+.chat-compose-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin: 16px 0; }
+.chat-earlier { border: 1px solid var(--line); padding: 15px 20px; border-radius: 10px; margin-bottom: 24px; background: #f4f0e8; }
+.chat-earlier summary, .chat-revisions summary { cursor: pointer; font-size: .9rem; }
+.chat-earlier h3 { font-size: .85rem; margin-bottom: 4px; }
+.chat-earlier p { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; }
+.chat-revisions { margin-top: 12px; color: var(--muted); font-size: .85rem; }
+.chat-old-question { font-weight: 600; }
+.chat-skip { font-size: .85rem; color: var(--muted); text-align: right; }
+.chat-active .ai-card-guidance { padding: 12px 0 0; border: 0; border-top: 1px solid var(--line); background: transparent; border-radius: 0; margin: 15px 0 0; }
+.chat-active .ai-card-guidance h3 { font-size: .85rem; font-weight: 500; color: var(--muted); }
+.chat-active .ai-draft-note { font-size: .8rem; }
+.chat-active .ai-card-explanation, .chat-active .ai-card-hints { font-size: .9rem; }
+.guided-mode .step-actions { padding-top: 6px; }
+#facilitator-content { max-height: 82vh; overflow-y: auto; }
+@media(max-width:650px) { .chat-bubble { padding: 16px 18px; } .chat-answer { margin-left: 5%; } .guided-mode .chat-active h2 { font-size: 1.35rem; } .chat-phase { padding: 7px 10px; } }
