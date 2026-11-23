@@ -97,3 +97,136 @@
 .ai-readiness-text { color: var(--muted); }
 .ai-readiness[data-state="off"], .ai-readiness[data-state="code"] { border-left: 3px solid #b08e62; border-top: 0; padding: 10px 13px; background: #faf6ef; border-radius: 0 7px 7px 0; }
 .ai-readiness .text-button { margin-top: 5px; font-size: .85rem; }
+
+/* Спокойный рабочий экран. Эти правила не меняют существующую печатную версию. */
+@media screen {
+  :root {
+    --paper: #fff;
+    --canvas: #fff;
+    --ink: #191b1f;
+    --muted: #62666d;
+    --wine: #25282d;
+    --wine-dark: #111318;
+    --line: #e3e6e9;
+    --soft: #f4f5f6;
+    --green: #3e4743;
+    --radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-size: 17px;
+  }
+  body { background: #fff; line-height: 1.65; }
+  .brand h1, .brand-mark, .question-card h2, .summary-heading h2,
+  .summary-card h3, .agreement-overview > h3 { font-family: inherit; }
+  .eyebrow, .record-origin, .case-label, .chat-origin { text-transform: none; letter-spacing: normal; }
+  button:focus-visible, summary:focus-visible, a:focus-visible, input:focus-visible,
+  textarea:focus-visible, select:focus-visible, h2:focus-visible {
+    outline: 2px solid #596570;
+    outline-offset: 3px;
+  }
+  .button { min-height: 42px; border-radius: 6px; padding: 10px 17px; font-weight: 550; }
+  .button-primary { background: #25282d; border-color: #25282d; }
+  .button-primary:hover { background: #111318; border-color: #111318; }
+  .button-light { background: #fff; border-color: #dce0e4; }
+  .button-light:hover { background: #f6f7f8; border-color: #bec5cc; }
+  .text-button { color: #565d66; text-decoration: none; }
+  .text-button:hover { color: var(--ink); text-decoration: underline; }
+  .guided-mode .site-header { max-width: 832px; padding: 24px 36px 16px; gap: 16px; }
+  .guided-mode .brand h1 { font-family: inherit; font-size: 1.12rem; font-weight: 600; letter-spacing: -.015em; }
+  .guided-mode .shell { max-width: 832px; padding: 8px 36px 32px; }
+  .guided-mode .question-area { max-width: 760px; width: 100%; margin: 0 auto; }
+  .guided-mode .question-card { padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+  .guided-mode .topic-label { margin: 0 0 6px; font-size: .82rem; color: #717780; }
+  .guided-mode .chat-phases { gap: 4px 20px; padding: 0 0 12px; margin: 0 0 28px; border-bottom: 1px solid var(--line); }
+  .chat-phase, .chat-phase.visited:not(.current) {
+    border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+    background: transparent; padding: 7px 0; color: #62666d; font-size: .86rem; line-height: 1.4;
+  }
+  .chat-phase:hover { color: var(--ink); border-bottom-color: #c9ced4; }
+  .chat-phase.current { color: var(--ink); background: transparent; border-bottom-color: #25282d; font-weight: 600; }
+  .chat-phase.visited:not(.current) { color: #40464d; }
+  .chat-pair { margin-bottom: 30px; }
+  .chat-bubble { border: 0; border-radius: 0; box-shadow: none; overflow-wrap: anywhere; }
+  .chat-assistant { max-width: 100%; padding: 0; background: transparent; border: 0; }
+  .chat-answer { margin: 12px 0 0 28px; padding: 14px 18px; background: #f4f5f6; border-radius: 8px; }
+  .chat-bubble p { margin: 6px 0 0; line-height: 1.65; }
+  .chat-origin { font-size: .82rem; line-height: 1.4; font-weight: 400; color: var(--muted); }
+  .chat-provenance, .chat-revisions, .chat-skip { font-size: .84rem; line-height: 1.55; }
+  .chat-pair .text-button { margin-top: 9px; padding-bottom: 0; min-height: 26px; }
+  .guided-mode .chat-active { margin-top: 34px; padding: 0; max-width: 100%; background: transparent; border: 0; }
+  .guided-mode .chat-active h2 {
+    font-family: inherit; font-size: 1.45rem; font-weight: 600; line-height: 1.4;
+    letter-spacing: -.015em; margin: 8px 0 12px; max-width: none;
+  }
+  #chat-explanation { color: #5a6068; font-size: .96rem; line-height: 1.65; }
+  .chat-composer { margin-top: 20px; }
+  .chat-composer textarea, .chat-composer select {
+    padding: 14px 16px; border: 1px solid #cdd3d9; border-radius: 8px;
+    background: #fff; font-size: 1rem; line-height: 1.65; box-shadow: none;
+  }
+  .chat-composer textarea { min-height: 112px; }
+  .chat-composer textarea::placeholder { color: #838a92; }
+  .chat-composer textarea:focus, .chat-composer select:focus { border-color: #535e69; }
+  .chat-composer .field-hint { color: #62666d; font-size: .86rem; line-height: 1.55; margin: 9px 0 0; }
+  .chat-compose-actions { margin: 14px 0 8px; gap: 20px; }
+  .chat-compose-actions .text-button { font-size: .86rem; }
+  .chat-earlier { background: #f7f8f9; border: 0; border-radius: 6px; padding: 14px 17px; }
+  .chat-earlier h3 { font-family: inherit; font-size: .86rem; font-weight: 550; }
+  .chat-earlier p { font-size: .95rem; }
+  .chat-earlier summary, .chat-revisions summary, .ai-card-basis summary { color: #62666d; font-size: .86rem; }
+  .ai-draft-panel { background: #f6f7f8; border: 0; border-radius: 7px; padding: 16px; }
+  .ai-draft-title { font-weight: 550; }
+  .ai-draft-note, .ai-draft-source-label, .ai-draft-action-status { font-size: .85rem; color: #62666d; }
+  .ai-draft-quote { border-left-color: #cbd1d7; font-size: .94rem; line-height: 1.6; }
+  .chat-active .ai-card-guidance { border: 0; background: transparent; padding: 0; margin: 18px 0 0; }
+  .chat-active .ai-card-guidance h3 { font-size: .84rem; color: #62666d; }
+  .chat-active .ai-card-explanation, .chat-active .ai-card-hints { font-size: .93rem; line-height: 1.6; }
+  .ai-status { background: #f2f4f6; border: 0; border-radius: 6px; color: #40464d; font-size: .88rem; }
+  .ai-readiness { border-color: var(--line); }
+  .ai-readiness[data-state="off"], .ai-readiness[data-state="code"] {
+    background: #f4f5f6; border: 0; border-left: 2px solid #8a949f; border-radius: 0 6px 6px 0; padding: 11px 14px;
+  }
+  .ai-readiness p { font-size: .86rem; line-height: 1.6; }
+  .guided-mode .step-actions { padding: 8px 0 0; gap: 16px; }
+  .guided-mode #navigation-note { font-size: .82rem; line-height: 1.55; color: #717780; }
+  .guided-mode .site-footer { max-width: 832px; padding: 0 36px 24px; font-size: .82rem; line-height: 1.6; }
+  .site-footer p { border-top-color: #eceef0; }
+  .facilitator-menu > summary { padding: 8px 11px; background: transparent; border: 0; border-radius: 6px; font-size: .9rem; }
+  .facilitator-menu > summary:hover { background: #f4f5f6; }
+  #facilitator-content { background: #fff; border-color: #e1e5e8; border-radius: 9px; box-shadow: 0 10px 35px #171b2214; }
+  .file-menu[open] > summary, .history-menu[open] > summary { background: #f0f2f4; }
+  .menu-items, .history-list { background: #fff; border-color: #e1e5e8; box-shadow: 0 8px 28px #171b2212; }
+  .ai-settings input[type=password], .meeting-meta input { border-color: #cdd3d9; }
+  .notice { color: #353a41; background: #f4f5f6; border-color: #dce1e6; }
+  .guided-mode .notice { max-width: 760px; }
+  .summary-view { max-width: 760px; }
+  .summary-heading h2 { font-family: inherit; font-size: 1.5rem; font-weight: 600; }
+  .summary-card { background: #fff; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 24px 0; margin: 0; }
+  .summary-card h3 { font-family: inherit; font-size: 1.15rem; font-weight: 600; }
+  .summary-item p { font-size: 1rem; }
+  .question-card h2 { font-family: inherit; font-size: 1.45rem; }
+  .context-panel, .clarification-map, .fit-context, .prompt-editor, .case-scenario, .worked-result,
+  .practice-reminder, .example-answer, .summary-state, .status-callout { background: #f4f5f6; border-color: #dce1e6; }
+  .purpose-note { background: #f4f5f6; border-left-color: #a4adb6; color: #565e67; }
+  .summary-item .summary-anchor { background: #f5f6f7; border-left-color: #cbd1d7; }
+  .step-nav-button.current, .opinion-options button[aria-pressed="true"] { background: #eceff2; border-color: #bbc3cb; color: var(--ink); }
+  .topic-choice:hover { background: #f6f7f8; border-color: #bfc7cf; }
+  .story-invitations button { background: #f6f7f8; }
+  /* Атрибут hidden остаётся сильнее любых правил компоновки чата и настроек. */
+  [hidden] { display: none !important; }
+}
+
+@media screen and (max-width: 650px) {
+  .guided-mode .site-header { padding: 18px 18px 12px; gap: 12px; flex-wrap: nowrap; }
+  .guided-mode .brand h1 { font-size: 1.05rem; }
+  .guided-mode .shell { padding: 8px 18px 26px; }
+  .guided-mode .chat-phases { gap: 3px 15px; padding-bottom: 10px; margin-bottom: 22px; }
+  .chat-phase { font-size: .82rem; padding: 6px 0; }
+  .chat-answer { margin-left: 15px; padding: 12px 14px; }
+  .chat-pair { margin-bottom: 26px; }
+  .guided-mode .chat-active { margin-top: 28px; }
+  .guided-mode .chat-active h2 { font-size: 1.35rem; line-height: 1.4; }
+  .chat-composer textarea { padding: 13px 14px; min-height: 108px; }
+  .chat-compose-actions { gap: 16px; }
+  .guided-mode .site-footer { padding: 0 18px 20px; }
+  #facilitator-content { width: min(580px, calc(100vw - 36px)); padding: 18px; }
+}

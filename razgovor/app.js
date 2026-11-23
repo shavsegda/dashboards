@@ -1,4 +1,4 @@
-import { FIELD_LABELS, createSession, normaliseSession, parseImport, exportSession, makeSummary, saveQuestionVersion, addFollowup, correctPrompt, AGREEMENT_FIELDS, AGREEMENT_TERM_KEYS, updateAgreementAnswer, saveChatTurn } from './core.mjs';
+import { FIELD_LABELS, createSession, normaliseSession, parseImport, exportSession, makeSummary, saveQuestionVersion, addFollowup, correctPrompt, AGREEMENT_FIELDS, AGREEMENT_TERM_KEYS, updateAgreementAnswer, saveChatTurn, restoreStoredSession } from './core.mjs';
 import { TOPIC_PURPOSES } from './learning.mjs';
 import { renderLearning } from './learning-ui.mjs';
 import { GUIDED_FLOW, GUIDED_PHASES } from './guided-flow.mjs';
@@ -119,7 +119,7 @@ function setupAiSettings(parent) {
   consentLabel.append(consent, dom('span', '', 'Мы договорились использовать помощника'));
   box.append(consentLabel, dom('p', 'field-hint', 'При подготовке подсказки в Supabase и OpenRouter отправляются записи всей текущей встречи: форма знакомства, ваш вопрос, обсуждение помощи, условий и итога, записанные варианты и уточняющие ответы. Черновики помощника не отправляются как ваши ответы. Код доступа передаётся только серверу.'));
   consent.addEventListener('change', () => {
-    stopAiRequests(); current().aiConsent = consent.checked; persist();
+    stopAiRequests(); current().aiConsent = consent.checked; current().aiConsentScope = consent.checked ? 'full-session-v2' : ''; persist();
     aiStatus(consent.checked ? (aiCode ? 'Помощник включён для этой встречи. Подсказки появятся при переходе на следующий экран или по вашей кнопке.' : 'Договорённость отмечена. Для отправки запроса ещё нужен код доступа.') : 'Помощник выключен. Новые записи никуда не отправляются.');
     refreshAiPanels();
     if (consent.checked) aiAttempts.get(current().id)?.signatures.clear();
@@ -311,7 +311,7 @@ function load() {
     if (stored) {
       const raw = JSON.parse(stored);
       if (![1, 2, 3, 4, 5, 6, 7, 8].includes(raw.version) || !Array.isArray(raw.sessions)) throw new Error('Формат сохранённых записей не распознан.');
-      state.sessions = raw.sessions.map(item => ({ ...normaliseSession(item), aiConsent: false }));
+      state.sessions = raw.sessions.map(item => restoreStoredSession(item, raw.version));
       state.currentId = state.sessions.some(s => s.id === raw.currentId) ? raw.currentId : state.sessions[0]?.id;
     }
   } catch (error) {

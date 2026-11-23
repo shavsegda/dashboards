@@ -342,6 +342,7 @@ export function createSession(now = new Date()) {
     chatLog: [],
     chatDrafts: {},
     aiConsent: false,
+    aiConsentScope: '',
   };
 }
 
@@ -377,7 +378,16 @@ export function normaliseSession(raw) {
   const aiCards = normaliseAiCards(own(raw, 'aiCards') ? raw.aiCards : {});
   if (own(raw, 'aiConsent') && typeof raw.aiConsent !== 'boolean') throw new Error('Согласие на помощника должно быть явной отметкой.');
   const aiConsent = raw.aiConsent === true;
-  return { id, date, title, step: raw.step, updatedAt, answers, prompts, anchors, questionHistory, answerPrompts, qaEntries, qaHistory, helpOptions, agreementHistory, guidedStep, guidedTrail, aiDrafts, aiCards, aiConsent, chatLog, chatDrafts };
+  const aiConsentScope = own(raw, 'aiConsentScope') ? raw.aiConsentScope : '';
+  if (!['', 'full-session-v2'].includes(aiConsentScope)) throw new Error('Не распознана цель согласия на помощника.');
+  return { id, date, title, step: raw.step, updatedAt, answers, prompts, anchors, questionHistory, answerPrompts, qaEntries, qaHistory, helpOptions, agreementHistory, guidedStep, guidedTrail, aiDrafts, aiCards, aiConsent, aiConsentScope, chatLog, chatDrafts };
+}
+
+// Согласие на прежний, более узкий контекст не переносится на всю встречу автоматически.
+export function restoreStoredSession(raw, version = 8) {
+  const session = normaliseSession(raw);
+  const aiConsent = version === 8 && session.aiConsent && session.aiConsentScope === 'full-session-v2';
+  return { ...session, aiConsent, aiConsentScope: aiConsent ? 'full-session-v2' : '' };
 }
 
 export function updateAgreementAnswer(session, key, value, { now = new Date() } = {}) {
@@ -494,9 +504,9 @@ export function parseImport(text) {
     if (raw.format !== 'first-meeting-sheet') throw new Error('Этот файл относится к другому формату. Нужен файл первой встречи.');
     if (![1, 2, 3, 4, 5, 6, 7, 8].includes(raw.version)) throw new Error('Версия файла не поддерживается. Для этой страницы нужна версия от 1 до 8.');
     if (!own(raw, 'session')) throw new Error('В файле отсутствует запись встречи.');
-    return { ...normaliseSession(raw.session), aiConsent: false };
+    return { ...normaliseSession(raw.session), aiConsent: false, aiConsentScope: '' };
   }
-  return { ...normaliseSession(raw), aiConsent: false };
+  return { ...normaliseSession(raw), aiConsent: false, aiConsentScope: '' };
 }
 
 export function exportSession(session) {
