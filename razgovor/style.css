@@ -90,3 +90,10 @@
 .guided-mode .step-actions { padding-top: 6px; }
 #facilitator-content { max-height: 82vh; overflow-y: auto; }
 @media(max-width:650px) { .chat-bubble { padding: 16px 18px; } .chat-answer { margin-left: 5%; } .guided-mode .chat-active h2 { font-size: 1.35rem; } .chat-phase { padding: 7px 10px; } }
+
+.ai-readiness { margin-top: 16px; padding: 12px 0 0; border-top: 1px solid var(--line); }
+.ai-readiness p { font-size: .85rem; line-height: 1.5; margin: 0 0 6px; }
+.ai-readiness-title { color: var(--ink); font-weight: 600; }
+.ai-readiness-text { color: var(--muted); }
+.ai-readiness[data-state="off"], .ai-readiness[data-state="code"] { border-left: 3px solid #b08e62; border-top: 0; padding: 10px 13px; background: #faf6ef; border-radius: 0 7px 7px 0; }
+.ai-readiness .text-button { margin-top: 5px; font-size: .85rem; }

@@ -98,7 +98,7 @@ function syncAiSettings() {
   aiStatus(aiMessages.get(current().id) || '');
 }
 function setupAiSettings(parent) {
-  const box = dom('details', 'ai-settings'); box.append(dom('summary', '', 'Помощник'));
+  const box = dom('details', 'ai-settings'); box.id = 'ai-settings'; box.append(dom('summary', '', 'Помощник'));
   box.append(dom('p', '', 'Помощник предлагает вопрос и короткие подсказки для каждого экрана по записям текущей встречи. Вы обсуждаете их и сами решаете, что принять. Он не заполняет ответы без вашего действия.'));
   const label = dom('label', '', 'Код доступа ведущего');
   const input = dom('input'); input.id = 'ai-access-code'; input.type = 'password'; input.autocomplete = 'off'; input.maxLength = 1024; label.append(input); box.append(label);
@@ -110,6 +110,7 @@ function setupAiSettings(parent) {
     stopAiRequests(); aiCode = value; input.value = '';
     try { sessionStorage.setItem(AI_CODE_KEY, aiCode); } catch { aiStatus('Код доступен до обновления страницы: браузер не разрешил сохранить его на время вкладки.'); }
     syncAiSettings(); refreshAiPanels();
+    aiAttempts.get(current().id)?.signatures.clear(); ensureAiCard();
   });
   const clear = dom('button', 'text-button', 'Убрать код'); clear.type = 'button';
   clear.addEventListener('click', () => { stopAiRequests(); aiCode = ''; input.value = ''; try { sessionStorage.removeItem(AI_CODE_KEY); } catch {} syncAiSettings(); refreshAiPanels(); });
@@ -121,6 +122,8 @@ function setupAiSettings(parent) {
     stopAiRequests(); current().aiConsent = consent.checked; persist();
     aiStatus(consent.checked ? (aiCode ? 'Помощник включён для этой встречи. Подсказки появятся при переходе на следующий экран или по вашей кнопке.' : 'Договорённость отмечена. Для отправки запроса ещё нужен код доступа.') : 'Помощник выключен. Новые записи никуда не отправляются.');
     refreshAiPanels();
+    if (consent.checked) aiAttempts.get(current().id)?.signatures.clear();
+    ensureAiCard();
   }); parent.append(box);
 }
 function activeAiScreen() { return state.summary ? 'summary' : state.mode === 'guided' ? guidedSpec().id : ''; }
@@ -174,12 +177,34 @@ function renderAiBasis(parent, basis) {
   for (const item of basis) { const source = dom('div', 'ai-draft-source'); source.append(dom('p', 'ai-draft-source-label', FIELD_SCHEMA[item.key]?.label || 'Запись текущего разговора'), dom('blockquote', 'ai-draft-quote', item.quote)); details.append(source); }
   parent.append(details);
 }
+function aiReadiness({ consent, hasCode, hasContext, screenId, busy, hasCard }) {
+  if (!consent) return { state: 'off', title: 'Помощник выключен', text: 'Чтобы получать подсказки, откройте настройки и отметьте договорённость об использовании помощника.', settings: true };
+  if (!hasCode) return { state: 'code', title: 'Нужен код ведущего', text: 'Договорённость отмечена. Сохраните код доступа в настройках помощника.', settings: true };
+  if (!hasContext || ['welcome', 'about_you'].includes(screenId)) return { state: 'waiting', title: 'Помощник готов к разговору', text: 'Запишите и отправьте ответ. Подсказки учитывают отправленные записи; набранный текст до отправки остаётся черновиком.', settings: false };
+  if (busy) return { state: 'busy', title: 'Помощник готовит подсказку', text: 'Можно продолжать писать: ваш текст останется в поле.', settings: false };
+  if (hasCard) return { state: 'ready', title: 'Подсказка по разговору готова', text: '', settings: false };
+  return { state: 'ready', title: 'Помощник включён', text: 'Учитывает отправленные записи этой встречи. Подсказку можно подготовить кнопкой ниже.', settings: false };
+}
+function openAiSettings() {
+  $('facilitator-menu').open = true; $('ai-settings').open = true;
+  (current().aiConsent ? $('ai-access-code') : $('ai-consent')).focus({ preventScroll: true });
+}
+function renderAiReadiness(mount, screenId, card) {
+  const readiness = aiReadiness({ consent: current().aiConsent, hasCode: !!aiCode, hasContext: !!collectCardContext(current()).length, screenId, busy: aiJobs.has(current().id), hasCard: !!card });
+  const indicator = dom('section', 'ai-readiness'); indicator.dataset.state = readiness.state;
+  indicator.append(dom('p', 'ai-readiness-title', readiness.title));
+  if (readiness.text) indicator.append(dom('p', 'ai-readiness-text', readiness.text));
+  if (readiness.settings) { const button = dom('button', 'text-button', 'Настроить помощника'); button.type = 'button'; button.addEventListener('click', openAiSettings); indicator.append(button); }
+  mount.append(indicator);
+}
 function renderAiCard() {
   const mount = cardMount(); if (!mount) return;
   mount.replaceChildren();
   const screenId = activeAiScreen();
-  if (!screenId || ['welcome', 'about_you'].includes(screenId)) return;
+  if (!screenId) return;
   const card = SCREEN_SCHEMA[screenId] && isCardCurrent(current(), screenId) ? current().aiCards[screenId] : null;
+  renderAiReadiness(mount, screenId, card);
+  if (['welcome', 'about_you'].includes(screenId)) return;
   if (card) {
     const panel = dom('section', 'ai-card-guidance'); panel.setAttribute('aria-label', 'Подсказка по вашему разговору');
     panel.append(dom('h3', 'ai-draft-title', 'Подсказка по вашему разговору'), dom('p', 'ai-draft-note', 'Предложение помощника. Обсудите и поправьте, если оно не подходит.'));
@@ -193,7 +218,7 @@ function renderAiCard() {
     }
     renderAiBasis(panel, card.basis); mount.append(panel);
   }
-  if (current().aiConsent) {
+  if (current().aiConsent && aiCode) {
     const button = dom('button', 'text-button ai-prepare', aiJobs.has(current().id) ? 'Помощник готовит подсказку…' : card ? 'Обновить подсказку по разговору' : 'Подготовить подсказку по разговору');
     button.type = 'button'; button.disabled = aiJobs.has(current().id);
     button.addEventListener('click', () => void prepareAiDrafts(cardPlan(), true)); mount.append(button);
