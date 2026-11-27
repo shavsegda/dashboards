@@ -386,29 +386,6 @@
       text-wrap: balance;
     }
 
-    .program-work {
-      display: grid;
-      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-      align-items: start;
-      gap: clamp(1.75rem, 5.5vw, 5.25rem);
-      padding-block: clamp(1.75rem, 4.25vw, 3.5rem);
-      border-top: 1px solid var(--line);
-    }
-
-    .program-work:first-of-type { border-top-color: var(--accent); }
-    .program-work:last-of-type { padding-bottom: 0; }
-
-    .program-work h3 {
-      max-width: 15em;
-      margin: 0;
-      font-family: Literata, Georgia, serif;
-      font-size: clamp(1.625rem, 2.6vw, 2.375rem);
-      font-weight: 530;
-      line-height: 1.18;
-      letter-spacing: -0.029em;
-      text-wrap: balance;
-    }
-
     .program-copy {
       max-width: 39rem;
       color: var(--muted);
@@ -441,6 +418,13 @@
 
     .program-item summary::-webkit-details-marker { display: none; }
     .program-item summary:hover { color: var(--accent); }
+
+    .program-item-title {
+      font-family: Literata, Georgia, serif;
+      font-weight: 530;
+      letter-spacing: -0.025em;
+    }
+
     .program-number {
       color: var(--accent);
       font-size: 0.875rem;
@@ -602,14 +586,32 @@
       gap: clamp(1.5rem, 5.25vw, 4.75rem);
     }
 
-    .pricing-options { margin: 0; }
+    .pricing-format {
+      max-width: 56rem;
+      margin-bottom: clamp(1.75rem, 4vw, 3rem);
+    }
 
-    .pricing-options > div {
-      padding-top: 0.9rem;
+    .pricing-route {
+      padding-top: 1rem;
       border-top: 1px solid var(--accent);
     }
 
-    .pricing-options > div + div { margin-top: 1rem; }
+    .pricing-route h3 {
+      margin: 0 0 1rem;
+      font-family: Literata, Georgia, serif;
+      font-size: clamp(1.375rem, 2.5vw, 2.25rem);
+      font-weight: 530;
+      line-height: 1.25;
+    }
+
+    .pricing-options { margin: 0; }
+
+    .pricing-options > div + div {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--line);
+    }
+
     .pricing-options dt { font-weight: 600; }
 
     .pricing-options dd {
@@ -627,7 +629,6 @@
     }
 
     .pricing-copy {
-      max-width: 34rem;
       color: var(--muted);
       font-size: clamp(1.0625rem, 1.36vw, 1.1875rem);
       line-height: 1.65;
@@ -635,7 +636,16 @@
 
     .pricing-copy p { margin: 0; }
     .pricing-copy p + p { margin-top: 0.8rem; }
-    .pricing-copy .participate { margin-top: 1.15rem; }
+    .pricing-copy strong { color: var(--ink); }
+    .pricing-options + .pricing-copy { margin-top: 1rem; }
+    .pricing .participate { margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+
+    .faq .program-item summary { grid-template-columns: minmax(0, 1fr) 2.125rem; }
+
+    .faq-answer {
+      max-width: 46rem;
+      padding: 0.35rem 0.75rem clamp(1.5rem, 3vw, 2.75rem);
+    }
 
     .faq .program-copy ul {
       margin: 1rem 0 0;
@@ -690,7 +700,7 @@
 
       .program-inner { max-width: 38rem; }
       .program h2 { font-size: clamp(2.125rem, 6.35vw, 3.75rem); }
-      .program-work, .program-work-details { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+      .program-work-details { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
 
       .admission { padding-block: 2.75rem; }
       .admission-inner { max-width: 38rem; }
@@ -851,7 +861,7 @@
       <div class="program-inner">
         <h2 id="program-title">Как проходит практикум</h2>
         <details class="program-item" id="program-experience">
-          <summary><span class="program-number">1</span><span>Разберёте свой опыт и интересы</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">1</span><span class="program-item-title">Разберёте свой опыт и интересы</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -872,7 +882,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary><span class="program-number">2</span><span>Подготовите предложение и найдёте собеседников</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">2</span><span class="program-item-title">Подготовите предложение и найдёте собеседников</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -894,7 +904,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary><span class="program-number">3</span><span>Выберете одну идею для проверки</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">3</span><span class="program-item-title">Выберете одну идею для проверки</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -915,7 +925,7 @@
           </div>
         </details>
         <details class="program-item" id="program-interviews">
-          <summary><span class="program-number">4</span><span>Проверите идею в разговорах с клиентами</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">4</span><span class="program-item-title">Проверите идею в разговорах с клиентами</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -937,7 +947,7 @@
           </div>
         </details>
         <details class="program-item" id="program-trial">
-          <summary><span class="program-number">5</span><span>Предложите клиенту платную работу</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">5</span><span class="program-item-title">Предложите клиенту платную работу</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -958,7 +968,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary><span class="program-number">6</span><span>Решите, что делать с идеей дальше</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <summary><span class="program-number">6</span><span class="program-item-title">Решите, что делать с идеей дальше</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -1076,53 +1086,65 @@
     <section class="pricing" aria-labelledby="format-price-title">
       <div class="pricing-inner">
         <h2 id="format-price-title">Формат и стоимость</h2>
-        <div class="pricing-content">
-          <dl class="pricing-options">
-            <div>
-              <dt>Оплата за квартал</dt>
-              <dd><strong>600&nbsp;000&nbsp;₽</strong></dd>
-            </div>
-            <div>
-              <dt>Помесячная оплата</dt>
-              <dd><strong>250&nbsp;000&nbsp;₽</strong> в месяц, 750&nbsp;000&nbsp;₽ за три месяца</dd>
-            </div>
-          </dl>
-          <div class="pricing-copy">
-            <p>Встречаемся один на один раз в неделю по полтора часа. Между встречами закладывайте ещё примерно 4–6 часов в неделю на подготовку, разговоры с потенциальными клиентами и пробную работу.</p>
-            <p>В стоимость входят диагностика интересов и опыта, дашборд, материалы для интервью и обратная связь по вашим разговорам, предложению и первой пробе.</p>
-            <a class="participate" href="https://calendly.com/shapovalov_vsegda/next-step">Обсудить участие</a>
-          </div>
+        <div class="pricing-copy pricing-format">
+          <p><strong>12 недель. Встречаемся один на один раз в неделю по 90 минут.</strong> Между встречами закладывайте ещё 4–6 часов в неделю на подготовку, разговоры с клиентами и пробную работу.</p>
+          <p>В программу входят диагностика интересов и опыта, дашборд, материалы для интервью и обратная связь по вашим разговорам, предложению и первой пробе.</p>
         </div>
+        <div class="pricing-content">
+          <section class="pricing-route" aria-labelledby="paid-title">
+            <h3 id="paid-title">Участие с оплатой</h3>
+            <dl class="pricing-options">
+              <div>
+                <dt>Оплата целиком</dt>
+                <dd><strong>600&nbsp;000&nbsp;₽</strong> за все 12 недель</dd>
+              </div>
+              <div>
+                <dt>Помесячная оплата</dt>
+                <dd><strong>250&nbsp;000&nbsp;₽</strong> в месяц, всего 750&nbsp;000&nbsp;₽ за программу</dd>
+              </div>
+            </dl>
+            <p class="pricing-copy">Перед оплатой прикиньте, какую задачу клиент готов оплатить, сколько вы можете заработать на одном заказе после расходов и сколько таких заказов понадобится, чтобы окупить программу.</p>
+          </section>
+          <section class="pricing-route" aria-labelledby="partnership-title">
+            <h3 id="partnership-title">Участие в партнёрстве</h3>
+            <div class="pricing-copy">
+              <p><strong>Без оплаты на старте.</strong> Если решим работать вместе, делим прибыль от этого дела. <strong>51% вам, 49% мне.</strong></p>
+              <p>Я рассматриваю проекты, у которых есть потенциал выйти примерно на 1,02&nbsp;млн&nbsp;₽ прибыли в месяц или больше. При такой прибыли моя доля составит около 500&nbsp;000&nbsp;₽ в месяц.</p>
+              <p>На первом разговоре обсудим вашу идею. Как считать прибыль и сколько продлится партнёрство, согласуем отдельно.</p>
+            </div>
+          </section>
+        </div>
+        <a class="participate" href="#admission-title">Как попасть на программу</a>
       </div>
     </section>
 
     <section class="program faq" aria-labelledby="faq-title">
       <div class="program-inner">
         <h2 id="faq-title">Ответы на сомнения</h2>
-        <article class="program-work">
-          <h3>А если я начну и снова брошу?</h3>
-          <div class="program-copy">
+        <details class="program-item">
+          <summary><span class="program-item-title">А если я начну и снова брошу?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>Каждую встречу мы заканчиваем одним шагом до следующей встречи. Я спрашиваю, насколько вам хочется его сделать и насколько вы уверены, что сможете его выполнить. Обе оценки — по шкале от 0 до 10. Если хотя бы одна ниже 10, меняем шаг, пока вы не скажете: «Я хочу это сделать и знаю, что справлюсь».</p>
             <p>Если шаг всё-таки не получился, на следующей встрече разберём, что помешало, и выберем следующий шаг, который вам по силам.</p>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>Сколько времени нужно помимо основной работы?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">Сколько времени нужно помимо основной работы?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>Встречаемся раз в неделю. Между встречами закладывайте ещё примерно 4–6 часов в неделю на подготовку, разговоры с потенциальными клиентами и пробную работу.</p>
             <p>Перед стартом посмотрим, куда это время помещается в вашем расписании. Объём первой пробы выберем с учётом вашей нагрузки. Если сейчас в неделе трудно найти столько времени, лучше начать позже, когда его можно будет выделить.</p>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>Что я получу, если за квартал никто не купит?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">Что я получу, если за квартал никто не купит?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>У вас останутся дашборд с выводами, схема интервью, шаблон разбора разговоров с ИИ и черновик предложения. С этими материалами вы сможете в любой момент самостоятельно повторить весь цикл — от выбора идеи до разговора о платной работе. Вы уже будете знать, что проверили и что стоит изменить.</p>
             <p>Если вам понадобится поддержка, можно пройти ещё один круг вместе. Возьмём за основу то, что вы уже выяснили, и проверим уточнённое предложение или другую идею.</p>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>Как вы будете мне помогать?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">Как вы будете мне помогать?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>Я работаю с вами как тренер. Подключаю разные роли в зависимости от того, какая помощь нужна вам сейчас.</p>
             <ul>
               <li>Как <strong>организационный психолог</strong> помогаю понять, какие задачи вас увлекают, в чём вы сильны и в каких условиях у вас получается работать лучше всего.</li>
@@ -1131,60 +1153,28 @@
               <li>Как <strong>педагог</strong> помогаю освоить нужный навык. Например, показываю, как подготовить интервью и задавать уточняющие вопросы. Вы проводите разговор, я даю обратную связь. Так вы сможете повторить этот способ самостоятельно.</li>
             </ul>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>А если мой опыт работает только в моей компании?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">А если мой опыт работает только в моей компании?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>Разберём один результат, которого вы добились на работе. Посмотрим, что сделали лично вы и что стало возможным благодаря команде, данным и полномочиям. Так вы увидите, с какой задачей можете помочь за пределами компании.</p>
             <p>Например, если вы выстроили обучение новых руководителей, первой пробой может стать разбор одной рабочей ситуации с руководителем из другой компании. По итогам увидим, что он смог применить и какую часть этой помощи вы готовы повторить.</p>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>Что, если мне страшно написать знакомому?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">Что, если мне страшно написать знакомому?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>На встрече разберём, какая мысль вас останавливает. Например, вы думаете: «Если я попрошу о разговоре, человек решит, что я навязываюсь». С помощью приёмов КПТ посмотрим, на чём основано это ожидание и как ещё человек может воспринять вашу просьбу.</p>
             <p>Затем выберем небольшой шаг, который вам по силам. На следующей встрече сравним, чего вы ожидали и что произошло на самом деле. Этот способ вы сможете использовать и перед другими разговорами, которые вызывают тревогу.</p>
           </div>
-        </article>
-        <article class="program-work">
-          <h3>А если своё дело помешает основной работе?</h3>
-          <div class="program-copy">
+        </details>
+        <details class="program-item">
+          <summary><span class="program-item-title">А если своё дело помешает основной работе?</span><span class="program-toggle" aria-hidden="true"></span></summary>
+          <div class="program-copy faq-answer">
             <p>Мы учитываем это уже при выборе идеи. Вместе определим, сколько времени вы можете выделить, когда готовы встречаться с клиентами и какие обязательства у вас уже есть. По этим условиям выберем задачу и способ её проверить.</p>
             <p>Например, если вы можете созваниваться только вечером, начнём с идеи, которую реально обсудить с людьми в это время. Перед пробой ещё раз сверим объём работы с вашим календарём.</p>
           </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="results alternatives" aria-labelledby="alternatives-title">
-      <div class="results-inner">
-        <h2 id="alternatives-title">Когда пригодится практикум</h2>
-        <div class="results-grid">
-          <article>
-            <h3>Начать самостоятельно.</h3>
-            <p>Подходит, если вы уже выбрали идею и регулярно находите время на её проверку. Практикум поможет, если вы несколько раз начинали и откладывали. Раз в неделю будем разбирать, что получилось, и выбирать следующий шаг.</p>
-          </article>
-          <article>
-            <h3>Подключиться к школе или клубу.</h3>
-            <p>Подходит, если у площадки есть аудитория, с которой вы хотите поработать. Практикум поможет понять, с какой задачей прийти к организаторам и по итогам первой пробы решить, стоит ли предлагать такую работу за деньги.</p>
-          </article>
-          <article>
-            <h3>Взять задачу в чужом проекте.</h3>
-            <p>Подходит, если есть конкретный заказ и вам удобны его сроки. Практикум пригодится, если вы хотите понять, какие задачи искать и какие заказы сможете брать параллельно с наймом.</p>
-          </article>
-          <article>
-            <h3>Попробовать идею на основной работе.</h3>
-            <p>Подходит, если можно начать со знакомой команды. Практикум поможет проверить следующий шаг: какую часть этого опыта вы можете применить в другой компании и кому там нужна такая помощь.</p>
-          </article>
-          <article>
-            <h3>Начать с партнёром.</h3>
-            <p>Подходит, если вы понимаете, кто ищет заказчиков, кто выполняет работу и как делится оплата. На практикуме можно определить свой вклад и проверить на одном заказе, устраивает ли вас такое сотрудничество.</p>
-          </article>
-          <article>
-            <h3>Пойти к ментору или в программу запуска.</h3>
-            <p>Подходит, если вам интересен опыт конкретного человека или работа в группе. Практикум пригодится, если вы хотите раз в неделю встречаться один на один и получать обратную связь по своим интервью, предложению и первой пробе.</p>
-          </article>
-        </div>
+        </details>
       </div>
     </section>
   </main>
