@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Программа для руководителей · Алексей Шаповалов</title>
   <meta name="description" content="Выберете, с какой задачей можете помочь людям за пределами своей компании, и попробуете решить её с потенциальным клиентом параллельно с основной работой.">
-  <meta name="theme-color" content="#fafbfc">
+  <meta name="theme-color" content="#fafafa">
   <style>
     @font-face {
       font-family: Golos Text;
@@ -43,13 +43,13 @@
 
     :root {
       color-scheme: light;
-      --paper: #fafbfc;
-      --surface: #f3f6fa;
-      --tint: #edf3ff;
-      --ink: #18263b;
-      --muted: #43536b;
-      --accent: #2354b8;
-      --line: #ccd7e5;
+      --paper: #fafafa;
+      --surface: #f4f4f4;
+      --tint: #ececec;
+      --ink: #222;
+      --muted: #505050;
+      --accent: #303030;
+      --line: #d5d5d5;
       --margin: clamp(1.375rem, 5.75vw, 6.75rem);
     }
 
@@ -126,7 +126,7 @@
     }
 
     .hero .participate { margin-top: 1.25rem; }
-    .participate:hover { background: #183d8d; }
+    .participate:hover { background: #111; }
     .participate:focus-visible,
     .program-item summary:focus-visible {
       outline: 2px solid var(--accent);
@@ -173,7 +173,7 @@
       gap: clamp(2rem, 7vw, 6.75rem);
       width: min(100%, 82rem);
       padding-top: clamp(2rem, 4vw, 3.5rem);
-      border-top: 1px solid #7296d7;
+      border-top: 1px solid #888;
     }
 
     .practice h2 {
@@ -189,7 +189,7 @@
 
     .practice-copy {
       max-width: 34rem;
-      color: #dce7f7;
+      color: #e0e0e0;
       font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
       line-height: 1.65;
       text-wrap: pretty;
@@ -201,7 +201,7 @@
 
     .practice-copy p:last-child {
       padding-top: 1.25rem;
-      border-top: 1px solid #657d9f;
+      border-top: 1px solid #737373;
       color: var(--paper);
       font-weight: 500;
     }
@@ -387,16 +387,6 @@
       font-size: clamp(1.1875rem, 1.7vw, 1.5rem);
       font-weight: 650;
       line-height: 1.35;
-    }
-
-    .familiar-illustration {
-      display: block;
-      width: 100%;
-      height: auto;
-      margin-top: clamp(1.25rem, 3vw, 2.25rem);
-      border: 1px solid var(--line);
-      border-radius: 0.375rem;
-      background: var(--tint);
     }
 
     .delay { background: var(--surface); }
@@ -831,10 +821,7 @@
 
     <section class="familiar" aria-labelledby="familiar-title">
       <div class="familiar-inner">
-        <div>
-          <h2 id="familiar-title">На работе к вам идут за советом. А как начать своё дело?</h2>
-          <img class="familiar-illustration" src="./assets/busy-week.webp" width="1536" height="1024" loading="lazy" decoding="async" alt="Плотный рабочий календарь и идея, оставшаяся за его пределами">
-        </div>
+        <h2 id="familiar-title">На работе к вам идут за советом. А как начать своё дело?</h2>
         <div class="familiar-copy familiar-story">
           <div>
             <h3>Хочется зарабатывать на своём опыте</h3>
@@ -910,10 +897,7 @@
 
     <section class="familiar first-conversation" aria-labelledby="first-conversation-title">
       <div class="familiar-inner">
-        <div>
-          <h2 id="first-conversation-title">Пока есть основная работа, можно спокойно проверить идею</h2>
-          <img class="familiar-illustration" src="./assets/first-slot.webp" width="1536" height="1024" loading="lazy" decoding="async" alt="Один выделенный слот в календаре связан с черновиком сообщения">
-        </div>
+        <h2 id="first-conversation-title">Пока есть основная работа, можно спокойно проверить идею</h2>
         <div class="familiar-copy familiar-story">
           <div>
             <h3>Узнайте, какой помощи не хватило человеку</h3>
