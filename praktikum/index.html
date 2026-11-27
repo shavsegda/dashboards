@@ -50,6 +50,11 @@
       --muted: #47584e;
       --accent: #335b48;
       --line: #bdcec0;
+      --cream: #fbf7ee;
+      --almond: #f7ede0;
+      --clay: #f4e5db;
+      --honey: #f8edcf;
+      --sage: #e9eedb;
       --margin: clamp(1.375rem, 5.75vw, 6.75rem);
     }
 
@@ -162,8 +167,8 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: var(--ink);
-      color: var(--paper);
+      background: #29372a;
+      color: var(--cream);
     }
 
     .practice-inner {
@@ -173,7 +178,7 @@
       gap: clamp(2rem, 7vw, 6.75rem);
       width: min(100%, 82rem);
       padding-top: clamp(2rem, 4vw, 3.5rem);
-      border-top: 1px solid #729685;
+      border-top: 1px solid #859574;
     }
 
     .practice h2 {
@@ -189,7 +194,7 @@
 
     .practice-copy {
       max-width: 34rem;
-      color: #dce8dd;
+      color: #e9e4d4;
       font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
       line-height: 1.65;
       text-wrap: pretty;
@@ -201,8 +206,8 @@
 
     .practice-copy p:last-child {
       padding-top: 1.25rem;
-      border-top: 1px solid #729685;
-      color: var(--paper);
+      border-top: 1px solid #859574;
+      color: var(--cream);
       font-weight: 500;
     }
 
@@ -213,6 +218,7 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
+      background: var(--cream);
     }
 
     .quarter-inner { width: min(100%, 82rem); }
@@ -268,7 +274,7 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: var(--surface);
+      background: var(--sage);
       border-top: 1px solid var(--line);
     }
 
@@ -322,7 +328,7 @@
       padding: clamp(1.25rem, 3vw, 2.25rem);
       border: 1px solid var(--line);
       border-left: 3px solid var(--accent);
-      background: var(--paper);
+      background: var(--cream);
     }
 
     .offer-example figcaption {
@@ -344,6 +350,7 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
+      background: var(--cream);
     }
 
     .familiar-inner {
@@ -389,14 +396,15 @@
       line-height: 1.35;
     }
 
-    .delay { background: var(--surface); }
-    .first-conversation { background: var(--tint); }
+    .problem { background: var(--almond); }
+    .delay, .income-dependence { background: var(--clay); }
+    .first-conversation { background: var(--honey); }
 
     .program {
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: #fff;
+      background: #fffdf8;
       border-top: 1px solid var(--line);
     }
 
@@ -642,7 +650,7 @@
       display: grid;
       place-items: center;
       padding: clamp(3rem, 9vh, 6rem) var(--margin);
-      background: var(--surface);
+      background: var(--almond);
     }
 
     .pricing-inner { width: min(100%, 82rem); }
