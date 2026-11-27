@@ -483,16 +483,10 @@
       padding: clamp(3rem, 9vh, 6rem) var(--margin);
     }
 
-    .admission-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-      align-items: start;
-      gap: clamp(1.75rem, 6vw, 6rem);
-      width: min(100%, 82rem);
-    }
+    .admission-inner { width: min(100%, 82rem); }
 
     .admission h2 {
-      margin: 0 0 1rem;
+      margin: 0 0 clamp(1.25rem, 3vw, 2rem);
       font-family: Literata, Georgia, serif;
       font-size: clamp(2.125rem, 4.25vw, 4.25rem);
       font-weight: 470;
@@ -501,8 +495,16 @@
       text-wrap: balance;
     }
 
+    .admission h3 {
+      margin: 0 0 0.65rem;
+      font-size: clamp(1.375rem, 2.5vw, 2.25rem);
+      font-weight: 650;
+      line-height: 1.25;
+      text-wrap: balance;
+    }
+
     .admission-lead {
-      max-width: 34rem;
+      max-width: 54rem;
       margin: 0;
       color: var(--muted);
       font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
@@ -510,21 +512,26 @@
       text-wrap: pretty;
     }
 
-    .admission-lead strong { color: var(--ink); font-weight: 650; }
-
     .admission-checklist {
       min-inline-size: 0;
-      margin: 0;
+      margin: clamp(1.5rem, 3.5vw, 2.5rem) 0 0;
       padding: 0;
       border: 0;
     }
 
     .admission-checklist legend {
-      margin: 0 0 0.6rem;
+      margin: 0 0 0.75rem;
       padding: 0;
       font-size: 1.0625rem;
       font-weight: 650;
       line-height: 1.45;
+    }
+
+    .admission-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: clamp(1.5rem, 4vw, 3.5rem);
+      border-top: 1px solid var(--line);
     }
 
     .admission-row {
@@ -533,11 +540,10 @@
       align-items: start;
       gap: 0.875rem;
       padding: 0.9rem 0.45rem;
-      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
       cursor: pointer;
     }
 
-    .admission-row:last-child { border-bottom: 1px solid var(--line); }
     .admission-row:hover { background: #eae4d9; }
 
     .admission-row input {
@@ -568,6 +574,8 @@
       font-size: 1rem;
       line-height: 1.55;
     }
+
+    .admission .participate { margin-top: clamp(1.25rem, 3vw, 2rem); }
 
     .pricing {
       display: grid;
@@ -685,10 +693,8 @@
       .program-work, .program-work-details { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
 
       .admission { padding-block: 2.75rem; }
-      .admission-inner {
-        max-width: 38rem;
-        grid-template-columns: minmax(0, 1fr);
-      }
+      .admission-inner { max-width: 38rem; }
+      .admission-options { grid-template-columns: minmax(0, 1fr); }
 
       .pricing-content { grid-template-columns: minmax(0, 1fr); }
       .pricing-inner { max-width: 38rem; }
@@ -1020,48 +1026,50 @@
 
     <section class="admission" aria-labelledby="admission-title">
       <div class="admission-inner">
-        <div>
-          <h2 id="admission-title">Как попасть на программу</h2>
-          <p class="admission-lead"><strong>Первый разговор — взаимный отбор.</strong> Я беру руководителей, у которых есть опыт решения конкретных задач и время проверить, кому этот опыт может пригодиться вне компании. На встрече посмотрим, есть ли у нас основания рассчитывать на результат за квартал.</p>
-        </div>
+        <h2 id="admission-title">Как попасть на программу</h2>
+        <h3>Первый разговор — взаимный отбор</h3>
+        <p class="admission-lead">Я беру на программу руководителей, у которых есть опыт решения конкретных задач и время проверить, кому этот опыт пригодится вне компании. На встрече обсудим, какого результата можно достичь за 12 недель и подходим ли мы друг другу.</p>
         <fieldset class="admission-checklist">
           <legend>Перед разговором отметьте, что уже про вас.</legend>
-          <label class="admission-row" for="admission-result">
-            <input type="checkbox" id="admission-result" aria-labelledby="admission-result-label" aria-describedby="admission-result-description">
-            <span>
-              <strong id="admission-result-label">Я могу рассказать об одном результате своей работы.</strong>
-              <span class="admission-explanation" id="admission-result-description">По реальному случаю мы увидим, что вы сделали лично и какую часть этой работы сможете повторить вне компании.</span>
-            </span>
-          </label>
-          <label class="admission-row" for="admission-interest">
-            <input type="checkbox" id="admission-interest" aria-labelledby="admission-interest-label" aria-describedby="admission-interest-description">
-            <span>
-              <strong id="admission-interest-label">Я хочу снова делать хотя бы часть этой работы.</strong>
-              <span class="admission-explanation" id="admission-interest-description">Так мы сможем выбрать задачу, которой вам действительно интересно заниматься в свободное время.</span>
-            </span>
-          </label>
-          <label class="admission-row" for="admission-time">
-            <input type="checkbox" id="admission-time" aria-labelledby="admission-time-label" aria-describedby="admission-time-description">
-            <span>
-              <strong id="admission-time-label">У меня есть полтора часа на встречу и ещё 4–6 часов в неделю.</strong>
-              <span class="admission-explanation" id="admission-time-description">Это время понадобится на подготовку, разговоры с потенциальными клиентами и первую пробу.</span>
-            </span>
-          </label>
-          <label class="admission-row" for="admission-practice">
-            <input type="checkbox" id="admission-practice" aria-labelledby="admission-practice-label" aria-describedby="admission-practice-description">
-            <span>
-              <strong id="admission-practice-label">Я готов разговаривать с людьми и пробовать свои идеи на деле.</strong>
-              <span class="admission-explanation" id="admission-practice-description">Их ответы и действия помогут понять, какая помощь нужна и что стоит изменить в предложении.</span>
-            </span>
-          </label>
-          <label class="admission-row" for="admission-goal">
-            <input type="checkbox" id="admission-goal" aria-labelledby="admission-goal-label" aria-describedby="admission-goal-description">
-            <span>
-              <strong id="admission-goal-label">Я понимаю, какой результат оправдает для меня этот квартал.</strong>
-              <span class="admission-explanation" id="admission-goal-description">На встрече сверим ожидания. Например, вы хотите проверить спрос на одну идею, получить первый платный заказ или понять, стоит ли дальше заниматься этой работой.</span>
-            </span>
-          </label>
+          <div class="admission-options">
+            <label class="admission-row" for="admission-result">
+              <input type="checkbox" id="admission-result" aria-labelledby="admission-result-label" aria-describedby="admission-result-description">
+              <span>
+                <strong id="admission-result-label">Я могу рассказать об одном результате своей работы.</strong>
+                <span class="admission-explanation" id="admission-result-description">По реальному случаю мы увидим, что вы сделали лично и какую часть этой работы сможете повторить вне компании.</span>
+              </span>
+            </label>
+            <label class="admission-row" for="admission-interest">
+              <input type="checkbox" id="admission-interest" aria-labelledby="admission-interest-label" aria-describedby="admission-interest-description">
+              <span>
+                <strong id="admission-interest-label">Я хочу снова делать хотя бы часть этой работы.</strong>
+                <span class="admission-explanation" id="admission-interest-description">Так мы сможем выбрать задачу, которой вам действительно интересно заниматься в свободное время.</span>
+              </span>
+            </label>
+            <label class="admission-row" for="admission-time">
+              <input type="checkbox" id="admission-time" aria-labelledby="admission-time-label" aria-describedby="admission-time-description">
+              <span>
+                <strong id="admission-time-label">У меня есть полтора часа на встречу и ещё 4–6 часов в неделю.</strong>
+                <span class="admission-explanation" id="admission-time-description">Это время понадобится на подготовку, разговоры с потенциальными клиентами и первую пробу.</span>
+              </span>
+            </label>
+            <label class="admission-row" for="admission-practice">
+              <input type="checkbox" id="admission-practice" aria-labelledby="admission-practice-label" aria-describedby="admission-practice-description">
+              <span>
+                <strong id="admission-practice-label">Я готов разговаривать с людьми и пробовать свои идеи на деле.</strong>
+                <span class="admission-explanation" id="admission-practice-description">Их ответы и действия помогут понять, какая помощь нужна и что стоит изменить в предложении.</span>
+              </span>
+            </label>
+            <label class="admission-row" for="admission-goal">
+              <input type="checkbox" id="admission-goal" aria-labelledby="admission-goal-label" aria-describedby="admission-goal-description">
+              <span>
+                <strong id="admission-goal-label">Я понимаю, ради какого результата я готов выделить 12 недель.</strong>
+                <span class="admission-explanation" id="admission-goal-description">На встрече сверим ожидания. Например, вы хотите проверить спрос на одну идею, получить первый платный заказ или понять, стоит ли дальше заниматься этой работой.</span>
+              </span>
+            </label>
+          </div>
         </fieldset>
+        <a class="participate" href="https://calendly.com/shapovalov_vsegda/next-step">Записаться на разговор</a>
       </div>
     </section>
 
