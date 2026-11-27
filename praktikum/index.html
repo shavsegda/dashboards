@@ -284,6 +284,42 @@
       text-wrap: pretty;
     }
 
+    .familiar {
+      display: grid;
+      place-items: center;
+      padding: clamp(4rem, 12vh, 9rem) var(--margin);
+    }
+
+    .familiar-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+      align-items: start;
+      gap: clamp(2rem, 7vw, 6.75rem);
+      width: min(100%, 82rem);
+      padding-top: clamp(2rem, 4vw, 3.5rem);
+      border-top: 1px solid var(--accent);
+    }
+
+    .familiar h2 {
+      margin: 0;
+      font-family: Literata, Georgia, serif;
+      font-size: clamp(2.625rem, 4.25vw, 4.25rem);
+      font-weight: 470;
+      line-height: 1.13;
+      letter-spacing: -0.042em;
+    }
+
+    .familiar-copy {
+      max-width: 38rem;
+      color: var(--muted);
+      font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+
+    .familiar-copy p { margin: 0; }
+    .familiar-copy p + p { margin-top: 1.25rem; }
+
     @media (max-width: 53rem) {
       .hero {
         max-width: 38rem;
@@ -315,6 +351,13 @@
       .results-inner { max-width: 38rem; }
       .results h2 { font-size: clamp(2.125rem, 6.35vw, 3.75rem); }
       .results-grid { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+
+      .familiar-inner {
+        max-width: 38rem;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.75rem;
+      }
+      .familiar h2 { font-size: clamp(2.125rem, 6.35vw, 3.75rem); }
     }
 
     @media (max-width: 25rem) {
@@ -398,6 +441,18 @@
             <h3>Сможете спокойнее решить, куда вкладывать время дальше.</h3>
             <p>По результатам пробы выберете один шаг: предложить работу за деньги, изменить формат или проверить другую идею.</p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="familiar" aria-labelledby="familiar-title">
+      <div class="familiar-inner">
+        <h2 id="familiar-title">Знакомо</h2>
+        <div class="familiar-copy">
+          <p>На работе к вам идут, когда нужно разобраться в сложной задаче. Вы знаете, за что вас ценят, и думаете, что этот опыт мог бы пригодиться людям за пределами компании. Хочется попробовать своё дело и получать дополнительный доход, сохраняя основную работу.</p>
+          <p>Может быть, вы уже набросали план занятия или обсудили со знакомым совместный проект. Идея вас увлекла. Потом на работе прибавилось дел, и вы к ней так и не вернулись. Через несколько недель снова думаете о своём деле и перебираете те же варианты.</p>
+          <p>Трудно выбрать, с чего начать. Кому написать? Что предложить? Как понять, нужна ли людям ваша помощь и хватит ли вам времени её оказать?</p>
+          <p>Может быть досадно, что время идёт, а своё дело так и остаётся на уровне разговоров. И немного тревожно пробовать. На работе вы знаете, к кому обратиться и на какую команду опереться. Здесь ещё предстоит увидеть, что получится, если взять одну задачу и попробовать решить её для человека, которому это нужно.</p>
         </div>
       </div>
     </section>
