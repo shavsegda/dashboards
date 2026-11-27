@@ -80,18 +80,10 @@
     }
 
     .hero h1 {
+      max-width: 9em;
       margin: 0;
-      color: var(--accent);
-      font-size: clamp(1.125rem, 1.8vw, 1.5rem);
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    .hero-promise {
-      max-width: 14em;
-      margin: 0.8rem 0 0;
       font-family: Literata, Georgia, serif;
-      font-size: clamp(2.5rem, 4.65vw, 4.75rem);
+      font-size: clamp(3rem, 5.65vw, 5.375rem);
       font-weight: 530;
       font-optical-sizing: auto;
       line-height: 1.08;
@@ -99,32 +91,13 @@
       text-wrap: balance;
     }
 
-    .description,
-    .outcome {
+    .hero .description {
       max-width: 35rem;
+      margin: clamp(1rem, 3vh, 1.55rem) 0 0;
+      color: var(--muted);
       font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
       line-height: 1.6;
       text-wrap: pretty;
-    }
-
-    .description {
-      margin: 1.25rem 0 0;
-      color: var(--muted);
-    }
-
-    .outcome {
-      margin: 0.9rem 0 0;
-      padding-left: 1rem;
-      border-left: 2px solid var(--accent);
-      font-weight: 500;
-    }
-
-    .hero-format {
-      margin: 1.4rem 0 0;
-      color: var(--muted);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      line-height: 1.5;
     }
 
     .participate {
@@ -142,6 +115,7 @@
       text-decoration: none;
     }
 
+    .hero .participate { margin-top: 1.25rem; }
     .participate:hover { background: #7e3825; }
     .participate:focus-visible,
     .program-group summary:focus-visible {
@@ -221,6 +195,9 @@
       color: #f4f2ec;
       font-weight: 500;
     }
+
+    .practice-intro { padding-block: clamp(2.75rem, 7vh, 5.5rem); }
+    .practice-intro .practice-copy .practice-format { font-size: 1rem; }
 
     .quarter {
       display: grid;
@@ -555,13 +532,11 @@
         padding-block: 1.5rem;
       }
 
-      .hero-promise {
-        max-width: 9em;
-        font-size: clamp(2.125rem, 7.3vw, 3.75rem);
+      .hero h1 {
+        font-size: clamp(2.375rem, 7.55vw, 4.5rem);
       }
 
-      .description { margin-top: 0.85rem; }
-      .hero-format { margin-top: 1.1rem; }
+      .hero .description { margin-top: 0.85rem; }
 
       .portrait { max-width: 28rem; }
       .portrait img { aspect-ratio: 1.3; object-position: 52% 37%; }
@@ -600,7 +575,7 @@
     }
 
     @media (max-width: 25rem) {
-      .hero-promise { font-size: clamp(1.875rem, 8.25vw, 2.125rem); }
+      .hero h1 { font-size: clamp(2.125rem, 9.2vw, 2.375rem); }
     }
   </style>
 </head>
@@ -609,11 +584,8 @@
     <div class="cover">
       <section class="hero" aria-labelledby="hero-title">
         <div class="copy">
-          <h1 id="hero-title">Практикум для руководителей.</h1>
-          <p class="hero-promise">Проверьте идею своего дела, сохраняя основную работу.</p>
-          <p class="description">Выберете, с какой задачей можете помочь людям за пределами своей компании, и попробуете решить её с потенциальным клиентом.</p>
-          <p class="outcome">Увидите, что ваша помощь дала человеку, и решите, стоит ли зарабатывать на этом дальше.</p>
-          <p class="hero-format">Квартал · один на один · раз в неделю по полтора часа</p>
+          <h1 id="hero-title">Практикум для руководителей</h1>
+          <p class="description">Выберете одну идею для самостоятельного заработка и проверите её параллельно с основной работой. По итогам решите, стоит ли развивать это направление.</p>
           <a class="participate" href="https://calendly.com/shapovalov_vsegda/next-step">Обсудить участие</a>
         </div>
         <figure class="portrait">
@@ -622,6 +594,16 @@
         </figure>
       </section>
     </div>
+
+    <section class="practice practice-intro" aria-labelledby="practice-title">
+      <div class="practice-inner">
+        <h2 id="practice-title">Проверьте на реальной задаче, за какую помощь вам могут платить</h2>
+        <div class="practice-copy">
+          <p>Вы поговорите с потенциальными клиентами и предложите одному из них небольшую пробу. По его реакции и результату работы станет понятнее, какую помощь стоит предлагать за деньги.</p>
+          <p class="practice-format">Квартал · встречи один на один раз в неделю по 90 минут</p>
+        </div>
+      </div>
+    </section>
 
     <section class="familiar" aria-labelledby="familiar-title">
       <div class="familiar-inner">
@@ -662,17 +644,6 @@
         <div class="familiar-copy">
           <p>На зарплату вы рассчитываете, когда планируете расходы семьи и принимаете решения о работе. Если в компании меняется руководитель, сокращается бюджет или вам предлагают новые условия, приходится думать и о том, подходит ли вам работа, и о том, сможете ли вы сохранить привычный доход.</p>
           <p>В такие моменты хочется знать, на что ещё можно опереться. У вас есть опыт, за который вас ценят. Пока вы проверяли его только в найме, остаётся открытым вопрос, какую работу вы могли бы делать и продавать самостоятельно. Эта неопределённость уже сейчас добавляет тревоги, когда вы думаете о переменах.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="practice" aria-labelledby="practice-title">
-      <div class="practice-inner">
-        <h2 id="practice-title">Поймите, за какую работу вам могут платить помимо найма</h2>
-        <div class="practice-copy">
-          <p>За квартал вы проверите одну идею на деле. Поговорите с потенциальными клиентами и попробуете помочь одному из них.</p>
-          <p>Раз в неделю встречаемся, чтобы разобрать, что получилось, и выбрать следующий шаг.</p>
-          <p>В конце у вас будет результат первой пробы и решение, стоит ли предлагать эту работу за деньги.</p>
         </div>
       </div>
     </section>
