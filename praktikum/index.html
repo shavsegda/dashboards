@@ -426,15 +426,41 @@
     .program-item:last-child { border-bottom: 1px solid var(--line); }
 
     .program-item summary {
-      padding: clamp(1.15rem, 2.5vw, 2rem) 0.75rem;
+      display: grid;
+      grid-template-columns: 1.1rem minmax(0, 1fr) 2.125rem;
+      align-items: center;
+      gap: clamp(0.65rem, 1.7vw, 1.5rem);
+      min-height: 4.75rem;
+      padding: clamp(0.9rem, 1.6vw, 1.35rem) 0.75rem;
       cursor: pointer;
-      font-size: clamp(1.25rem, 2vw, 1.625rem);
-      font-weight: 650;
-      line-height: 1.35;
+      list-style: none;
+      font-size: clamp(1.375rem, 2.6vw, 2.125rem);
+      font-weight: 570;
+      line-height: 1.2;
     }
 
-    .program-item summary::marker { color: var(--accent); }
+    .program-item summary::-webkit-details-marker { display: none; }
     .program-item summary:hover { color: var(--accent); }
+    .program-number {
+      color: var(--accent);
+      font-size: 0.875rem;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .program-toggle {
+      width: 2.125rem;
+      height: 2.125rem;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--accent);
+      background:
+        linear-gradient(currentColor, currentColor) center / 0.75rem 1px no-repeat,
+        linear-gradient(currentColor, currentColor) center / 1px 0.75rem no-repeat;
+    }
+
+    .program-item[open] .program-toggle { background-size: 0.75rem 1px, 0 0; }
+    .program-item[open] summary { color: var(--accent); }
 
     .program-work-details {
       display: grid;
@@ -819,7 +845,7 @@
       <div class="program-inner">
         <h2 id="program-title">Как проходит практикум</h2>
         <details class="program-item" id="program-experience">
-          <summary>1. Найдёте задачи, которые вам хочется решать и в которых у вас уже есть результат</summary>
+          <summary><span class="program-number">1</span><span>Разберёте свой опыт и интересы</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -840,7 +866,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary>2. Подготовите первое предложение и найдёте, с кем его проверить</summary>
+          <summary><span class="program-number">2</span><span>Подготовите предложение и найдёте собеседников</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -862,7 +888,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary>3. Выберете, с какой идеи начать</summary>
+          <summary><span class="program-number">3</span><span>Выберете одну идею для проверки</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -883,7 +909,7 @@
           </div>
         </details>
         <details class="program-item" id="program-interviews">
-          <summary>4. Проверите идею в разговорах с потенциальными клиентами</summary>
+          <summary><span class="program-number">4</span><span>Проверите идею в разговорах с клиентами</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -905,7 +931,7 @@
           </div>
         </details>
         <details class="program-item" id="program-trial">
-          <summary>5. Предложите клиенту первую платную работу</summary>
+          <summary><span class="program-number">5</span><span>Предложите клиенту платную работу</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
@@ -926,7 +952,7 @@
           </div>
         </details>
         <details class="program-item">
-          <summary>6. Разберёте результат первой пробы и решите, что делать дальше</summary>
+          <summary><span class="program-number">6</span><span>Решите, что делать с идеей дальше</span><span class="program-toggle" aria-hidden="true"></span></summary>
           <div class="program-work-details">
             <div class="program-copy">
               <h3>Что мы делаем</h3>
