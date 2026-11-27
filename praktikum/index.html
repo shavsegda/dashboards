@@ -561,6 +561,13 @@
 
     .admission .participate { margin-top: clamp(1.25rem, 3vw, 2rem); }
 
+    .admission-note {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+
     .pricing {
       display: grid;
       place-items: center;
@@ -1079,7 +1086,8 @@
             </label>
           </div>
         </fieldset>
-        <a class="participate" href="https://calendly.com/shapovalov_vsegda/next-step">Записаться на разговор</a>
+        <a class="participate" id="admission-telegram" href="https://t.me/shapovalov_vsegda" aria-describedby="admission-note">Открыть заявку в Telegram</a>
+        <p class="admission-note" id="admission-note">В Telegram откроется черновик с вашими отметками. Проверьте его и отправьте Алексею.</p>
       </div>
     </section>
 
@@ -1178,5 +1186,31 @@
       </div>
     </section>
   </main>
+  <script>
+    const telegramApplication = document.querySelector('#admission-telegram');
+    const admissionChecklist = document.querySelector('.admission-checklist');
+    const admissionCheckboxes = Array.from(admissionChecklist.querySelectorAll('input[type="checkbox"]'));
+    const telegramUrl = new URL(telegramApplication.href);
+
+    function updateTelegramApplication() {
+      const answers = admissionCheckboxes.map((checkbox) => {
+        const label = document.getElementById(checkbox.getAttribute('aria-labelledby'));
+        const status = checkbox.checked ? '✓' : '○';
+        return `${status} ${label.textContent.trim()}`;
+      });
+      const message = [
+        'Алексей, здравствуйте! Хочу обсудить участие в программе для руководителей.',
+        '',
+        'Мои ответы в чек-листе (✓ — отмечено, ○ — без отметки):',
+        ...answers,
+      ].join('\n');
+      telegramUrl.searchParams.set('text', message);
+      telegramApplication.href = telegramUrl.href;
+    }
+
+    admissionChecklist.addEventListener('change', updateTelegramApplication);
+    window.addEventListener('pageshow', updateTelegramApplication);
+    updateTelegramApplication();
+  </script>
 </body>
 </html>
