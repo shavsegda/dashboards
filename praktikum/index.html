@@ -377,7 +377,7 @@
     .program-inner { width: min(100%, 82rem); }
 
     .program h2 {
-      margin: 0 0 clamp(2.5rem, 6vw, 4.75rem);
+      margin: 0 0 clamp(1.75rem, 4vw, 3rem);
       font-family: Literata, Georgia, serif;
       font-size: clamp(2.625rem, 4.25vw, 4.25rem);
       font-weight: 470;
@@ -421,59 +421,30 @@
     .program-copy p + p { margin-top: 1rem; }
     .program-copy strong { color: var(--ink); font-weight: 650; }
 
-    .dashboard-example {
-      margin: 0 0 clamp(2rem, 5vw, 4rem);
-      padding: clamp(1.25rem, 3.4vw, 2.75rem);
-      border: 1px solid var(--line);
-      background: var(--paper);
-    }
-
-    .dashboard-example figcaption {
-      margin-bottom: 1.15rem;
-      font-size: clamp(1.125rem, 1.8vw, 1.375rem);
-      font-weight: 650;
-    }
-
-    .dashboard-fields {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem clamp(1.5rem, 4vw, 3.75rem);
-      margin: 0;
-    }
-
-    .dashboard-fields > div {
-      padding-top: 0.7rem;
-      border-top: 1px solid var(--line);
-    }
-
-    .dashboard-fields dt {
-      color: var(--accent);
-      font-size: 0.9375rem;
-      font-weight: 650;
-      line-height: 1.4;
-    }
-
-    .dashboard-fields dd {
-      margin: 0.35rem 0 0;
-      color: var(--muted);
-      font-size: 1.0625rem;
-      line-height: 1.55;
-    }
-
     .program-group { border-top: 1px solid var(--line); }
 
     .program-group:last-child { border-bottom: 1px solid var(--line); }
 
     .program-group summary {
-      padding: 0.9rem 0.75rem;
+      padding: clamp(1.15rem, 2.5vw, 2rem) 0.75rem;
       cursor: pointer;
-      font-size: clamp(1.125rem, 2vw, 1.375rem);
-      font-weight: 600;
-      line-height: 1.4;
+      font-size: clamp(1.25rem, 2.35vw, 1.875rem);
+      font-weight: 650;
+      line-height: 1.3;
     }
 
     .program-group summary::marker { color: var(--accent); }
     .program-group summary:hover { color: var(--accent); }
+    .program-group .program-preview {
+      display: block;
+      max-width: 40rem;
+      margin-top: 0.45rem;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.45vw, 1.1875rem);
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
     .program-group[open] { padding-bottom: clamp(1.75rem, 4.25vw, 3.5rem); }
     .program-group .program-work:first-of-type { border-top-color: var(--line); }
 
@@ -690,7 +661,7 @@
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .dashboard-fields, .pricing-content { grid-template-columns: minmax(0, 1fr); }
+      .pricing-content { grid-template-columns: minmax(0, 1fr); }
       .pricing-inner { max-width: 38rem; }
     }
 
@@ -843,30 +814,12 @@
 
     <section class="program" aria-labelledby="program-title">
       <div class="program-inner">
-        <h2 id="program-title">Как проходит практикум</h2>
-        <figure class="dashboard-example" aria-labelledby="dashboard-example-title">
-          <figcaption id="dashboard-example-title">Пример записи в дашборде</figcaption>
-          <dl class="dashboard-fields">
-            <div>
-              <dt>Задача</dt>
-              <dd>Помочь новому руководителю провести первую встречу с командой.</dd>
-            </div>
-            <div>
-              <dt>Что проверили</dt>
-              <dd>Обсудили подготовку к первой встрече с руководителем.</dd>
-            </div>
-            <div>
-              <dt>Что узнали</dt>
-              <dd>Самое трудное для него — договориться с командой о приоритетах.</dd>
-            </div>
-            <div>
-              <dt>Следующий шаг</dt>
-              <dd>Предложить вместе подготовить одну рабочую встречу.</dd>
-            </div>
-          </dl>
-        </figure>
+        <h2 id="program-title">Практикум в три этапа</h2>
         <details class="program-group" id="program-experience">
-          <summary>Выбор задачи и идеи</summary>
+          <summary>
+            1. Выберете, кому и с чем помочь
+            <span class="program-preview">Разберёте свой опыт и сравните идеи с учётом основной работы. У вас будет одна задача для проверки и список людей, с которыми можно о ней поговорить.</span>
+          </summary>
           <article class="program-work">
             <h3>Найдёте задачи, которые вам хочется решать и в которых у вас уже есть результат</h3>
             <div class="program-copy">
@@ -897,7 +850,10 @@
           </article>
         </details>
         <details class="program-group" id="program-interviews">
-          <summary>Разговоры с потенциальными клиентами</summary>
+          <summary>
+            2. Проверите идею в разговорах
+            <span class="program-preview">Расспросите потенциальных клиентов, как они справлялись с этой задачей. Поймёте, какой помощи им не хватило, и уточните своё предложение.</span>
+          </summary>
           <article class="program-work">
             <h3>Проверите идею в разговорах с потенциальными клиентами</h3>
             <div class="program-copy">
@@ -910,7 +866,10 @@
           </article>
         </details>
         <details class="program-group" id="program-trial">
-          <summary>Первая платная работа и итоги</summary>
+          <summary>
+            3. Предложите платную работу и разберёте результат
+            <span class="program-preview">Обсудите с клиентом работу, цену и сроки. По итогам разговора и первой пробы, если она состоится, решите, развивать эту идею, изменить предложение или попробовать другую.</span>
+          </summary>
           <article class="program-work">
             <h3>Предложите клиенту первую платную работу</h3>
             <div class="program-copy">
