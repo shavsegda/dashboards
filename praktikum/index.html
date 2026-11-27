@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Программа для руководителей · Алексей Шаповалов</title>
   <meta name="description" content="Выберете, с какой задачей можете помочь людям за пределами своей компании, и попробуете решить её с потенциальным клиентом параллельно с основной работой.">
-  <meta name="theme-color" content="#f4f2ec">
+  <meta name="theme-color" content="#fafbfc">
   <style>
     @font-face {
       font-family: Golos Text;
@@ -43,11 +43,13 @@
 
     :root {
       color-scheme: light;
-      --paper: #f4f2ec;
-      --ink: #25241f;
-      --muted: #4e4a43;
-      --accent: #9d4c32;
-      --line: #cec5b6;
+      --paper: #fafbfc;
+      --surface: #f3f6fa;
+      --tint: #edf3ff;
+      --ink: #18263b;
+      --muted: #43536b;
+      --accent: #2354b8;
+      --line: #ccd7e5;
       --margin: clamp(1.375rem, 5.75vw, 6.75rem);
     }
 
@@ -124,7 +126,7 @@
     }
 
     .hero .participate { margin-top: 1.25rem; }
-    .participate:hover { background: #7e3825; }
+    .participate:hover { background: #183d8d; }
     .participate:focus-visible,
     .program-item summary:focus-visible {
       outline: 2px solid var(--accent);
@@ -144,7 +146,7 @@
       width: 100%;
       height: auto;
       aspect-ratio: 0.84;
-      background: #d2c8b9;
+      background: var(--surface);
       object-fit: cover;
       object-position: 52% 46%;
     }
@@ -160,8 +162,8 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: #29241f;
-      color: #f4f2ec;
+      background: var(--ink);
+      color: var(--paper);
     }
 
     .practice-inner {
@@ -171,7 +173,7 @@
       gap: clamp(2rem, 7vw, 6.75rem);
       width: min(100%, 82rem);
       padding-top: clamp(2rem, 4vw, 3.5rem);
-      border-top: 1px solid #aa7059;
+      border-top: 1px solid #7296d7;
     }
 
     .practice h2 {
@@ -187,7 +189,7 @@
 
     .practice-copy {
       max-width: 34rem;
-      color: #e4d9c8;
+      color: #dce7f7;
       font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
       line-height: 1.65;
       text-wrap: pretty;
@@ -199,8 +201,8 @@
 
     .practice-copy p:last-child {
       padding-top: 1.25rem;
-      border-top: 1px solid #705b4d;
-      color: #f4f2ec;
+      border-top: 1px solid #657d9f;
+      color: var(--paper);
       font-weight: 500;
     }
 
@@ -266,7 +268,7 @@
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: #eae4d9;
+      background: var(--surface);
       border-top: 1px solid var(--line);
     }
 
@@ -311,6 +313,30 @@
       color: var(--muted);
       font-size: clamp(1.0625rem, 1.36vw, 1.1875rem);
       line-height: 1.62;
+      text-wrap: pretty;
+    }
+
+    .offer-example {
+      max-width: 53rem;
+      margin: clamp(2rem, 4.5vw, 4rem) 0 0;
+      padding: clamp(1.25rem, 3vw, 2.25rem);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      background: var(--paper);
+    }
+
+    .offer-example figcaption {
+      color: var(--accent);
+      font-size: 0.9375rem;
+      font-weight: 650;
+    }
+
+    .offer-example blockquote {
+      margin: 0.75rem 0 0;
+      max-width: 39rem;
+      font-family: Literata, Georgia, serif;
+      font-size: clamp(1.1875rem, 1.8vw, 1.5rem);
+      line-height: 1.5;
       text-wrap: pretty;
     }
 
@@ -363,14 +389,24 @@
       line-height: 1.35;
     }
 
-    .delay { background: #eae4d9; }
-    .first-conversation { background: #eae4d9; }
+    .familiar-illustration {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: clamp(1.25rem, 3vw, 2.25rem);
+      border: 1px solid var(--line);
+      border-radius: 0.375rem;
+      background: var(--tint);
+    }
+
+    .delay { background: var(--surface); }
+    .first-conversation { background: var(--tint); }
 
     .program {
       display: grid;
       place-items: center;
       padding: clamp(4rem, 12vh, 9rem) var(--margin);
-      background: #faf8f3;
+      background: #fff;
       border-top: 1px solid var(--line);
     }
 
@@ -528,7 +564,7 @@
       cursor: pointer;
     }
 
-    .admission-row:hover { background: #eae4d9; }
+    .admission-row:hover { background: var(--tint); }
 
     .admission-row input {
       width: 1.25rem;
@@ -568,11 +604,55 @@
       line-height: 1.5;
     }
 
+    .admission-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+      gap: 1rem clamp(1rem, 3vw, 2rem);
+      min-inline-size: 0;
+      margin: clamp(1.5rem, 3.5vw, 2.5rem) 0 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .admission-fields legend {
+      margin-bottom: 0.75rem;
+      padding: 0;
+      font-size: 1.0625rem;
+      font-weight: 650;
+    }
+
+    .admission-field { min-inline-size: 0; }
+    .admission-field label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+
+    .admission-field input,
+    .admission-field select {
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 0.25rem;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .admission-field :is(input, select):focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .admission-hint {
+      margin: 0.4rem 0 0;
+      color: var(--muted);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+
     .pricing {
       display: grid;
       place-items: center;
       padding: clamp(3rem, 9vh, 6rem) var(--margin);
-      background: #eae4d9;
+      background: var(--surface);
     }
 
     .pricing-inner { width: min(100%, 82rem); }
@@ -751,7 +831,10 @@
 
     <section class="familiar" aria-labelledby="familiar-title">
       <div class="familiar-inner">
-        <h2 id="familiar-title">На работе к вам идут за советом. А как начать своё дело?</h2>
+        <div>
+          <h2 id="familiar-title">На работе к вам идут за советом. А как начать своё дело?</h2>
+          <img class="familiar-illustration" src="./assets/busy-week.webp" width="1536" height="1024" loading="lazy" decoding="async" alt="Плотный рабочий календарь и идея, оставшаяся за его пределами">
+        </div>
         <div class="familiar-copy familiar-story">
           <div>
             <h3>Хочется зарабатывать на своём опыте</h3>
@@ -827,7 +910,10 @@
 
     <section class="familiar first-conversation" aria-labelledby="first-conversation-title">
       <div class="familiar-inner">
-        <h2 id="first-conversation-title">Пока есть основная работа, можно спокойно проверить идею</h2>
+        <div>
+          <h2 id="first-conversation-title">Пока есть основная работа, можно спокойно проверить идею</h2>
+          <img class="familiar-illustration" src="./assets/first-slot.webp" width="1536" height="1024" loading="lazy" decoding="async" alt="Один выделенный слот в календаре связан с черновиком сообщения">
+        </div>
         <div class="familiar-copy familiar-story">
           <div>
             <h3>Узнайте, какой помощи не хватило человеку</h3>
@@ -1000,7 +1086,7 @@
 
     <section class="results" aria-labelledby="results-title">
       <div class="results-inner">
-        <h2 id="results-title">Что вы получите за квартал</h2>
+        <h2 id="results-title">Что вы получите за 12 недель</h2>
         <div class="results-grid">
           <article>
             <h3>Сможете уверенно объяснить, чем полезны вне своей компании.</h3>
@@ -1027,6 +1113,10 @@
             <p>По результатам пробы выберете один шаг: предложить работу за деньги, изменить формат или проверить другую идею.</p>
           </article>
         </div>
+        <figure class="offer-example">
+          <figcaption>Как может звучать ваше предложение клиенту</figcaption>
+          <blockquote>Помогаю руководителям, которые только приняли команду, подготовить первую встречу. За одну сессию соберём повестку и вопросы, которые помогут договориться с командой о приоритетах на ближайший месяц.</blockquote>
+        </figure>
       </div>
     </section>
 
@@ -1045,7 +1135,7 @@
       <div class="admission-inner">
         <h2 id="admission-title">Как попасть на программу</h2>
         <h3>Первый разговор — взаимный отбор</h3>
-        <p class="admission-lead">Я беру на программу руководителей, у которых есть опыт решения конкретных задач и время проверить, кому этот опыт пригодится вне компании. На встрече обсудим, какого результата можно достичь за 12 недель и подходим ли мы друг другу.</p>
+        <p class="admission-lead">Я беру на программу руководителей, у которых есть опыт решения конкретных задач и время проверить, кому этот опыт пригодится вне компании. После заявки сверим в переписке вашу задачу и формат участия. Если есть смысл продолжить, созвонимся на 20 минут и решим, подходит ли нам совместная работа.</p>
         <fieldset class="admission-checklist">
           <legend>Перед разговором отметьте, что уже про вас.</legend>
           <div class="admission-options">
@@ -1086,8 +1176,25 @@
             </label>
           </div>
         </fieldset>
+        <fieldset class="admission-fields">
+          <legend>Дополните заявку, если хотите</legend>
+          <div class="admission-field">
+            <label for="admission-target">Что хотите проверить или получить за 12 недель?</label>
+            <input type="text" id="admission-target" maxlength="180" autocomplete="off" aria-describedby="admission-target-hint">
+            <p class="admission-hint" id="admission-target-hint">Одно предложение о рабочей задаче.</p>
+          </div>
+          <div class="admission-field">
+            <label for="admission-format">Какой формат участия рассматриваете?</label>
+            <select id="admission-format">
+              <option value="">Можно не выбирать</option>
+              <option value="Оплата">Оплата</option>
+              <option value="Партнёрство">Партнёрство</option>
+              <option value="Хочу обсудить">Хочу обсудить</option>
+            </select>
+          </div>
+        </fieldset>
         <a class="participate" id="admission-telegram" href="https://t.me/shapovalov_vsegda" aria-describedby="admission-note">Открыть заявку в Telegram</a>
-        <p class="admission-note" id="admission-note">В Telegram откроется черновик с вашими отметками. Проверьте его и отправьте Алексею.</p>
+        <p class="admission-note" id="admission-note">В Telegram откроется черновик с вашими отметками и заполненными ответами. Проверьте его и отправьте Алексею.</p>
       </div>
     </section>
 
@@ -1188,8 +1295,10 @@
   </main>
   <script>
     const telegramApplication = document.querySelector('#admission-telegram');
-    const admissionChecklist = document.querySelector('.admission-checklist');
-    const admissionCheckboxes = Array.from(admissionChecklist.querySelectorAll('input[type="checkbox"]'));
+    const admission = telegramApplication.closest('.admission');
+    const admissionCheckboxes = Array.from(admission.querySelectorAll('.admission-checklist input[type="checkbox"]'));
+    const admissionTarget = admission.querySelector('#admission-target');
+    const admissionFormat = admission.querySelector('#admission-format');
     const telegramUrl = new URL(telegramApplication.href);
 
     function updateTelegramApplication() {
@@ -1198,8 +1307,13 @@
         const status = checkbox.checked ? '✓' : '○';
         return `${status} ${label.textContent.trim()}`;
       });
+      const applicationDetails = [
+        ['Что хочу проверить или получить за 12 недель', admissionTarget.value.replace(/\s+/g, ' ').trim().slice(0, admissionTarget.maxLength)],
+        ['Формат участия', admissionFormat.value],
+      ].filter(([, value]) => value).map(([label, value]) => label + ': ' + value);
       const message = [
         'Алексей, здравствуйте! Хочу обсудить участие в программе для руководителей.',
+        ...applicationDetails,
         '',
         'Мои ответы в чек-листе (✓ — отмечено, ○ — без отметки):',
         ...answers,
@@ -1208,7 +1322,8 @@
       telegramApplication.href = telegramUrl.href;
     }
 
-    admissionChecklist.addEventListener('change', updateTelegramApplication);
+    admission.addEventListener('input', updateTelegramApplication);
+    admission.addEventListener('change', updateTelegramApplication);
     window.addEventListener('pageshow', updateTelegramApplication);
     updateTelegramApplication();
   </script>
