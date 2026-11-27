@@ -320,6 +320,61 @@
     .familiar-copy p { margin: 0; }
     .familiar-copy p + p { margin-top: 1.25rem; }
 
+    .program {
+      display: grid;
+      place-items: center;
+      padding: clamp(4rem, 12vh, 9rem) var(--margin);
+      background: #faf8f3;
+      border-top: 1px solid var(--line);
+    }
+
+    .program-inner { width: min(100%, 82rem); }
+
+    .program h2 {
+      margin: 0 0 clamp(2.5rem, 6vw, 4.75rem);
+      font-family: Literata, Georgia, serif;
+      font-size: clamp(2.625rem, 4.25vw, 4.25rem);
+      font-weight: 470;
+      line-height: 1.13;
+      letter-spacing: -0.042em;
+      text-wrap: balance;
+    }
+
+    .program-work {
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      align-items: start;
+      gap: clamp(1.75rem, 5.5vw, 5.25rem);
+      padding-block: clamp(1.75rem, 4.25vw, 3.5rem);
+      border-top: 1px solid var(--line);
+    }
+
+    .program-work:first-of-type { border-top-color: var(--accent); }
+    .program-work:last-of-type { padding-bottom: 0; }
+
+    .program-work h3 {
+      max-width: 15em;
+      margin: 0;
+      font-family: Literata, Georgia, serif;
+      font-size: clamp(1.625rem, 2.6vw, 2.375rem);
+      font-weight: 530;
+      line-height: 1.18;
+      letter-spacing: -0.029em;
+      text-wrap: balance;
+    }
+
+    .program-copy {
+      max-width: 39rem;
+      color: var(--muted);
+      font-size: clamp(1.0625rem, 1.36vw, 1.1875rem);
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+
+    .program-copy p { margin: 0; }
+    .program-copy p + p { margin-top: 1rem; }
+    .program-copy strong { color: var(--ink); font-weight: 650; }
+
     @media (max-width: 53rem) {
       .hero {
         max-width: 38rem;
@@ -358,6 +413,10 @@
         gap: 1.75rem;
       }
       .familiar h2 { font-size: clamp(2.125rem, 6.35vw, 3.75rem); }
+
+      .program-inner { max-width: 38rem; }
+      .program h2 { font-size: clamp(2.125rem, 6.35vw, 3.75rem); }
+      .program-work { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
     }
 
     @media (max-width: 25rem) {
@@ -454,6 +513,31 @@
           <p>Трудно выбрать, с чего начать. Кому написать? Что предложить? Как понять, нужна ли людям ваша помощь и хватит ли вам времени её оказать?</p>
           <p>Может быть досадно, что время идёт, а своё дело так и остаётся на уровне разговоров. И немного тревожно пробовать. На работе вы знаете, к кому обратиться и на какую команду опереться. Здесь ещё предстоит увидеть, что получится, если взять одну задачу и попробовать решить её для человека, которому это нужно.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="program" aria-labelledby="program-title">
+      <div class="program-inner">
+        <h2 id="program-title">Как проходит практикум</h2>
+        <article class="program-work">
+          <h3>Найдёте задачи, которые вам хочется решать и в которых у вас уже есть результат</h3>
+          <div class="program-copy">
+            <p><strong>Что я делаю.</strong> Начинаем с диагностики интересов и опыта. Вы проходите опросники, а на встрече мы разбираем несколько рабочих случаев. Смотрим, что вас увлекло, что вы сделали лично и какой результат получили. Собираем это в дашборд. Где есть цифры, записываем, что было до и что изменилось после.</p>
+            <p><strong>Зачем это нужно.</strong> Даже в одной работе могут нравиться разные вещи. Например, вам может нравиться объяснять сложное, готовить программу или видеть, как люди применяют то, чему вы их научили. Когда это понятно, проще выбрать, какую часть работы вы хотите повторить за пределами компании.</p>
+            <p><strong>С чем вы выйдете.</strong> С коротким списком задач, которые вам интересны, по которым у вас есть опыт и которые можно попробовать параллельно с наймом.</p>
+            <p><strong>Что это даёт.</strong> Становится спокойнее думать о своём деле. У вас есть конкретные примеры того, чем вы уже были полезны, и понятно, на какой опыт можно опереться.</p>
+          </div>
+        </article>
+        <article class="program-work">
+          <h3>Подготовите первое предложение и найдёте, с кем его проверить</h3>
+          <div class="program-copy">
+            <p><strong>Что я делаю.</strong> Берём задачи, которые вы выделили на диагностике, и смотрим, у кого они возникают, в какой ситуации и как люди справляются сейчас. С помощью ИИ разбираем открытые источники, вашу аудиторию и предложения других специалистов. Сверяем выводы с источниками и собираем черновик: кому вы можете помочь, с чем и какой результат предложить.</p>
+            <p>Затем смотрим, с кем уже можно поговорить в вашем окружении, кто может вас познакомить и где найти людей за его пределами. Я помогу подготовить первое обращение и вопросы для интервью.</p>
+            <p><strong>Зачем это нужно.</strong> Вы приходите на разговор с конкретной мыслью, которую можно проверить. Например, действительно ли новым руководителям трудно провести первые встречи с командой и как они справлялись с этим в последний раз. По ответам станет понятно, что в предложении стоит уточнить.</p>
+            <p><strong>С чем вы выйдете.</strong> С черновиком предложения, списком людей, к которым можно обратиться, и вопросами для первых разговоров.</p>
+            <p><strong>Что это даёт.</strong> Становится проще написать человеку, когда вы знаете, почему обращаетесь именно к нему и что хотите выяснить. У вас есть первый шаг, который можно сделать уже сейчас.</p>
+          </div>
+        </article>
       </div>
     </section>
   </main>
